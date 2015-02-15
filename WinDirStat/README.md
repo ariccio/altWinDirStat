@@ -53,6 +53,21 @@ Major features:
 This is a Microsoft Visual Studio 2013 Project.
 
 =============================================================================
+# A few notes on style
+
+I have some (admittedly weird) style preferences, so I'll try to document them.
+
+1. I use [Ratliff-style indentation](http://en.wikipedia.org/wiki/Indent_style#Ratliff_style).
+  - I find it much easier to spot weird scope issues.
+  - I find it much easier to quickly skim code, all the while comprehending control-flow.
+2. I never throw exceptions.
+3. I never catch exceptions.
+4. I compile with exceptions **disabled**.
+  - Don't get me wrong, exceptions are a great feature of C++, but (sadly) they currently add too much bloat to code. 
+  - Exceptions theoretically can *improve* performance, but that's not the case just quite yet.
+  - When Visual Studio supports `noexcept`, I'll reconsider.
+5. I *ALWAYS* use braces in an `if`/`else` statement.
+=============================================================================
 How to create a resource dll.
 * **Don't**, this isn't a solved problem yet.
 

@@ -60,12 +60,13 @@ BOOL CPageGeneral::OnInitDialog( ) {
 
 void CPageGeneral::OnOK( ) {
 	VERIFY( UpdateData( ) );
+	ASSERT( m_appptr != NULL );
 	const auto Options = GetOptions( );
 	//Compare with TRUE to prevent int->bool coercion
 	Options->m_followMountPoints    = ( ( m_followMountPoints    == TRUE ) ? true : false );
 	Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
 	Options->m_showTimeSpent        = ( ( m_showTimeSpent        == TRUE ) ? true : false );
-	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ) );
+	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ), m_appptr );
 	Options->SetListGrid            ( ( ( m_listGrid             == TRUE ) ? true : false ) );
 	Options->SetListStripes         ( ( ( m_listStripes          == TRUE ) ? true : false ) );
 	Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );

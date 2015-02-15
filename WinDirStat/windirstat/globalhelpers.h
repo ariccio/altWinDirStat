@@ -57,6 +57,7 @@ struct QPC_timer {
 	QPC_timer( );
 	void begin( );
 	void end( );
+	const double total_time_elapsed( ) const;
 	QPC_timer& operator=( const QPC_timer& in ) = delete;
 
 	const std::int64_t m_frequency;

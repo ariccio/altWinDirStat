@@ -29,7 +29,9 @@
 
 
 #pragma warning(suppress:4355)
-CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) { }
+CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
+	m_showTypes = CPersistence::GetShowFileTypes( );
+	}
 
 
 //CTypeView::~CTypeView( ) { }
@@ -40,6 +42,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 	if ( subitem == column::COL_EXTENSION ) {
 		ASSERT( list == m_list );
 		UNREFERENCED_PARAMETER( list );
+		//ASSERT( width != NULL );
 		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
 		return true;
 		}
@@ -338,11 +341,6 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	std::uint64_t totalSizeExtensionNameLength = 0;
 	SetItemCount( static_cast<int>( ext_data_size + 1 ) );
 	TRACE( _T( "Built buffer of extension records, inserting....\r\n" ) );
-
-#ifdef PERF_DEBUG_SLEEP
-	Sleep( 1000 );
-#endif
-
 	SetRedraw( FALSE );
 	const auto local_m_exts = m_exts.get( );
 
@@ -420,7 +418,6 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 
 void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	COwnerDrawnListCtrl::OnSetFocus( pOldWnd );
-	ASSERT( GetMainFrame( ) == m_frameptr );
 	m_frameptr->SetLogicalFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
 	}
 
@@ -434,7 +431,6 @@ void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) 
 
 void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
-		ASSERT( GetMainFrame( ) == m_frameptr );
 		if ( m_frameptr->GetDirstatView( ) != NULL ) {
 			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
 			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
@@ -445,7 +441,6 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 			}
 		}
 	else if ( nChar == VK_ESCAPE ) {
-		ASSERT( GetMainFrame( ) == m_frameptr );
 		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
 		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
 		}
@@ -502,15 +497,9 @@ void CTypeView::OnUpdate0( ) {
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.m_rootSize = theDocument->m_rootItem->size_recurse( );
-#ifdef PERF_DEBUG_SLEEP
-			Sleep( 1000 );
-#endif
 			TRACE( _T( "Populating extension list...\r\n" ) );
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			TRACE( _T( "Finished populating extension list...\r\n" ) );
-#ifdef PERF_DEBUG_SLEEP
-	Sleep( 1000 );
-#endif
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
 			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 			}
@@ -622,8 +611,12 @@ void CTypeView::OnSetFocus( CWnd* pOldWnd ) {
 void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize(nType, cx, cy);
 	if ( IsWindow( m_extensionListControl.m_hWnd ) ) {
-		CRect rc( 0, 0, cx, cy );
-		m_extensionListControl.MoveWindow( rc );
+		const RECT rc = { 0, 0, cx, cy };
+		
+		ASSERT( ::IsWindow( m_hWnd ) );
+
+		//If [MoveWindow] succeeds, the return value is nonzero.
+		VERIFY( ::MoveWindow( m_extensionListControl.m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
 		}
 	}
 

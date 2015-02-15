@@ -49,7 +49,11 @@ void CXySlider::Initialize( ) {
 		if ( ( rc.bottom - rc.top ) % 2 == 0 ) {
 			rc.bottom--;
 			}
-		MoveWindow( rc );
+	
+		ASSERT( ::IsWindow( m_hWnd ) );
+
+		//If [MoveWindow] succeeds, the return value is nonzero.
+		VERIFY( ::MoveWindow( m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
 
 		// Initialize constants
 		CalcSizes( );

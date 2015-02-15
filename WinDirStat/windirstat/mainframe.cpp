@@ -75,8 +75,55 @@ namespace {
 		const BOOL m_open;
 		};
 
+	const UINT indicators[ ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
+	
+	template<size_t count>
+	void SetIndicators( CStatusBar& status_bar, const UINT( &indicators_array )[ count ] ) {
+		static_assert( sizeof( indicators_array ) == ( count * sizeof( UINT ) ), "Bad SetIndicators argument!" );
+		VERIFY( status_bar.SetIndicators( indicators_array, count ) );
+		}
+
+	const rsize_t debug_str_size = 100u;
+	
+	void debug_output_searching_time( _In_ const double searchingTime ) {
+		_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
+		const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
+		ASSERT( printf_res_1 != -1 );
+		OutputDebugStringW( searching_done_str );
+
+#ifndef DEBUG
+		UNREFERENCED_PARAMETER( printf_res_1 );
+#endif
+		}
+	
+	void debug_output_frequency( _In_ const std::int64_t m_frequency ) {
+		_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
+		const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timing frequency: %lld\r\n", m_frequency );
+		ASSERT( printf_res_3 != -1 );
+		OutputDebugStringW( freq_str );
+#ifndef DEBUG
+		UNREFERENCED_PARAMETER( printf_res_3 );
+#endif
+		}
+
+	void debug_output_time_to_draw_empty_window( _In_ const double timeToDrawEmptyWindow ) {
+		_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
+		const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: time to draw window:   %f\r\n", timeToDrawEmptyWindow );
+		ASSERT( printf_res_4 != -1 );
+		OutputDebugStringW( drawing_done_str );
+#ifndef DEBUG
+		UNREFERENCED_PARAMETER( printf_res_4 );
+#endif
+		}
+
+	void output_debugging_info( _In_ const double searchingTime, _In_ const std::int64_t frequency, _In_ const double timeToDrawEmptyWindow ) {
+		debug_output_searching_time( searchingTime );
+		debug_output_frequency( frequency );
+		debug_output_time_to_draw_empty_window( timeToDrawEmptyWindow );
+		}
 
 	}
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -86,12 +133,29 @@ IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
 BOOL COptionsPropertySheet::OnInitDialog( ) {
 	const BOOL bResult = CPropertySheet::OnInitDialog( );
 
-	CRect rc;
-	GetWindowRect( rc );
-	WTL::CPoint pt = rc.TopLeft( );
+	RECT rc;
+
+	/*
+_AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
+	{ ASSERT(::IsWindow(m_hWnd)); ::GetWindowRect(m_hWnd, lpRect); }
+	*/
+
+	ASSERT( ::IsWindow( m_hWnd ) );
+
+	//If [GetWindowRect] succeeds, the return value is nonzero.
+	VERIFY( ::GetWindowRect( m_hWnd, &rc ) );
+
+	WTL::CPoint pt = CRect( rc ).TopLeft( );
+	
 	CPersistence::GetConfigPosition( pt );
-	CRect rc2( pt, rc.Size( ) );
-	MoveWindow( rc2 );
+	CRect rc2( pt, CRect( rc ).Size( ) );
+
+	ASSERT( m_pCtrlSite == NULL );
+
+	ASSERT( ::IsWindow( m_hWnd ) );
+
+	//If [MoveWindow] succeeds, the return value is nonzero.
+	VERIFY( ::MoveWindow( m_hWnd, rc2.left, rc2.top, ( rc2.right - rc2.left ), ( rc2.bottom - rc2.top ), TRUE ) );
 
 	VERIFY( SetActivePage( CPersistence::GetConfigPage( GetPageCount( ) - 1 ) ) );
 	return bResult;
@@ -103,7 +167,7 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 	CRect rc;
 	GetWindowRect( rc );
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
-
+	ASSERT( m_pCtrlSite == NULL );
 	//INT cmd = LOWORD( wParam );
 	return CPropertySheet::OnCommand( wParam, lParam );
 	}
@@ -225,7 +289,7 @@ END_MESSAGE_MAP( )
 
 void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
 	if ( nChar == VK_TAB ) {
-		GetMainFrame( )->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
+		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 		}
 	}
 
@@ -265,32 +329,28 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	Initializes a few related things, such as the memory display.
 	*/
 
+	_theFrame = this;
+	m_appptr = GetApp( );
 	if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 ) {
 		return -1;
 		}
 
-	//VERIFY( m_wndToolBar.CreateEx( this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC ) );
-
-	UINT indicators[ INDICATORS_NUMBER ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
-
-
 	VERIFY( m_wndStatusBar.Create( this ) );
-	VERIFY( m_wndStatusBar.SetIndicators( indicators, INDICATORS_NUMBER ) );
+	SetIndicators( m_wndStatusBar, indicators );
 
 	m_wndDeadFocus.Create( this );
-
-	//m_wndToolBar.EnableDocking( CBRS_ALIGN_ANY );
 	EnableDocking( CBRS_ALIGN_ANY );
-	//DockControlBar( &m_wndToolBar );
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );
 	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
 	
 	TRACE( _T( "sizeof CItemBranch: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CItemBranch ) ) );
 #ifdef DISPLAY_FINAL_CITEMBRANCH_SIZE
-	const auto size_citembranch = std::to_wstring( sizeof( CItemBranch ) );
-	const std::wstring size_text( L"sizeof CItemBranch: " + size_citembranch );
-	displayWindowsMsgBoxWithMessage( size_text.c_str( ) );
+	if ( IsDebuggerPresent( ) ) {
+		const auto size_citembranch = std::to_wstring( sizeof( CItemBranch ) );
+		const std::wstring size_text( L"sizeof CItemBranch: " + size_citembranch );
+		displayWindowsMsgBoxWithMessage( size_text.c_str( ) );
+		}
 #endif
 	return 0;
 	}
@@ -402,92 +462,39 @@ void CMainFrame::RestoreGraphView( ) {
 	if ( thisGraphView == NULL ) {
 		return;
 		}
-	if ( thisGraphView->m_showTreemap ) {
-		m_wndSplitter.RestoreSplitterPos( 0.4 );
-#ifdef PERF_DEBUG_SLEEP
-		Sleep( 1000 );
-#endif
-		TRACE( _T( "Drawing Empty view...\r\n" ) );
-
-#ifdef DEBUG
-		const auto emptyViewTiming_1 = help_QueryPerformanceCounter( );
-		thisGraphView->DrawEmptyView( );
-		const auto emptyViewTiming_2 = help_QueryPerformanceCounter( );
-#endif
-		const LARGE_INTEGER timingFrequency = help_QueryPerformanceFrequency( );
-		const DOUBLE adjustedTimingFrequency = ( static_cast< DOUBLE >( 1.00 ) ) / static_cast< DOUBLE >( timingFrequency.QuadPart );
-
-#ifdef DEBUG
-		const DOUBLE timeToDrawEmptyWindow = ( emptyViewTiming_2.QuadPart - emptyViewTiming_1.QuadPart ) * adjustedTimingFrequency;
-		TRACE( _T( "Done drawing empty view. Timing: %f\r\n" ), timeToDrawEmptyWindow );
-#endif
-		TRACE( _T( "Drawing treemap...\r\n" ) );
-		const auto startDrawTime = help_QueryPerformanceCounter( );
-
-		VERIFY( thisGraphView->RedrawWindow( ) );
-		const auto endDrawTime = help_QueryPerformanceCounter( );
-
-		const DOUBLE timeToDrawWindow = static_cast< DOUBLE >( endDrawTime.QuadPart - startDrawTime.QuadPart ) * adjustedTimingFrequency;
-		TRACE( _T( "Finished drawing treemap! Timing:: %f\r\n" ), timeToDrawWindow );
-#ifdef PERF_DEBUG_SLEEP
-		Sleep( 1000 );
-#endif
-		const auto comp_file_timing = GetDocument( )->m_compressed_file_timing;
-		const auto searchingTime = GetDocument( )->m_searchTime;
-		ASSERT( searchingTime != 0 );
-
-		const rsize_t debug_str_size = 100;
-		_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
-		const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
-		ASSERT( printf_res_1 != -1 );
-
-#ifndef DEBUG
-		UNREFERENCED_PARAMETER( printf_res_1 );
-#endif
-
-		_Null_terminated_ wchar_t drawing_start_str[ debug_str_size ] = { 0 };
-		const auto printf_res_2 = _snwprintf_s( drawing_start_str, debug_str_size, _TRUNCATE, L"WDS: startDrawTime: %lld\r\n", startDrawTime.QuadPart );
-		ASSERT( printf_res_2 != -1 );
-
-#ifndef DEBUG
-		UNREFERENCED_PARAMETER( printf_res_2 );
-#endif
-		_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
-		const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timingFrequency: %lld\r\n", timingFrequency.QuadPart );
-		ASSERT( printf_res_3 != -1 );
-
-#ifndef DEBUG
-		UNREFERENCED_PARAMETER( printf_res_3 );
-#endif
-
-		_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
-		const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: endDrawTime:   %lld\r\n", endDrawTime.QuadPart );
-		ASSERT( printf_res_4 != -1 );
-
-#ifndef DEBUG
-		UNREFERENCED_PARAMETER( printf_res_4 );
-#endif
-
-		OutputDebugStringW( searching_done_str );
-		OutputDebugStringW( drawing_start_str );
-		OutputDebugStringW( drawing_done_str );
-		OutputDebugStringW( freq_str );
-
-
-
-		const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
-		ASSERT( timeToDrawWindow != 0 );
-		m_lastSearchTime = searchingTime;
-		if ( m_lastSearchTime == -1 ) {
-			m_lastSearchTime = searchingTime;
-			ASSERT( m_lastSearchTime >= comp_file_timing );
-			WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );//else the search time compounds whenever the time is written to the status bar
-			}
-		else {
-			WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );
-			}
+	if ( !( thisGraphView->m_showTreemap ) ) {
+		return;
 		}
+	m_wndSplitter.RestoreSplitterPos( 0.4 );
 
+	QPC_timer timer_draw_empty_view;
+	timer_draw_empty_view.begin( );
+	thisGraphView->DrawEmptyView( );
+	timer_draw_empty_view.end( );
+	const DOUBLE timeToDrawEmptyWindow = timer_draw_empty_view.total_time_elapsed( );
+	TRACE( _T( "Done drawing empty view. Timing: %f\r\nDrawing treemap...\r\n" ), timeToDrawEmptyWindow );
+	QPC_timer timer_draw_treemap;
+	timer_draw_treemap.begin( );
+	VERIFY( thisGraphView->RedrawWindow( ) );
+	timer_draw_treemap.end( );
+
+	const DOUBLE timeToDrawWindow = timer_draw_treemap.total_time_elapsed( );
+	TRACE( _T( "Finished drawing treemap! Timing: %f\r\n" ), timeToDrawWindow );
+	const auto comp_file_timing = GetDocument( )->m_compressed_file_timing;
+	const auto searchingTime = GetDocument( )->m_searchTime;
+	ASSERT( searchingTime > 0 );
+	output_debugging_info( searchingTime, timer_draw_treemap.m_frequency, timeToDrawEmptyWindow );
+	const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
+	ASSERT( timeToDrawWindow != 0 );
+	m_lastSearchTime = searchingTime;
+	if ( m_lastSearchTime == -1 ) {
+		m_lastSearchTime = searchingTime;
+		ASSERT( m_lastSearchTime >= comp_file_timing );
+		WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );//else the search time compounds whenever the time is written to the status bar
+		}
+	else {
+		WriteTimeToStatusBar( timeToDrawWindow, m_lastSearchTime, avg_name_leng, comp_file_timing );
+		}
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
@@ -495,6 +502,7 @@ _Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( 
 	return STATIC_DOWNCAST( CDirstatView, pWnd );
 	}
 
+//cannot be defined in header.
 _Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const {
 	const auto pWnd = m_wndSplitter.GetPane( 1, 0 );
 	return STATIC_DOWNCAST( CGraphView, pWnd );
@@ -525,14 +533,14 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 	COpenClipboard clipboard( const_cast< CMainFrame* >( this ), true );
 	const rsize_t strSizeInBytes = ( ( psz.length( ) + 1 ) * sizeof( WCHAR ) );
 
-	const HGLOBAL h = GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
-	if ( h == NULL ) {
+	const HGLOBAL handle_globally_allocated_memory = GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
+	if ( handle_globally_allocated_memory == NULL ) {
 		displayWindowsMsgBoxWithMessage( global_strings::global_alloc_failed );
 		TRACE( L"%s\r\n", global_strings::global_alloc_failed );
 		return;
 		}
 
-	const auto lp = GlobalLock( h );
+	const auto lp = GlobalLock( handle_globally_allocated_memory );
 	if ( lp == NULL ) {
 		displayWindowsMsgBoxWithMessage( L"GlobalLock failed!" );
 		return;
@@ -551,7 +559,7 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 		else {
 			displayWindowsMsgBoxWithMessage( global_strings::string_cch_copy_failed );
 			}
-		const BOOL unlock_res = GlobalUnlock( h );
+		const BOOL unlock_res = GlobalUnlock( handle_globally_allocated_memory );
 		strP = NULL;
 		const auto last_err = GetLastError( );
 		if ( unlock_res == 0 ) {
@@ -564,7 +572,7 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 		return;
 		}
 
-	if ( GlobalUnlock( h ) == 0 ) {
+	if ( GlobalUnlock( handle_globally_allocated_memory ) == 0 ) {
 		const auto err = GetLastError( );
 		if ( err != NO_ERROR ) {
 			displayWindowsMsgBoxWithMessage( L"GlobalUnlock failed!" );
@@ -575,7 +583,7 @@ void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
 	UINT uFormat = CF_TEXT;
 	uFormat = CF_UNICODETEXT;
 
-	if ( NULL == SetClipboardData( uFormat, h ) ) {
+	if ( NULL == SetClipboardData( uFormat, handle_globally_allocated_memory ) ) {
 		displayWindowsMsgBoxWithMessage( global_strings::cannot_set_clipboard_data );
 		TRACE( L"%s\r\n", global_strings::cannot_set_clipboard_data );
 		return;
@@ -626,7 +634,7 @@ size_t CMainFrame::getExtDataSize( ) const {
 	}
 
 void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, unsigned( ext_data_size ), file_name_length, average_extension_length, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f." ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, unsigned( ext_data_size ), file_name_length, average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		SetMessageText( buffer_ptr );
@@ -650,7 +658,7 @@ void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ 
 	}
 
 void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f. SSO threshold: %u" ), unsigned( ext_data_size ), enum_timing, average_extension_length, unsigned( copied_from_VCPP_stdlib::SSO_THRESHOLD_BUF_SIZE ) );
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f." ), unsigned( ext_data_size ), enum_timing, average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		SetMessageText( buffer_ptr );
@@ -680,6 +688,8 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	*/
 	ASSERT( searchTiming >= compressed_file_timing );
 	const rsize_t buffer_size_init = 512u;
+
+	//TODO: why are we using heap here?
 	std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer_uniq_ptr = std::make_unique<_Null_terminated_ wchar_t[ ]>( buffer_size_init );
 
 	PWSTR buffer_ptr = buffer_uniq_ptr.get( );
@@ -748,8 +758,7 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( true );
 	const rsize_t ramUsageStrBufferSize = 50;
 	_Null_terminated_ wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
-
-	const HRESULT res = GetApp( )->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
+	const HRESULT res = m_appptr->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {
 		rsize_t chars_written = 0;
 		wds_fmt::write_BAD_FMT( ramUsageStr, chars_written );
@@ -818,7 +827,7 @@ void CMainFrame::OnViewShowfiletypes( ) {
 void CMainFrame::OnConfigure( ) {
 	COptionsPropertySheet sheet;
 
-	CPageGeneral  general;
+	CPageGeneral  general( m_appptr );
 	CPageTreemap  treemap;
 
 	sheet.AddPage( &general );

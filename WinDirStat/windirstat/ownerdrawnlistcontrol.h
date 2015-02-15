@@ -114,9 +114,9 @@ public:
 		ASSERT( subitem != column::COL_NAME );
 		if ( subitem == column::COL_NAME ) {
 			displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
-			if ( IsDebuggerPresent( ) ) {
-				_CrtDbgBreak( );
-				}
+			//if ( IsDebuggerPresent( ) ) {
+				//_CrtDbgBreak( );
+				//}
 			std::terminate( );
 			}
 
@@ -656,7 +656,7 @@ public:
 		}
 
 	_Success_( return != -1 ) _Ret_range_( 0, INT_MAX )
-	INT  FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
+	INT FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
 		auto fi = zero_init_struct<LVFINDINFO>( );
 
 		fi.flags  = LVFI_PARAM;
@@ -1143,11 +1143,6 @@ protected:
 		//store item width in some sort of cache?
 		//BUGBUG: this is an extremely slow way of doing this!
 		if ( item->DrawSubitem_( subitem, dc, rc, 0, &width, &dummy, const_cast< COwnerDrawnListCtrl* >( this ) ) ) {
-			if ( subitem == column::COL_NAME ) {
-				//const auto predicted_str_width = ( GetStringWidth( item->m_name.get( ) ) + static_cast< int >( GENERAL_INDENT ) +static_cast< int >( LABEL_INFLATE_CX ) +2 );
-				//ASSERT( width == predicted_str_width );
-				}
-			
 			return width;
 			}
 

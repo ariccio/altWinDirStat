@@ -11,7 +11,7 @@
 
 #include "treemap.h"
 #include "windirstat.h"
-
+#include "options.h"
 class CDirstatDoc;
 class CItemBranch;
 class CGraphView;
@@ -20,11 +20,12 @@ class CGraphView;
 // CGraphView. The treemap window.
 class CGraphView final : public CView {
 protected:
-	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ), m_frameptr( GetMainFrame( ) ) {
+	CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
 		m_size.cx = 0;
 		m_size.cy = 0;
 		m_dimmedSize.cx = 0;
 		m_dimmedSize.cy = 0;
+		m_showTreemap = CPersistence::GetShowTreemap( );
 		}
 	DECLARE_DYNCREATE(CGraphView)
 
@@ -111,6 +112,7 @@ protected:
 	CBitmap  m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
 	UINT_PTR m_timer;				// We need a timer to realize when the mouse left our window.
 	CMainFrame* const m_frameptr;
+	CDirstatApp* m_appptr;
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);

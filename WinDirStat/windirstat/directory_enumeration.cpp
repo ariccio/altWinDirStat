@@ -15,10 +15,6 @@ namespace {
 		ULARGE_INTEGER ret;
 		ret.QuadPart = 0;//zero initializing this is critical!
 		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
-	#ifdef PERF_DEBUG_SLEEP
-		Sleep( 0 );
-		Sleep( 10 );
-	#endif
 		const auto last_err = GetLastError( );
 #ifdef DEBUG
 		const rsize_t error_message_buffer_size = 128;
@@ -92,10 +88,6 @@ namespace {
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'\\' );
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
 			//TODO: investigate task_group
-#ifdef PERF_DEBUG_SLEEP
-			Sleep( 0 );
-			Sleep( 10 );
-#endif
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 			workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, sizes_to_work_on_in, std::move( false ) ) );
 			}
@@ -193,11 +185,6 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
 				}
-
-#ifdef PERF_DEBUG_SLEEP
-		Sleep( 0 );
-		Sleep( 10 );
-#endif
 			}
 		else {
 			const auto new_name_length = aFile.name.length( );
@@ -347,10 +334,12 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	const auto debug_buf_res_1 = _snwprintf_s( debug_buf, debug_buf_size, _TRUNCATE, L"WDS: enum timing: %f\r\n", timing );
 	ASSERT( debug_buf_res_1 != -1 );
 	if ( debug_buf_res_1 == -1 ) {
+		//NOTE TO SELF, TODO: BUGBUG: OutputDebugString calls RtlUnicodeStringToAnsiString
 		OutputDebugStringW( global_strings::output_dbg_string_error );
 		//std::terminate( );
 		}
 
+	//NOTE TO SELF, TODO: BUGBUG: OutputDebugString calls RtlUnicodeStringToAnsiString
 	OutputDebugStringW( debug_buf );
 
 
@@ -367,10 +356,11 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	const auto debug_buf_res_2 = _snwprintf_s( debug_buf_2, debug_buf_size, _TRUNCATE, L"WDS: compressed file timing: %f\r\n", timing_2 );
 	ASSERT( debug_buf_res_2 != -1 );
 	if ( debug_buf_res_2 == -1 ) {
+		//NOTE TO SELF, TODO: BUGBUG: OutputDebugString calls RtlUnicodeStringToAnsiString
 		OutputDebugStringW( global_strings::output_dbg_string_error );
 		//std::terminate( );
 		}
-
+	//NOTE TO SELF, TODO: BUGBUG: OutputDebugString calls RtlUnicodeStringToAnsiString
 	OutputDebugStringW( debug_buf_2 );
 
 	return timing_2;
@@ -420,10 +410,6 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 		}
 
 	for ( auto& worker : workers ) {
-#ifdef PERF_DEBUG_SLEEP
-		Sleep( 0 );
-		Sleep( 10 );
-#endif
 		worker.get( );
 		}
 

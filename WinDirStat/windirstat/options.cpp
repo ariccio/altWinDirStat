@@ -16,61 +16,158 @@
 #include "options.h"
 
 
+
+namespace registry_strings {
+	
+	
+	
+	_Null_terminated_ const wchar_t entrySplitterPosS[ ] = { _T( "%s-splitterPos" ) };
+	_Null_terminated_ const wchar_t entryColumnOrderS[ ] = { _T( "%s-columnOrder" ) };
+	
+	_Null_terminated_ const wchar_t entryDialogRectangleS[ ] = { _T( "%s-rectangle" ) };
+	
+	
+	
+	_Null_terminated_ const wchar_t entrySelectDrivesDrives[ ] = { _T( "selectDrivesDrives" ) };
+	
+	
+	_Null_terminated_ const wchar_t sectionOptions[ ] = { _T( "options" ) };
+	_Null_terminated_ const wchar_t entryListGrid[ ] = { _T( "treelistGrid" ) }; // for compatibility with 1.0.1, this entry is named treelistGrid.
+	_Null_terminated_ const wchar_t entryListStripes[ ] = { _T( "listStripes" ) };
+	_Null_terminated_ const wchar_t entryListFullRowSelection[ ] = { _T( "listFullRowSelection" ) };
+	_Null_terminated_ const wchar_t entryTreelistColorCount[ ] = { _T( "treelistColorCount" ) };
+	_Null_terminated_ const wchar_t entryTreelistColorN[ ] = { _T( "treelistColor%d" ) };
+	_Null_terminated_ const wchar_t entryHumanFormat[ ] = { _T( "humanFormat" ) };
+	_Null_terminated_ const wchar_t entryShowTimeSpent[ ] = { _T( "showTimeSpent" ) };
+	_Null_terminated_ const wchar_t entryTreemapHighlightColor[ ] = { _T( "treemapHighlightColor" ) };
+	_Null_terminated_ const wchar_t entryTreemapStyle[ ] = { _T( "treemapStyle" ) };
+	_Null_terminated_ const wchar_t entryTreemapGrid[ ] = { _T( "treemapGrid" ) };
+	_Null_terminated_ const wchar_t entryTreemapGridColor[ ] = { _T( "treemapGridColor" ) };
+	_Null_terminated_ const wchar_t entryBrightness[ ] = { _T( "brightness" ) };
+	_Null_terminated_ const wchar_t entryHeightFactor[ ] = { _T( "heightFactor" ) };
+	_Null_terminated_ const wchar_t entryScaleFactor[ ] = { _T( "scaleFactor" ) };
+	_Null_terminated_ const wchar_t entryAmbientLight[ ] = { _T( "ambientLight" ) };
+	_Null_terminated_ const wchar_t entryLightSourceX[ ] = { _T( "lightSourceX" ) };
+	_Null_terminated_ const wchar_t entryLightSourceY[ ] = { _T( "lightSourceY" ) };
+	_Null_terminated_ const wchar_t entryFollowMountPoints[ ] = { _T( "followMountPoints" ) };
+	_Null_terminated_ const wchar_t entryFollowJunctionPoints[ ] = { _T( "followJunctionPoints" ) };
+	_Null_terminated_ const wchar_t entryEnabled[ ] = { _T( "enabled" ) };
+	_Null_terminated_ const wchar_t entryTitle[ ] = { _T( "title" ) };
+	_Null_terminated_ const wchar_t entryWorksForDrives[ ] = { _T( "worksForDrives" ) };
+	_Null_terminated_ const wchar_t entryWorksForDirectories[ ] = { _T( "worksForDirectories" ) };
+	_Null_terminated_ const wchar_t entryWorksForFilesFolder[ ] = { _T( "worksForFilesFolder" ) };
+	_Null_terminated_ const wchar_t entryWorksForFiles[ ] = { _T( "worksForFiles" ) };
+	_Null_terminated_ const wchar_t entryWorksForUncPaths[ ] = { _T( "worksForUncPaths" ) };
+	_Null_terminated_ const wchar_t entryCommandLine[ ] = { _T( "commandLine" ) };
+	_Null_terminated_ const wchar_t entryRecurseIntoSubdirectories[ ] = { _T( "recurseIntoSubdirectories" ) };
+	_Null_terminated_ const wchar_t entryAskForConfirmation[ ] = { _T( "askForConfirmation" ) };
+	_Null_terminated_ const wchar_t entryShowConsoleWindow[ ] = { _T( "showConsoleWindow" ) };
+	_Null_terminated_ const wchar_t entryWaitForCompletion[ ] = { _T( "waitForCompletion" ) };
+	_Null_terminated_ const wchar_t entryRefreshPolicy[ ] = { _T( "refreshPolicy" ) };
+	_Null_terminated_ const wchar_t entryMainWindowPlacement[ ] = { _T( "mainWindowPlacement" ) };
+	
+	}
+
+namespace helpers {
+	std::wstring generalized_make_entry( _In_z_ const PCTSTR name, _In_z_ const PCTSTR entry_fmt_str ) {
+		//TODO: uses heap!
+		const auto chars_needed = ( _scwprintf( entry_fmt_str, name ) + 1 );
+		std::unique_ptr<_Null_terminated_ wchar_t[]> char_buffer_ptr = std::make_unique<wchar_t[ ]>( static_cast<size_t>( chars_needed ) );
+		
+		//This is so that the `Locals`/`Autos` window shows an actual string!
+		PWSTR buffer_ptr = char_buffer_ptr.get( );
+		const HRESULT fmt_res_1 = StringCchPrintfW( buffer_ptr, static_cast<size_t>( chars_needed ), entry_fmt_str, name );
+		ASSERT( SUCCEEDED( fmt_res_1 ) );
+		if ( SUCCEEDED( fmt_res_1 ) ) {
+			return std::wstring( buffer_ptr );
+			}
+		if ( fmt_res_1 == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			const auto double_chars_needed = static_cast< size_t >( chars_needed ) * 2u;
+			char_buffer_ptr.reset( new wchar_t[ double_chars_needed ] );
+			PWSTR double_buffer_ptr = char_buffer_ptr.get( );
+			const HRESULT fmt_res_2 = StringCchPrintfW( double_buffer_ptr, double_chars_needed, entry_fmt_str, name );
+			if ( SUCCEEDED( fmt_res_2 ) ) {
+				return std::wstring( double_buffer_ptr );
+				}
+			}
+		displayWindowsMsgBoxWithMessage( L"generalized_make_entry failed to format the string! OutputDebugString has the name string. Will return empty string." );
+		OutputDebugStringW( L"generalized_make_entry failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
+
+		return L"";
+		}
+	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
+		const auto ws_entry = generalized_make_entry( name, registry_strings::entryColumnOrderS );
+		if ( ws_entry.empty( ) ) {
+			displayWindowsMsgBoxWithMessage( L"MakeColumnOrderEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
+			OutputDebugStringW( L"MakeColumnOrderEntry failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
+			}
+		return ws_entry;
+		}
+	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
+		const auto ws_entry = generalized_make_entry( name, registry_strings::entryColumnWidthsS );
+		if ( ws_entry.empty( ) ) {
+			displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
+			OutputDebugStringW( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
+			}
+		return ws_entry;
+		}
+	}
+
 namespace {
 	COptions _theOptions;
 
-	const PCTSTR sectionPersistence             = _T( "persistence" );
-	const PCTSTR entryShowFileTypes             = _T( "showFileTypes" );
-	const PCTSTR entryShowTreemap               = _T( "showTreemap" );
-	const PCTSTR entryShowStatusbar             = _T( "showStatusbar" );
-	const PCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
-	const PCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
-	const PCTSTR entryColumnOrderS              = _T( "%s-columnOrder" );
-	const PCTSTR entryColumnWidthsS             = _T( "%s-columnWidths" );
-	const PCTSTR entryDialogRectangleS          = _T( "%s-rectangle" );
-	const PCTSTR entryConfigPage                = _T( "configPage" );
-	const PCTSTR entryConfigPositionX           = _T( "configPositionX" );
-	const PCTSTR entryConfigPositionY           = _T( "configPositionY" );
-	const PCTSTR entrySelectDrivesRadio         = _T( "selectDrivesRadio" );
-	const PCTSTR entrySelectDrivesFolder        = _T( "selectDrivesFolder" );
-	const PCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
-	const PCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
-	const PCTSTR sectionBarState                = _T( "persistence\\barstate" );
-	const PCTSTR sectionOptions                 = _T( "options" );
-	const PCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
-	const PCTSTR entryListStripes               = _T( "listStripes" );
-	const PCTSTR entryListFullRowSelection      = _T( "listFullRowSelection" );
-	const PCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
-	const PCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
-	const PCTSTR entryHumanFormat               = _T( "humanFormat" );
-	const PCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
-	const PCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
-	const PCTSTR entryTreemapStyle              = _T( "treemapStyle" );
-	const PCTSTR entryTreemapGrid               = _T( "treemapGrid" );
-	const PCTSTR entryTreemapGridColor          = _T( "treemapGridColor" );
-	const PCTSTR entryBrightness                = _T( "brightness" );
-	const PCTSTR entryHeightFactor              = _T( "heightFactor" );
-	const PCTSTR entryScaleFactor               = _T( "scaleFactor" );
-	const PCTSTR entryAmbientLight              = _T( "ambientLight" );
-	const PCTSTR entryLightSourceX              = _T( "lightSourceX" );
-	const PCTSTR entryLightSourceY              = _T( "lightSourceY" );
-	const PCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
-	const PCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
-	const PCTSTR entryEnabled                   = _T( "enabled" );
-	const PCTSTR entryTitle                     = _T( "title" );
-	const PCTSTR entryWorksForDrives            = _T( "worksForDrives" );
-	const PCTSTR entryWorksForDirectories       = _T( "worksForDirectories" );
-	const PCTSTR entryWorksForFilesFolder       = _T( "worksForFilesFolder" );
-	const PCTSTR entryWorksForFiles             = _T( "worksForFiles" );
-	const PCTSTR entryWorksForUncPaths          = _T( "worksForUncPaths" );
-	const PCTSTR entryCommandLine               = _T( "commandLine" );
-	const PCTSTR entryRecurseIntoSubdirectories = _T( "recurseIntoSubdirectories" );
-	const PCTSTR entryAskForConfirmation        = _T( "askForConfirmation" );
-	const PCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
-	const PCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
-	const PCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
+	
+	
+	
+	
+	//const PCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
+	//const PCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
+	//const PCTSTR entryColumnOrderS              = _T( "%s-columnOrder" );
+	//const PCTSTR entryColumnWidthsS             = _T( "%s-columnWidths" );
+	//const PCTSTR entryDialogRectangleS          = _T( "%s-rectangle" );
+	//const PCTSTR entryConfigPage                = _T( "configPage" );
+	//const PCTSTR entryConfigPositionX           = _T( "configPositionX" );
+	//const PCTSTR entryConfigPositionY           = _T( "configPositionY" );
+	//const PCTSTR entrySelectDrivesRadio         = _T( "selectDrivesRadio" );
+	//const PCTSTR entrySelectDrivesFolder        = _T( "selectDrivesFolder" );
+	//const PCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
+	//const PCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
+	//const PCTSTR sectionBarState                = _T( "persistence\\barstate" );
+	//const PCTSTR sectionOptions                 = _T( "options" );
+	//const PCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
+	//const PCTSTR entryListStripes               = _T( "listStripes" );
+	//const PCTSTR entryListFullRowSelection      = _T( "listFullRowSelection" );
+	//const PCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
+	//const PCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
+	//const PCTSTR entryHumanFormat               = _T( "humanFormat" );
+	//const PCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
+	//const PCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
+	//const PCTSTR entryTreemapStyle              = _T( "treemapStyle" );
+	//const PCTSTR entryTreemapGrid               = _T( "treemapGrid" );
+	//const PCTSTR entryTreemapGridColor          = _T( "treemapGridColor" );
+	//const PCTSTR entryBrightness                = _T( "brightness" );
+	//const PCTSTR entryHeightFactor              = _T( "heightFactor" );
+	//const PCTSTR entryScaleFactor               = _T( "scaleFactor" );
+	//const PCTSTR entryAmbientLight              = _T( "ambientLight" );
+	//const PCTSTR entryLightSourceX              = _T( "lightSourceX" );
+	//const PCTSTR entryLightSourceY              = _T( "lightSourceY" );
+	//const PCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
+	//const PCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
+	//const PCTSTR entryEnabled                   = _T( "enabled" );
+	//const PCTSTR entryTitle                     = _T( "title" );
+	//const PCTSTR entryWorksForDrives            = _T( "worksForDrives" );
+	//const PCTSTR entryWorksForDirectories       = _T( "worksForDirectories" );
+	//const PCTSTR entryWorksForFilesFolder       = _T( "worksForFilesFolder" );
+	//const PCTSTR entryWorksForFiles             = _T( "worksForFiles" );
+	//const PCTSTR entryWorksForUncPaths          = _T( "worksForUncPaths" );
+	//const PCTSTR entryCommandLine               = _T( "commandLine" );
+	//const PCTSTR entryRecurseIntoSubdirectories = _T( "recurseIntoSubdirectories" );
+	//const PCTSTR entryAskForConfirmation        = _T( "askForConfirmation" );
+	//const PCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
+	//const PCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
+	//const PCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
 
-	COLORREF treelistColorDefault[TREELISTCOLORCOUNT] = {
+	const COLORREF treelistColorDefault[TREELISTCOLORCOUNT] = {
 		RGB(  64,  64, 140 ),
 		RGB( 140,  64,  64 ),
 		RGB(  64, 140,  64 ),
@@ -81,31 +178,52 @@ namespace {
 		RGB( 255, 255,   0 )
 		};
 
-	void SanifyRect( _Inout_ CRect& rc ) {
+	void SanifyRect( _Inout_ RECT& rc ) {
 		const INT visible = 30;
 
-		rc.NormalizeRect( );
+		//rc.NormalizeRect( );
+		normalize_RECT( rc );
 
-		CRect rcDesktop;
-		CWnd::GetDesktopWindow( )->GetWindowRect( rcDesktop );
+		RECT rcDesktop_temp = { 0, 0, 0, 0 };
 
-		if ( rc.Width( ) > rcDesktop.Width( ) ) {
-			rc.right = rc.left + rcDesktop.Width( );
+		/*
+_AFXWIN_INLINE CWnd* PASCAL CWnd::GetDesktopWindow()
+	{ return CWnd::FromHandle(::GetDesktopWindow()); }
+
+_AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
+	{ ASSERT(::IsWindow(m_hWnd)); ::GetWindowRect(m_hWnd, lpRect); }
+
+		*/
+		const auto desktop_window = CWnd::FromHandle( ::GetDesktopWindow( ) );
+		ASSERT( ::IsWindow( desktop_window->m_hWnd ) );
+		
+		//If the function succeeds, the return value is nonzero.
+		VERIFY( ::GetWindowRect( desktop_window->m_hWnd, &rcDesktop_temp ) );
+
+		//CWnd::GetDesktopWindow( )->GetWindowRect( &rcDesktop_temp );
+
+		const RECT& rcDesktop = rcDesktop_temp;
+
+		if ( ( rc.right - rc.left ) > ( rcDesktop.right - rcDesktop.left ) ) {
+			rc.right = rc.left + ( rcDesktop.right - rcDesktop.left );
 			}
-		if ( rc.Height( ) > rcDesktop.Height( ) ) {
-			rc.bottom = rc.top + rcDesktop.Height( );
+		if ( ( rc.bottom - rc.top ) > ( rcDesktop.bottom - rcDesktop.top ) ) {
+			rc.bottom = rc.top + ( rcDesktop.bottom - rcDesktop.top );
 			}
 		if ( rc.left < 0 ) {
-			rc.OffsetRect( -rc.left, 0 );
+			VERIFY( ::OffsetRect( &rc, -( rc.left ), 0 ) );
 			}
 		if ( rc.left > rcDesktop.right - visible ) {
-			rc.OffsetRect( -visible, 0 );
+			VERIFY( ::OffsetRect( &rc, -( visible ), 0 ) );
+			//rc.OffsetRect( -visible, 0 );
 			}
 		if ( rc.top < 0 ) {
-			rc.OffsetRect( -rc.top, 0 );
+			//rc.OffsetRect( -rc.top, 0 );
+			VERIFY( ::OffsetRect( &rc, -( rc.top ), 0 ) );
 			}
 		if ( rc.top > rcDesktop.bottom - visible ) {
-			rc.OffsetRect( 0, -visible );
+			//rc.OffsetRect( 0, -visible );
+			VERIFY( ::OffsetRect( &rc, 0, -( visible ) ) );
 			}
 		}
 
@@ -163,99 +281,62 @@ namespace {
 			}
 		}
 
-	std::wstring generalized_make_entry( _In_z_ const PCTSTR name, _In_z_ const PCTSTR entry_fmt_str ) {
-		const auto chars_needed = ( _scwprintf( entry_fmt_str, name ) + 1 );
-		std::unique_ptr<_Null_terminated_ wchar_t[]> char_buffer_ptr = std::make_unique<wchar_t[ ]>( static_cast<size_t>( chars_needed ) );
-		
-		//This is so that the `Locals`/`Autos` window shows an actual string!
-		PWSTR buffer_ptr = char_buffer_ptr.get( );
-		const HRESULT fmt_res_1 = StringCchPrintfW( buffer_ptr, static_cast<size_t>( chars_needed ), entry_fmt_str, name );
-		ASSERT( SUCCEEDED( fmt_res_1 ) );
-		if ( SUCCEEDED( fmt_res_1 ) ) {
-			return std::wstring( buffer_ptr );
-			}
-		if ( fmt_res_1 == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			const auto double_chars_needed = static_cast< size_t >( chars_needed ) * 2u;
-			char_buffer_ptr.reset( new wchar_t[ double_chars_needed ] );
-			PWSTR double_buffer_ptr = char_buffer_ptr.get( );
-			const HRESULT fmt_res_2 = StringCchPrintfW( double_buffer_ptr, double_chars_needed, entry_fmt_str, name );
-			if ( SUCCEEDED( fmt_res_2 ) ) {
-				return std::wstring( double_buffer_ptr );
-				}
-			}
-		displayWindowsMsgBoxWithMessage( L"generalized_make_entry failed to format the string! OutputDebugString has the name string. Will return empty string." );
-		OutputDebugStringW( name );
-
-		return L"";
-		}
 
 	std::wstring MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
-		const auto ws_entry = generalized_make_entry( name, entrySplitterPosS );
+		const auto ws_entry = helpers::generalized_make_entry( name, registry_strings::entrySplitterPosS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeSplitterPosEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
-			OutputDebugStringW( name );
+			OutputDebugStringW( L"MakeSplitterPosEntry failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
 			}
 		return ws_entry;
 		}
 
-	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
-		const auto ws_entry = generalized_make_entry( name, entryColumnOrderS );
-		if ( ws_entry.empty( ) ) {
-			displayWindowsMsgBoxWithMessage( L"MakeColumnOrderEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
-			OutputDebugStringW( name );
-			}
-		return ws_entry;
-		}
 
 	std::wstring MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
-		const auto ws_entry = generalized_make_entry( name, entryDialogRectangleS );
+		const auto ws_entry = helpers::generalized_make_entry( name, registry_strings::entryDialogRectangleS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeDialogRectangleEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
-			OutputDebugStringW( name );
+			OutputDebugStringW( L"MakeDialogRectangleEntry failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
 			}
 		return ws_entry;
 		}
 
-	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
-		const auto ws_entry = generalized_make_entry( name, entryColumnWidthsS );
-		if ( ws_entry.empty( ) ) {
-			displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
-			OutputDebugStringW( name );
-			}
-		return ws_entry;
-		}
+	//std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
+	//	const auto ws_entry = generalized_make_entry( name, registry_strings::entryColumnWidthsS );
+	//	if ( ws_entry.empty( ) ) {
+	//		displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
+	//		OutputDebugStringW( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
+	//		}
+	//	return ws_entry;
+	//	}
 
-	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
-		TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
-		VERIFY( AfxGetApp( )->WriteProfileStringW( section, entry, value ) );
-		}
 	}
 
 class CTreemap;
 
-bool CPersistence::GetShowFileTypes( ) {
-	return CRegistryUser::GetProfileBool( sectionPersistence, entryShowFileTypes, true );
-	}
+//bool CPersistence::GetShowFileTypes( ) {
+//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowFileTypes, true );
+//	}
 
-bool CPersistence::GetShowTreemap( ) {
-	return CRegistryUser::GetProfileBool( sectionPersistence, entryShowTreemap, true );
-	}
+//bool CPersistence::GetShowTreemap( ) {
+//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowTreemap, true );
+//	}
 
-bool CPersistence::GetShowStatusbar( ) {
-	return CRegistryUser::GetProfileBool( sectionPersistence, entryShowStatusbar, true );
-	}
+//bool CPersistence::GetShowStatusbar( ) {
+//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowStatusbar, true );
+//	}
 
-void CPersistence::SetShowFileTypes( _In_ const bool show ) {
-	CRegistryUser::SetProfileBool( sectionPersistence, entryShowFileTypes, show );
-	}
+//void CPersistence::SetShowFileTypes( _In_ const bool show ) {
+//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowFileTypes, show );
+//	}
 
-void CPersistence::SetShowTreemap( _In_ const bool show ) {
-	CRegistryUser::SetProfileBool( sectionPersistence, entryShowTreemap, show );
-	}
+//void CPersistence::SetShowTreemap( _In_ const bool show ) {
+//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowTreemap, show );
+//	}
 
-void CPersistence::SetShowStatusbar( _In_ const bool show ) {
-	CRegistryUser::SetProfileBool( sectionPersistence, entryShowStatusbar, show );
-	}
+//void CPersistence::SetShowStatusbar( _In_ const bool show ) {
+//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowStatusbar, show );
+//	}
 
 void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
 	//ASSERT( wp.length == sizeof( wp ) );
@@ -263,10 +344,11 @@ void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
 	//const DWORD prof_string_size = MAX_PATH;
 	//wchar_t prof_string[ prof_string_size ] = { 0 };
 
-	//const auto s_2 = CRegistryUser::CStyle_GetProfileString( prof_string, prof_string_size, sectionPersistence, entryMainWindowPlacement, _T( "" ) );
-	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	//const auto s_2 = CRegistryUser::CStyle_GetProfileString( prof_string, prof_string_size, registry_strings::sectionPersistence, entryMainWindowPlacement, _T( "" ) );
+	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entryMainWindowPlacement, _T( "" ) );
 	DecodeWindowPlacement( s.c_str( ), wp );
-	CRect rect_to_sanify = wp.rcNormalPosition;
+	
+	RECT rect_to_sanify = wp.rcNormalPosition;
 	SanifyRect( rect_to_sanify );
 	wp.rcNormalPosition = rect_to_sanify;
 	//SanifyRect( ( CRect & ) wp.rcNormalPosition );
@@ -274,7 +356,7 @@ void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
 
 void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 	const auto s = EncodeWindowPlacement( wp );
-	SetProfileString( sectionPersistence, entryMainWindowPlacement, s.c_str( ) );
+	SetProfileString( registry_strings::sectionPersistence, registry_strings::entryMainWindowPlacement, s.c_str( ) );
 	}
 
 void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
@@ -285,11 +367,11 @@ void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool val
 	else {
 		pos = -1;
 		}
-	CRegistryUser::SetProfileInt( sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), pos );
+	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), pos );
 	}
 
 void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
-	const auto pos = CRegistryUser::GetProfileInt_( sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
+	const auto pos = CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
 	if ( pos > 100 ) {
 		valid = false;
 		userpos = 0.5;
@@ -304,8 +386,8 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 //	}
 
 void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc ) {
-	GetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
-	CRect temp( rc );
+	GetRect( MakeDialogRectangleEntry( name ), rc );
+	RECT temp = rc;
 	SanifyRect( temp );
 	rc = temp;
 	}
@@ -318,93 +400,94 @@ void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc 
 //	SetArray( MakeColumnWidthsEntry( name ), arr );
 //	}
 
-void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	SetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
-	}
+//void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+//	SetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
+//	}
 
 //void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
 //	SetArray( MakeColumnOrderEntry( name ), arr );
 //	}
 
-void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	SetArray( MakeColumnOrderEntry( name ), arr, arrSize );
-	}
+//void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+//	SetArray( MakeColumnOrderEntry( name ), arr, arrSize );
+//	}
 
 void CPersistence::SetDialogRectangle( _In_z_ const PCTSTR name, _In_ const RECT rc ) {
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
 
-void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
-	}
+//void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+//	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
+//	}
 
-void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
-	}
+
+//void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+//	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
+//	}
 
 
 
 INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/
-	auto n = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPage, 0 ) );
+	auto n = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPage, 0 ) );
 	CheckMinMax( n, 0, max_val );
 	ASSERT( ( n >= 0 ) && ( n <= max_val ) );
 	return n;
 	}
 
-void CPersistence::SetConfigPage( _In_ const INT page ) {
-	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPage, page );
-	}
+//void CPersistence::SetConfigPage( _In_ const INT page ) {
+//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPage, page );
+//	}
 
 void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
-	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionX, pt.x ) );
-	pt.y = static_cast<LONG>( CRegistryUser::GetProfileInt_( sectionPersistence, entryConfigPositionY, pt.y ) );
+	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x ) );
+	pt.y = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt.y ) );
 
 	CRect rc { pt, WTL::CSize( 100, 100 ) };
 	SanifyRect( rc );
 	pt = rc.TopLeft( );
 	}
 
-void CPersistence::SetConfigPosition( _In_ const WTL::CPoint pt ) {
-	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPositionX, pt.x );
-	CRegistryUser::SetProfileInt( sectionPersistence, entryConfigPositionY, pt.y );
-	}
+//void CPersistence::SetConfigPosition( _In_ const WTL::CPoint pt ) {
+//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x );
+//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt.y );
+//	}
 
-PCTSTR CPersistence::GetBarStateSection( ) {
-	return sectionBarState;
-	}
+//PCTSTR CPersistence::GetBarStateSection( ) {
+//	return registry_strings::sectionBarState;
+//	}
 
 RADIO CPersistence::GetSelectDrivesRadio( ) {
-	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionPersistence, entrySelectDrivesRadio, 0 ) );
+	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, 0 ) );
 	CheckMinMax( radio, 0, 2 );
 	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
 	return static_cast<RADIO>( radio );
 	}
 
-void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
-	CRegistryUser::SetProfileInt( sectionPersistence, entrySelectDrivesRadio, radio );
-	}
-
-std::wstring CPersistence::GetSelectDrivesFolder( ) {
-	return CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
-	}
-
-//DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
-//	return CRegistryUser::CStyle_GetProfileString( psz_text, strSize, sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
+//void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
+//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, radio );
 //	}
 
-void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
-	SetProfileString( sectionPersistence, entrySelectDrivesFolder, folder );
-	}
+//std::wstring CPersistence::GetSelectDrivesFolder( ) {
+//	return CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, _T( "" ) );
+//	}
+
+//DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
+//	return CRegistryUser::CStyle_GetProfileString( psz_text, strSize, registry_strings::sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
+//	}
+
+//void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
+//	SetProfileString( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, folder );
+//	}
 
 void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
 	drives.clear( );
-	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
+	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesDrives, _T( "" ) );
 	
 	//const DWORD select_buf_size = MAX_PATH;
 	//wchar_t select_buf[ select_buf_size ] = { 0 };
 	
-	//const auto chars_written = CRegistryUser::CStyle_GetProfileString( select_buf, select_buf_size, sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
+	//const auto chars_written = CRegistryUser::CStyle_GetProfileString( select_buf, select_buf_size, registry_strings::sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	rsize_t i = 0;
 	while ( i < s.length( ) ) {
 		std::wstring drive;
@@ -431,16 +514,16 @@ void CPersistence::SetSelectDrivesDrives( _In_ const std::vector<std::wstring>& 
 			}
 		s += drives.at( i );
 		}
-	SetProfileString( sectionPersistence, entrySelectDrivesDrives, s.c_str( ) );
+	SetProfileString( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesDrives, s.c_str( ) );
 	}
 
-bool CPersistence::GetShowDeleteWarning( ) {
-	return CRegistryUser::GetProfileBool( sectionPersistence, entryShowDeleteWarning, true );
-	}
+//bool CPersistence::GetShowDeleteWarning( ) {
+//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowDeleteWarning, true );
+//	}
 
-void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
-	CRegistryUser::SetProfileBool( sectionPersistence, entryShowDeleteWarning, show );
-	}
+//void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
+//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowDeleteWarning, show );
+//	}
 
 
 void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
@@ -469,11 +552,11 @@ void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writabl
 			}
 		value += int_buf;
 		}
-	SetProfileString( sectionPersistence, entry.c_str( ), value.c_str( ) );
+	SetProfileString( registry_strings::sectionPersistence, entry.c_str( ), value.c_str( ) );
 	}
 
 //void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
-//	const auto s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) );
+//	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry, _T( "" ) );
 //	CArray<INT, INT> arr;
 //	INT i = 0;
 //	while ( i < s.GetLength( ) ) {
@@ -507,7 +590,7 @@ void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_
 	if ( entry.length( ) == 0 ) {
 		return;
 		}
-	const auto s_temp = CRegistryUser::GetProfileString_( sectionPersistence, entry.c_str( ), _T( "" ) );
+	const auto s_temp = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) );
 	//const DWORD arr_buf_size = MAX_PATH;
 
 	rsize_t current_arr_index = 0;
@@ -566,7 +649,7 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
 	const HRESULT fmt_res = StringCchPrintfW( buffer_rect, buffer_size, L"%d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom );
 	if ( SUCCEEDED( fmt_res ) ) {
 		//ASSERT( s.Compare( buffer_rect ) == 0 );
-		SetProfileString( sectionPersistence, entry, buffer_rect );
+		SetProfileString( registry_strings::sectionPersistence, entry, buffer_rect );
 		return;
 		}
 	std::wstring dynamic_format;
@@ -577,18 +660,27 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
 	dynamic_format += std::to_wstring( rc.right );
 	dynamic_format += L',';
 	dynamic_format += std::to_wstring( rc.bottom );
-	SetProfileString( sectionPersistence, entry, dynamic_format.c_str( ) );
+	SetProfileString( registry_strings::sectionPersistence, entry, dynamic_format.c_str( ) );
 	}
 
 
 //TODO: return by value?
-void CPersistence::GetRect( _In_z_ const PCTSTR entry, _Inout_ RECT& rc ) {
-	CString s = CRegistryUser::GetProfileString_( sectionPersistence, entry, _T( "" ) ).c_str( );
+_Success_( SUCCEEDED( return ) )
+const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT& rc ) {
+	//TODO: BUGBUG: `const auto s` here resolves type of s as `wchar_t*`
+	const std::wstring s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) ).c_str( );
 	RECT tmp;
-	const auto r = swscanf_s( s, _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	const auto r = swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	static_assert( SUCCEEDED( S_OK ), "Bad success return value!" );
 	if ( r == 4 ) {
+		TRACE( _T( "swscanf_s succeeded! read in rectangle: %d,%d,%d,%d\r\n" ), tmp.left, tmp.top, tmp.right, tmp.bottom );
 		rc = tmp;
+		return S_OK;
 		}
+	
+	static_assert( !SUCCEEDED( E_FAIL ), "Bad failure return value!" );
+	TRACE( _T( "swscanf_s failed! entry: `%s`, source string: `%s`\r\n" ), entry.c_str( ), s.c_str( ) );
+	return E_FAIL;
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -634,11 +726,11 @@ void COptions::SetListFullRowSelection( _In_ const bool show ) {
 //	return m_treelistColor[ i ];
 //	}
 
-void COptions::SetHumanFormat( _In_ const bool human ) {
+void COptions::SetHumanFormat( _In_ const bool human, CDirstatApp* app_ptr ) {
 	if ( m_humanFormat != human ) {
 		m_humanFormat = human;
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
-		GetApp( )->UpdateRamUsage( );
+		app_ptr->UpdateRamUsage( );
 		}
 	}
 
@@ -669,27 +761,27 @@ void COptions::SetTreemapOptions( _In_ const Treemap_Options& options ) {
 	}
 
 void COptions::SaveToRegistry( ) {
-	CRegistryUser::SetProfileBool( sectionOptions, entryListGrid, m_listGrid );
-	CRegistryUser::SetProfileBool( sectionOptions, entryListStripes, m_listStripes );
-	CRegistryUser::SetProfileBool( sectionOptions, entryListFullRowSelection, m_listFullRowSelection );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryListGrid, m_listGrid );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryListStripes, m_listStripes );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryListFullRowSelection, m_listFullRowSelection );
 
-	CRegistryUser::SetProfileInt( sectionOptions, entryTreelistColorCount, static_cast<const INT>( m_treelistColorCount ) );
+	CRegistryUser::SetProfileInt( registry_strings::sectionOptions, registry_strings::entryTreelistColorCount, static_cast<const INT>( m_treelistColorCount ) );
 	for ( INT i = 0; i < static_cast<INT>( TREELISTCOLORCOUNT ); i++ ) {
 		//CString entry;
 		//entry.Format( entryTreelistColorN, i );
 		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
 		//ASSERT( dyn_fmt_str.compare( entry ) == 0 );
-		CRegistryUser::SetProfileInt( sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( m_treelistColor[ i ] ) );
+		CRegistryUser::SetProfileInt( registry_strings::sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( m_treelistColor[ i ] ) );
 		}
-	CRegistryUser::SetProfileBool( sectionOptions, entryHumanFormat, m_humanFormat );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryHumanFormat, m_humanFormat );
 
-	CRegistryUser::SetProfileBool( sectionOptions, entryShowTimeSpent, m_showTimeSpent );
-	CRegistryUser::SetProfileInt( sectionOptions, entryTreemapHighlightColor, static_cast<const INT>( m_treemapHighlightColor ) );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, m_showTimeSpent );
+	CRegistryUser::SetProfileInt( registry_strings::sectionOptions, registry_strings::entryTreemapHighlightColor, static_cast<const INT>( m_treemapHighlightColor ) );
 
 	SaveTreemapOptions( );
 
-	CRegistryUser::SetProfileBool( sectionOptions, entryFollowMountPoints, m_followMountPoints );
-	CRegistryUser::SetProfileBool( sectionOptions, entryFollowJunctionPoints, m_followJunctionPoints );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryFollowMountPoints, m_followMountPoints );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryFollowJunctionPoints, m_followJunctionPoints );
 	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
 	//const PCTSTR stringPrefix = _T( "$" );
 
@@ -697,31 +789,33 @@ void COptions::SaveToRegistry( ) {
 	}
 
 void COptions::LoadFromRegistry( ) {
-	m_listGrid = CRegistryUser::GetProfileBool( sectionOptions, entryListGrid, false );
-	m_listStripes = CRegistryUser::GetProfileBool( sectionOptions, entryListStripes, false );
-	m_listFullRowSelection = CRegistryUser::GetProfileBool( sectionOptions, entryListFullRowSelection, true );
+	m_listGrid = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryListGrid, false );
+	m_listStripes = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryListStripes, false );
+	m_listFullRowSelection = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryListFullRowSelection, true );
 
-	m_treelistColorCount = static_cast<rsize_t>( CRegistryUser::GetProfileInt_( sectionOptions, entryTreelistColorCount, 4 ) );
+	m_treelistColorCount = static_cast<rsize_t>( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryTreelistColorCount, 4 ) );
 	auto temp = static_cast< INT >( m_treelistColorCount );
-	CRegistryUser::CheckRange( temp, 1, TREELISTCOLORCOUNT );
+	//CRegistryUser::CheckRange( temp, 1, TREELISTCOLORCOUNT );
+	CheckMinMax( temp, 1, TREELISTCOLORCOUNT );
 	m_treelistColorCount = static_cast<rsize_t>( temp );
 	ASSERT( ( m_treelistColorCount >= 1 ) && ( m_treelistColorCount <= TREELISTCOLORCOUNT ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
 		//CString entry;
 		//entry.Format( entryTreelistColorN, i );
+		//TODO, uses heap!
 		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
-		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( treelistColorDefault[ i ] ) );
+		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( treelistColorDefault[ i ] ) );
 		}
-	m_humanFormat = CRegistryUser::GetProfileBool( sectionOptions, entryHumanFormat, true );
+	m_humanFormat = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryHumanFormat, true );
 
-	m_showTimeSpent = CRegistryUser::GetProfileBool( sectionOptions, entryShowTimeSpent, false );
-	m_treemapHighlightColor = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapHighlightColor, RGB( 255, 255, 255 ) );
+	m_showTimeSpent = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, false );
+	m_treemapHighlightColor = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryTreemapHighlightColor, RGB( 255, 255, 255 ) );
 
 	ReadTreemapOptions( );
 
-	m_followMountPoints = CRegistryUser::GetProfileBool( sectionOptions, entryFollowMountPoints, false );
+	m_followMountPoints = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryFollowMountPoints, false );
 	// Ignore junctions by default
-	m_followJunctionPoints = CRegistryUser::GetProfileBool( sectionOptions, entryFollowJunctionPoints, false );
+	m_followJunctionPoints = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryFollowJunctionPoints, false );
 
 	}
 
@@ -729,55 +823,79 @@ void COptions::LoadFromRegistry( ) {
 void COptions::ReadTreemapOptions( ) {
 	Treemap_Options standard = _defaultOptions;
 	static_assert( std::is_convertible< INT, std::underlying_type< decltype( standard.style ) >::type>::value, "" );
-	auto style = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapStyle, static_cast<INT>( standard.style ) );
+	auto style = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryTreemapStyle, static_cast<INT>( standard.style ) );
 	if ( style != static_cast<decltype( style )>( Treemap_STYLE::KDirStatStyle ) && style != static_cast<decltype( style )>( Treemap_STYLE::SequoiaViewStyle ) ) {
 		style = static_cast<decltype( style )>( Treemap_STYLE::KDirStatStyle );
 		}
 	static_assert( std::is_convertible< decltype( style ), std::underlying_type< decltype( m_treemapOptions.style ) >::type>::value, "" );
 	m_treemapOptions.style = static_cast<Treemap_STYLE>( style );
 
-	m_treemapOptions.grid = CRegistryUser::GetProfileBool( sectionOptions, entryTreemapGrid, standard.grid );
+	m_treemapOptions.grid = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryTreemapGrid, standard.grid );
 
-	m_treemapOptions.gridColor = CRegistryUser::GetProfileInt_( sectionOptions, entryTreemapGridColor, static_cast<const INT>( standard.gridColor ) );
+	m_treemapOptions.gridColor = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryTreemapGridColor, static_cast<const INT>( standard.gridColor ) );
 
-	auto        brightness = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryBrightness, standard.GetBrightnessPercent( ) ) );
+	auto        brightness = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryBrightness, standard.GetBrightnessPercent( ) ) );
 	CheckMinMax( brightness, 0, 100 );
 	m_treemapOptions.SetBrightnessPercent( brightness );
 
-	auto        height       = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryHeightFactor, standard.GetHeightPercent( ) ) );
+	auto        height       = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryHeightFactor, standard.GetHeightPercent( ) ) );
 	CheckMinMax( height, 0, 100 );
 	m_treemapOptions.SetHeightPercent( height );
 
-	auto        scaleFactor  = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryScaleFactor, standard.GetScaleFactorPercent( ) ) );
+	auto        scaleFactor  = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryScaleFactor, standard.GetScaleFactorPercent( ) ) );
 	CheckMinMax( scaleFactor, 0, 100 );
 	m_treemapOptions.SetScaleFactorPercent( scaleFactor );
 
-	auto        ambientLight = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryAmbientLight, standard.GetAmbientLightPercent( ) ) );
+	auto        ambientLight = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryAmbientLight, standard.GetAmbientLightPercent( ) ) );
 	CheckMinMax( ambientLight, 0, 100 );
 	m_treemapOptions.SetAmbientLightPercent( ambientLight );
 
-	auto        lightSourceX = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryLightSourceX, standard.GetLightSourceXPercent( ) ) );
+	auto        lightSourceX = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryLightSourceX, standard.GetLightSourceXPercent( ) ) );
 	CheckMinMax( lightSourceX, -200, 200 );
 	m_treemapOptions.SetLightSourceXPercent( lightSourceX );
 
-	auto        lightSourceY = static_cast< INT >( CRegistryUser::GetProfileInt_( sectionOptions, entryLightSourceY, standard.GetLightSourceYPercent( ) ) );
+	auto        lightSourceY = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryLightSourceY, standard.GetLightSourceYPercent( ) ) );
 	CheckMinMax( lightSourceY, -200, 200 );
 	m_treemapOptions.SetLightSourceYPercent( lightSourceY );
 	}
 
 void COptions::SaveTreemapOptions( ) {
-	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapStyle,     static_cast<INT>( m_treemapOptions.style ) );
-	CRegistryUser::SetProfileBool( sectionOptions, entryTreemapGrid,      m_treemapOptions.grid );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryTreemapGridColor, static_cast<const INT>( m_treemapOptions.gridColor ) );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryBrightness,       m_treemapOptions.GetBrightnessPercent( ) );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryHeightFactor,     m_treemapOptions.GetHeightPercent( ) );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryScaleFactor,      m_treemapOptions.GetScaleFactorPercent( ) );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryAmbientLight,     m_treemapOptions.GetAmbientLightPercent( ) );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryLightSourceX,     m_treemapOptions.GetLightSourceXPercent( ) );
-	CRegistryUser::SetProfileInt ( sectionOptions, entryLightSourceY,     m_treemapOptions.GetLightSourceYPercent( ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryTreemapStyle,     static_cast<INT>( m_treemapOptions.style ) );
+	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryTreemapGrid,      m_treemapOptions.grid );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryTreemapGridColor, static_cast<const INT>( m_treemapOptions.gridColor ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryBrightness,       m_treemapOptions.GetBrightnessPercent( ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryHeightFactor,     m_treemapOptions.GetHeightPercent( ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryScaleFactor,      m_treemapOptions.GetScaleFactorPercent( ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryAmbientLight,     m_treemapOptions.GetAmbientLightPercent( ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryLightSourceX,     m_treemapOptions.GetLightSourceXPercent( ) );
+	CRegistryUser::SetProfileInt ( registry_strings::sectionOptions, registry_strings::entryLightSourceY,     m_treemapOptions.GetLightSourceYPercent( ) );
 	}
 
-std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR defaultValue ) {
+std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {
+
+	//const PCWSTR reg_key_str = GetApp( )->m_pszRegistryKey;
+	const HKEY   reg_sec_key = GetApp( )->GetSectionKey( section );
+	_Const_ DWORD dwType = REG_SZ;
+	const rsize_t buffer_size = 512u;
+	BYTE registry_data_buffer[ buffer_size ] = { 0 };
+	static_assert( sizeof( registry_data_buffer ) == ( sizeof( BYTE ) * buffer_size ), "" );
+	DWORD buffer_size_byte_count = sizeof( registry_data_buffer );
+	const LONG   query_res = ::RegQueryValueExW( reg_sec_key, entry, NULL, &dwType, registry_data_buffer, &buffer_size_byte_count );
+	
+	if ( query_res == ERROR_SUCCESS ) {
+		ASSERT( ( wcslen( reinterpret_cast<wchar_t*>( registry_data_buffer ) ) + 1 ) == ( buffer_size_byte_count / sizeof( wchar_t ) ) );
+		
+		//yeah, this is actually twice as big as the buffer size needed, but who cares?
+		_Null_terminated_ wchar_t reg_data_buffer[ buffer_size ] = { 0 };
+		std::memcpy( reg_data_buffer, registry_data_buffer, buffer_size_byte_count );
+		//_CrtDbgBreak( );
+#ifdef DEBUG
+		const std::wstring normal_res( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
+		ASSERT( normal_res.compare( reg_data_buffer ) == 0 );
+#endif
+		return std::wstring( reg_data_buffer );
+		}
+	TRACE( _T( "C-Style GetProfileString failed!\r\n" ) );
 	return std::wstring( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
 	}
 
@@ -804,24 +922,25 @@ UINT CRegistryUser::GetProfileInt_( _In_z_ const PCTSTR section, _In_z_ const PC
 	}
 
 void CRegistryUser::SetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool value ) {
-	SetProfileInt( section, entry, ( INT ) value );
+	const BOOL value_to_set = ( ( value ) ? TRUE : FALSE );
+	SetProfileInt( section, entry, value_to_set );
 	}
 
 bool CRegistryUser::GetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool defaultValue ) {
 	return GetProfileInt_( section, entry, defaultValue ) != 0;
 	}
 
-void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val ) {
-	/*changed min and max to min_val and max_val to avoid name collision (with min() & max()) in ASSERT macro*/
-	ASSERT( min_val < max_val );
-	if ( value < min_val ) {
-		value = min_val;
-		}
-	if ( value > max_val ) {
-		value = max_val;
-		}
-	ASSERT( ( value >= min_val ) && ( value <= max_val ) );
-	}
+//void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val ) {
+//	/*changed min and max to min_val and max_val to avoid name collision (with min() & max()) in ASSERT macro*/
+//	ASSERT( min_val < max_val );
+//	if ( value < min_val ) {
+//		value = min_val;
+//		}
+//	if ( value > max_val ) {
+//		value = max_val;
+//		}
+//	ASSERT( ( value >= min_val ) && ( value <= max_val ) );
+//	}
 
 
 #else

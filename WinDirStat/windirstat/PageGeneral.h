@@ -5,12 +5,10 @@
 #pragma once
 
 #include "stdafx.h"
+#include "windirstat.h"
 
 #ifndef WDS_PAGEGENERAL_H
 #define WDS_PAGEGENERAL_H
-
-
-
 
 
 class COptionsPropertySheet;
@@ -28,7 +26,7 @@ public:
 	CPageGeneral& operator=( const CPageGeneral& in ) = delete;
 	CPageGeneral( const CPageGeneral& in ) = delete;
 
-	CPageGeneral( ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ), m_showTimeSpent( FALSE ) { }
+	CPageGeneral( CDirstatApp* app ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ), m_showTimeSpent( FALSE ), m_appptr( app ) { }
 
 protected:
 
@@ -59,7 +57,7 @@ protected:
 
 	CButton   m_ctlFollowMountPoints;
 	CButton   m_ctlFollowJunctionPoints;
-
+	CDirstatApp* m_appptr;
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedAnyOption( ) {
 		SetModified( );

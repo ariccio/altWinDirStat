@@ -492,7 +492,9 @@ const HRESULT Children_String_Heap_Manager::copy_name_str_into_buffer( _Pre_inva
 
 
 
-QPC_timer::QPC_timer( ) : m_frequency( help_QueryPerformanceFrequency( ).QuadPart ), m_start( 0 ), m_end( 0 ) { }
+QPC_timer::QPC_timer( ) : m_frequency( help_QueryPerformanceFrequency( ).QuadPart ), m_start( 0 ), m_end( 0 ) {
+	ASSERT( m_frequency > 0 );
+	}
 
 void QPC_timer::begin( ) {
 	m_start = help_QueryPerformanceCounter( ).QuadPart;
@@ -501,6 +503,16 @@ void QPC_timer::begin( ) {
 void QPC_timer::end( ) {
 	m_end = help_QueryPerformanceCounter( ).QuadPart;
 	}
+
+const double QPC_timer::total_time_elapsed( ) const {
+	ASSERT( m_end > m_start );
+	static_assert( std::is_same<std::int64_t, LONGLONG>::value, "difference is wrong!" );
+	const auto difference = ( m_end - m_start );
+	const DOUBLE adjustedTimingFrequency = ( static_cast< DOUBLE >( 1.00 ) ) / static_cast< DOUBLE >( m_frequency );
+	const auto total_time = ( difference * adjustedTimingFrequency );
+	return total_time;
+	}
+
 
 void InitializeCriticalSection_wrapper( _Pre_invalid_ _Post_valid_ _Out_ CRITICAL_SECTION& cs ) {
 	InitializeCriticalSection( &cs );

@@ -246,15 +246,12 @@ namespace {
 
 	//passing by reference: `cmp    r14, QWORD PTR [r12]` for `if ( ( i + 1 ) < rowEnd )`,
 	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
-		std::uint64_t childAtIPlusOne_size = 0;
 		if ( ( i + 1 ) >= rowEnd ) {
-			return childAtIPlusOne_size;
+			return 0;
 			}
-		//if ( ( i + 1 ) < rowEnd ) {
-		//	}
 		const auto childAtIPlusOne = static_cast< CItemBranch* >( parent_vector_of_children[ i + 1 ] );
 		if ( childAtIPlusOne == NULL ) {
-			return childAtIPlusOne_size;
+			return 0;
 			}
 		if ( sizes.count( i + 1 ) == 0 ) {
 			const auto recurse_size = childAtIPlusOne->size_recurse( );
@@ -263,9 +260,10 @@ namespace {
 			//return childAtIPlusOne_size;
 			return recurse_size;
 			}
-		childAtIPlusOne_size = sizes[ i + 1 ];
-
-		return childAtIPlusOne_size;
+		//std::uint64_t childAtIPlusOne_size = 0;
+		//childAtIPlusOne_size = sizes[ i + 1 ];
+		//ASSERT( childAtIPlusOne_size == childAtIPlusOne->size_recurse( ) );
+		return childAtIPlusOne->size_recurse( );
 		}
 
 #ifdef DEBUG
@@ -301,11 +299,15 @@ namespace {
 		return widthOfRow;
 		}
 
-	inline const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t rowBegin ) {
+	inline const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t rowBegin, _In_ const std::vector<CTreeListItem*>& vector_o_children ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
 		TRACE( _T( "maximumSizeOfChildrenInRow: %llu\r\n" ), maximumSizeOfChildrenInRow );
 #endif
+#ifndef DEBUG
+		UNREFERENCED_PARAMETER( vector_o_children );
+#endif
+		ASSERT( vector_o_children.at( rowBegin )->size_recurse_( ) == sizes.at( rowBegin ) );
 		return sizes.at( rowBegin );
 		}
 
@@ -964,8 +966,6 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 
 	ASSERT( parent->m_childCount > 0 );
 
-
-	//TODO: why is this a CRect& and not a CRect?
 	const CRect rc = CRect( parent->TmiGetRectangle( ) );
 
 	std::vector<double> rows;               // Our rectangle is divided into rows, each of which gets this height (fraction of total height).
@@ -1201,10 +1201,11 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CItemBranch* const pa
 		// Worst ratio so far
 		double worst  = DBL_MAX;
 
+		//TODO: BUGBUG: DO NOT USE std::map, it's slow as shit.
 		auto sizes = std::map<std::uint64_t, std::uint64_t>( );
 		sizes[ rowBegin ] = parent_vector_of_children.at( rowBegin )->size_recurse_( );
 
-		const auto maximumSizeOfChildrenInRow = max_size_of_children_in_row( sizes, rowBegin );
+		const auto maximumSizeOfChildrenInRow = max_size_of_children_in_row( sizes, rowBegin, parent_vector_of_children );
 
 		// Sum of sizes of children in row
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;

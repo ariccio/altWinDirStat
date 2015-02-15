@@ -297,8 +297,10 @@ BOOL CDirstatApp::InitInstance( ) {
 	//Program entry point
 
 	TRACE( _T( "------>Program entry point!<------\r\n" ) );
-	enable_heap_security_crash_on_corruption( );
-	enable_aggressive_process_mitigations( );
+	if ( IsWindows8OrGreater( ) ) {
+		enable_heap_security_crash_on_corruption( );
+		enable_aggressive_process_mitigations( );
+		}
 
 	//uses ~29K memory
 	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
@@ -339,12 +341,17 @@ BOOL CDirstatApp::InitInstance( ) {
 	ParseCommandLine( cmdInfo );
 
 	m_nCmdShow = SW_HIDE;
-	
+
+
 	if ( !ProcessShellCommand( cmdInfo ) ) {
 		return FALSE;
 		}
 
-	GetMainFrame( )->InitialShowWindow( );
+	m_frameptr = GetMainFrame( );
+	m_frameptr->m_appptr = this;
+	
+	
+	m_frameptr->InitialShowWindow( );
 	m_pMainWnd->UpdateWindow( );
 
 	// When called by setup.exe, windirstat remained in the background, so we do a
@@ -393,7 +400,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) {
-			GetApp( )->PeriodicalUpdateRamUsage( );
+			PeriodicalUpdateRamUsage( );
 			}
 		else {
 			more = CWinThread::OnIdle( 0 );

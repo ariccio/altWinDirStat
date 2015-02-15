@@ -19,6 +19,8 @@
 //
 //CTreemap::Options;
 
+class CDirstatApp;
+
 class CPageTreemap final : public CPropertyPage {
 	DECLARE_DYNAMIC(CPageTreemap)
 	enum {

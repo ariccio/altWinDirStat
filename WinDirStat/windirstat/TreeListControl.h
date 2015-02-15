@@ -56,7 +56,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
 		INT                    concrete_compare ( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
-
+		const bool             set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const ) const;
 	public:
 
 		//default constructor DOES NOT initialize jack shit.
@@ -208,15 +208,21 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			  //void ExpandItem                                ( _In_     const CTreeListItem* const item                                                                                          );
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i );
 				
+				
 			  //void SetItemScrollPosition                     ( _In_     const CTreeListItem* const item, _In_ const INT top );
 				
 				void DrawNodeNullWidth                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) const;
 				
+				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc, _Inout_ RECT& rcRest ) const;
+
 				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc            ) const;
 
 		_Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
-				int collapse_parent_plus_one_through_index    ( _In_     const CTreeListItem*       thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent );
-
+				int collapse_parent_plus_one_through_index     ( _In_     const CTreeListItem*       thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent );
+				
+				void handle_VK_ESCAPE                          ( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
+				void handle_VK_TAB                             ( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
+				void handle_remaining_keys                     ( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
 	private:
 				void ExpandItemAndScroll( _In_ _In_range_( 0, INT_MAX ) const int i ) {
 					ExpandItem( i, true );

@@ -8,11 +8,6 @@
 #ifndef WDS_DATASTRUCTURES_H
 #define WDS_DATASTRUCTURES_H
 
-
-
-
-
-
 class CSelectObject {
 public:
 	CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject ) : m_pdc{ &pdc } {
@@ -266,7 +261,15 @@ static const Treemap_Options _defaultOptions = { Treemap_STYLE::KDirStatStyle, f
 
 struct FILEINFO {
 	FILEINFO( ) { }
-
+	FILEINFO( const FILEINFO& in ) = delete;
+	FILEINFO& operator=( const FILEINFO& in ) = delete;
+	FILEINFO& operator=( FILEINFO&& in ) {
+		length = std::move( in.length );
+		lastWriteTime = std::move( in.lastWriteTime );
+		attributes = std::move( in.attributes );
+		name = std::move( in.name );
+		return ( *this );
+		}
 	FILEINFO( FILEINFO&& in ) {
 		length = std::move( in.length );
 		lastWriteTime = std::move( in.lastWriteTime );
@@ -326,12 +329,6 @@ enum RADIO : INT {
 	RADIO_AFOLDER
 	};
 
-namespace copied_from_VCPP_stdlib {
-	enum {	// length of internal buffer, [1, 16]
-		SSO_THRESHOLD_BUF_SIZE = ( 16 / sizeof( wchar_t ) )
-		};
-
-	}
 
 //Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
 template<class Interface>
@@ -382,7 +379,7 @@ namespace UpdateAllViews_ENUM {
 		HINT_EXTENSIONSELECTIONCHANGED,	// Type list selected a new extension
 		//HINT_ZOOMCHANGED,		        // Only zoom item has changed.
 		HINT_REDRAWWINDOW,		        // Only graphically redraw views.
-		//HINT_SOMEWORKDONE,		        // Directory list shall process mouse messages first, then re-sort.
+		//HINT_SOMEWORKDONE,		    // Directory list shall process mouse messages first, then re-sort.
 		HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
 		HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
 		};

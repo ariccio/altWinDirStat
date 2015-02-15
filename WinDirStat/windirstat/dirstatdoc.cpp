@@ -269,7 +269,7 @@ CDirstatDoc* GetDocument() {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ), m_compressed_file_timing( -1 ), m_frameptr( GetMainFrame( ) ) {
+CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ), m_compressed_file_timing( -1 ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -357,7 +357,7 @@ std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	m_frameptr = GetMainFrame( );
 	++m_iterations;
-	GetApp( )->m_mountPoints.Initialize( );
+	m_appptr->m_mountPoints.Initialize( );
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
 	VERIFY( CDocument::OnNewDocument( ) ); // --> DeleteContents()
 	const std::wstring spec( pszPathName );
@@ -374,10 +374,6 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	const auto drives( DecodeSelection( pszPathName, folder ) );
 	check8Dot3NameCreationAndNotifyUser( );
 
-#ifdef PERF_DEBUG_SLEEP
-	displayWindowsMsgBoxWithMessage( _T( "PERF_DEBUG_SLEEP ENABLED! this is meant for debugging!" ) );
-#endif
-
 	const auto rootFolders_( buildRootFolders( drives, folder ) );
 	buildDriveItems( rootFolders_ );
 
@@ -385,7 +381,6 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 
 	m_searchStartTime = help_QueryPerformanceCounter( );	
 	m_workingItem = m_rootItem.get( );
-	ASSERT( GetMainFrame( ) == m_frameptr );
 
 	m_frameptr->m_wndSplitter.SetSplitterPos( 1.0 );
 	m_frameptr->m_wndSubSplitter.SetSplitterPos( 1.0 );
@@ -433,7 +428,6 @@ void CDirstatDoc::ForgetItemTree( ) {
 void CDirstatDoc::SortTreeList( ) {
 	ASSERT( m_rootItem != NULL );
 	
-	ASSERT( m_frameptr == GetMainFrame( ) );
 	const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
 	if ( DirStatView != NULL ) {
 		m_rootItem->SortChildren( &( DirStatView->m_treeListControl ) );
@@ -443,11 +437,8 @@ void CDirstatDoc::SortTreeList( ) {
 
 bool CDirstatDoc::OnWorkFinished( ) {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
-#ifdef PERF_DEBUG_SLEEP
-	Sleep( 1000 );
-#endif
 	m_extensionDataValid = false;
-	ASSERT( m_frameptr == GetMainFrame( ) );
+
 	m_frameptr->RestoreTypeView( );
 
 	const auto doneTime = help_QueryPerformanceCounter( );
@@ -461,7 +452,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 		ASSERT( doneTime.QuadPart != 0 );
 		m_searchTime = -2;//Negative (that's not -1) informs WriteTimeToStatusBar that there was a problem.
 		}
-	ASSERT( m_frameptr == GetMainFrame( ) );
+
 	m_frameptr->RestoreGraphView( );
 	//Complete?
 	SortTreeList();
@@ -488,7 +479,7 @@ bool CDirstatDoc::Work( ) {
 			path = L"\\\\?\\" + path;
 			TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
 			}
-		const auto thisApp = GetApp( );
+		const auto thisApp = m_appptr;
 		m_compressed_file_timing = DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
 		ASSERT( m_rootItem->m_attr.m_done );
 		
@@ -520,14 +511,12 @@ bool CDirstatDoc::IsRootDone( ) const {
 
 void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
 	m_selectedItem = const_cast< CItemBranch* >( &item );
-	ASSERT( m_frameptr == GetMainFrame( ) );
 	m_frameptr->SetSelectionMessageText( );
 	}
 
 void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
 	m_highlightExtension = std::move( ext );
-	ASSERT( m_frameptr == GetMainFrame( ) );
 	m_frameptr->SetSelectionMessageText( );
 	}
 
@@ -656,7 +645,6 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 	
 	itemPath.resize( itemPath.length( ) + MAX_PATH );
-	ASSERT( m_frameptr == GetMainFrame( ) );
 	m_frameptr->CopyToClipboard( std::move( itemPath ) );
 	//itemPath.ReleaseBuffer( );
 	}

@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP( CGraphView, CView )
 END_MESSAGE_MAP( )
 
 void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
+	TRACE( _T( "Drawing Empty view...\r\n" ) );
 	const COLORREF gray = RGB( 160, 160, 160 );
 	Inactivate( );
 
@@ -153,7 +154,6 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 
 
 void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
-	ASSERT( m_frameptr == GetMainFrame( ) );
 	const auto logicalFocus = m_frameptr->m_logicalFocus;
 	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
@@ -161,8 +161,7 @@ void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 	if ( logicalFocus == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
 		DrawHighlightExtension( pdc );
 		}
-
-	GetApp( )->PeriodicalUpdateRamUsage( );
+	m_appptr->PeriodicalUpdateRamUsage( );
 	}
 
 void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
@@ -349,7 +348,6 @@ void CGraphView::Inactivate( ) {
 	}
 
 void CGraphView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
-	ASSERT( m_frameptr == GetMainFrame( ) );
 	ASSERT( m_frameptr != NULL );
 	if ( m_frameptr == NULL ) {
 		return;
@@ -462,7 +460,6 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 		return reset_timer_if_zero( );
 		}
 	ASSERT( m_frameptr != NULL );
-	ASSERT( GetMainFrame( ) == m_frameptr );
 	if ( m_frameptr == NULL ) {
 		return reset_timer_if_zero( );
 		}
@@ -490,7 +487,6 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 
 	if ( !PtInRect( &rc, point ) ) {
 		TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
-		ASSERT( GetMainFrame( ) == m_frameptr );
 		m_frameptr->SetSelectionMessageText( );
 		VERIFY( KillTimer( m_timer ) );
 		m_timer = 0;

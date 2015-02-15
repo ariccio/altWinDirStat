@@ -62,8 +62,8 @@ protected:
 public:
 	//C4820: 'CDirstatApp' : '4' bytes padding added after data member 'CDirstatApp::m_altEncryptionColor'
 	COLORREF                  m_altEncryptionColor;			    // Coloring of encrypted items
-	private:
-	
+private:
+	CMainFrame*               m_frameptr;
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();

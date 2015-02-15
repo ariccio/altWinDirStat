@@ -244,6 +244,7 @@ std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const
 		ASSERT( m_childCount == 0 );
 		}
 #endif
+	//TODO: qsort is bleh
 	qsort( children.data( ), static_cast< const size_t >( children.size( ) ), sizeof( CTreeListItem* ), &CItem_compareBySize );
 	//std::sort( children.begin( ), children.end( ), [] ( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) { return static_cast< const CItemBranch* >( lhs )->size_recurse( ) < static_cast< const CItemBranch* >( rhs )->size_recurse( ); } );
 	return children;

@@ -17,13 +17,13 @@
 //#endif
 
 
-CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR const name ) : m_dialog( dialog ), m_name( name ) {
-	ASSERT( m_dialog != NULL );
-	
-	// This is necessary because OnGetMinMaxInfo() will be called before OnInitDialog!
-	m_originalDialogSize.cx = 0;
-	m_originalDialogSize.cy = 0;
-	}
+//CLayout::CLayout( _In_ CWnd* dialog, _In_z_ PCWSTR const name ) : m_dialog( dialog ), m_name( name ) {
+//	ASSERT( m_dialog != NULL );
+//	
+//	// This is necessary because OnGetMinMaxInfo() will be called before OnInitDialog!
+//	m_originalDialogSize.cx = 0;
+//	m_originalDialogSize.cy = 0;
+//	}
 
 //size_t CLayout::AddControl( _In_ CWnd* control, _In_ const DOUBLE movex, _In_ const DOUBLE movey, _In_ const DOUBLE stretchx, _In_ const DOUBLE stretchy ) {
 //	m_control.emplace_back( SControlInfo { control, movex, movey, stretchx, stretchy, CRect( ) } );
@@ -59,13 +59,17 @@ void CLayout::OnInitDialog( _In_ const bool centerWindow ) {
 	m_control.emplace_back( SControlInfo { &m_sizeGripper, 1, 1, 0, 0, sg } );
 
 	CPersistence::GetDialogRectangle( m_name, rcDialog );
-	m_dialog->MoveWindow( &rcDialog );
+	
+	ASSERT( ::IsWindow( m_dialog->m_hWnd ) );
+	
+	//If [MoveWindow] succeeds, the return value is nonzero.
+	VERIFY( ::MoveWindow( m_dialog->m_hWnd, rcDialog.left, rcDialog.top, ( rcDialog.right - rcDialog.left ), ( rcDialog.bottom - rcDialog.top ), TRUE ) );
 	if ( centerWindow ) {
 		m_dialog->CenterWindow( );
 		}
 	}
 
-CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, RECT originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
+//CLayout::SControlInfo::SControlInfo( CWnd* control_in, DOUBLE movex_in, DOUBLE movey_in, DOUBLE stretchx_in, DOUBLE stretchy_in, RECT originalRectangle_in ) : control( control_in ), movex( std::move( movex_in ) ), movey( std::move( movey_in ) ), stretchx ( std::move( stretchx_in ) ), stretchy( std::move( stretchy_in ) ), originalRectangle( std::move( originalRectangle_in ) ) { }
 
 void CLayout::OnDestroy( ) {
 	RECT rc;
@@ -96,10 +100,10 @@ void CLayout::OnSize( ) {
 	VERIFY( EndDeferWindowPos( hdwp ) );
 	}
 
-void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO* mmi ) const {
-	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
-	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
-	}
+//void CLayout::OnGetMinMaxInfo( _Out_ MINMAXINFO* mmi ) const {
+//	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
+//	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
+//	}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,9 +112,9 @@ const INT CLayout::CSizeGripper::_width = 14;
 
 //CLayout::CSizeGripper::CSizeGripper( ) { }
 
-void CLayout::CSizeGripper::Create( _Inout_ CWnd* parent, _In_ const RECT rc ) {
-	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
-	}
+//void CLayout::CSizeGripper::Create( _Inout_ CWnd* parent, _In_ const RECT rc ) {
+//	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
+//	}
 
 BEGIN_MESSAGE_MAP(CLayout::CSizeGripper, CWnd)
 	ON_WM_PAINT()
@@ -143,7 +147,7 @@ void CLayout::CSizeGripper::OnPaint( ) {
 	end.y   += 4;
 
 	DrawShadowLine( dc, start, end );
-
+	
 	start.x += 4;
 	end.y   += 4;
 

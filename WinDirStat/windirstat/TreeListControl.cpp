@@ -118,6 +118,24 @@ struct compare_CTreeListItems {
 	const CTreeListControl* const ctrl;
 	};
 
+
+
+const bool CTreeListItem::set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const  ) const {
+	const POINT rc_top_left = { rc_const.left, rc_const.top };
+	const RECT _rcPlusMinus = { 0, 0, 0, 0 };
+	//const CRect rcLabel_( rcLabel );
+	RECT temp_rect = _rcPlusMinus;
+	VERIFY( ::OffsetRect( &temp_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
+	const RECT& new_plus_minus_rect = temp_rect;
+
+	SetPlusMinusRect( new_plus_minus_rect );
+
+	RECT new_title_rect = rcLabel;
+	VERIFY( ::OffsetRect( &new_title_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
+	SetTitleRect( new_title_rect );
+	return true;
+	}
+
 //CRect rc is NOT const here so that other virtual functions may modify it?
 //DOES NOT draw self for NON-NAME columns!
 //DRAWS self for NAME column!//This is because we need to draw indentation & the little boxes
@@ -153,10 +171,8 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 		}
 
 	RECT rcNode = rc_const;
-
 	//tree_list_control->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
 	static_cast<const CTreeListControl* const>( list )->DrawNode( this, pdc, rcNode );//pass subitem to drawNode?
-	
 	RECT rcLabel = rc_const;
 	rcLabel.left = rcNode.right;
 	DrawLabel( list, pdc, rcLabel, state, width, focusLeft, false );
@@ -164,20 +180,7 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 		*width = ( rcLabel.right - rcLabel.left );
 		return true;
 		}
-	const POINT rc_top_left = { rc_const.left, rc_const.top };
-	const RECT _rcPlusMinus = { 0, 0, 0, 0 };
-
-	//const CRect rcLabel_( rcLabel );
-	RECT temp_rect = _rcPlusMinus;
-	VERIFY( ::OffsetRect( &temp_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
-	const RECT& new_plus_minus_rect = temp_rect;
-
-	SetPlusMinusRect( new_plus_minus_rect );
-
-	RECT new_title_rect = rcLabel;
-	VERIFY( ::OffsetRect( &new_title_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
-	SetTitleRect( new_title_rect );
-	return true;
+	return set_plusminus_and_title_rects( rcLabel, rc_const );
 	}
 
 void CTreeListItem::childNotNull( _In_ CItemBranch* const aTreeListChild, const size_t i ) {
@@ -236,21 +239,17 @@ CItemBranch* CTreeListItem::children_ptr( ) const {
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
 CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	ASSERT( m_vi != nullptr );
+	ASSERT( !( m_vi->cache_sortedChildren.empty( ) ) );
 	if ( m_vi != nullptr ) {
 		if ( !( m_vi->cache_sortedChildren.empty( ) ) ) {
 			return m_vi->cache_sortedChildren.at( i );
 			}
+		return NULL;
 		}
 	return NULL;
 	}
 
 INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-	if ( other == NULL ) {
-		ASSERT( false );
-		displayWindowsMsgBoxWithMessage( L"CTreeListItem::concrete_compare passed a NULL `other`! This should never happen!" );
-		std::terminate( );
-		return 666;
-		}
 	if ( other == this ) {
 		return 0;
 		}
@@ -304,26 +303,18 @@ bool CTreeListItem::HasSiblings( ) const {
 		}
 	ASSERT( count >= 2u );
 	ASSERT( count > 0 );
-	//const auto child_count = GetChildrenCount_( );
-	if ( count > 0 ) {
-		//do we even need to find it?
-#ifdef DEBUG
-		//this is OBSCENELY slow in debug builds.
-		//const auto i = m_parent->FindSortedChild( this, count );
-		//ASSERT( i < count );
-#endif
-		return true;//return true if `i` is in valid range ( it was found )
-		}
-	ASSERT( count == 0 );
-	return false;
+	return true;
+	////const auto child_count = GetChildrenCount_( );
+	//if ( count > 0 ) {
+	//	//do we even need to find it?
+	//	return true;//return true if `i` is in valid range ( it was found )
+	//	}
+	//ASSERT( count == 0 );
+	//return false;
 	}
 
 void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 	if ( next_state_visible ) {
-		if ( m_vi != nullptr ) {
-			m_vi.reset( );
-			}
-		ASSERT( m_vi == nullptr );
 		m_vi.reset( new VISIBLEINFO );
 		m_vi->isExpanded = false;
 		if ( m_parent == NULL ) {
@@ -334,15 +325,10 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 			m_vi->indent = m_parent->GetIndent( ) + 1;
 			}
 		m_vi->isExpanded = false;
-		
-		//m_vi->sizeCache = UINT64_ERROR;
-		//Eww.
-		//m_vi->sizeCache = static_cast< const CItemBranch* >( this )->size_recurse( );
+		return;
 		}
-	else {
-		ASSERT( m_vi != nullptr );
-		m_vi.reset( );
-		}
+	ASSERT( m_vi != nullptr );
+	m_vi.reset( );
 	}
 
 
@@ -389,18 +375,20 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 void CTreeListControl::expand_item_no_scroll_then_doWhateverJDoes( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int parent ) {
 	//auto j = FindTreeItem( pathZero );
 	TRACE( _T( "doing whatever j does....\r\n" ) );
-	auto j = FindListItem( pathZero );
-	if ( j == -1 ) {
+	const auto item_index = FindListItem( pathZero );
+	if ( item_index == -1 ) {
 		ASSERT( parent >= 0 );
 		//ExpandItem( parent, false );
 		ExpandItemNoScroll( parent );
-		j = FindListItem( pathZero );//TODO: j?
+
+		//FindListItem is const, doesn't affect anything.
+		//j = FindListItem( pathZero );//TODO: j?
 		}
 	}
 
 void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath ) {
 	expand_item_no_scroll_then_doWhateverJDoes( pathZero, index );
-	ASSERT( index >= -1 );
+	ASSERT( index >= 0 );
 	const auto item_at_index = GetItem( index );
 	ASSERT( item_at_index != NULL );
 	if ( item_at_index != NULL ) {
@@ -739,7 +727,6 @@ void CTreeListControl::PrepareDefaultMenu( _In_ const CItemBranch* const item, _
 
 void CTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 	CWnd::OnSetFocus( pOldWnd );
-	ASSERT( GetMainFrame( ) == m_frameptr );
 	m_frameptr->SetLogicalFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 	}
 
@@ -769,13 +756,14 @@ CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const in
 
 void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	VERIFY( DeleteAllItems( ) );
-	if ( root != NULL ) {
-		SetRedraw( FALSE );
-		InsertItem( root, 0 );
-		//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
-		ExpandItemAndScroll( 0 );//otherwise ambiguous call - is it a NULL pointer?
-		SetRedraw( TRUE );
+	if ( root == NULL ) {
+		return;
 		}
+	SetRedraw( FALSE );
+	InsertItem( root, 0 );
+	//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
+	ExpandItemAndScroll( 0 );//otherwise ambiguous call - is it a NULL pointer?
+	SetRedraw( TRUE );
 	}
 
 void CTreeListControl::InsertItem( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) {
@@ -802,39 +790,45 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return static_cast<int>( ENUM_NODE::NODE_END );
 	}
 
+RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ RECT& rcRest ) const {
+	bool didBitBlt = false;
+	RECT rcPlusMinus;
+	rcRest.left += 3;
+	CDC dcmem;
+	VERIFY( dcmem.CreateCompatibleDC( &pdc ) );
+	CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
+	auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
+	DrawNodeNullWidth( item, pdc, rcRest, didBitBlt, dcmem, ysrc );
+	rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
+	const auto node = EnumNode( item );
+	ASSERT_VALID( &dcmem );
+	if ( !didBitBlt ) {//Else we'd double BitBlt?
+		VERIFY( pdc.BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY ) );
+		}
+	rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
+	rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
+	rcPlusMinus.top     = rcRest.top       + ( rcRest.bottom - rcRest.top )/ 2 - HOTNODE_CY / 2 - 1;
+	rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
+			
+	rcRest.left += NODE_WIDTH;
+	//VERIFY( dcmem.DeleteDC( ) );
+	rc.right = rcRest.left;
+	return rcPlusMinus;
+	}
+
 RECT CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc ) const {
 	//ASSERT_VALID( pdc );
 	RECT rcRest = rc;
-	RECT rcPlusMinus;
-	bool didBitBlt = false;
+	
 	rcRest.left += GENERAL_INDENT;
 	if ( item->GetIndent( ) > 0 ) {
-		rcRest.left += 3;
-		CDC dcmem;
-		VERIFY( dcmem.CreateCompatibleDC( &pdc ) );
-		CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
-		auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
-		DrawNodeNullWidth( item, pdc, rcRest, didBitBlt, dcmem, ysrc );
-		rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
-		const auto node = EnumNode( item );
-		ASSERT_VALID( &dcmem );
-		if ( !didBitBlt ) {//Else we'd double BitBlt?
-			VERIFY( pdc.BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY ) );
-			}
-		rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
-		rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
-		rcPlusMinus.top     = rcRest.top       + ( rcRest.bottom - rcRest.top )/ 2 - HOTNODE_CY / 2 - 1;
-		rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
-			
-		rcRest.left += NODE_WIDTH;
-		//VERIFY( dcmem.DeleteDC( ) );
+		return DrawNode_Indented( item, pdc, rc, rcRest );
 		}
-	else {
-		rcPlusMinus.bottom = 0;
-		rcPlusMinus.left   = 0;
-		rcPlusMinus.right  = 0;
-		rcPlusMinus.top    = 0;
-		}
+	RECT rcPlusMinus;
+	rcPlusMinus.bottom = 0;
+	rcPlusMinus.left   = 0;
+	rcPlusMinus.right  = 0;
+	rcPlusMinus.top    = 0;
 	rc.right = rcRest.left;
 	return rcPlusMinus;
 	}
@@ -865,19 +859,21 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	const auto item = GetItem( i );
 
 	m_lButtonDownItem = i;
-	if ( item != NULL ) {
-		const RECT plus_minus_rect = item->GetPlusMinusRect( );
-		//if ( CRect( item->GetPlusMinusRect( ) ).PtInRect( pt ) ) {
-		if ( ::PtInRect( &plus_minus_rect, pt ) ) {
-			m_lButtonDownOnPlusMinusRect = true;
-			ToggleExpansion( i );
-			}
-		else {
-			m_lButtonDownOnPlusMinusRect = false;
-			COwnerDrawnListCtrl::OnLButtonDown( nFlags, point );
-			}
-		}
+	
 	ASSERT( item != NULL );
+	if ( item == NULL ) {
+		return;
+		}
+
+	const RECT plus_minus_rect = item->GetPlusMinusRect( );
+	//if ( CRect( item->GetPlusMinusRect( ) ).PtInRect( pt ) ) {
+	if ( ::PtInRect( &plus_minus_rect, pt ) ) {
+		m_lButtonDownOnPlusMinusRect = true;
+		ToggleExpansion( i );
+		return;
+		}
+	m_lButtonDownOnPlusMinusRect = false;
+	COwnerDrawnListCtrl::OnLButtonDown( nFlags, point );
 	}
 
 void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
@@ -898,34 +894,38 @@ void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
 void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	const auto item_at_i = GetItem( i );
 	ASSERT( item_at_i != NULL );
-	if ( item_at_i != NULL ) {
-		SetRedraw( FALSE );
-		if ( item_at_i->IsExpanded( ) ) {
-			VERIFY( CollapseItem( i ) );
-			return;
-			}
-		//ExpandItem( i, true );
-		ExpandItemAndScroll( i );
-		SetRedraw( TRUE );
+	if ( item_at_i == NULL ) {
+		return;
 		}
+	SetRedraw( FALSE );
+	if ( item_at_i->IsExpanded( ) ) {
+		VERIFY( CollapseItem( i ) );
+		SetRedraw( TRUE );
+		return;
+		}
+	//ExpandItem( i, true );
+	ExpandItemAndScroll( i );
+	SetRedraw( TRUE );
 	}
 
 int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i ) {
 	int todelete = 0;
 	const auto itemCount = GetItemCount( );
-	for ( int k = i + 1; k < itemCount; k++ ) {
+	const auto count_to_start_at = ( i + 1 );
+	for ( int k = count_to_start_at; k < itemCount; k++ ) {
 		const auto child = GetItem( k );
+		ASSERT( child != NULL );
 		if ( child != NULL ) {
 			if ( child->GetIndent( ) <= item->GetIndent( ) ) {
 				break;
 				}
 			}
-		ASSERT( child != NULL );
 		if ( GetItemState( k, LVIS_SELECTED ) == LVIS_SELECTED ) {
 			selectNode = true;
 			}
 		todelete++;
 		}
+	TRACE( _T( "Need to delete %i items from %s\r\n" ), todelete, item->m_name.get( ) );
 	return todelete;
 	}
 
@@ -940,32 +940,42 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		return false;
 		}
 	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name.get( ) );
-	WTL::CWaitCursor wc;
+	//WTL::CWaitCursor wc;
 	SetRedraw( FALSE );
 	
 	bool selectNode = false;
-	auto todelete = countItemsToDelete( item, selectNode, i );
+	const auto item_number_to_delete = ( i + 1 );
+	const auto todelete = countItemsToDelete( item, selectNode, i );
 	for ( INT m = 0; m < todelete; m++ ) {
+		
 #ifdef DEBUG
-		const auto local_var = GetItem( i + 1 );
+		const auto local_var = GetItem( item_number_to_delete );
+		ASSERT( local_var != NULL );
 		if ( local_var != NULL ) {
-			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( i + 1 ), m, todelete, local_var->m_name.get( ) );
+			ASSERT( item_number_to_delete == FindListItem( local_var ) );
+			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, local_var->m_name.get( ) );
 			}
 		else {
-			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( i + 1 ), m, todelete, L"ERROR: NULL POINTER!" );
+			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, L"ERROR: NULL POINTER!" );
 			}
 #endif
-		DeleteItem( i + 1 );
+		ASSERT( local_var->GetIndent( ) > item->GetIndent( ) );
+		DeleteItem( item_number_to_delete );
+		
+
 		}
 	item->SetExpanded( false );
 	if ( selectNode ) {
-
 		SelectItem( i );
 		}
 
 	SetRedraw( TRUE );
-	VERIFY( RedrawItems( i, i ) );
+	const auto item_count = GetItemCount( );
+	TRACE( _T( "Redrawing items %i to %i....\r\n" ), i, item_count );
+	VERIFY( RedrawItems( i, item_count ) );
+	//VERIFY( RedrawItems( i, item_count + 1 ) );
 	TRACE( _T( "Collapsing item succeeded!\r\n" ) );
+	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
 	return true;
 	}
 
@@ -1006,8 +1016,6 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 			InsertItem( child, i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ) );
 			if ( scroll ) {
 				const auto w = GetSubItemWidth( child, column::COL_NAME );
-				//const auto predicted_str_width = ( GetStringWidth( child->m_name.get( ) ) + 10 );
-				//ASSERT( w == predicted_str_width );
 				if ( w > maxwidth ) {
 					ASSERT( w >= 0 );
 					if ( w >= 0 ) {
@@ -1102,6 +1110,17 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i ) {
 	if ( item->IsExpanded( ) ) {
+#ifdef DEBUG
+		//const auto item_position = FindListItem( item );
+		const auto child = GetItem( i + 1 );
+		ASSERT( child != NULL );
+		if ( child == NULL ) {
+			_CrtDbgBreak( );
+			return;
+			}
+		ASSERT( child->m_parent == item );
+		
+#endif
 		VERIFY( CollapseItem( i ) );
 		}
 	else if ( item->m_parent != NULL ) {
@@ -1125,41 +1144,58 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 		}
 	}
 
+void CTreeListControl::handle_VK_TAB( const UINT nChar, const UINT nRepCnt, const UINT nFlags ) {
+	if ( m_frameptr->GetTypeView( ) != NULL ) {
+		TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
+		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
+		return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+		}
+	TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
+	m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+	return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+	}
+
+void CTreeListControl::handle_VK_ESCAPE( const UINT nChar, const UINT nRepCnt, const UINT nFlags ) {
+	TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
+	m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+	return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+	}
+
+void CTreeListControl::handle_remaining_keys( const UINT nChar, const UINT nRepCnt, const UINT nFlags ) {
+	//docs for GetNextItem, nItem: "Index of the item to begin the searching with, or -1 to find the first item that matches the specified flags. The specified item itself is excluded from the search."
+	//docs for GetNextItem, return: "The index of the next item if successful, or -1 otherwise."
+	const auto i = GetNextItem( -1, LVNI_FOCUSED );
+	if ( i == ( -1 ) ) {
+		return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+		}
+	const auto item = GetItem( i );
+	ASSERT( item != NULL );
+	if ( item == NULL ) {
+		return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+		}
+	if ( nChar == VK_LEFT ) {
+		return handle_VK_LEFT( item, i );
+		}
+	if ( nChar == VK_RIGHT ) {
+		return handle_VK_RIGHT( item, i );
+		}
+
+	WDS_ASSERT_NEVER_REACHED( );
+	return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+	}
 
 void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	if ( nChar == VK_TAB ) {
-		ASSERT( GetMainFrame( ) == m_frameptr );
-		if ( m_frameptr->GetTypeView( ) != NULL ) {
-			TRACE( _T( "TAB pressed! Focusing on extension list!\r\n" ) );
-			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
-			}
-		else {
-			TRACE( _T( "TAB pressed! No extension list! Setting Null focus!\r\n" ) );
-			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
-			}
+		return handle_VK_TAB( nChar, nRepCnt, nFlags );
 		}
-	else if ( nChar == VK_ESCAPE ) {
-		ASSERT( GetMainFrame( ) == m_frameptr );
-		TRACE( _T( "ESCAPE pressed! Null focus!\r\n" ) );
-		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_NONE );
+	if ( nChar == VK_ESCAPE ) {
+		return handle_VK_ESCAPE( nChar, nRepCnt, nFlags );
 		}
-	const auto i = GetNextItem( -1, LVNI_FOCUSED );
-	if ( i != -1 ) {
-		const auto item = GetItem( i );
-		if ( item != NULL ) {
-			switch ( nChar ) {
-				case VK_LEFT:
-					handle_VK_LEFT( item, i );
-					return;
+	if ( ( nChar != VK_LEFT ) && ( nChar != VK_RIGHT ) ) {
+		return COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+		}
 
-				case VK_RIGHT:
-					handle_VK_RIGHT( item, i );
-					return;
-				}
-			}
-		ASSERT( item != NULL );
-		}
-	COwnerDrawnListCtrl::OnKeyDown( nChar, nRepCnt, nFlags );
+	return handle_remaining_keys( nChar, nRepCnt, nFlags );
 	}
 
 _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone ) {
@@ -1197,12 +1233,13 @@ void CTreeListControl::Sort( ) {
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( int i = 0; i < countItems; i++ ) {//convert to ranged for?
 		const auto Item = GetItem( i );
-		if ( Item != NULL ) {
-			if ( Item->IsExpanded( ) ) {
-				Item->SortChildren( this );
-				}
-			}
 		ASSERT( Item != NULL );
+		if ( Item == NULL ) {
+			continue;
+			}
+		if ( Item->IsExpanded( ) ) {
+			Item->SortChildren( this );
+			}
 		}
 	COwnerDrawnListCtrl::SortItems( );
 	}

@@ -4,19 +4,17 @@
 #pragma once
 
 #include "stdafx.h"
+#include "windirstat.h"
 
 #ifndef WDS_MAINFRAME_H
 #define WDS_MAINFRAME_H
-
-
-
-
 
 class CMySplitterWnd;
 class CMainFrame;
 class CDirstatView;
 class CGraphView;
 class CTypeView;
+class CDirstatApp;
 
 // COptionsPropertySheet. The options dialog.
 class COptionsPropertySheet final : public CPropertySheet {
@@ -61,12 +59,12 @@ public:
 //   an invisible (zero-size) child of CMainFrame.
 class CDeadFocusWnd final : public CWnd {
 public:
-	CDeadFocusWnd( ) { }
+	CDeadFocusWnd( CMainFrame* ptr ) : m_frameptr( ptr ) { }
 	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
 	CDeadFocusWnd( const CDeadFocusWnd& in ) = delete;
 
 //#pragma warning( once : 4263 )
-
+	CMainFrame* m_frameptr;
 #pragma warning( suppress: 4263 )
 	void Create( _In_ CWnd* parent );
 	~CDeadFocusWnd( ) {
@@ -84,9 +82,12 @@ protected:
 class CMainFrame final : public CFrameWnd {
 public:
 	static CMainFrame* _theFrame;
-	CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( LOGICAL_FOCUS::LF_NONE ) {// Created by MFC only
+#pragma warning( push )
+#pragma warning( disable: 4355 )
+	CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( LOGICAL_FOCUS::LF_NONE ), m_appptr( nullptr ), m_wndDeadFocus( this ) {// Created by MFC only
 		_theFrame = this;
 		}
+#pragma warning( pop )
 
 	DECLARE_DYNCREATE(CMainFrame)
 
@@ -117,10 +118,14 @@ public:
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing );
 	void   CopyToClipboard           ( _In_ const std::wstring psz                                   ) const;
 	size_t getExtDataSize            (                                                                                                ) const;
+
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;
+	private:
 	_Must_inspect_result_ _Ret_maybenull_ CGraphView*   GetGraphView     ( ) const;
+	public:
 	_Must_inspect_result_ _Ret_maybenull_ CTypeView*    GetTypeView      ( ) const;
 
+	public:
 	virtual BOOL OnCreateClient    (         LPCREATESTRUCT  lpcs, CCreateContext* pContext ) override final;
 	virtual BOOL PreCreateWindow   (           CREATESTRUCT& cs                             ) override final {
 		return CFrameWnd::PreCreateWindow( cs );
@@ -135,6 +140,7 @@ public:
 	std::wstring         m_drawTiming;
 	DOUBLE               m_lastSearchTime;
 	CDeadFocusWnd        m_wndDeadFocus;	// Zero-size window which holds the focus if logical focus is "NONE"
+	CDirstatApp*         m_appptr;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate(LPCREATESTRUCT lpCreateStruct);
