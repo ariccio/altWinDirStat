@@ -185,15 +185,15 @@ protected:
 		VERIFY( m_treeListControl.CreateEx( 0, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl ) );
 		m_treeListControl.AddExtendedStyle( LVS_EX_HEADERDRAGDROP );
 		SetTreeListControlOptions( );
-		m_treeListControl.InsertColumn( column::COL_NAME,              _T( "Name" ),               LVCFMT_LEFT,  200, column::COL_NAME );
-		m_treeListControl.InsertColumn( column::COL_PERCENTAGE,        _T( "Percentage" ),         LVCFMT_RIGHT,  55, column::COL_PERCENTAGE );
-		m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL,      _T( "Size" ),               LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL );
-		m_treeListControl.InsertColumn( column::COL_ITEMS,             _T( "Items" ),              LVCFMT_RIGHT,  55, column::COL_ITEMS );
-		m_treeListControl.InsertColumn( column::COL_NTCOMPRESS,        _T( "NTFS compression ratio" ), LVCFMT_RIGHT, 100, column::COL_NTCOMPRESS );
-	  //m_treeListControl.InsertColumn( column::COL_FILES,             _T( "Files" ),              LVCFMT_RIGHT,  55, column::COL_FILES );
-	  //m_treeListControl.InsertColumn( column::COL_SUBDIRS,           _T( "Subdirs" ),            LVCFMT_RIGHT,  55, column::COL_SUBDIRS );
-		m_treeListControl.InsertColumn( column::COL_LASTCHANGE,        _T( "Last Change" ),        LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
-		m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,        _T( "Attributes" ),         LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
+		m_treeListControl.InsertColumn( column::COL_NAME,         _T( "Name" ),                   LVCFMT_LEFT,  200, column::COL_NAME );
+		m_treeListControl.InsertColumn( column::COL_PERCENTAGE,   _T( "Percentage" ),             LVCFMT_RIGHT,  55, column::COL_PERCENTAGE );
+		m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL, _T( "Size" ),                   LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL );
+		m_treeListControl.InsertColumn( column::COL_ITEMS,        _T( "Items" ),                  LVCFMT_RIGHT,  55, column::COL_ITEMS );
+		m_treeListControl.InsertColumn( column::COL_NTCOMPRESS,   _T( "NTFS compression ratio" ), LVCFMT_RIGHT, 100, column::COL_NTCOMPRESS );
+	  //m_treeListControl.InsertColumn( column::COL_FILES,        _T( "Files" ),                  LVCFMT_RIGHT,  55, column::COL_FILES );
+	  //m_treeListControl.InsertColumn( column::COL_SUBDIRS,      _T( "Subdirs" ),                LVCFMT_RIGHT,  55, column::COL_SUBDIRS );
+		m_treeListControl.InsertColumn( column::COL_LASTCHANGE,   _T( "Last Change" ),            LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
+		m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,   _T( "Attributes" ),             LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
 
 		TRACE( _T( "Loading persistent attributes....\r\n" ) );
 		m_treeListControl.OnColumnsInserted( );
