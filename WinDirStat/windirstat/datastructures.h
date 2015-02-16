@@ -419,8 +419,10 @@ namespace column {
 		COL_DESCRIPTION = COL_SUBTREETOTAL,
 		COL_BYTES       = COL_ITEMS,
 		COL_BYTESPERCENT = COL_FILES,
+		COL_NTCOMPRESS = COL_FILES,
 		COL_FILES_TYPEVIEW = COL_LASTCHANGE
 		};
+	static_assert( COL_BYTESPERCENT == 4, "typeview will break!" );
 	}
 
 // SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.

@@ -63,10 +63,12 @@ struct QPC_timer {
 	const std::int64_t m_frequency;
 	std::int64_t m_start;
 	std::int64_t m_end;
-
-
 	};
 
+_Pre_satisfies_( handle != INVALID_HANDLE_VALUE )
+_At_( handle, _Post_invalid_ )
+_At_( handle, _Pre_valid_ )
+void close_handle( const HANDLE handle );
 
 _Pre_satisfies_( rect.left > rect.right ) _Post_satisfies_( rect.left <= rect.right )
 inline void normalize_RECT_left_right( _Inout_ RECT& rect );
@@ -186,7 +188,6 @@ namespace CColorSpace {
 	//static COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
 	COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
 	}
-
 
 
 

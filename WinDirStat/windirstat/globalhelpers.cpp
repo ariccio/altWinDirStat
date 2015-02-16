@@ -1435,7 +1435,14 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 	return RGB( red, green, blue );
 	}
 
-
+_Pre_satisfies_( handle != INVALID_HANDLE_VALUE )
+_At_( handle, _Post_invalid_ )
+_At_( handle, _Pre_valid_ )
+void close_handle( const HANDLE handle ) {
+	const auto res = CloseHandle( handle );
+	//TODO: trace error message
+	ASSERT( res != 0 );
+	}
 
 #else
 

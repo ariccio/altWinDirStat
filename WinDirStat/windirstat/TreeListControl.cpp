@@ -22,6 +22,8 @@
 #include "mainframe.h"
 #include "dirstatdoc.h"
 
+#include "directory_enumeration.h" //for get_uncompressed_size
+
 
 namespace {
 
@@ -323,6 +325,23 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 		else {
 			ASSERT( m_parent != NULL );
 			m_vi->indent = m_parent->GetIndent( ) + 1;
+			if ( static_cast< const CItemBranch* >( this )->m_attr.compressed ) {
+				auto uncompressed_size_temp = get_uncompressed_file_size( this );
+				if ( uncompressed_size_temp == 0 ) {
+					uncompressed_size_temp = static_cast< const CItemBranch* >( this )->m_size;
+					}
+				if ( uncompressed_size_temp == UINT64_ERROR ) {
+					uncompressed_size_temp = static_cast< const CItemBranch* >( this )->m_size;
+					}
+				if ( uncompressed_size_temp != 0 ) {
+					const auto uncompressed_size = uncompressed_size_temp;
+					const auto ratio = ( static_cast< const double >( static_cast< const CItemBranch* >( this )->m_size ) / static_cast< const double >( uncompressed_size ) );
+					m_vi->ntfs_compression_ratio = ratio;
+					}
+				else {
+					m_vi->ntfs_compression_ratio = 1;
+					}
+				}
 			}
 		m_vi->isExpanded = false;
 		return;
@@ -395,6 +414,7 @@ void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* 
 		adjustColumnSize( item_at_index );
 		}
 	if ( showWholePath ) {
+		TRACE( _T( "Ensuring item is visible by scrolling to it...\r\n" ) );
 		VERIFY( EnsureVisible( 0, false ) );
 		}
 	SelectItem( index );
@@ -621,21 +641,39 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-void CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _Inout_ bool& didBitBlt, _In_ CDC& dcmem, _In_ const UINT ysrc ) const {
+_Pre_satisfies_( item->m_vi._Myptr != nullptr ) _Success_( return )
+const bool CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _In_ CDC& dcmem, _In_ const UINT ysrc ) const {
+	bool didBitBlt = false;
 	auto ancestor = item;
 	//Not vectorized: 1304, loop includes assignments of different sizes
-	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; indent-- ) {
-		if ( ancestor != NULL ) {
-			ancestor = ancestor->m_parent;
-			if ( ancestor != NULL ) {
-				if ( ancestor->HasSiblings( ) ) {
-					ASSERT_VALID( &dcmem );
-					VERIFY( pdc.BitBlt( ( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * static_cast<int>( ENUM_NODE::NODE_LINE ) ), static_cast<int>( ysrc ), SRCCOPY ) );
-					didBitBlt = true;
-					}
-				}
+	for ( auto indent = ( item->GetIndent( ) - 2 ); indent >= 0; --indent ) {
+		if ( ancestor == NULL ) {
+			//continue;
+			//break;
+			return false;
+			}
+		ancestor = ancestor->m_parent;
+		if ( ancestor == NULL ) {
+			continue;
+			}
+		if ( ancestor->HasSiblings( ) ) {
+			ASSERT_VALID( &dcmem );
+			//god, I hate code like this.
+			VERIFY( pdc.BitBlt(
+								( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ),
+								static_cast<int>( rcRest.top ),
+								static_cast<int>( NODE_WIDTH ),
+								static_cast<int>( NODE_HEIGHT ),
+								&dcmem,
+								( NODE_WIDTH * static_cast<int>( ENUM_NODE::NODE_LINE ) ),
+								static_cast<int>( ysrc ),
+								SRCCOPY
+								)
+					);
+			didBitBlt = true;
 			}
 		}
+	return didBitBlt;
 	}
 
 void CTreeListControl::SelectItem( _In_ const CTreeListItem* const item ) {
@@ -791,14 +829,14 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	}
 
 RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ RECT& rcRest ) const {
-	bool didBitBlt = false;
+	//bool didBitBlt = false;
 	RECT rcPlusMinus;
 	rcRest.left += 3;
 	CDC dcmem;
 	VERIFY( dcmem.CreateCompatibleDC( &pdc ) );
 	CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
 	auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
-	DrawNodeNullWidth( item, pdc, rcRest, didBitBlt, dcmem, ysrc );
+	bool didBitBlt = DrawNodeNullWidth( item, pdc, rcRest, dcmem, ysrc );
 	rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 	const auto node = EnumNode( item );
 	ASSERT_VALID( &dcmem );
@@ -895,17 +933,18 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 	const auto item_at_i = GetItem( i );
 	ASSERT( item_at_i != NULL );
 	if ( item_at_i == NULL ) {
+		TRACE( _T( "Can't toggle the expansion of a NULL item!! ( item # %i )\r\n" ), i );
 		return;
 		}
-	SetRedraw( FALSE );
+	//SetRedraw( FALSE );
 	if ( item_at_i->IsExpanded( ) ) {
 		VERIFY( CollapseItem( i ) );
-		SetRedraw( TRUE );
+		//SetRedraw( TRUE );
 		return;
 		}
 	//ExpandItem( i, true );
 	ExpandItemAndScroll( i );
-	SetRedraw( TRUE );
+	//SetRedraw( TRUE );
 	}
 
 int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i ) {
@@ -933,6 +972,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	auto const item = GetItem( i );
 	ASSERT( item != NULL );
 	if ( item == NULL ) {
+		TRACE( _T( "Can't collapse a NULL item!\r\n" ) );
 		return false;
 		}
 	if ( !item->IsExpanded( ) ) {
@@ -941,7 +981,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		}
 	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name.get( ) );
 	//WTL::CWaitCursor wc;
-	SetRedraw( FALSE );
+	//SetRedraw( FALSE );
 	
 	bool selectNode = false;
 	const auto item_number_to_delete = ( i + 1 );
@@ -958,24 +998,28 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		else {
 			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, L"ERROR: NULL POINTER!" );
 			}
-#endif
 		ASSERT( local_var->GetIndent( ) > item->GetIndent( ) );
+#endif
 		DeleteItem( item_number_to_delete );
-		
-
 		}
 	item->SetExpanded( false );
 	if ( selectNode ) {
 		SelectItem( i );
 		}
 
-	SetRedraw( TRUE );
+	//SetRedraw( TRUE );
 	const auto item_count = GetItemCount( );
-	TRACE( _T( "Redrawing items %i to %i....\r\n" ), i, item_count );
+#ifdef DEBUG
+	const auto local_var = GetItem( i );
+	TRACE( _T( "Redrawing items %i (`%s`) to %i....\r\n" ), i, ( ( local_var != NULL ) ? local_var->m_name.get( ) : L"" ), ( item_count ) );
+
+#endif
 	VERIFY( RedrawItems( i, item_count ) );
 	//VERIFY( RedrawItems( i, item_count + 1 ) );
+	//VERIFY( RedrawItems( 0, item_count + 1 ) );
 	TRACE( _T( "Collapsing item succeeded!\r\n" ) );
-	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
+	//GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
+	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
 	return true;
 	}
 
@@ -1053,14 +1097,18 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
 	ASSERT( maxwidth == ( GetStringWidth( item->m_name.get( ) ) + 10 ) );
 	const auto count    = item->GetChildrenCount_( );
+	if ( count == 0 ) {
+		TRACE( _T( "item `%s` has a child count of ZERO! Not expanding! \r\n" ), item->m_name.get( ) );
+		return;
+		}
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name.get( ), count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? ( count + 1 ) : ( myCount + 1 ) ) );
 	
 	insertItemsAdjustWidths( item, count, maxwidth, scroll, i );
 	
-	if ( scroll && GetColumnWidth( 0 ) < maxwidth ) {
-		VERIFY( SetColumnWidth( 0, maxwidth ) );
+	if ( scroll && GetColumnWidth( static_cast<int>( column::COL_NAME ) ) < maxwidth ) {
+		VERIFY( SetColumnWidth( static_cast<int>( column::COL_NAME ), maxwidth ) );
 		}
 	}
 
@@ -1068,9 +1116,11 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 	auto const item = GetItem( i );
 	ASSERT( item != NULL );
 	if ( item == NULL ) {
+		TRACE( _T( "Can expand a NULL item!! ( item # %i, scroll: %s )\r\n" ), i, ( scroll ? L"YES" : L"NO" ) );
 		return;
 		}
 	if ( item->IsExpanded( ) ) {
+		TRACE( _T( "Item is already expanded!! ( item # %i, scroll: %s )\r\n" ), i, ( scroll ? L"YES" : L"NO" ) );
 		return;
 		}
 
@@ -1112,13 +1162,15 @@ void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In
 	if ( item->IsExpanded( ) ) {
 #ifdef DEBUG
 		//const auto item_position = FindListItem( item );
-		const auto child = GetItem( i + 1 );
-		ASSERT( child != NULL );
-		if ( child == NULL ) {
-			_CrtDbgBreak( );
-			return;
-			}
-		ASSERT( child->m_parent == item );
+		
+		//this code ( GetItem( i + 1 ) ) fails!
+		//const auto child = GetItem( i + 1 );
+		//ASSERT( child != NULL );
+		//if ( child == NULL ) {
+		//	_CrtDbgBreak( );
+		//	return;
+		//	}
+		//ASSERT( child->m_parent == item );
 		
 #endif
 		VERIFY( CollapseItem( i ) );

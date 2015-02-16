@@ -92,6 +92,46 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const col
 	return res;
 	}
 
+_Pre_satisfies_( subitem == column::COL_NTCOMPRESS ) _Success_( SUCCEEDED( return ) )
+HRESULT CItemBranch::WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( subitem == column::COL_NTCOMPRESS );
+	size_t chars_remaining = 0;
+	if ( !( m_attr.compressed ) ) {
+		//do nothing
+		return StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"" );
+		}
+	if ( m_children != nullptr ) {
+		//do nothing
+		return StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"" );
+		}
+
+	ASSERT( m_vi != nullptr );
+	const auto percentage = ( m_vi->ntfs_compression_ratio * static_cast< DOUBLE >( 100 ) );
+	ASSERT( percentage <= 100.00 );
+	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		chars_written = strSize;
+		sizeBuffNeed = 64;//Generic size needed.
+		return res;
+		}
+	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
+		chars_written = 0;
+		return res;
+		}
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		chars_written = ( strSize - chars_remaining );
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+	return res;
+	}
+
+
 _Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
@@ -176,8 +216,9 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_
 			case column::COL_SUBTREETOTAL:
 				return WriteToStackBuffer_COL_SUBTREETOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_ITEMS:
-			case column::COL_FILES:
 				return WriteToStackBuffer_COL_FILES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_NTCOMPRESS:
+				return WriteToStackBuffer_COL_NTCOMPRESS( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_LASTCHANGE:
 				return WriteToStackBuffer_COL_LASTCHANGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_ATTRIBUTES:
@@ -215,8 +256,9 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 			case column::COL_SUBTREETOTAL:
 				return signum( static_cast<std::int64_t>( size_recurse( ) ) - static_cast<std::int64_t>( other->size_recurse( ) ) );
 			case column::COL_ITEMS:
-			case column::COL_FILES:
 				return signum( static_cast<std::int64_t>( files_recurse( ) ) - static_cast<std::int64_t>( other->files_recurse( ) ) );
+			case column::COL_NTCOMPRESS:
+				return signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio );
 			case column::COL_LASTCHANGE:
 				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
 
@@ -314,12 +356,16 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( m_children == nullptr ) {
 		//ASSERT( m_parent != NULL );
 		if ( m_parent != NULL ) {
+			//WTF IS GOING ON HERE
+			//TODO: BUGBUG: what is dis?
 			if ( m_parent->m_parent != NULL ) {
 				pathBuf += L'\\';
 				ASSERT( wcslen( m_name.get( ) ) == m_name_length );
 				pathBuf += m_name.get( );
 				return;
 				}
+			pathBuf += L'\\';
+			ASSERT( wcslen( m_name.get( ) ) == m_name_length );
 			pathBuf += m_name.get( );
 			return;
 			}
@@ -360,7 +406,7 @@ size_t CItemBranch::findItemInChildren( const CItemBranch* const theItem ) const
 	}
 
 
-void CItemBranch::refresh_sizeCache( ) const {
+void CItemBranch::refresh_sizeCache( ) {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
 		ASSERT( m_childCount == 0 );
@@ -429,12 +475,14 @@ std::uint64_t CItemBranch::size_recurse( ) const {
 	if ( m_size != UINT64_ERROR ) {
 		return m_size;
 		}
-	ASSERT( m_size == UINT64_ERROR );
-	const auto total = compute_size_recurse( );
-	ASSERT( m_size == UINT64_ERROR );
-	m_size = total;
-	ASSERT( total < ( UINT64_MAX / 2 ) );
-	return total;
+	WDS_ASSERT_NEVER_REACHED( );
+	//ASSERT( m_size == UINT64_ERROR );
+	//const auto total = compute_size_recurse( );
+	//ASSERT( m_size == UINT64_ERROR );
+	//m_size = total;
+	//ASSERT( total < ( UINT64_MAX / 2 ) );
+	//return total;
+	return UINT64_ERROR;
 	}
 
 

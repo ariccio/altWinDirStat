@@ -46,7 +46,7 @@ class CItemBranch final : public CTreeListItem {
 			return size_recurse( ) < rhs.size_recurse( );
 			}
 
-		void refresh_sizeCache( ) const;
+		void refresh_sizeCache( );
 
 		_Ret_range_( 0, UINT64_MAX )
 		std::uint64_t compute_size_recurse( ) const;
@@ -72,6 +72,9 @@ class CItemBranch final : public CTreeListItem {
 
 		_Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
 		        HRESULT WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+		_Pre_satisfies_( subitem == column::COL_NTCOMPRESS ) _Success_( SUCCEEDED( return ) )
+		        HRESULT WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
 		 inline HRESULT WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
@@ -143,7 +146,7 @@ class CItemBranch final : public CTreeListItem {
 
 												//V<---the fact that m_size is mutable SHOULD BE FIXED! BUGBUG: TODO:
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) mutable std::uint64_t          m_size;                // OwnSize
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
 		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
 

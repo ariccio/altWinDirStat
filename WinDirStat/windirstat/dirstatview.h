@@ -122,6 +122,7 @@ protected:
 		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 		ASSERT( Document != NULL );//The document is NULL??!? WTF
 		if ( Document == NULL ) {
+			TRACE( _T( "Document is NULL, CDirstatView::OnUpdateHINT_SELECTIONCHANGED can't do jack shit.\r\n" ) );
 			return;
 			}
 		TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
@@ -173,6 +174,7 @@ protected:
 			const RECT rc = { 0, 0, cx, cy };
 			//If [MoveWindow] succeeds, the return value is nonzero.
 			VERIFY( ::MoveWindow( m_treeListControl.m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
+			m_treeListControl.RedrawWindow( );
 			}
 		}
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct ) {
@@ -187,7 +189,8 @@ protected:
 		m_treeListControl.InsertColumn( column::COL_PERCENTAGE,        _T( "Percentage" ),         LVCFMT_RIGHT,  55, column::COL_PERCENTAGE );
 		m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL,      _T( "Size" ),               LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL );
 		m_treeListControl.InsertColumn( column::COL_ITEMS,             _T( "Items" ),              LVCFMT_RIGHT,  55, column::COL_ITEMS );
-		m_treeListControl.InsertColumn( column::COL_FILES,             _T( "Files" ),              LVCFMT_RIGHT,  55, column::COL_FILES );
+		m_treeListControl.InsertColumn( column::COL_NTCOMPRESS,        _T( "NTFS compression ratio" ), LVCFMT_RIGHT, 100, column::COL_NTCOMPRESS );
+	  //m_treeListControl.InsertColumn( column::COL_FILES,             _T( "Files" ),              LVCFMT_RIGHT,  55, column::COL_FILES );
 	  //m_treeListControl.InsertColumn( column::COL_SUBDIRS,           _T( "Subdirs" ),            LVCFMT_RIGHT,  55, column::COL_SUBDIRS );
 		m_treeListControl.InsertColumn( column::COL_LASTCHANGE,        _T( "Last Change" ),        LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
 		m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,        _T( "Attributes" ),         LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
@@ -198,8 +201,9 @@ protected:
 		}
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		TRACE( _T( "CDirstatView::OnEraseBkgnd!\r\n" ) );
-		UNREFERENCED_PARAMETER( pDC );
-		return TRUE;
+		//UNREFERENCED_PARAMETER( pDC );
+		//return TRUE;
+		return CView::OnEraseBkgnd( pDC );
 		}
 	afx_msg void OnDestroy( ) {
 		CView::OnDestroy( );

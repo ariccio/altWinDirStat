@@ -2,6 +2,7 @@
 
 #include "directory_enumeration.h"
 #include "dirstatdoc.h"
+#include "globalhelpers.h"
 
 #ifndef WDS_DIRECTORY_ENUMERATION_CPP
 #define WDS_DIRECTORY_ENUMERATION_CPP
@@ -416,6 +417,42 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 	ThisCItem->m_attr.m_done = true;
 	return;
 	}
+
+_Success_( return < UINT64_ERROR )
+const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item ) {
+	const auto derived_item = static_cast< const CItemBranch* const >( item );
+	const auto path = derived_item->GetPath( );
+	const HANDLE file_handle = CreateFileW( path.c_str( ), FILE_READ_ATTRIBUTES | FILE_READ_EA, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+	if ( file_handle == INVALID_HANDLE_VALUE ) {
+		const rsize_t str_size = 128u;
+		wchar_t str_buff[ str_size ] = { 0 };
+		rsize_t chars_written = 0;
+		const auto last_error = GetLastError( );
+		const HRESULT res = CStyle_GetLastErrorAsFormattedMessage( str_buff, str_size, chars_written, last_error );
+		if ( SUCCEEDED( res ) ) {
+			TRACE( _T( "get_uncompressed_file_size failed! error message: %s\r\n" ), str_buff );
+			}
+		//TODO: trace error message
+		return UINT64_ERROR;
+		}
+
+	LARGE_INTEGER large_integer = { 0 };
+
+
+	//If [GetFileSizeEx] fails, the return value is zero. To get extended error information, call GetLastError.
+	const BOOL file_size_result = GetFileSizeEx( file_handle, &large_integer );
+	close_handle( file_handle );
+
+	if ( file_size_result != 0 ) {
+		ASSERT( large_integer.QuadPart >= 0 );
+		return static_cast< const std::uint64_t >( large_integer.QuadPart );
+		}
+
+	//TODO: trace error message
+	return UINT64_ERROR;
+	}
+
+
 #else
 
 #endif
