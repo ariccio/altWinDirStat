@@ -159,7 +159,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 // Add support for ATL/WTL
 //#define _WTL_FORWARD_DECLARE_CSTRING
 #define _WTL_NO_AUTOMATIC_NAMESPACE
-
+//_ATL_NO_AUTOMATIC_NAMESPACE
 
 #include <atlbase.h>        // base ATL classes
 

@@ -27,7 +27,38 @@ protected:
 		m_dimmedSize.cy = 0;
 		m_showTreemap = CPersistence::GetShowTreemap( );
 		}
-	DECLARE_DYNCREATE(CGraphView)
+
+	/*
+#define DECLARE_DYNCREATE(class_name) \
+	DECLARE_DYNAMIC(class_name) \
+	static CObject* PASCAL CreateObject();
+
+#define DECLARE_DYNAMIC(class_name) \
+public: \
+	static const CRuntimeClass class##class_name; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \
+
+----------------------------------------
+
+public:
+	static const CRuntimeClass classCGraphView;
+	virtual CRuntimeClass* GetRuntimeClass( ) const;
+	static CObject* PASCAL CreateObject( );
+
+	*/
+
+public:
+	static const CRuntimeClass classCGraphView;
+	
+	virtual CRuntimeClass* GetRuntimeClass( ) const final {
+		return const_cast<CRuntimeClass*>( &CGraphView::classCGraphView );
+		}
+
+	static CObject* PASCAL CreateObject( ) {
+		return new CGraphView;
+		}
+
+	//DECLARE_DYNCREATE(CGraphView)
 
 public:
 	//virtual ~CGraphView();
@@ -98,14 +129,17 @@ protected:
 	//only called from one place
 	inline void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const;
 
+
+protected:
+	//TODO: use plain old SIZE struct
+	WTL::CSize    m_size;				// Current size of view
+
 public:
 	bool m_recalculationSuspended : 1; // True while the user is resizing the window.	
 	//C4820: 'CGraphView' : '3' bytes padding added after data member 'CGraphView::m_showTreemap'
 	bool m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
 
 protected:
-	//C4820: 'CGraphView' : '4' bytes padding added after data member 'CGraphView::m_size'
-	WTL::CSize    m_size;				// Current size of view
 	CTreemap m_treemap;				// Treemap generator
 	CBitmap  m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
 	WTL::CSize    m_dimmedSize;			// Size of bitmap m_dimmed
@@ -113,7 +147,20 @@ protected:
 	UINT_PTR m_timer;				// We need a timer to realize when the mouse left our window.
 	CMainFrame* const m_frameptr;
 	CDirstatApp* m_appptr;
-	DECLARE_MESSAGE_MAP()
+
+	/*
+#define DECLARE_MESSAGE_MAP() \
+protected: \
+	static const AFX_MSGMAP* PASCAL GetThisMessageMap(); \
+	virtual const AFX_MSGMAP* GetMessageMap() const; \
+-------------------------------------------------------
+
+	*/
+
+
+protected:
+	static const AFX_MSGMAP* PASCAL GetThisMessageMap( );
+	virtual const AFX_MSGMAP* GetMessageMap( ) const final;
 	afx_msg void OnSize(UINT nType, INT cx, INT cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
@@ -125,8 +172,13 @@ protected:
 
 public:
 	#ifdef _DEBUG
-		virtual void AssertValid() const;
-		virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid( ) const final {
+		CView::AssertValid( );
+		}
+	virtual void Dump( CDumpContext& dc ) const final {
+		TRACE( _T( "CGraphView::Dump\r\n" ) );
+		CView::Dump( dc );
+		}
 	#endif
 		//afx_msg void OnPopupCancel();
 	};

@@ -124,11 +124,14 @@ struct compare_CTreeListItems {
 
 const bool CTreeListItem::set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const  ) const {
 	const POINT rc_top_left = { rc_const.left, rc_const.top };
-	const RECT _rcPlusMinus = { 0, 0, 0, 0 };
+	const RECT _rcPlusMinus = { 0, rcLabel.top, rcLabel.left, rcLabel.bottom };
 	//const CRect rcLabel_( rcLabel );
 	RECT temp_rect = _rcPlusMinus;
 	VERIFY( ::OffsetRect( &temp_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
 	const RECT& new_plus_minus_rect = temp_rect;
+
+	RECT test_rect = temp_rect;
+	normalize_RECT( test_rect );
 
 	SetPlusMinusRect( new_plus_minus_rect );
 
@@ -180,6 +183,7 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	DrawLabel( list, pdc, rcLabel, state, width, focusLeft, false );
 	if ( width != NULL ) {
 		*width = ( rcLabel.right - rcLabel.left );
+		set_plusminus_and_title_rects( rcLabel, rc_const );
 		return true;
 		}
 	return set_plusminus_and_title_rects( rcLabel, rc_const );
@@ -835,8 +839,8 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 	CDC dcmem;
 	VERIFY( dcmem.CreateCompatibleDC( &pdc ) );
 	CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
-	auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
-	bool didBitBlt = DrawNodeNullWidth( item, pdc, rcRest, dcmem, ysrc );
+	const auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
+	const bool didBitBlt = DrawNodeNullWidth( item, pdc, rcRest, dcmem, ysrc );
 	rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 	const auto node = EnumNode( item );
 	ASSERT_VALID( &dcmem );
@@ -891,6 +895,9 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	const auto rc = GetWholeSubitemRect( i, 0, thisHeader );
 
 	const POINT temp = { rc.left, rc.top };
+	//given temp  == {   0, 84 };
+	//given point == { 200, 89 };
+	//pt == { 200, 5 };
 
 	WTL::CPoint pt = ( point - temp );
 
@@ -981,7 +988,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		}
 	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name.get( ) );
 	//WTL::CWaitCursor wc;
-	//SetRedraw( FALSE );
+	SetRedraw( FALSE );
 	
 	bool selectNode = false;
 	const auto item_number_to_delete = ( i + 1 );
@@ -1007,7 +1014,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		SelectItem( i );
 		}
 
-	//SetRedraw( TRUE );
+	SetRedraw( TRUE );
 	const auto item_count = GetItemCount( );
 #ifdef DEBUG
 	const auto local_var = GetItem( i );

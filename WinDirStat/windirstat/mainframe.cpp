@@ -46,17 +46,21 @@ namespace {
 		IDC_DEADFOCUS		// ID of dead-focus window
 		};
 
+	void failed_to_open_clipboard( ) {
+		displayWindowsMsgBoxWithError( );
+		displayWindowsMsgBoxWithMessage( L"Cannot open the clipboard." );
+		TRACE( _T( "Cannot open the clipboard!\r\n" ) );
+		}
+
 	class COpenClipboard {
 		public:
 		COpenClipboard( const COpenClipboard& in ) = delete;
 		COpenClipboard& operator=( const COpenClipboard& in ) = delete;
 
-		COpenClipboard( CWnd* const owner, const bool empty = true ) : m_open( owner->OpenClipboard( ) ) {
-			//m_open = owner->OpenClipboard( );
+		COpenClipboard( CWnd* const owner, const bool empty ) : m_open { owner->OpenClipboard( ) } {
 			if ( !m_open ) {
-				displayWindowsMsgBoxWithError( );
-				displayWindowsMsgBoxWithMessage( L"Cannot open the clipboard." );
-				TRACE( _T( "Cannot open the clipboard!\r\n" ) );
+				failed_to_open_clipboard( );
+				return;
 				}
 			if ( empty ) {
 				if ( !EmptyClipboard( ) ) {
@@ -191,15 +195,20 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	if ( !bAccept ) {
 		return;
 		}
-	CRect rcClient;
-	GetClientRect( rcClient );
+	RECT rcClient = { 0, 0, 0, 0 };
+	ASSERT( ::IsWindow( m_hWnd ) );
+	
+	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
+	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
+
+
 	INT dummy = 0;
 	if ( GetColumnCount( ) > 1 ) {
 		INT cxLeft = 0;
 		GetColumnInfo( 0, cxLeft, dummy );
 
-		if ( rcClient.Width( ) > 0 ) {
-			m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.Width( ) );
+		if ( ( rcClient.right - rcClient.left ) > 0 ) {
+			m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.right - rcClient.left );
 			}
 		m_wasTrackedByUser = true;
 		m_userSplitterPos = m_splitterPos;
@@ -207,8 +216,8 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 		}
 	INT cyUpper = 0;
 	GetRowInfo( 0, cyUpper, dummy );
-	if ( rcClient.Height( ) > 0 ) {
-		m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.Height( ) );
+	if ( ( rcClient.bottom - rcClient.top ) > 0 ) {
+		m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.bottom - rcClient.top );
 		}
 	m_wasTrackedByUser = true;
 	m_userSplitterPos = m_splitterPos;
@@ -218,8 +227,13 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 	m_splitterPos = pos;
 
-	CRect rcClient;
-	GetClientRect( &rcClient );
+	
+
+	RECT rcClient = { 0, 0, 0, 0 };
+
+	ASSERT( ::IsWindow( m_hWnd ) );
+	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
+	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
 
 	if ( GetColumnCount( ) > 1 ) {
 		ASSERT( m_pColInfo != NULL );
@@ -227,7 +241,7 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 			CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 			return;
 			}
-		const auto cxLeft = static_cast< INT >( pos * ( rcClient.Width( ) ) );
+		const auto cxLeft = static_cast< INT >( pos * ( rcClient.right - rcClient.left ) );
 		if ( cxLeft >= 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
 			RecalcLayout( );
@@ -242,7 +256,7 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		return;
 		}
-	const auto cyUpper = static_cast< INT >( pos * ( rcClient.Height( ) ) );
+	const auto cyUpper = static_cast< INT >( pos * ( rcClient.bottom - rcClient.top ) );
 	if ( cyUpper >= 0 ) {
 		SetRowInfo( 0, cyUpper, 0 );
 		RecalcLayout( );
@@ -423,11 +437,16 @@ void CMainFrame::OnDestroy( ) {
 	}
 
 BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext ) {
+	const SIZE GraphView_size = { 100, 100 };
+	const SIZE DirstatView_size = { 700, 500 };
+	const SIZE TypeView_size = { 100, 500 };
+
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
-	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), WTL::CSize( 100, 100 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, static_cast< INT >( 1 ), static_cast< INT >( 2 ), WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast< UINT >( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
-	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), WTL::CSize( 700, 500 ), pContext ) );
-	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), WTL::CSize( 100, 500 ), pContext ) );
+	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), GraphView_size, pContext ) );
+
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast< UINT >( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
+	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), DirstatView_size, pContext ) );
+	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), TypeView_size, pContext ) );
 
 	//MinimizeGraphView( );
 	m_wndSplitter.SetSplitterPos( 1.0 );

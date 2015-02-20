@@ -25,9 +25,84 @@
 #include "options.h"
 #include "mainframe.h"
 
+/*
 
-IMPLEMENT_DYNCREATE( CGraphView, CView )
+#define IMPLEMENT_DYNCREATE(class_name, base_class_name) \
+	CObject* PASCAL class_name::CreateObject() \
+		{ return new class_name; } \
+	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, \
+		class_name::CreateObject, NULL)
 
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
+		#class_name, sizeof(class class_name), wSchema, pfnNew, \
+			RUNTIME_CLASS(base_class_name), NULL, class_init }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(class_name); }
+
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
+---------------------------------------------------------------------
+
+	CObject* PASCAL CGraphView::CreateObject( ) {
+		return new CGraphView;
+		}
+
+	AFX_COMDAT const CRuntimeClass CGraphView::classCGraphView = { "CGraphView", sizeof( class CGraphView ), 0xFFFF, CGraphView::CreateObject, ((CRuntimeClass*)(&CView::classCView)), NULL, NULL };
+	
+	CRuntimeClass* CGraphView::GetRuntimeClass( ) const {
+		return ((CRuntimeClass*)(&CGraphView::classCGraphView));
+		}
+
+*/
+
+//IMPLEMENT_DYNCREATE( CGraphView, CView )
+
+
+	/*
+#define BEGIN_MESSAGE_MAP(theClass, baseClass) \
+	PTM_WARNING_DISABLE \
+	const AFX_MSGMAP* theClass::GetMessageMap() const \
+		{ return GetThisMessageMap(); } \
+	const AFX_MSGMAP* PASCAL theClass::GetThisMessageMap() \
+	{ \
+		typedef theClass ThisClass;						   \
+		typedef baseClass TheBaseClass;					   \
+		static const AFX_MSGMAP_ENTRY _messageEntries[] =  \
+		{
+
+
+#define END_MESSAGE_MAP() \
+		{0, 0, 0, 0, AfxSig_end, (AFX_PMSG)0 } \
+	}; \
+		static const AFX_MSGMAP messageMap = \
+		{ &TheBaseClass::GetThisMessageMap, &_messageEntries[0] }; \
+		return &messageMap; \
+	}								  \
+	PTM_WARNING_RESTORE
+
+-------------------------------------------------------------
+#define BEGIN_MESSAGE_MAP(CGraphView, CView ) \
+	PTM_WARNING_DISABLE \
+	const AFX_MSGMAP* CGraphView::GetMessageMap() const {
+		return GetThisMessageMap( );
+		}
+	const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
+		typedef CGraphView ThisClass;
+		typedef CView TheBaseClass;
+		static const AFX_MSGMAP_ENTRY _messageEntries[ ] = {
+
+
+#define END_MESSAGE_MAP() \
+		{0, 0, 0, 0, AfxSig_end, (AFX_PMSG)0 }
+	};
+		static const AFX_MSGMAP messageMap = { &TheBaseClass::GetThisMessageMap, &_messageEntries[0] };
+		return &messageMap;
+	}
+	PTM_WARNING_RESTORE
+
+	*/
+	/*
 BEGIN_MESSAGE_MAP( CGraphView, CView )
 	ON_WM_SIZE( )
 	ON_WM_LBUTTONDOWN( )
@@ -38,6 +113,90 @@ BEGIN_MESSAGE_MAP( CGraphView, CView )
 	ON_WM_TIMER( )
 	//ON_COMMAND(ID_POPUP_CANCEL, OnPopupCancel)
 END_MESSAGE_MAP( )
+	*/
+
+AFX_COMDAT const CRuntimeClass CGraphView::classCGraphView = { "CGraphView", sizeof( class CGraphView ), 0xFFFF, &( CGraphView::CreateObject ), const_cast<CRuntimeClass*>( &CView::classCView ), NULL, NULL };
+
+const AFX_MSGMAP* CGraphView::GetMessageMap( ) const {
+	return GetThisMessageMap( );
+	}
+
+const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
+	typedef CGraphView ThisClass;
+	typedef CView TheBaseClass;
+	static const AFX_MSGMAP_ENTRY _messageEntries[ ] = {
+
+		{ 
+			WM_SIZE,
+			0,
+			0,
+			0,
+			AfxSig_vwii,
+			(AFX_PMSG)(AFX_PMSGW) (static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, int, int)>( &ThisClass::OnSize))
+		},
+		
+		{ 
+			WM_LBUTTONDOWN,
+			0,
+			0,
+			0,
+			AfxSig_vwp,
+			(AFX_PMSG)(AFX_PMSGW) (static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, CPoint)>( &ThisClass::OnLButtonDown))
+		},
+		{ 
+			WM_SETFOCUS,
+			0,
+			0,
+			0,
+			AfxSig_vW,
+			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(CWnd*)>( &ThisClass::OnSetFocus))
+		},
+		{
+			WM_CONTEXTMENU,
+			0,
+			0,
+			0,
+			AfxSig_vWp,
+			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(CWnd*, CPoint)>( &ThisClass::OnContextMenu))
+		},
+		{
+			WM_MOUSEMOVE,
+			0,
+			0,
+			0,
+			AfxSig_vwp,
+			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, CPoint)>( &ThisClass::OnMouseMove))
+		},
+		{
+			WM_DESTROY,
+			0,
+			0,
+			0,
+			AfxSig_vv,
+			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(void)>( &ThisClass::OnDestroy))
+		},
+		{
+			WM_TIMER,
+			0,
+			0,
+			0,
+			AfxSig_v_up_v,
+			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT_PTR)>( &ThisClass::OnTimer))
+		},
+		{
+			0,
+			0,
+			0,
+			0,
+			AfxSig_end,
+			(AFX_PMSG)0
+		}
+	};
+
+	static const AFX_MSGMAP messageMap = { &TheBaseClass::GetThisMessageMap, &_messageEntries[ 0 ] };
+	return &messageMap;
+}
+
 
 void CGraphView::DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 	TRACE( _T( "Drawing Empty view...\r\n" ) );
@@ -288,16 +447,16 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const 
 		}
 	}
 
-#ifdef _DEBUG
-void CGraphView::AssertValid( ) const {
-	CView::AssertValid( );
-	}
+//#ifdef _DEBUG
+//void CGraphView::AssertValid( ) const {
+//	CView::AssertValid( );
+//	}
 
-void CGraphView::Dump( CDumpContext& dc ) const {
-	TRACE( _T( "CGraphView::Dump\r\n" ) );
-	CView::Dump( dc );
-	}
-#endif
+//void CGraphView::Dump( CDumpContext& dc ) const {
+//	TRACE( _T( "CGraphView::Dump\r\n" ) );
+//	CView::Dump( dc );
+//	}
+//#endif
 
 void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize( nType, cx, cy );

@@ -241,6 +241,21 @@ namespace {
 			std::terminate( );
 			}
 		}
+	inline RECT adjust_rect_for_grid_by_value( _In_ const bool show_grid, _In_ RECT rc_temp ) {
+		if ( show_grid ) {
+			rc_temp.bottom--;
+			rc_temp.right--;
+			return rc_temp;
+			}
+		return rc_temp;
+		}
+
+	inline void adjust_rect_for_grid( _In_ const bool show_grid, _Inout_ RECT& rcItem_temp ) {
+		if ( show_grid ) {
+			rcItem_temp.bottom--;
+			rcItem_temp.right--;
+			}
+		}
 
 	void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size ) {
 		if ( resize_size == -1 ) {
@@ -326,19 +341,23 @@ namespace {
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
 	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ CDC& dcmem, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ CDC* pdc, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) {
-		
 		if ( drawFocus ) {
-			draw_focus_rects_draw_focus( thisLoopSize, dcmem, rects_draw, focusLefts, pdc, rcFocus, rcItem );
+			return draw_focus_rects_draw_focus( thisLoopSize, dcmem, rects_draw, focusLefts, pdc, rcFocus, rcItem );
 			}
-		else {
-			for ( size_t i = 0; i < thisLoopSize; i++ ) {
-				if ( focusLefts[ i ] > rects_draw[ i ].left ) {
-					rcFocus.left = focusLefts[ i ];
-					}
-				rcFocus.right = rects_draw[ i ].right;
-				VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
+				rcFocus.left = focusLefts[ i ];
 				}
+			rcFocus.right = rects_draw[ i ].right;
+			VERIFY( pdc->BitBlt( ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), &dcmem, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
 			}
+		}
+
+	template<size_t count>
+	void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
+		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
+		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this_ctrl, thisHeaderCtrl );
+		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
 		}
 
 	void second_try_failed( _In_ const column::ENUM_COL subitem, _In_ const rsize_t sizeNeeded, _In_ const rsize_t new_size_needed ) {
@@ -394,27 +413,19 @@ protected:
 		const auto pdc = CDC::FromHandle( pdis->hDC );
 		const auto bIsFullRowSelection = m_showFullRowSelection;
 		ASSERT_VALID( pdc );
-		RECT rcItem_temp( pdis->rcItem );
-		if ( m_showGrid ) {
-			rcItem_temp.bottom--;
-			rcItem_temp.right--;
-			}
+		//RECT rcItem_temp( pdis->rcItem );
 
-		const RECT& rcItem = rcItem_temp;
+		const RECT rcItem = adjust_rect_for_grid_by_value( m_showGrid, pdis->rcItem );
+
+		//adjust_rect_for_grid( m_showGrid, rcItem_temp );
+
+
 		CDC dcmem; //compiler seems to vectorize this!
 
 		VERIFY( dcmem.CreateCompatibleDC( pdc ) );
 		CBitmap bm;
 		VERIFY( bm.CreateCompatibleBitmap( pdc, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
 		CSelectObject sobm( dcmem, bm );
-		/*
-		inline CRect CRect::operator-(_In_ POINT pt) const throw()
-		{
-			CRect rect(*this);
-			::OffsetRect(&rect, -pt.x, -pt.y);
-			return rect;
-		}
-		*/
 		RECT rect_to_fill_solidly = rcItem;
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
@@ -435,7 +446,7 @@ protected:
 		const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
 		const auto resize_size = thisHeaderCtrl->GetItemCount( );
-		//void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size )
+
 		check_validity_of_resize_size( resize_size, stack_array_size );
 
 		//order_temp.resize( static_cast<size_t>( resize_size ) );
@@ -443,21 +454,16 @@ protected:
 
 		VERIFY( thisHeaderCtrl->GetOrderArray( order_temp, resize_size )) ;
 
-	#ifdef DEBUG
 		for ( rsize_t i = 0; i < static_cast<rsize_t>( resize_size - 1 ); ++i ) {
-			if ( static_cast<INT>( i ) != order_temp[ i ] ) {
-				TRACE( _T( "order[%i]: %i \r\n" ), static_cast<INT>( i ), order_temp[ i ] );
-				}
+			ASSERT( static_cast< INT >( i ) == order_temp[ i ] );
 			}
-	#endif
-		const auto thisLoopSize = static_cast<size_t>( resize_size );
+
+		const rsize_t thisLoopSize = static_cast<rsize_t>( resize_size );
 		if ( is_right_aligned_cache.empty( ) ) {
 			repopulate_right_aligned_cache( is_right_aligned_cache, thisLoopSize, thisHeaderCtrl, this );
-			//is_right_aligned_cache.reserve( thisLoopSize );
-			//for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			//	is_right_aligned_cache.push_back( IsColumnRightAligned( static_cast<int>( i ), thisHeaderCtrl ) );
-			//	}
 			}
+		ASSERT( thisLoopSize < 8 );
+
 		RECT rcFocus = rcItem;
 
 		//rcFocus.DeflateRect( 0, LABEL_Y_MARGIN - 1 );
@@ -465,27 +471,21 @@ protected:
 		
 		const INT (&order)[ stack_array_size ] = order_temp;
 
-		ASSERT( thisLoopSize < 8 );
-
 		column::ENUM_COL subitems_temp[ stack_array_size ];
-
+		int focusLefts_temp[ stack_array_size ] = { 0 };
 		RECT rects_temp[ stack_array_size ] = { 0 };
 
 		//RECT rects_draw_temp[ stack_array_size ] = { 0 };
 
-		int focusLefts_temp[ stack_array_size ] = { 0 };
-
-		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
-
-		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this, thisHeaderCtrl );
-
-		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
+		//build map of column# -> ENUM_COL
+		//build drawable rect for each column
+		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, pdis, this, thisHeaderCtrl, rcItem );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
-
 		const RECT (&rects_draw)[ stack_array_size ] = rects_temp;
 
 		build_focusLefts_from_drawable_rects( thisLoopSize, rects_draw, focusLefts_temp );
+
 
 		draw_proper_text_for_each_column( item, thisLoopSize, subitems, dcmem, rects_draw, pdis, focusLefts_temp, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache, this );
 
@@ -493,11 +493,9 @@ protected:
 
 		draw_focus_rects( thisLoopSize, dcmem, rects_draw, focusLefts, pdc, rcFocus, rcItem, drawFocus );
 
-
 		if ( drawFocus ) {
 			pdc->DrawFocusRect( &rcFocus );
 			}
-		//VERIFY( dcmem.DeleteDC( ) );
 
 		}
 
@@ -868,24 +866,6 @@ public:
 		return ( m_showStripes && ( i % 2 != 0 ) );
 		}
 
-	//_Success_( return != COLORREF( 0 ) )
-	//COLORREF GetItemBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-	//	const auto itemPos = FindListItem( item );
-	//	if ( itemPos != -1 ) {
-	//		return GetItemBackgroundColor( itemPos );
-	//		}
-	//	return COLORREF( 0 );
-	//	}
-
-	//_Success_( return != COLORREF( 0 ) )
-	//COLORREF GetItemSelectionBackgroundColor( _In_ const COwnerDrawnListItem* const item ) const {
-	//	const auto itemPos = FindListItem( item );
-	//	if ( itemPos != -1 ) {
-	//		return GetItemSelectionBackgroundColor( itemPos );
-	//		}
-	//	return COLORREF( 0 );
-	//	}
-
 	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const {
 		const auto itemPos = FindListItem( item );
 		if ( itemPos >= 0 ) {
@@ -1134,7 +1114,7 @@ protected:
 			}
 		
 		CClientDC dc( const_cast< COwnerDrawnListCtrl* >( this ) );
-		RECT rc { 0, 0, 1000, 1000 };
+		RECT rc { 0, 0, 1000, NODE_HEIGHT };
 
 		INT width = 0;	
 		INT dummy = rc.left;
@@ -1213,8 +1193,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
 				},
@@ -1222,8 +1202,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
 				},
@@ -1231,8 +1211,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
 				},
@@ -1240,8 +1220,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
 				},
@@ -1250,8 +1230,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
 				},
@@ -1259,8 +1239,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
 				},
@@ -1269,8 +1249,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGW ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
 				},
@@ -1278,8 +1258,8 @@ protected:
 				{
 					WM_NOTIFY,
 					static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGA ) ),
-					static_cast<WORD>( 0 ),
-					static_cast<WORD>( 0 ),
+					static_cast<WORD>( 0u ),
+					static_cast<WORD>( 0u ),
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
 				},
@@ -1287,48 +1267,48 @@ protected:
 				{
 					WM_NOTIFY+WM_REFLECT_BASE,
 					static_cast<WORD>( static_cast<int>( LVN_GETDISPINFO ) ),
-					0,
-					0,
+					0u,
+					0u,
 					AfxSigNotify_v,
 					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnLvnGetdispinfo))
 				},
 				{
 					WM_ERASEBKGND,
-					0,
-					0,
-					0,
+					0u,
+					0u,
+					0u,
 					AfxSig_bD,
 					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<BOOL (AFX_MSG_CALL CWnd::*)(CDC*) >(&ThisClass::OnEraseBkgnd) ) )
 				},
 				{
 					WM_VSCROLL,
-					0,
-					0,
-					0,
+					0u,
+					0u,
+					0u,
 					AfxSig_vwwW,
 					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, UINT, CScrollBar*) >(&ThisClass::OnVScroll) ) )
 				},
 				{
 					WM_SHOWWINDOW,
-					0,
-					0,
-					0,
+					0u,
+					0u,
+					0u,
 					AfxSig_vbw,
 					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(BOOL, UINT) >(&ThisClass::OnShowWindow) ) )
 				},
 				{
 					WM_DESTROY,
-					0,
-					0,
-					0,
+					0u,
+					0u,
+					0u,
 					AfxSig_vv,
 					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(void) >(&ThisClass::OnDestroy) ) )
 				},
 				{
-					0,
-					0,
-					0,
-					0,
+					0u,
+					0u,
+					0u,
+					0u,
 					AfxSig_end,
 					(AFX_PMSG)( 0 )
 				}
@@ -1693,7 +1673,7 @@ namespace{
 		}
 
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl ) {
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl ) {
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl );
 			}

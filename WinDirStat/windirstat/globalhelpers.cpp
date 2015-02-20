@@ -1439,9 +1439,14 @@ _Pre_satisfies_( handle != INVALID_HANDLE_VALUE )
 _At_( handle, _Post_invalid_ )
 _At_( handle, _Pre_valid_ )
 void close_handle( const HANDLE handle ) {
-	const auto res = CloseHandle( handle );
-	//TODO: trace error message
+	//If [CloseHandle] succeeds, the return value is nonzero.
+	const BOOL res = CloseHandle( handle );
 	ASSERT( res != 0 );
+	if ( !res ) {
+		TRACE( _T( "Closing handle failed!\r\n" ) );
+		}
+	//TODO: trace error message
+	
 	}
 
 #else
