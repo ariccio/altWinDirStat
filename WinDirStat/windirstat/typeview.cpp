@@ -314,8 +314,14 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	
 	const size_t ext_data_size = extData->size( );
 	m_exts_count = ext_data_size;
-
 	m_exts.reset( new CListItem[ ext_data_size ] );
+	
+	std::uint64_t total_name_length = 1;
+	for ( size_t i = 0; i < ext_data_size; ++i ) {
+		total_name_length += ( extData->at( i ).ext.length( ) + 1 );
+		}
+
+	m_name_pool.reset( total_name_length );
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
@@ -323,7 +329,9 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		ASSERT( new_name_length < UINT16_MAX );
 
 		PWSTR new_name_ptr = nullptr;
-		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );
+		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );
+		const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext );
+
 		if ( !SUCCEEDED( copy_res ) ) {
 			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CExtensionListControl::SetExtensionData)(aborting!)" );
 			displayWindowsMsgBoxWithMessage( extData->at( i ).ext.c_str( ) );
@@ -378,7 +386,7 @@ void CExtensionListControl::SelectExtension( _In_ const std::wstring ext ) {
 	const auto countItems = this->GetItemCount( );
 	SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		if ( ( wcscmp( GetListItem( i )->m_name.get( ), ext.c_str( ) ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( wcscmp( GetListItem( i )->m_name, ext.c_str( ) ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext.c_str( ), i );
 			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			EnsureVisible( i, false );
@@ -396,7 +404,7 @@ const std::wstring CExtensionListControl::GetSelectedExtension( ) const {
 		}
 	const auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
 	const auto item = GetListItem( i );
-	return std::wstring( item->m_name.get( ) );
+	return std::wstring( item->m_name );
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {

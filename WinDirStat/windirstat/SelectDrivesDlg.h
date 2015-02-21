@@ -272,6 +272,7 @@ public:
 	       std::vector<std::wstring> m_drives;	    // out. Valid if m_radio != RADIO_AFOLDER
 		   CRITICAL_SECTION          m_running_threads_CRITICAL_SECTION;
 		   _Guarded_by_( m_running_threads_CRITICAL_SECTION ) std::vector<CDriveInformationThread*> m_running_threads;
+		   Children_String_Heap_Manager m_name_pool;
 protected:
 	static UINT                      _serial;       // Each Instance of this dialog gets a serial number
 	       CDrivesList               m_list;

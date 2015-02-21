@@ -250,7 +250,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 	auto const other = static_cast< const CItemBranch* >( tlib );
 	switch ( subitem ) {
 			case column::COL_NAME:
-				return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
+				return signum( wcscmp( m_name, other->m_name ) );
 			case column::COL_PERCENTAGE:
 				return signum( GetFraction( ) - other->GetFraction( ) );
 			case column::COL_SUBTREETOTAL:
@@ -340,8 +340,8 @@ std::wstring CItemBranch::GetPath( ) const {
 	std::wstring pathBuf;
 	pathBuf.reserve( MAX_PATH );
 	UpwardGetPathWithoutBackslash( pathBuf );
-	ASSERT( wcslen( m_name.get( ) ) == m_name_length );
-	ASSERT( wcslen( m_name.get( ) ) < 33000 );
+	ASSERT( wcslen( m_name ) == m_name_length );
+	ASSERT( wcslen( m_name ) < 33000 );
 	ASSERT( pathBuf.length( ) < 33000 );
 	return pathBuf;
 	}
@@ -351,8 +351,8 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
-	ASSERT( wcslen( m_name.get( ) ) == m_name_length );
-	ASSERT( wcslen( m_name.get( ) ) < 33000 );
+	ASSERT( wcslen( m_name ) == m_name_length );
+	ASSERT( wcslen( m_name ) < 33000 );
 	if ( m_children == nullptr ) {
 		//ASSERT( m_parent != NULL );
 		if ( m_parent != NULL ) {
@@ -360,18 +360,18 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 			//TODO: BUGBUG: what is dis?
 			if ( m_parent->m_parent != NULL ) {
 				pathBuf += L'\\';
-				ASSERT( wcslen( m_name.get( ) ) == m_name_length );
-				pathBuf += m_name.get( );
+				ASSERT( wcslen( m_name ) == m_name_length );
+				pathBuf += m_name;
 				return;
 				}
 			pathBuf += L'\\';
-			ASSERT( wcslen( m_name.get( ) ) == m_name_length );
-			pathBuf += m_name.get( );
+			ASSERT( wcslen( m_name ) == m_name_length );
+			pathBuf += m_name;
 			return;
 			}
 		ASSERT( pathBuf.empty( ) );
-		ASSERT( wcslen( m_name.get( ) ) == m_name_length );
-		pathBuf = m_name.get( );
+		ASSERT( wcslen( m_name ) == m_name_length );
+		pathBuf = m_name;
 		return;
 		//ASSERT( false );
 		//return;
@@ -379,13 +379,13 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( !pathBuf.empty( ) ) {
 		if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
 			pathBuf += L'\\';
-			pathBuf += m_name.get( );
+			pathBuf += m_name;
 			return;
 			}
-		pathBuf += m_name.get( );
+		pathBuf += m_name;
 		return;
 		}
-	pathBuf += m_name.get( );
+	pathBuf += m_name;
 	return;
 
 	}
@@ -549,7 +549,7 @@ _Pre_satisfies_( this->m_children._Myptr == nullptr )
 PCWSTR const CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
 
-	PCWSTR const resultPtrStr = PathFindExtensionW( m_name.get( ) );
+	PCWSTR const resultPtrStr = PathFindExtensionW( m_name );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
 	}
@@ -560,7 +560,7 @@ _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::CStyle_GetExtension( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const {
 	psz_extension[ 0 ] = 0;
 
-	PWSTR resultPtrStr = PathFindExtensionW( m_name.get( ) );
+	PWSTR resultPtrStr = PathFindExtensionW( m_name );
 	ASSERT( resultPtrStr != '\0' );
 	if ( resultPtrStr != '\0' ) {
 		size_t extLen = 0;
@@ -599,12 +599,12 @@ _Pre_satisfies_( this->m_children._Myptr == nullptr )
 const std::wstring CItemBranch::GetExtension( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
-		PWSTR const resultPtrStr = PathFindExtensionW( m_name.get( ) );
+		PWSTR const resultPtrStr = PathFindExtensionW( m_name );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
 			return resultPtrStr;
 			}
-		PCWSTR const i = wcsrchr( m_name.get( ), L'.' );
+		PCWSTR const i = wcsrchr( m_name, L'.' );
 
 		if ( i == NULL ) {
 			return _T( "." );

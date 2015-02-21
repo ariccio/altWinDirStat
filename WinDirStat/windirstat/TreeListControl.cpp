@@ -103,7 +103,7 @@ namespace {
 			}
 		while ( ( steps_from_target > 0 ) && ( child != static_cast< const CItemBranch* >( item ) ) );
 
-			TRACE( _T( "halted at: %s\r\n" ), child->m_name.get( ) );
+			TRACE( _T( "halted at: %s\r\n" ), child->m_name );
 
 			//END new algorithm
 		}
@@ -205,7 +205,7 @@ void CTreeListItem::childNotNull( _In_ CItemBranch* const aTreeListChild, const 
 		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
 		ASSERT( m_vi->cache_sortedChildren.at( i ) == aTreeListChild );
 		//ASSERT( m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
-		ASSERT( wcscmp( m_vi->cache_sortedChildren.at( i )->m_name.get( ), aTreeListChild->m_name.get( ) ) == 0u );
+		ASSERT( wcscmp( m_vi->cache_sortedChildren.at( i )->m_name, aTreeListChild->m_name ) == 0u );
 		m_vi->cache_sortedChildren.at( i ) = aTreeListChild;
 		}
 	}
@@ -388,7 +388,7 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 	static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, int>::value, "we're gonna need to do this!" );
 
 	const auto w = GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
-	ASSERT( w == ( GetStringWidth( item_at_index->m_name.get( ) ) + 15 ) );
+	ASSERT( w == ( GetStringWidth( item_at_index->m_name ) + 15 ) );
 	const auto colWidth = GetColumnWidth( static_cast<int>( column::COL_NAME ) );
 	if ( colWidth < w ) {
 		VERIFY( SetColumnWidth( 0, w + colWidth ) );
@@ -425,7 +425,7 @@ void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* 
 	}
 
 INT CTreeListControl::find_item_then_show_first_try_failed( _In_ const CTreeListItem* const thisPath, const int i ) {
-	TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name.get( ), i );
+	TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name, i );
 	ExpandItemNoScroll( i );
 		
 	//we expect to find the item on the second try.
@@ -449,7 +449,7 @@ void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const this
 		}
 	else {
 		//if we've found the item, then we should close anything that we opened in the process?
-		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name.get( ), std::int64_t( i ), index );
+		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name, std::int64_t( i ), index );
 		index = collapse_parent_plus_one_through_index( thisPath, index, parent );
 		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
 		}
@@ -600,8 +600,8 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 
 #ifdef DEBUG
 	for ( size_t inner = 0; inner < path.size( ); ++inner ) {
-		ASSERT( path.at( inner )->m_name.get( ) != NULL );
-		TRACE( _T( "path component %I64u: `%s` (%p)\r\n" ), std::uint64_t( inner ), path.at( inner )->m_name.get( ), path.at( inner ) );
+		ASSERT( path.at( inner )->m_name != NULL );
+		TRACE( _T( "path component %I64u: `%s` (%p)\r\n" ), std::uint64_t( inner ), path.at( inner )->m_name, path.at( inner ) );
 		}
 #endif
 
@@ -971,7 +971,7 @@ int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, 
 			}
 		todelete++;
 		}
-	TRACE( _T( "Need to delete %i items from %s\r\n" ), todelete, item->m_name.get( ) );
+	TRACE( _T( "Need to delete %i items from %s\r\n" ), todelete, item->m_name );
 	return todelete;
 	}
 
@@ -983,10 +983,10 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		return false;
 		}
 	if ( !item->IsExpanded( ) ) {
-		TRACE( _T( "ERROR: Collapsing item %i: %s...it's not expanded!\r\n" ), i, item->m_name.get( ) );
+		TRACE( _T( "ERROR: Collapsing item %i: %s...it's not expanded!\r\n" ), i, item->m_name );
 		return false;
 		}
-	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name.get( ) );
+	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name );
 	//WTL::CWaitCursor wc;
 	SetRedraw( FALSE );
 	
@@ -1000,7 +1000,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		ASSERT( local_var != NULL );
 		if ( local_var != NULL ) {
 			ASSERT( item_number_to_delete == FindListItem( local_var ) );
-			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, local_var->m_name.get( ) );
+			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, local_var->m_name );
 			}
 		else {
 			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, L"ERROR: NULL POINTER!" );
@@ -1018,7 +1018,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	const auto item_count = GetItemCount( );
 #ifdef DEBUG
 	const auto local_var = GetItem( i );
-	TRACE( _T( "Redrawing items %i (`%s`) to %i....\r\n" ), i, ( ( local_var != NULL ) ? local_var->m_name.get( ) : L"" ), ( item_count ) );
+	TRACE( _T( "Redrawing items %i (`%s`) to %i....\r\n" ), i, ( ( local_var != NULL ) ? local_var->m_name : L"" ), ( item_count ) );
 
 #endif
 	VERIFY( RedrawItems( i, item_count ) );
@@ -1102,14 +1102,14 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	static_assert( column::COL_NAME == 0, "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
-	ASSERT( maxwidth == ( GetStringWidth( item->m_name.get( ) ) + 10 ) );
+	ASSERT( maxwidth == ( GetStringWidth( item->m_name ) + 10 ) );
 	const auto count    = item->GetChildrenCount_( );
 	if ( count == 0 ) {
-		TRACE( _T( "item `%s` has a child count of ZERO! Not expanding! \r\n" ), item->m_name.get( ) );
+		TRACE( _T( "item `%s` has a child count of ZERO! Not expanding! \r\n" ), item->m_name );
 		return;
 		}
 	const auto myCount  = static_cast<size_t>( GetItemCount( ) );
-	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name.get( ), count );
+	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name, count );
 	SetItemCount( static_cast<INT>( ( count >= myCount) ? ( count + 1 ) : ( myCount + 1 ) ) );
 	
 	insertItemsAdjustWidths( item, count, maxwidth, scroll, i );

@@ -321,14 +321,21 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 	FILETIME t;
 	//zeroDate( t );
 	memset_zero_struct( t );
-	const auto new_name_length = rootFolders.at( 0 ).length( );
+	const auto new_name_length = rootFolders.at( 0u ).length( );
 	ASSERT( new_name_length < UINT16_MAX );
 
+	m_rootItem.reset( );
+
+	//TODO: BUGBUG: for some reason, we need +2u here! ASSERT fails if we don't!
+	m_name_pool.reset( ( new_name_length + 2u ) );
+
 	PWSTR new_name_ptr = nullptr;
-	const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
+	//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
+	const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0u ) );
+
 	if ( !SUCCEEDED( copy_res ) ) {
 		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
-		displayWindowsMsgBoxWithMessage( rootFolders.at( 0 ) );
+		displayWindowsMsgBoxWithMessage( rootFolders.at( 0u ) );
 		}
 
 	//                                          IT_DIRECTORY

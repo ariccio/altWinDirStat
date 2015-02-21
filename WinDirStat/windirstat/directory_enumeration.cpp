@@ -74,7 +74,7 @@ namespace {
 				}
 			}
 		else {
-			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name.get( ) );
+			TRACE( _T( "ERROR returned by GetCompressedFileSize! file: %s\r\n" ), child->m_name );
 			child->m_attr.invalid = true;
 			}
 		}
@@ -174,7 +174,10 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			ASSERT( new_name_length < UINT16_MAX );
 
 			PWSTR new_name_ptr = nullptr;
-			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			//ThisCItem->m_name_pool.copy_name_str_into_buffer
+			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
+
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (compressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
@@ -191,7 +194,10 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 			const auto new_name_length = aFile.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
 			PWSTR new_name_ptr = nullptr;
-			const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			
+			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
+			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
+
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (uncompressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
@@ -230,8 +236,8 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	////true for 2 means DIR
 
 
-#ifdef WDS_STRING_ALLOC_DEBUGGING
-	std::uint64_t total_length = 0;
+	//TODO: BUGBUG: need +1 here, else ASSERT( ( m_buffer_filled + new_name_length ) < m_buffer_size ) fails!
+	std::uint64_t total_length = 1u;
 	for ( const auto& aFile : vecFiles ) {
 		total_length += static_cast<std::uint64_t>( aFile.name.length( ) );
 		
@@ -246,12 +252,16 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		}
 
 	static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
+	const std::uint64_t total_size_alloc = ( total_length );
 
-	const std::uint64_t total_size_alloc = ( sizeof( std::wstring::value_type ) * total_length );
-
+#ifdef WDS_STRING_ALLOC_DEBUGGING
 	TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
 #endif
 
+
+	ThisCItem->m_name_pool.reset( total_size_alloc );
+
+	ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
 
 	//ASSERT( path.back( ) != _T( '\\' ) );
 	//sizesToWorkOn_ CANNOT BE CONST!!
@@ -267,7 +277,9 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 		ASSERT( new_name_length < UINT16_MAX );
 
 		PWSTR new_name_ptr = nullptr;
-		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
+		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
+		const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
+
 		if ( !SUCCEEDED( copy_res ) ) {
 			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
 			displayWindowsMsgBoxWithMessage( dir.name.c_str( ) );
@@ -292,6 +304,7 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 				}
 			}
 		}
+	ASSERT( ThisCItem->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 	ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 	//ThisCItem->m_children_vector.shrink_to_fit( );
 	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );

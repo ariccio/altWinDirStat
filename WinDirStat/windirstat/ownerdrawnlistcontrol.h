@@ -63,7 +63,9 @@ public:
 	COwnerDrawnListItem( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem& operator=( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem( ) = default;
-	virtual ~COwnerDrawnListItem( ) = default;
+	virtual ~COwnerDrawnListItem( ) {
+		m_name = nullptr;
+		}
 
 	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 		return Compare( other, subitem );
@@ -71,7 +73,7 @@ public:
 
 	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 		if ( sorting.column1 == column::COL_NAME ) {
-			const auto sort_result = signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
+			const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
 		
 			if ( sort_result != 0 ) {
 				return sort_result;
@@ -164,11 +166,8 @@ protected:
 		return res;
 		}
 
-
-
-
 	INT          default_compare              ( _In_ const COwnerDrawnListItem* const baseOther ) const {
-		return signum( wcscmp( m_name.get( ), baseOther->m_name.get( ) ) );
+		return signum( wcscmp( m_name, baseOther->m_name ) );
 		}
 
 	//defined at bottom of THIS file.
@@ -189,9 +188,10 @@ protected:
 
 
 	public:
-	_Field_z_ _Field_size_( m_name_length ) std::unique_ptr<_Null_terminated_ const wchar_t[]> m_name;
+	//_Field_z_ _Field_size_( m_name_length ) std::unique_ptr<_Null_terminated_ const wchar_t[]> m_name;
+	_Field_z_ _Field_size_( m_name_length ) PCWSTR         m_name;
 	                                        //C4820: 'COwnerDrawnListItem' : '6' bytes padding added after data member 'COwnerDrawnListItem::m_name_length'
-	                                        std::uint16_t                                      m_name_length;
+	                                        std::uint16_t  m_name_length;
 	};
 
 namespace {
@@ -704,7 +704,7 @@ public:
 				return;
 				}
 			const auto w = GetSubItemWidth( item, col );
-			ASSERT( w == ( GetStringWidth( item->m_name.get( ) ) + 10 ) );
+			ASSERT( w == ( GetStringWidth( item->m_name ) + 10 ) );
 			if ( w > width ) {
 				width = w;
 				}
@@ -910,7 +910,7 @@ public:
 
 		if ( subitem == column::COL_NAME ) {
 			//fastpath. No work to be done!
-			dcmem.DrawTextW( item->m_name.get( ), static_cast< int >( item->m_name_length ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+			dcmem.DrawTextW( item->m_name, static_cast< int >( item->m_name_length ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
 			return;
 			}
 
@@ -1062,16 +1062,16 @@ private:
 	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc ) const {
 		//column::COL_NAME requires very little work!
 		if ( item->m_name_length == 0 ) {
-			ASSERT( 0 == GetStringWidth( item->m_name.get( ) ) );
+			ASSERT( 0 == GetStringWidth( item->m_name ) );
 			return 0;
 			}
 		CSelectObject sofont( dc, *( GetFont( ) ) );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-		dc.DrawTextW( item->m_name.get( ), static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		dc.DrawTextW( item->m_name, static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 			
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
-		ASSERT( ( rc.right - rc.left ) == GetStringWidth( item->m_name.get( ) ) );
+		ASSERT( ( rc.right - rc.left ) == GetStringWidth( item->m_name ) );
 		return ( rc.right - rc.left );
 		}
 
@@ -1503,11 +1503,11 @@ private:
 			if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
 				if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
 					//easy fastpath!
-					if ( item->m_name.get( ) == nullptr ) {
+					if ( item->m_name == nullptr ) {
 						return;
 						}
 					size_t chars_remaining = 0;
-					const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name.get( ), NULL, &chars_remaining, 0 );
+					const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
 					ASSERT( SUCCEEDED( res ) );
 					if ( !SUCCEEDED( res ) ) {
 						displayWindowsMsgBoxWithMessage( global_strings::COwnerDrawnListCtrl_handle_LvnGetdispinfo_err );
@@ -1589,7 +1589,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* cons
 	VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
 
 	RECT rcLabel = rcRest;
-	pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+	pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
 
 	AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -1610,7 +1610,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* cons
 	CSetTextColor stc( pdc, textColor );
 
 	if ( width == NULL ) {
-		pdc.DrawTextW( m_name.get( ), static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
 		}
 
 	//subtract one from left, add one to right

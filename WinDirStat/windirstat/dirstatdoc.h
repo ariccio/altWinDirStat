@@ -5,6 +5,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "globalhelpers.h"
 
 #ifndef WDS_DIRSTATDOC_H
 #define WDS_DIRSTATDOC_H
@@ -88,7 +89,8 @@ public:
 	CItemBranch const*                        m_selectedItem;         // Currently selected item, or NULL
 	CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
 	//C4820: 'CDirstatDoc' : '6' bytes padding added after data member 'CDirstatDoc::m_iterations' (dirstatdoc.cpp)
-	
+	Children_String_Heap_Manager              m_name_pool;
+
 protected:	
 	std::vector<SExtensionRecord>             m_extensionRecords;
 	std::unordered_map<std::wstring, COLORREF>m_colorMap;

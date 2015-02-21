@@ -137,7 +137,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 	public:
 		const CTreeListItem* m_parent;
-
+		Children_String_Heap_Manager m_name_pool;
 		// Data needed to display the item.
 		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr;
 	};

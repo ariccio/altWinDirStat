@@ -19,6 +19,10 @@ namespace {
 	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
 
 	const rsize_t volume_name_size = ( MAX_PATH + 1u );
+	const rsize_t max_number_of_named_drives = 32u;
+	const rsize_t volume_name_pool_size = ( volume_name_size * max_number_of_named_drives );
+
+
 	std::tuple<bool, PWSTR, std::uint64_t, std::uint64_t> RetrieveDriveInformation_GetVolumeName_succeeded( _In_ const std::wstring path, _In_ _Null_terminated_ wchar_t( &volume_name )[ volume_name_size ], _Inout_ _Pre_writable_size_( volume_name_size ) PWSTR formatted_volume_name ) {
 		std::uint64_t total = 0;
 		std::uint64_t free = 0;
@@ -50,21 +54,25 @@ namespace {
 		thisDriveItem->m_used        = 0;
 		}
 
-	void SetDriveInformation_copy_name_and_set_m_used( _In_ CDriveItem* const thisDriveItem, _In_ const std::wstring name ) {
+	void SetDriveInformation_copy_name_and_set_m_used( _In_ CDriveItem* const thisDriveItem, _In_ const std::wstring name, _In_ Children_String_Heap_Manager* name_pool ) {
 
 		ASSERT( name.length( ) < UINT16_MAX );
 		const auto new_name_length = static_cast<std::uint16_t>( name.length( ) );
 
 		PWSTR new_name_ptr_temp = nullptr;
-		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
+		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr_temp, new_name_length, name );
+		const HRESULT copy_res = name_pool->copy_name_str_into_buffer( new_name_ptr_temp, ( new_name_length + 1u ), name );
+		
+		
 		ASSERT( SUCCEEDED( copy_res ) );
 		if ( !SUCCEEDED( copy_res ) ) {
 			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (SetDriveInformation, success)(aborting!)" );
 			displayWindowsMsgBoxWithMessage( name.c_str( ) );
 			std::terminate( );
 			}
+
 		PCWSTR const new_name_ptr = new_name_ptr_temp;
-		thisDriveItem->m_name.reset( new_name_ptr );
+		thisDriveItem->m_name = new_name_ptr;
 		thisDriveItem->m_name_length = new_name_length;
 		if ( thisDriveItem->m_totalBytes == 0 ) {
 			return;
@@ -74,19 +82,19 @@ namespace {
 		thisDriveItem->m_used = static_cast<DOUBLE>( thisDriveItem->m_totalBytes - thisDriveItem->m_freeBytes ) / static_cast<DOUBLE>( thisDriveItem->m_totalBytes );
 		}
 
-	void SetDriveInformation_failure( _In_ CDriveItem* thisDriveItem, _In_ const std::wstring name ) {
+	void SetDriveInformation_failure( _In_ CDriveItem* const thisDriveItem ) {
 		thisDriveItem->m_totalBytes = UINT64_MAX;
 		thisDriveItem->m_freeBytes  = UINT64_MAX;
 		thisDriveItem->m_used       = -1;
 		}
 
-	void SetDriveInformation( _In_ CDriveItem* thisDriveItem, _In_ const bool success, _In_ const std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+	void SetDriveInformation( _In_ CDriveItem* const thisDriveItem, _In_ const bool success, _In_ const std::wstring name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ Children_String_Heap_Manager* const name_pool ) {
 		if ( success ) {
 			SetDriveInformation_set_valid_info( thisDriveItem, name, total, free );
-			return SetDriveInformation_copy_name_and_set_m_used( thisDriveItem, name );
+			return SetDriveInformation_copy_name_and_set_m_used( thisDriveItem, name, name_pool );
 			}
-		SetDriveInformation_failure( thisDriveItem, name );
-		SetDriveInformation_copy_name_and_set_m_used( thisDriveItem, name );
+		SetDriveInformation_failure( thisDriveItem );
+		SetDriveInformation_copy_name_and_set_m_used( thisDriveItem, name, name_pool );
 		return;
 		}
 
@@ -300,8 +308,9 @@ IMPLEMENT_DYNAMIC(CSelectDrivesDlg, CDialog)
 
 UINT CSelectDrivesDlg::_serial;
 
+
 #pragma warning(suppress:4355)
-CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_ALLLOCALDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ) {
+CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_ALLLOCALDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ), m_name_pool( volume_name_pool_size ) {
 	_serial++;
 	//InitializeCriticalSection_wrapper( _csRunningThreads );
 	InitializeCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
@@ -395,9 +404,9 @@ void CSelectDrivesDlg::buildSelectList( ) {
 	const auto drives = GetLogicalDrives( );
 	INT i = 0;
 	DWORD mask = 0x00000001;
-	m_list.m_drives.reset( new CDriveItem[ 32 ] );
+	m_list.m_drives.reset( new CDriveItem[ max_number_of_named_drives ] );
 	m_list.m_drives_count = 0;
-	for ( i = 0; i < 32; i++, mask <<= 1 ) {
+	for ( i = 0; i < static_cast<int>( max_number_of_named_drives ); i++, mask <<= 1 ) {
 		if ( ( drives bitand mask ) == 0 ) {
 			continue;
 			}
@@ -414,6 +423,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 			}
 
 		const rsize_t drive_name_length = ( drive_name_buffer_size - chars_remaining );
+		ASSERT( wcslen( drive_name_buffer ) == drive_name_length );
 
 		const auto type = GetDriveTypeW( drive_name_buffer );
 		if ( ( type == DRIVE_UNKNOWN ) || ( type == DRIVE_NO_ROOT_DIR ) ) {
@@ -435,8 +445,9 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		ASSERT( drive_name_length < UINT16_MAX );
 
 		PWSTR new_name_ptr = nullptr;
-		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, s.GetString( ) );
-		const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, drive_name_length, drive_name_buffer );
+		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, drive_name_length, drive_name_buffer );
+		const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( drive_name_length + 1u ), drive_name_buffer );
+
 		ASSERT( SUCCEEDED( copy_res ) );
 		if ( !SUCCEEDED( copy_res ) ) {
 			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (buildSelectList)(aborting!)" );
@@ -702,7 +713,7 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	//EnterCriticalSection( &_csRunningThreads );
 	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
 	
-	SetDriveInformation( item, success, std::move( name ), total, free );
+	SetDriveInformation( item, success, std::move( name ), total, free, &m_name_pool );
 	
 	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
 	//LeaveCriticalSection( &_csRunningThreads );
