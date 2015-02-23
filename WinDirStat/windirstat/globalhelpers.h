@@ -38,7 +38,7 @@ inline type_struct_to_init zero_init_struct( ) {
 
 struct Children_String_Heap_Manager {
 
-	//TODO: I'm not using these yet, but if I define them inline, the compiler bitches that they're not used.
+	//TODO: inline these?
 	Children_String_Heap_Manager( );
 	Children_String_Heap_Manager( const rsize_t number_of_characters_needed );
 	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;

@@ -13,6 +13,25 @@ public:
 	CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject ) : m_pdc{ &pdc } {
 		//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
 		m_pOldObject = pdc.SelectObject( &pObject );
+		/*
+_AFXWIN_INLINE CGdiObject* CDC::SelectObject(CGdiObject* pObject)
+	{ ASSERT(m_hDC != NULL); return SelectGdiObject(m_hDC, pObject->GetSafeHandle()); }
+		
+CGdiObject* PASCAL CDC::SelectGdiObject(HDC hDC, HGDIOBJ h)
+{
+	return CGdiObject::FromHandle(::SelectObject(hDC, h));
+}
+
+CGdiObject* PASCAL CGdiObject::FromHandle(HGDIOBJ h)
+{
+	CHandleMap* pMap = afxMapHGDIOBJ(TRUE); //create map if not exist
+	ASSERT(pMap != NULL);
+	CGdiObject* pObject = (CGdiObject*)pMap->FromHandle(h);
+	ASSERT(pObject == NULL || pObject->m_hObject == h);
+	return pObject;
+}
+		*/
+
 		ASSERT( m_pOldObject != NULL );
 		}
 	~CSelectObject( ) {

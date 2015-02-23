@@ -57,6 +57,7 @@ public:
 // - the extension list,
 // - or none of them. In this case the focus lies on
 //   an invisible (zero-size) child of CMainFrame.
+//TODO: convert to ATL
 class CDeadFocusWnd final : public CWnd {
 public:
 	CDeadFocusWnd( CMainFrame* ptr ) : m_frameptr( ptr ) { }

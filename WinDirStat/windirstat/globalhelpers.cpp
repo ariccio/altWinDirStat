@@ -1456,7 +1456,6 @@ void close_handle( const HANDLE handle ) {
 	if ( !res ) {
 		TRACE( _T( "Closing handle failed!\r\n" ) );
 		}
-	//TODO: trace error message
 	
 	}
 

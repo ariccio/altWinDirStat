@@ -23,6 +23,8 @@ BEGIN_MESSAGE_MAP( CColorButton, CButton )
 	ON_WM_ENABLE( )
 END_MESSAGE_MAP( )
 
+//REFLECT_NOTIFICATIONS
+
 #else
 
 #endif

@@ -360,9 +360,10 @@ namespace NativeAPI {
 
 	static inline std::wstring ntpath_from_dospath( std::wstring p ) {
 		// This is pretty easy thanks to a convenient symlink in the NT kernel root directory ...
-		std::wstring base( L"\\??" );
+		std::wstring base( L"\\??\\" );
+
 		//operator /= appears to just append a path separator and rhs. Ick.
-		base += L'\\';
+		//base += L'\\';
 		base += p;
 		//base /= p;
 		return base;
@@ -380,7 +381,9 @@ namespace NativeAPI {
 
 	static inline std::wstring dospath_from_ntpath( std::wstring p ) {
 		//auto first = ++p.begin( );
+		ASSERT( p.length( ) > 3 );
 		if ( ( p.at( 2 ) == L'?' ) && ( p.at( 3 ) == L'?' ) ) {
+			ASSERT( p.length( ) > 4 );
 			p = std::wstring( p.begin( ) + 4, p.end( ) );
 			}
 		return p;

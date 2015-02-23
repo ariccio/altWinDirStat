@@ -445,7 +445,7 @@ const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item 
 		if ( SUCCEEDED( res ) ) {
 			TRACE( _T( "get_uncompressed_file_size failed! error message: %s\r\n" ), str_buff );
 			}
-		//TODO: trace error message
+		TRACE( _T( "DOUBLE FAULT! get_uncompressed_file_size failed! Error getting error message!\r\n" ) );
 		return UINT64_ERROR;
 		}
 

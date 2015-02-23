@@ -114,6 +114,7 @@ public:
 
 
 // CDriveInformationThread. Does the GetVolumeInformation() call, which may hang for ca. 30 sec, it a network drive is not accessible.
+//TODO: convert to ATL?
 class CDriveInformationThread final : public CWinThread {
 
 public:

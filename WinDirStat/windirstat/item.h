@@ -143,8 +143,6 @@ class CItemBranch final : public CTreeListItem {
 												 //C4820: 'CItemBranch' : '3' bytes padding added after data member 'CItemBranch::m_attr'
 												 attribs                        m_attr;
 					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
-
-												//V<---the fact that m_size is mutable SHOULD BE FIXED! BUGBUG: TODO:
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
@@ -156,6 +154,27 @@ class CItemBranch final : public CTreeListItem {
 
 	};
 
-	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
+INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
+
+
+
+//newer, more efficient allocation strategy will use a struct with the child count, child name heap manager, and an UNSIZED ARRAY as the children array.
+//may need to merge CTreeListItem & CItemBranch to make this work in a clean manner.
+//It'll have to use a struct that'll look something like this:
+struct children_heap_block_allocation {
+	children_heap_block_allocation( ) : m_childCount { 0u } { }
+	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
+	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;
+
+	_Field_range_( 0, 4294967295 )
+		std::uint32_t                m_childCount;
+		Children_String_Heap_Manager m_name_pool;
+		//maybe we could also store the NON-NTFS-compressed folder size here?
+
+#pragma warning( suppress: 4200 )//yes, this is Microsoft-specific
+		CItemBranch                  m_children[ ];//unsized array is a MICROSOFT-SPECIFIC extension to C++ that emulates C's Flexible Array Member.
+		//there are VERY active discussions in the C++ CWG (core working group) to develop some standardized version of array data members of runtime-bound.
+	};
+
 
 #endif
