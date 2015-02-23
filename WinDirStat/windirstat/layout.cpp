@@ -62,6 +62,10 @@ BOOL CDC::LineTo(int x, int y)
 	//unselect object
 	const auto old_obj_1_unselect_res = SelectObject( hDC, old_obj_1 );
 	ASSERT( old_obj_1_unselect_res != NULL );
+#ifndef DEBUG
+	//todo: check this!
+	UNREFERENCED_PARAMETER( old_obj_1_unselect_res );
+#endif
 
 	HGDIOBJ old_obj_2 = SelectObject( hDC, darkPen );
 	//CSelectObject sopen2( pdc, darkPen );
@@ -90,6 +94,10 @@ BOOL CDC::LineTo(int x, int y)
 	//unselect object
 	const auto old_obj_2_unselect_res = SelectObject( hDC, old_obj_2 );
 	ASSERT( old_obj_2_unselect_res != NULL );
+#ifndef DEBUG
+	//todo: check this!
+	UNREFERENCED_PARAMETER( old_obj_2_unselect_res );
+#endif
 	}
 
 #else

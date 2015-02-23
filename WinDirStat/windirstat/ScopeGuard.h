@@ -31,17 +31,20 @@ class ScopeGuard {
 #endif
 
 	public:
-	ScopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) : function_to_call_on_scope_exit{ std::move( f ) }, active_{ true },
+	ScopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) : function_to_call_on_scope_exit{ std::move( f ) }, active_{ true }
 #ifdef DEBUG
+		,
 		file_name{ file_name_in },
 		func_name{ func_name_in },
 		line_number{ line_number_in }
-#else
-	UNREFERENCED_PARAMETER( file_name_in );
-	UNREFERENCED_PARAMETER( func_name_in );
-	UNREFERENCED_PARAMETER( line_number_in );
 #endif
-		{ }
+		{
+#ifndef DEBUG
+		UNREFERENCED_PARAMETER( file_name_in );
+		UNREFERENCED_PARAMETER( func_name_in );
+		UNREFERENCED_PARAMETER( line_number_in );
+#endif
+		}
 
 	//intentionally asked to NOT inline, to reduce code duplication.
 	__declspec(noinline)
