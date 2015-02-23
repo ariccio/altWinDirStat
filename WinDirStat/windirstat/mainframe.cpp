@@ -28,7 +28,7 @@
 
 
 #include "globalhelpers.h"
-
+#include "ScopeGuard.h"
 
 namespace {
 	// This must be synchronized with the IDR_MAINFRAME menu
@@ -42,9 +42,6 @@ namespace {
 		TLM_HELP
 		};
 
-	enum {
-		IDC_DEADFOCUS		// ID of dead-focus window
-		};
 
 	void failed_to_open_clipboard( ) {
 		displayWindowsMsgBoxWithError( );
@@ -185,9 +182,9 @@ BEGIN_MESSAGE_MAP( CMySplitterWnd, CSplitterWnd )
 	ON_WM_SIZE( )
 END_MESSAGE_MAP( )
 
-CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-	}
+//CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
+//	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+//	}
 
 
 void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
@@ -200,7 +197,8 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	
 	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
 	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
-
+	
+	auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
 
 	INT dummy = 0;
 	if ( GetColumnCount( ) > 1 ) {
@@ -212,7 +210,7 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 			}
 		m_wasTrackedByUser = true;
 		m_userSplitterPos = m_splitterPos;
-		return CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		return;
 		}
 	INT cyUpper = 0;
 	GetRowInfo( 0, cyUpper, dummy );
@@ -221,90 +219,75 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 		}
 	m_wasTrackedByUser = true;
 	m_userSplitterPos = m_splitterPos;
-	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
 void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 	m_splitterPos = pos;
-
-	
-
 	RECT rcClient = { 0, 0, 0, 0 };
 
 	ASSERT( ::IsWindow( m_hWnd ) );
 	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
 	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
 
+	//auto splitter_persist = scopeGuard( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); }, __FILE__, __FUNCSIG__, __LINE__ );
+	//WDS_SCOPEGUARD_INSTANCE
+	auto splitter_persist = WDS_SCOPEGUARD_INSTANCE( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
 	if ( GetColumnCount( ) > 1 ) {
 		ASSERT( m_pColInfo != NULL );
 		if ( m_pColInfo == NULL ) {
-			CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 			return;
 			}
 		const auto cxLeft = static_cast< INT >( pos * ( rcClient.right - rcClient.left ) );
 		if ( cxLeft >= 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
 			RecalcLayout( );
-			CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 			return;
 			}
-		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		return;
 		}
 	ASSERT( m_pRowInfo != NULL );
 	if ( m_pRowInfo == NULL ) {
-		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		return;
 		}
 	const auto cyUpper = static_cast< INT >( pos * ( rcClient.bottom - rcClient.top ) );
 	if ( cyUpper >= 0 ) {
 		SetRowInfo( 0, cyUpper, 0 );
 		RecalcLayout( );
-		CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 		return;
 		}
-	CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
 	}
 
 
-void CMySplitterWnd::RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
-	SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
-	}
+//void CMySplitterWnd::RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
+//	SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
+//	}
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
+	auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ CSplitterWnd::OnSize( nType, cx, cy ); } );
 	if ( GetColumnCount( ) > 1 ) {
 		const INT cxLeft = static_cast< INT >( cx * m_splitterPos );
 		if ( cxLeft > 0 ) {
 			SetColumnInfo( 0, cxLeft, 0 );
-			CSplitterWnd::OnSize( nType, cx, cy );
 			return;
 			}
-		CSplitterWnd::OnSize( nType, cx, cy );
 		return;
 		}
 	const INT cyUpper = static_cast< INT >( cy * m_splitterPos );
 	if ( cyUpper > 0 ) {
 		SetRowInfo( 0, cyUpper, 0 );
-		CSplitterWnd::OnSize( nType, cx, cy );
 		return;
 		}
-	CSplitterWnd::OnSize( nType, cx, cy );
 	}
 
-#pragma warning( suppress: 4263 )
-void CDeadFocusWnd::Create( _In_ CWnd* parent ) {
-	const RECT rc = { 0, 0, 0, 0 };
-	VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
-	}
-
-BEGIN_MESSAGE_MAP( CDeadFocusWnd, CWnd )
-	ON_WM_KEYDOWN( )
-END_MESSAGE_MAP( )
-
-void CDeadFocusWnd::OnKeyDown( const UINT nChar, const UINT /* nRepCnt */, const UINT /* nFlags */ ) {
+LRESULT CDeadFocusWnd::OnKeyDown( UINT /*nMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled ) {
+	const UINT nChar = static_cast<UINT>( wParam );
 	if ( nChar == VK_TAB ) {
 		m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
+		bHandled = TRUE;
+		return 0;
 		}
+	bHandled = FALSE;
+	return 0;
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -349,10 +332,15 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 		return -1;
 		}
 
+
 	VERIFY( m_wndStatusBar.Create( this ) );
 	SetIndicators( m_wndStatusBar, indicators );
 
-	m_wndDeadFocus.Create( this );
+	RECT rc = { 0, 0, 0, 0 };
+
+	m_wndDeadFocus.Create( m_hWnd, rc, _T( "_deadfocus" ), WS_CHILD, 0, dead_focus_wnd::IDC_DEADFOCUS, NULL );
+	//m_wndDeadFocus.Create( this );
+
 	EnableDocking( CBRS_ALIGN_ANY );
 
 	LoadBarState( CPersistence::GetBarStateSection( ) );

@@ -16,6 +16,7 @@
 #include "windirstat.h"
 #include "mainframe.h"
 #include "globalhelpers.h"
+#include "ScopeGuard.h"
 
 
 
@@ -134,13 +135,15 @@ SetProcessMitigationPolicy(
 		ASLR_policy.EnableHighEntropy           = true;
 #endif
 		ASLR_policy.DisallowStrippedImages = true;
+		
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ handle_mitigation_enable_failure( L"Failed to set enhanced/forced ASLR: " ); } );
+
 		const BOOL set_aslr_policy_res = SetProcessMitigationPolicy_f( ProcessASLRPolicy, &ASLR_policy, sizeof( ASLR_policy ) );
 		if ( set_aslr_policy_res == TRUE ) {
 			TRACE( _T( "Successfully enabled bottom-up randomization, forcible image relocation, and refusal to load images without a `.reloc` section (DisallowStrippedImages).\r\n" ) );
+			guard.dismiss( );
 			return;
 			}
-		handle_mitigation_enable_failure( L"Failed to set enhanced/forced ASLR: " );
-		return;
 		}
 
 	//This one seems to be causing trouble. Disable for now.
@@ -149,39 +152,45 @@ SetProcessMitigationPolicy(
 		DEP_policy.Enable                   = true;
 		DEP_policy.Permanent                = true;
 		DEP_policy.DisableAtlThunkEmulation = true;
+
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { handle_mitigation_enable_failure( L"Failed to set enhanced/forced DEP: " ); } );
+
 		const BOOL set_DEP_policy_res = SetProcessMitigationPolicy_f( ProcessDEPPolicy, &DEP_policy, sizeof( DEP_policy ) );
 		if ( set_DEP_policy_res == TRUE ) {
 			TRACE( _T( "Successfully enabled Permanent DEP, and successfully disabled AtlThunkEmulation.\r\n" ) );
+			guard.dismiss( );
 			return;
 			}
-		handle_mitigation_enable_failure( L"Failed to set enhanced/forced DEP: " );
-		return;
 		}
 
 
 	void enable_EXTENSION_POINT_mitigation( SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f ) {
 		PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY EXTEND_POINT_policy = { 0 };
 		EXTEND_POINT_policy.DisableExtensionPoints = true;
+		
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { handle_mitigation_enable_failure( L"Failed to disable insecure Extension Points: " ); } );
+
 		const BOOL set_EXTEND_policy_res = SetProcessMitigationPolicy_f( ProcessExtensionPointDisablePolicy, &EXTEND_POINT_policy, sizeof( EXTEND_POINT_policy ) );
 		if ( set_EXTEND_policy_res == TRUE ) {
 			TRACE( _T( "Successfully disabled Extension Points, ancient & insecure extension points are now forbidden.\r\n" ) );
+			guard.dismiss( );
 			return;
 			}
-		handle_mitigation_enable_failure( L"Failed to disable insecure Extension Points: " );
-		return;
 		}
 
 	void enable_strict_HANDLE_check_mitigation( SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f ) {
 		PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY HANDLE_policy = { 0 };
 		HANDLE_policy.RaiseExceptionOnInvalidHandleReference = true;
 		HANDLE_policy.HandleExceptionsPermanentlyEnabled = true;
+
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ handle_mitigation_enable_failure( L"Failed to enable strict invalid handle checking: " ); } );
+
 		const BOOL set_HANDLE_policy_res = SetProcessMitigationPolicy_f( ProcessStrictHandleCheckPolicy, &HANDLE_policy, sizeof( HANDLE_policy ) );
 		if ( set_HANDLE_policy_res == TRUE ) {
 			TRACE( _T( "Successfully enabled strict invalid handle checking.\r\n" ) );
+			guard.dismiss( );
 			return;
 			}
-		handle_mitigation_enable_failure( L"Failed to enable strict invalid handle checking: " );
-		return;
 		}
 
 	std::pair<const HMODULE, const BOOL> init_kernel32( ) {

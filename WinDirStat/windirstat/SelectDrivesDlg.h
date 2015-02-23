@@ -216,6 +216,7 @@ public:
 		}
 	};
 
+
 // CSelectDrivesDlg. The initial dialog, where the user can select one or more drives or a folder for scanning.
 class CSelectDrivesDlg final : public CDialog {
 	DECLARE_DYNAMIC( CSelectDrivesDlg )
@@ -234,7 +235,27 @@ public:
 
 private:
 	_Pre_satisfies_( m_radio == RADIO_AFOLDER )
-	void handle_RADIO_AFOLDER( );
+	void handle_RADIO_AFOLDER( ) {
+		const rsize_t full_path_buffer_size = 128;
+		_Null_terminated_ wchar_t full_path_buffer[ full_path_buffer_size ] = { 0 };
+		rsize_t chars_written = 0;
+	
+		const HRESULT path_res = GetFullPathName_WriteToStackBuffer( m_folder_name_heap.c_str( ), full_path_buffer, full_path_buffer_size, chars_written );
+
+		if ( SUCCEEDED( path_res ) ) {
+			m_folder_name_heap = full_path_buffer;
+			}
+		else {
+			const auto folder_path = dynamic_GetFullPathName( m_folder_name_heap.c_str( ) );
+			m_folder_name_heap = folder_path.c_str( );
+			}
+
+		//m_folderName = m_folder_name_heap.c_str( );
+
+		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+		TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), m_folder_name_heap.c_str( ) );
+		VERIFY( UpdateData( false ) );
+		}
 
 	_Pre_satisfies_( m_radio != RADIO_AFOLDER )
 	void handle_RADIO_other( );

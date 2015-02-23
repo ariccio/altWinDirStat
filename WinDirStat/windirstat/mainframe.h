@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 #include "windirstat.h"
+#include "options.h"
 
 #ifndef WDS_MAINFRAME_H
 #define WDS_MAINFRAME_H
@@ -34,10 +35,17 @@ public:
 	CMySplitterWnd& operator=( const CMySplitterWnd& in ) = delete;
 	CMySplitterWnd( const CMySplitterWnd& in ) = delete;
 
-	CMySplitterWnd::CMySplitterWnd     ( _In_z_     PCWSTR const name );
+	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
+		CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+		}
+	void RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
+		SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
+		}
+
+
+
 	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
-	void            RestoreSplitterPos ( _In_ const DOUBLE default_pos );
 
 	PCWSTR const m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos;			// Current split ratio
@@ -51,6 +59,11 @@ public:
 
 	};
 
+namespace dead_focus_wnd {
+	enum {
+		IDC_DEADFOCUS		// ID of dead-focus window
+		};
+	}
 
 // CDeadFocusWnd. The focus in Windirstat can be on 
 // - the directory list
@@ -58,22 +71,48 @@ public:
 // - or none of them. In this case the focus lies on
 //   an invisible (zero-size) child of CMainFrame.
 //TODO: convert to ATL
-class CDeadFocusWnd final : public CWnd {
+class CDeadFocusWnd final : public ATL::CWindowImpl<CDeadFocusWnd> {
 public:
+
 	CDeadFocusWnd( CMainFrame* ptr ) : m_frameptr( ptr ) { }
 	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
 	CDeadFocusWnd( const CDeadFocusWnd& in ) = delete;
 
 //#pragma warning( once : 4263 )
 	CMainFrame* m_frameptr;
-#pragma warning( suppress: 4263 )
-	void Create( _In_ CWnd* parent );
+
+//#pragma warning( suppress: 4263 )
+//	void Create( _In_ CWnd* parent ) {
+//				/*
+//		HWND CWindowImpl::Create(
+//			_In_opt_ HWND hWndParent,
+//			_In_ _U_RECT rect = NULL,
+//			_In_opt_z_ LPCTSTR szWindowName = NULL,
+//			_In_ DWORD dwStyle = 0,
+//			_In_ DWORD dwExStyle = 0,
+//			_In_ _U_MENUorID MenuOrID = 0U,
+//			_In_opt_ LPVOID lpCreateParam = NULL)
+//
+//				*/
+//		//parent->m_hWnd, rc, _T( "_deadfocus" ), WS_CHILD, 0, IDC_DEADFOCUS, NULL
+//		const RECT rc = { 0, 0, 0, 0 };
+//		VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
+//		}
+
 	~CDeadFocusWnd( ) {
-		DestroyWindow( );
+		//DestroyWindow( );
 		}
-protected:
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags );
+public:
+	//DECLARE_MESSAGE_MAP()
+	//afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags ) {
+	LRESULT OnKeyDown( UINT /*nMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
+
+
+public:
+	BEGIN_MSG_MAP( CDeadFocusWnd )
+		MESSAGE_HANDLER( WM_KEYDOWN, CDeadFocusWnd::OnKeyDown )
+#pragma warning( suppress : 4365 )//C4365: 'argument' : conversion from 'unsigned int' to 'int', signed/unsigned mismatch
+	END_MSG_MAP()
 	};
 
 

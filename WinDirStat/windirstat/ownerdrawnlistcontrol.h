@@ -16,6 +16,7 @@
 #include "globalhelpers.h"
 #include "options.h"
 #include "windirstat.h"
+#include "ScopeGuard.h"
 
 class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;

@@ -544,6 +544,10 @@ namespace global_strings {
 	_Null_terminated_ const wchar_t about_text[ ] = { L"\r\naltWinDirStat - a fork of 'WinDirStat' Windows Directory Statistics\r\n\r\nShows where all your disk space has gone\r\nand helps you clean it up.\r\n\r\n(originally)Re-programmed for MS Windows by\r\nBernhard Seifert,\r\n\r\nbased on Stefan Hundhammer's KDE (Linux) program KDirStat\r\n(http://kdirstat.sourceforge.net/).\r\n\r\n\r\n\r\n\r\n\r\nLATER modified by Alexander Riccio\r\n\r\nabout.me/ariccio or ariccio.com\r\nsee gpl-2.0.txt for license ( GNU GENERAL PUBLIC LICENSE Version 2, June 1991 )" };
 	
 	_Null_terminated_ const wchar_t select_folder_dialog_title_text[ ] = L"WinDirStat - Select Folder";
+
+	_Null_terminated_ const wchar_t GetDriveInformation_failed_fmt_str[ ] = L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n";
+
+	_Null_terminated_ const wchar_t GetDriveInformation_succeed_fmt_str[ ] = L"thread (%p)->GetDriveInformation succeeded!, name:%s, total: %I64u, free: %I64u\r\n";
 	}
 
 #else

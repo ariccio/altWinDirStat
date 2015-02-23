@@ -75,6 +75,9 @@
     <ClCompile Include="directory_enumeration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScopeGuard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h">
@@ -152,7 +155,7 @@
     <ClInclude Include="directory_enumeration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="minimal_CWnd_equivalent.h">
+    <ClInclude Include="ScopeGuard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

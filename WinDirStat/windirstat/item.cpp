@@ -351,7 +351,9 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
-	ASSERT( wcslen( m_name ) == m_name_length );
+#ifdef DEBUG
+	auto guard_assert = WDS_SCOPEGUARD_INSTANCE( [ &] { ASSERT( wcslen( m_name ) == m_name_length ); } );
+#endif
 	ASSERT( wcslen( m_name ) < 33000 );
 	if ( m_children == nullptr ) {
 		//ASSERT( m_parent != NULL );
@@ -360,17 +362,14 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 			//TODO: BUGBUG: what is dis?
 			if ( m_parent->m_parent != NULL ) {
 				pathBuf += L'\\';
-				ASSERT( wcslen( m_name ) == m_name_length );
 				pathBuf += m_name;
 				return;
 				}
 			pathBuf += L'\\';
-			ASSERT( wcslen( m_name ) == m_name_length );
 			pathBuf += m_name;
 			return;
 			}
 		ASSERT( pathBuf.empty( ) );
-		ASSERT( wcslen( m_name ) == m_name_length );
 		pathBuf = m_name;
 		return;
 		//ASSERT( false );

@@ -78,7 +78,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #define COLOR_DEBUGGING
 //#define SIMD_ACCESS_DEBUGGING
 //#define WDS_STRING_ALLOC_DEBUGGING
-
+#define DISPLAY_FINAL_CITEMBRANCH_SIZE
 
 #ifndef DEBUG
 #define DISPLAY_FINAL_CITEMBRANCH_SIZE
@@ -297,6 +297,11 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #error already defined!
 #endif
 
+#ifndef WDS_SCOPEGUARD_INSTANCE
+#define WDS_SCOPEGUARD_INSTANCE( func ) scopeGuard( (func), __FILE__, __FUNCSIG__, __LINE__ )
+#else
+#error already defined!!
+#endif
 
 #ifndef WDS_ASSERT_NEVER_REACHED
 

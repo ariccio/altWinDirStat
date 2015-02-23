@@ -151,7 +151,7 @@ void displayWindowsMsgBoxWithMessage( PCWSTR const message );
 
 void MyGetDiskFreeSpace             ( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
-
+//void trace_helper(  )
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );

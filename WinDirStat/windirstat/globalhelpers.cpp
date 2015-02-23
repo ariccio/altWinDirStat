@@ -10,6 +10,7 @@
 #define WDS_GLOBALHELPERS_CPP
 
 #include "globalhelpers.h"
+#include "ScopeGuard.h"
 
 #pragma warning(3:4514) //'function': unreferenced inline function has been removed
 
@@ -428,20 +429,22 @@ namespace {
 		}
 
 	void convert_number_to_string_failed( _In_range_( 19, 128 ) const rsize_t bufSize, _In_ const std::int64_t number, _In_ const HRESULT strsafe_printf_res ) {
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { convert_number_to_string_failed_display_debugging_info( bufSize, number ); } );
+
 		if ( strsafe_printf_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_INSUFFICIENT_BUFFER in CStyle_GetNumberFormatted!(aborting)" );
-			return convert_number_to_string_failed_display_debugging_info( bufSize, number );
+			return;
 			}
 		if ( strsafe_printf_res == STRSAFE_E_END_OF_FILE ) {
 			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_END_OF_FILE in CStyle_GetNumberFormatted!(aborting)" );
-			return convert_number_to_string_failed_display_debugging_info( bufSize, number );
+			return;
 			}
 		if ( strsafe_printf_res == STRSAFE_E_INVALID_PARAMETER ) {
 			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_INVALID_PARAMETER in CStyle_GetNumberFormatted!(aborting)" );
-			return convert_number_to_string_failed_display_debugging_info( bufSize, number );
+			return;
 			}
 		displayWindowsMsgBoxWithMessage( L"Unknown error in CStyle_GetNumberFormatted!(aborting)" );
-		return convert_number_to_string_failed_display_debugging_info( bufSize, number );
+		return;
 		}
 
 	void convert_number_to_string( _In_range_( 19, 128 ) const rsize_t bufSize, _Pre_writable_size_( bufSize ) _Post_z_ PWSTR number_str_buffer, _In_ const std::int64_t number ) {
