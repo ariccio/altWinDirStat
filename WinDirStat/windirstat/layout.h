@@ -50,25 +50,6 @@ public:
 		CSizeGripper& operator=( const CSizeGripper& in ) = delete;
 		CSizeGripper( const CSizeGripper& in ) = delete;
 
-		//CSizeGripper( );
-//#pragma warning( suppress: 4263 )
-//		void Create( _Inout_ CWnd* parent, _In_ const RECT rc ) {
-//			/*
-//	HWND CWindowImpl::Create(
-//		_In_opt_ HWND hWndParent,
-//		_In_ _U_RECT rect = NULL,
-//		_In_opt_z_ LPCTSTR szWindowName = NULL,
-//		_In_ DWORD dwStyle = 0,
-//		_In_ DWORD dwExStyle = 0,
-//		_In_ _U_MENUorID MenuOrID = 0U,
-//		_In_opt_ LPVOID lpCreateParam = NULL)
-//
-//			*/
-//			// _In_ const HWND parent_hWnd, rc, L"", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 0, IDC_SIZEGRIPPER, NULL
-//			
-//			VERIFY( CWnd::Create( AfxRegisterWndClass( 0, AfxGetApp( )->LoadStandardCursor( IDC_ARROW ), ( HBRUSH ) ( COLOR_BTNFACE + 1 ), 0 ), _T( "" ), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, rc, parent, IDC_SIZEGRIPPER ) );
-//			}
-
 	private:
 		void DrawShadowLine( _In_ HDC& hDC, _In_ WTL::CPoint start, _In_ WTL::CPoint end );
 

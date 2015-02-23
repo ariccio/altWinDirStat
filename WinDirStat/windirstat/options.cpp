@@ -301,42 +301,9 @@ _AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
 		return ws_entry;
 		}
 
-	//std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
-	//	const auto ws_entry = generalized_make_entry( name, registry_strings::entryColumnWidthsS );
-	//	if ( ws_entry.empty( ) ) {
-	//		displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
-	//		OutputDebugStringW( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string.\r\n" );
-	//		}
-	//	return ws_entry;
-	//	}
-
 	}
 
 class CTreemap;
-
-//bool CPersistence::GetShowFileTypes( ) {
-//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowFileTypes, true );
-//	}
-
-//bool CPersistence::GetShowTreemap( ) {
-//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowTreemap, true );
-//	}
-
-//bool CPersistence::GetShowStatusbar( ) {
-//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowStatusbar, true );
-//	}
-
-//void CPersistence::SetShowFileTypes( _In_ const bool show ) {
-//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowFileTypes, show );
-//	}
-
-//void CPersistence::SetShowTreemap( _In_ const bool show ) {
-//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowTreemap, show );
-//	}
-
-//void CPersistence::SetShowStatusbar( _In_ const bool show ) {
-//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowStatusbar, show );
-//	}
 
 void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
 	//ASSERT( wp.length == sizeof( wp ) );
@@ -381,9 +348,6 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 		userpos = ( static_cast<DOUBLE>( pos ) / static_cast<DOUBLE>( 100 ) );
 		}
 	}
-//void CPersistence::GetColumnOrder( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
-//	GetArray( MakeColumnOrderEntry( name ), arr );
-//	}
 
 void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc ) {
 	GetRect( MakeDialogRectangleEntry( name ), rc );
@@ -392,40 +356,9 @@ void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc 
 	rc = temp;
 	}
 
-//void CPersistence::GetColumnWidths( _In_z_  const PCTSTR name, _Inout_ CArray<INT, INT>& arr ) {
-//	GetArray( MakeColumnWidthsEntry( name ), arr );
-//	}
-
-//void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
-//	SetArray( MakeColumnWidthsEntry( name ), arr );
-//	}
-
-//void CPersistence::SetColumnWidths( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-//	SetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
-//	}
-
-//void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _In_ const CArray<INT, INT>& arr ) {
-//	SetArray( MakeColumnOrderEntry( name ), arr );
-//	}
-
-//void CPersistence::SetColumnOrder( _In_z_ const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-//	SetArray( MakeColumnOrderEntry( name ), arr, arrSize );
-//	}
-
 void CPersistence::SetDialogRectangle( _In_z_ const PCTSTR name, _In_ const RECT rc ) {
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
-
-//void CPersistence::GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-//	GetArray( MakeColumnOrderEntry( name ), arr, arrSize );
-//	}
-
-
-//void CPersistence::GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-//	GetArray( MakeColumnWidthsEntry( name ), arr, arrSize );
-//	}
-
-
 
 INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/
@@ -434,10 +367,6 @@ INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	ASSERT( ( n >= 0 ) && ( n <= max_val ) );
 	return n;
 	}
-
-//void CPersistence::SetConfigPage( _In_ const INT page ) {
-//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPage, page );
-//	}
 
 void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
 	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x ) );
@@ -448,37 +377,12 @@ void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
 	pt = rc.TopLeft( );
 	}
 
-//void CPersistence::SetConfigPosition( _In_ const WTL::CPoint pt ) {
-//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x );
-//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt.y );
-//	}
-
-//PCTSTR CPersistence::GetBarStateSection( ) {
-//	return registry_strings::sectionBarState;
-//	}
-
 RADIO CPersistence::GetSelectDrivesRadio( ) {
 	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, 0 ) );
 	CheckMinMax( radio, 0, 2 );
 	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
 	return static_cast<RADIO>( radio );
 	}
-
-//void CPersistence::SetSelectDrivesRadio( _In_ const INT radio ) {
-//	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, radio );
-//	}
-
-//std::wstring CPersistence::GetSelectDrivesFolder( ) {
-//	return CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, _T( "" ) );
-//	}
-
-//DWORD CPersistence::CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize ) {
-//	return CRegistryUser::CStyle_GetProfileString( psz_text, strSize, registry_strings::sectionPersistence, entrySelectDrivesFolder, _T( "" ) );
-//	}
-
-//void CPersistence::SetSelectDrivesFolder( _In_z_ const PCTSTR folder ) {
-//	SetProfileString( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, folder );
-//	}
 
 void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
 	drives.clear( );
@@ -517,15 +421,6 @@ void CPersistence::SetSelectDrivesDrives( _In_ const std::vector<std::wstring>& 
 	SetProfileString( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesDrives, s.c_str( ) );
 	}
 
-//bool CPersistence::GetShowDeleteWarning( ) {
-//	return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowDeleteWarning, true );
-//	}
-
-//void CPersistence::SetShowDeleteWarning( _In_ const bool show ) {
-//	CRegistryUser::SetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowDeleteWarning, show );
-//	}
-
-
 void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 	ASSERT( entry.length( ) != 0 );
 	
@@ -554,31 +449,6 @@ void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writabl
 		}
 	SetProfileString( registry_strings::sectionPersistence, entry.c_str( ), value.c_str( ) );
 	}
-
-//void CPersistence::GetArray( _In_z_ const PCTSTR entry, _Inout_ CArray<INT, INT>& rarr ) {
-//	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry, _T( "" ) );
-//	CArray<INT, INT> arr;
-//	INT i = 0;
-//	while ( i < s.GetLength( ) ) {
-//		INT n = 0;
-//		while ( i < s.GetLength( ) && _istdigit( s[ i ] ) ) {
-//			n *= 10;
-//			n += s[ i ] - _T( '0' );
-//			i++;
-//			}
-//		arr.Add( n );
-//		if ( i >= s.GetLength( ) || s[ i ] != _T( ',' ) ) {
-//			break;
-//			}
-//		i++;
-//		}
-//	if ( i >= s.GetLength( ) && arr.GetSize( ) == rarr.GetSize( ) ) {
-//		for ( i = 0; i < rarr.GetSize( ); i++ ) {
-//			rarr[ i ] = arr[ i ];
-//			}
-//		}
-//	}
-
 
 _Pre_satisfies_( arrSize > 1 )
 void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
@@ -721,11 +591,6 @@ void COptions::SetListFullRowSelection( _In_ const bool show ) {
 		}
 	}
 
-//COLORREF COptions::GetTreelistColor( _In_ _In_range_( 0, TREELISTCOLORCOUNT ) const size_t i ) const {
-//	ASSERT( i < m_treelistColorCount );
-//	return m_treelistColor[ i ];
-//	}
-
 void COptions::SetHumanFormat( _In_ const bool human, CDirstatApp* app_ptr ) {
 	if ( m_humanFormat != human ) {
 		m_humanFormat = human;
@@ -741,9 +606,6 @@ void COptions::SetTreemapHighlightColor( _In_ const COLORREF color ) {
 		}
 	}
 
-//_Must_inspect_result_ const CTreemap::Options *COptions::GetTreemapOptions( ) const {
-//	return &m_treemapOptions;
-//	}
 
 void COptions::SetTreemapOptions( _In_ const Treemap_Options& options ) {
 	if ( options.style       != m_treemapOptions.style
@@ -899,9 +761,6 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_
 	return std::wstring( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
 	}
 
-//DWORD CRegistryUser::CStyle_GetProfileString( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize, _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {
-//	return GetProfileStringW( section, entry, defaultValue, psz_text, strSize );
-//	}
 
 void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT value ) {
 	ASSERT( wcslen( entry ) != 0 );
@@ -929,18 +788,6 @@ void CRegistryUser::SetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PC
 bool CRegistryUser::GetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool defaultValue ) {
 	return GetProfileInt_( section, entry, defaultValue ) != 0;
 	}
-
-//void CRegistryUser::CheckRange( _Inout_ INT& value, _In_ const INT min_val, _In_ const INT max_val ) {
-//	/*changed min and max to min_val and max_val to avoid name collision (with min() & max()) in ASSERT macro*/
-//	ASSERT( min_val < max_val );
-//	if ( value < min_val ) {
-//		value = min_val;
-//		}
-//	if ( value > max_val ) {
-//		value = max_val;
-//		}
-//	ASSERT( ( value >= min_val ) && ( value <= max_val ) );
-//	}
 
 
 #else

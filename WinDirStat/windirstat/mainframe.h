@@ -81,27 +81,8 @@ public:
 //#pragma warning( once : 4263 )
 	CMainFrame* m_frameptr;
 
-//#pragma warning( suppress: 4263 )
-//	void Create( _In_ CWnd* parent ) {
-//				/*
-//		HWND CWindowImpl::Create(
-//			_In_opt_ HWND hWndParent,
-//			_In_ _U_RECT rect = NULL,
-//			_In_opt_z_ LPCTSTR szWindowName = NULL,
-//			_In_ DWORD dwStyle = 0,
-//			_In_ DWORD dwExStyle = 0,
-//			_In_ _U_MENUorID MenuOrID = 0U,
-//			_In_opt_ LPVOID lpCreateParam = NULL)
-//
-//				*/
-//		//parent->m_hWnd, rc, _T( "_deadfocus" ), WS_CHILD, 0, IDC_DEADFOCUS, NULL
-//		const RECT rc = { 0, 0, 0, 0 };
-//		VERIFY( CWnd::Create( AfxRegisterWndClass( 0, 0, 0, 0 ), _T( "_deadfocus" ), WS_CHILD, rc, parent, IDC_DEADFOCUS ) );
-//		}
 
-	~CDeadFocusWnd( ) {
-		//DestroyWindow( );
-		}
+	~CDeadFocusWnd( ) = default;
 public:
 	//DECLARE_MESSAGE_MAP()
 	//afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags ) {

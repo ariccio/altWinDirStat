@@ -447,17 +447,6 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const 
 		}
 	}
 
-//#ifdef _DEBUG
-//void CGraphView::AssertValid( ) const {
-//	CView::AssertValid( );
-//	}
-
-//void CGraphView::Dump( CDumpContext& dc ) const {
-//	TRACE( _T( "CGraphView::Dump\r\n" ) );
-//	CView::Dump( dc );
-//	}
-//#endif
-
 void CGraphView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize( nType, cx, cy );
 	WTL::CSize sz( cx, cy );
