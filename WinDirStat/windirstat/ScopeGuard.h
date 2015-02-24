@@ -1,3 +1,6 @@
+#pragma once
+
+
 #include "stdafx.h"
 
 #ifndef WDS_SCOPEGUARD_H_INCLUDED
@@ -15,6 +18,9 @@ template <class Fun>
 class ScopeGuard {
 	Fun function_to_call_on_scope_exit;
 	bool active_;
+
+	static void* operator new( size_t ) = delete;
+	static void* operator new[]( size_t ) = delete;
 
 
 	//static_assert( std::is_function<Fun>::value, "This template NEEDS a function to call. `Fun` is not callable." );

@@ -107,7 +107,7 @@ private:
 
 				const BOOL b = GetVolumeNameForVolumeMountPointW( small_buffer_volume_name, volume_, larger_buffer_size );
 				if ( !b ) {
-					TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), small_buffer_volume_name );
+					trace_GetVolumeNameForVolumeMountPoint_failed( small_buffer_volume_name );
 					}
 				}
 			m_drive[ static_cast<size_t>( i ) ] = volume_;
@@ -128,13 +128,13 @@ private:
 			_Null_terminated_ wchar_t fsname_[ volumeTCHARsize ] = { 0 };
 			const BOOL b = GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
 			if ( !b ) {
-				TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
+				trace_fs_not_rea( volume );
 				//m_volume[ volume ] = std::vector<SPointVolume>( );
 				continue;
 				}
 
 			if ( ( sysflags bitand FILE_SUPPORTS_REPARSE_POINTS ) == 0 ) {
-				TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
+				trace_no_reparse( volume );
 				//m_volume[ volume ] = std::vector<SPointVolume>( );
 				continue;
 				}
@@ -142,7 +142,8 @@ private:
 			_Null_terminated_ wchar_t point[ volumeTCHARsize ] = { 0 };
 			const HANDLE h = FindFirstVolumeMountPointW( volume, point, volumeTCHARsize );
 			if ( h == INVALID_HANDLE_VALUE ) {
-				TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
+				
+				trace_no_vol_mnt( volume );
 				//m_volume[ volume ] = std::vector<SPointVolume>( );
 				continue;
 				}
@@ -156,11 +157,12 @@ private:
 				_Null_terminated_ wchar_t mountedVolume_[ volumeTCHARsize ] = { 0 };
 				BOOL b2 = GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
 				if ( !b2 ) {
-					TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), uniquePath.c_str( ) );
+					trace_GetVolumeNameForVolumeMountPoint_failed( uniquePath.c_str( ) );
 					continue;
 					}
 
-				TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath.c_str( ), mountedVolume_ );
+				//TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath.c_str( ), mountedVolume_ );
+				trace_mntpt_found( uniquePath.c_str( ), mountedVolume_ );
 				//SPointVolume pv;
 				//pv.point = point;
 				//pv.volume = mountedVolume_;

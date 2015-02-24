@@ -192,6 +192,21 @@ namespace CColorSpace {
 	COLORREF MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_(0, 1) const DOUBLE brightness );
 	}
 
+#ifdef DEBUG
 
+#ifdef COLOR_DEBUGGING
+void trace_m_stripe_color_make_bright_color( _In_ const COLORREF m_windowColor, _In_ const DOUBLE b );
+void trace_m_stripeColor( _In_ const COLORREF m_stripeColor );
+#endif
+void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name );
+void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value );
+void trace_no_vol_mnt( _In_z_ PCWSTR const volume );
+void trace_fs_not_rea( _In_z_ PCWSTR const volume );
+void trace_no_reparse( _In_z_ PCWSTR const volume );
+void trace_GetVolumeNameForVolumeMountPoint_failed( _In_z_ PCWSTR const volume );
+void trace_mntpt_found( _In_z_ PCWSTR const path, _In_z_ PCWSTR const volume );
+
+void trace_full_path( _In_z_ PCWSTR const path );
+#endif
 
 #endif

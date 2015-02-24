@@ -29,6 +29,14 @@ class CTreeListItem;
 //	};
 //#endif
 
+void trace_typeview_used_stack( );
+void trace_typeview_used_heap( );
+void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used );
+void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used );
+void trace_stack_uses_percent( _In_ const double stack_v_total );
+void trace_stack_size_alloc( _In_ const double stack_size_av );
+void trace_heap__uses_percent( _In_ const double heap__v_total );
+void trace_heap__size_alloc( _In_ const double heap__size_av );
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap {
 public:
@@ -43,22 +51,23 @@ public:
 
 		if ( m_is_typeview ) {
 			if ( num_times_stack_used > 0 ) {
-				TRACE( _T( "typeview used the stack\r\n" ) );
+				trace_typeview_used_stack( );
 				}
 			if ( num_times_heap__used > 0 ) {
-				TRACE( _T( "typeview used the heap\r\n" ) );
+				trace_typeview_used_heap( );
 				}
 			return;
 			}
-		TRACE( _T( "# of DrawCushion stack uses: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
-		TRACE( _T( "# of DrawCushion heap  uses: %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
+		trace_draw_cushion_stack_uses( num_times_stack_used );
+		trace_draw_cushion_heap__uses( num_times_heap__used );
+
 		if ( ( stack_v_total != 0 ) && ( stack_size_av > 0 ) ) {
-			TRACE( _T( "%% of stack  uses/total         : %f\r\n" ), stack_v_total );
-			TRACE( _T( "avg size of stack alloc(pixles): %f\r\n" ), stack_size_av );
+			trace_stack_uses_percent( stack_v_total );
+			trace_stack_size_alloc( stack_size_av );
 			}
 		if ( ( heap__v_total != 0 ) && ( heap__size_av > 0 ) ) {
-			TRACE( _T( "%% of heap  uses/total         : %f\r\n" ), heap__v_total );
-			TRACE( _T( "avg size of heap alloc(pixles): %f\r\n" ), heap__size_av );
+			trace_heap__uses_percent( heap__v_total );
+			trace_heap__size_alloc( heap__size_av );
 			}
 		}
 #else

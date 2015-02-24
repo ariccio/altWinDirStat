@@ -99,8 +99,15 @@ void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
 }
 				*/
 
-				::SetBkColor( hDC, color );
-				::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL );
+				//If [SetBkColor] fails, the return value is CLR_INVALID.
+				const auto set_color_res_1 = ::SetBkColor( hDC, color );
+				ASSERT( set_color_res_1 != CLR_INVALID );
+#ifndef DEBUG
+				UNREFERENCED_PARAMETER( set_color_res_1 );
+#endif
+
+				//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+				VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
 				EndPaint( &ps );
 				return 0;
@@ -110,9 +117,16 @@ void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
 				color_scope_holder = GetSysColor( COLOR_BTNFACE );
 				}
 			const auto color = color_scope_holder;
+			
 			//dc.FillSolidRect( &rc, color );
-			::SetBkColor( hDC, color );
-			::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL );
+			//If [SetBkColor] fails, the return value is CLR_INVALID.
+			const auto set_color_res_2 = ::SetBkColor( hDC, color );
+			ASSERT( set_color_res_2 != CLR_INVALID );
+#ifndef DEBUG
+			UNREFERENCED_PARAMETER( set_color_res_2 );
+#endif
+
+			VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
 			EndPaint( &ps );
 			return 0;

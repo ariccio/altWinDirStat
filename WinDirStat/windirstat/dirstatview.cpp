@@ -12,6 +12,25 @@
 //
 #include "dirstatview.h"
 
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+inline void trace_OnEraseBkgnd( ) {
+	TRACE( _T( "CDirstatView::OnEraseBkgnd!\r\n" ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+inline void trace_LoadingPerst( ) {
+	TRACE( _T( "Loading persistent attributes....\r\n" ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+inline void trace_ListStyleCha( ) {
+	TRACE( _T( "List style has changed, redrawing!\r\n" ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+inline void trace_SelectionCha( ) {
+	TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
+	}
 
 IMPLEMENT_DYNCREATE( CDirstatView, CView )
 

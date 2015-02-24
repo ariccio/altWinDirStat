@@ -29,6 +29,10 @@ namespace {
 	}
 
 
+inline void trace_OnEraseBkgnd( );
+inline void trace_LoadingPerst( );
+inline void trace_ListStyleCha( );
+inline void trace_SelectionCha( );
 
 // CDirstatView. The upper left view, which consists of the TreeList.
 class CDirstatView final : public CView {
@@ -125,7 +129,8 @@ protected:
 			TRACE( _T( "Document is NULL, CDirstatView::OnUpdateHINT_SELECTIONCHANGED can't do jack shit.\r\n" ) );
 			return;
 			}
-		TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
+		trace_SelectionCha( );
+		
 		const auto Selection = Document->m_selectedItem;
 		ASSERT( Selection != NULL );
 		if ( Selection == NULL ) {
@@ -150,7 +155,8 @@ protected:
 		m_treeListControl.SelectAndShowItem( Selection, true );
 		}
 	void OnUpdateHINT_LISTSTYLECHANGED( ) {
-		TRACE( _T( "List style has changed, redrawing!\r\n" ) );
+		
+		trace_ListStyleCha( );
 		const auto Options = GetOptions( );
 		m_treeListControl.ShowGrid( Options->m_listGrid );
 		m_treeListControl.ShowStripes( Options->m_listStripes );
@@ -195,12 +201,13 @@ protected:
 		m_treeListControl.InsertColumn( column::COL_LASTCHANGE,   _T( "Last Change" ),            LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
 		m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,   _T( "Attributes" ),             LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
 
-		TRACE( _T( "Loading persistent attributes....\r\n" ) );
+		
+		trace_LoadingPerst( );
 		m_treeListControl.OnColumnsInserted( );
 		return 0;
 		}
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
-		TRACE( _T( "CDirstatView::OnEraseBkgnd!\r\n" ) );
+		trace_OnEraseBkgnd( );
 		//UNREFERENCED_PARAMETER( pDC );
 		//return TRUE;
 		return CView::OnEraseBkgnd( pDC );

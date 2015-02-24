@@ -1666,6 +1666,45 @@ void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], 
 	surface[ 1 ] -= hf;
 	}
 
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_typeview_used_stack( ) {
+	TRACE( _T( "typeview used the stack\r\n" ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_typeview_used_heap( ) {
+	TRACE( _T( "typeview used the heap\r\n" ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used ) {
+	TRACE( _T( "# of DrawCushion stack uses: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used ) {
+	TRACE( _T( "# of DrawCushion heap  uses: %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_stack_uses_percent( _In_ const double stack_v_total ) {
+	TRACE( _T( "%% of stack  uses/total         : %f\r\n" ), stack_v_total );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_stack_size_alloc( _In_ const double stack_size_av ) {
+	TRACE( _T( "avg size of stack alloc(pixles): %f\r\n" ), stack_size_av );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_heap__uses_percent( _In_ const double heap__v_total ) {
+	TRACE( _T( "%% of heap  uses/total         : %f\r\n" ), heap__v_total );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_heap__size_alloc( _In_ const double heap__size_av ) {
+	TRACE( _T( "avg size of heap alloc(pixles): %f\r\n" ), heap__size_av );
+	}
 
 #else
 #endif

@@ -706,6 +706,28 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 	return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
+_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children ) {
+	const rsize_t base_memory_size_in_bytes = ( sizeof( decltype( children_heap_block_allocation::m_childCount ) ) + sizeof( Children_String_Heap_Manager ) );
+	
+	
+	const rsize_t size_of_a_single_child_in_bytes = sizeof( CItemBranch );
+	const size_t size_of_children_needed_in_bytes = ( size_of_a_single_child_in_bytes * static_cast<size_t>( number_of_children ) );
+
+	const size_t total_size_needed = ( base_memory_size_in_bytes + size_of_children_needed_in_bytes );
+	void* const memory_block = malloc( total_size_needed );
+	if ( memory_block == NULL ) {
+		displayWindowsMsgBoxWithMessage( L"can't allocate enough memory for children block! (aborting)" );
+		std::terminate( );
+
+		//shut analyze up.
+		abort( );
+		}
+
+	children_heap_block_allocation* const new_block = static_cast< children_heap_block_allocation* const>( memory_block );
+	new_block->m_childCount = number_of_children;
+	return new_block;
+	}
+
 
 
 #else

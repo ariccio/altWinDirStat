@@ -166,6 +166,12 @@ struct children_heap_block_allocation {
 	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
 	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;
 
+	~children_heap_block_allocation( ) {
+		for ( size_t i = 0u; i < m_childCount; ++i ) {
+			m_children[ i ].~CItemBranch( );
+			}
+		}
+
 	_Field_range_( 0, 4294967295 )
 		std::uint32_t                m_childCount;
 		Children_String_Heap_Manager m_name_pool;
@@ -175,6 +181,8 @@ struct children_heap_block_allocation {
 		CItemBranch                  m_children[ ];//unsized array is a MICROSOFT-SPECIFIC extension to C++ that emulates C's Flexible Array Member.
 		//there are VERY active discussions in the C++ CWG (core working group) to develop some standardized version of array data members of runtime-bound.
 	};
+
+_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children );
 
 
 #endif

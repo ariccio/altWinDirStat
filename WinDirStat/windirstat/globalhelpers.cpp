@@ -1462,6 +1462,62 @@ void close_handle( const HANDLE handle ) {
 	
 	}
 
+#ifdef DEBUG
+
+#ifdef COLOR_DEBUGGING
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_m_stripe_color_make_bright_color( _In_ const COLORREF m_windowColor, _In_ const DOUBLE b ) {
+	TRACE( _T( "m_stripeColor = MakeBrightColor( %ld, %f )\r\n" ), m_windowColor, b );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_m_stripeColor( _In_ const COLORREF m_stripeColor ) {
+	TRACE( _T( "m_stripeColor: %ld\r\n" ), m_stripeColor );
+	}
+#endif
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name ) {
+	TRACE( _T( "%s received OnDestroy!\r\n" ), m_persistent_name );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value ) {
+	TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_no_vol_mnt( _In_z_ PCWSTR const volume ) {
+	TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_fs_not_rea( _In_z_ PCWSTR const volume ) {
+	TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_no_reparse( _In_z_ PCWSTR const volume ) {
+	TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_GetVolumeNameForVolumeMountPoint_failed( _In_z_ PCWSTR const volume ) {
+	TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), volume );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_mntpt_found( _In_z_ PCWSTR const path, _In_z_ PCWSTR const volume ) {
+	TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), path, volume );
+	}
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_full_path( _In_z_ PCWSTR const path ) {
+	TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), path );
+	}
+
+#endif
+
 #else
 
 #endif

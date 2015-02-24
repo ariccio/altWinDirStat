@@ -19,20 +19,20 @@ class CDirstatDoc;
 class CExtensionListControl;
 class CListItem;
 
+void trace_on_erase_bkgnd_typeview( );
+
 // CListItem. The items of the CExtensionListControl.
 class CListItem final : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
-		CListItem ( _In_ CExtensionListControl* const list, _In_ SExtensionRecord r, _In_z_ PCWSTR const name, const std::uint16_t length ) : m_list( list ), m_record( std::move( r ) ), COwnerDrawnListItem( name, length ) { }
+		CListItem ( _In_ CExtensionListControl* const list, _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ COLORREF color_in, _In_z_ PCWSTR const name, const std::uint16_t length ) : m_list( list ), m_bytes( std::move( bytes_in ) ), m_files( std::move( files_in ) ), color( std::move( color_in ) ), COwnerDrawnListItem( name, length ) { }
 			
 		CListItem& operator=( const CListItem& in ) = delete;
 		CListItem ( CListItem& in ) = delete;
+		CListItem( CListItem&& in ) = delete;
 
 		virtual ~CListItem( ) final = default;
 
-		//CListItem ( CListItem&& in );
-		CListItem( CListItem&& in ) = delete;
-		
 		virtual COLORREF     ItemTextColor    ( ) const override final;
 	private:
 		//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
@@ -43,36 +43,28 @@ class CListItem final : public COwnerDrawnListItem {
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 		virtual HRESULT Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
 
-		//_Pre_satisfies_( subitem == column::COL_EXTENSION ) _Success_( SUCCEEDED( return ) )
-		//	    HRESULT Text_WriteToStackBuffer_COL_EXTENSION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-		//_Pre_satisfies_( subitem == column::COL_COLOR ) _Success_( SUCCEEDED( return ) )
-		//	    HRESULT Text_WriteToStackBuffer_COL_COLOR( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
 		_Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
-		 inline HRESULT Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW ) _Success_( SUCCEEDED( return ) )
-			    HRESULT Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
-		_Pre_satisfies_( subitem == column::COL_DESCRIPTION ) _Success_( SUCCEEDED( return ) )
-		 inline HRESULT Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		_Pre_satisfies_( subitem == column::COL_DESCRIPTION ) _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( strSize > 0 )
+		 inline const HRESULT Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 		_Pre_satisfies_( subitem == column::COL_BYTESPERCENT ) _Success_( SUCCEEDED( return ) )
-			    HRESULT Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
-							//									_Success_( SUCCEEDED( return ) )
-			    //HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-		
-		//virtual std::wstring Text             ( _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem                                                                    ) const override final;
 			    void         DrawColor        ( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
-			  //std::wstring GetBytesPercent  (                                                                                 ) const;
 			    DOUBLE       GetBytesFraction (                                                                                 ) const;
-
 	private:
-		CExtensionListControl* m_list;
-		SExtensionRecord       m_record;
+		const CExtensionListControl* m_list;
+		_Field_range_( 0, 4294967295 )
+		      std::uint32_t          m_files;//save 4 bytes :)
+		_Field_range_( 0, 18446744073709551615 )
+		      std::uint64_t          m_bytes;
+		      COLORREF               color;
+
 	};
 
 
@@ -86,19 +78,12 @@ public:
 
 	virtual ~CExtensionListControl( ) final = default;
 
-private:
-	//virtual bool GetAscendingDefault( _In_ const column::ENUM_COL column ) const override final {
-	//	//unconditionally return false;
-	//	UNREFERENCED_PARAMETER( column );
-	//	return false;
-	//	}
-
-
 public:
-	        const std::wstring GetSelectedExtension        (                                                    ) const;
+	        _Ret_z_ PCWSTR const GetSelectedExtension        (                                                    ) const;
+
 	        void               Initialize                  (                                                    );
 	        void               SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
-	        void               SelectExtension             ( _In_ const std::wstring ext                        );
+	        void               SelectExtension             ( _In_z_ PCWSTR const ext                        );
 	
 	void SysColorChanged( ) {
 		InitializeColors( );
@@ -110,10 +95,9 @@ public:
 	//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t                           m_rootSize;
 	                                         DOUBLE                                  m_adjustedTiming;
-	                                       //std::vector<CListItem*>                 m_extensionItems;
 											 size_t                                  m_exts_count;
 				_Field_size_( m_exts_count ) std::unique_ptr<CListItem[]>            m_exts;
-	                                         CTypeView*                              m_typeView;
+	                                         CTypeView*                        const m_typeView;
 											 Children_String_Heap_Manager            m_name_pool;
 
 	_Ret_notnull_ CListItem* GetListItem( _In_ const INT i ) const;
@@ -190,7 +174,7 @@ protected:
 
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
-		TRACE( _T( "CTypeView::OnEraseBkgnd!\r\n" ) );
+		trace_on_erase_bkgnd_typeview( );
 		return CView::OnEraseBkgnd( pDC );
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd );

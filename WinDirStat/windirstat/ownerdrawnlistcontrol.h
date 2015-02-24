@@ -1012,11 +1012,11 @@ protected:
 			}
 
 	#ifdef COLOR_DEBUGGING
-		TRACE( _T( "m_stripeColor = MakeBrightColor( %ld, %f )\r\n" ), m_windowColor, b );
+		trace_m_stripe_color_make_bright_color( m_windowColor, b );
 	#endif
 		m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
 	#ifdef COLOR_DEBUGGING
-		TRACE( _T( "m_stripeColor: %ld\r\n" ), m_stripeColor );
+		trace_m_stripeColor( m_stripeColor );
 	#endif
 
 		}
@@ -1371,7 +1371,7 @@ protected:
 			}
 		}
 	afx_msg void OnDestroy( ) {
-		TRACE( _T( "%s received OnDestroy!\r\n" ), m_persistent_name );
+		trace_on_destroy( m_persistent_name );
 		SavePersistentAttributes( );
 		CListCtrl::OnDestroy( );
 		}
@@ -1649,7 +1649,32 @@ inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* 
 		}
 
 	VERIFY( ::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) ) );
-	pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
+/*
+void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+{
+	ENSURE_VALID(this);
+	ENSURE(m_hDC != NULL);
+	ENSURE(lpRect);
+
+	::SetBkColor(m_hDC, clr);
+	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+}
+*/
+	ASSERT( pdc.m_hDC != NULL );
+
+
+	//If [SetBkColor] fails, the return value is CLR_INVALID.
+	const auto set_bk_color_res_1 = ::SetBkColor( pdc.m_hDC, list->GetHighlightColor( ) );
+	ASSERT( set_bk_color_res_1 != CLR_INVALID );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( set_bk_color_res_1 );
+#endif
+
+	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+
+	//pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
+
 	}
 
 	AFX_COMDAT const CRuntimeClass COwnerDrawnListCtrl::classCOwnerDrawnListCtrl =

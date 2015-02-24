@@ -5,6 +5,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "globalhelpers.h"
 
 #ifndef WDS_OPTIONS_H
 #define WDS_OPTIONS_H
@@ -39,7 +40,7 @@ namespace {
 	
 	
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
-		TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
+		trace_prof_string( section, entry, value );
 		VERIFY( AfxGetApp( )->WriteProfileStringW( section, entry, value ) );
 		}
 
