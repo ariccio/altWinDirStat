@@ -143,7 +143,14 @@ protected:
 		sizeBuffNeed = SIZE_T_ERROR;
 		size_t chars_remaining = 0;
 		ASSERT( strSize > 8 );
-		const auto res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+		const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			ASSERT( chars_written == wcslen( psz_text ) );
+			return res;
+			}
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
 		if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			if ( strSize > 8 ) {
 				wds_fmt::write_BAD_FMT( psz_text, chars_written );
@@ -153,15 +160,8 @@ protected:
 				displayWindowsMsgBoxWithMessage( std::wstring( derived_type ) + std::wstring( global_strings::write_to_stackbuffer_err ) + L", subitem:" + std::to_wstring( static_cast<int>( subitem ) ) );
 				}
 			}
-		else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-			chars_written = 0;
-			}
-		else {
-			ASSERT( SUCCEEDED( res ) );
-			if ( SUCCEEDED( res ) ) {
-				chars_written = ( strSize - chars_remaining );
-				}
-			}
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintFExW" );
+
 		ASSERT( SUCCEEDED( res ) );
 		ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
@@ -224,10 +224,9 @@ namespace {
 	void handle_formatting_error_COwnerDrawnListCtrl_SortItems( _In_ const HRESULT fmt_res ) {
 		displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
 		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE!(aborting)" );
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE! This is an error that makes no sense.(aborting)" );
 			std::terminate( );
 			}
-
 		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_INSUFFICIENT_BUFFER!(aborting)" );
 			std::terminate( );
@@ -705,7 +704,8 @@ public:
 				return;
 				}
 			const auto w = GetSubItemWidth( item, col );
-			ASSERT( w == ( GetStringWidth( item->m_name ) + 10 ) );
+			ASSERT( w == ( GetStringWidth( item->m_name ) + 20 ) );
+			//ASSERT( w == ( GetStringWidth( item->m_name ) + 10 ) );
 			if ( w > width ) {
 				width = w;
 				}
@@ -1187,133 +1187,18 @@ private:
 protected:
 	//manually expanded DECLARE_MESSAGE_MAP
 	static const AFX_MSGMAP* PASCAL GetThisMessageMap( ) {
-		typedef COwnerDrawnListCtrl ThisClass;
-		//typedef CListCtrl TheBaseClass;
-		static const AFX_MSGMAP_ENTRY _messageEntries[] =
-			{
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKW ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
-				},
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKA ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnDividerdblclick))
-				},
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKW ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
-				},
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKA ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemclick))
-				},
-
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKW ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
-				},
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKA ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast< void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemdblclick))
-				},
-
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGW ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
-				},
-
-				{
-					WM_NOTIFY,
-					static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGA ) ),
-					static_cast<WORD>( 0u ),
-					static_cast<WORD>( 0u ),
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnHdnItemchanging))
-				},
-
-				{
-					WM_NOTIFY+WM_REFLECT_BASE,
-					static_cast<WORD>( static_cast<int>( LVN_GETDISPINFO ) ),
-					0u,
-					0u,
-					AfxSigNotify_v,
-					reinterpret_cast<AFX_PMSG>(static_cast<void (AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*) >(&ThisClass::OnLvnGetdispinfo))
-				},
-				{
-					WM_ERASEBKGND,
-					0u,
-					0u,
-					0u,
-					AfxSig_bD,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<BOOL (AFX_MSG_CALL CWnd::*)(CDC*) >(&ThisClass::OnEraseBkgnd) ) )
-				},
-				{
-					WM_VSCROLL,
-					0u,
-					0u,
-					0u,
-					AfxSig_vwwW,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, UINT, CScrollBar*) >(&ThisClass::OnVScroll) ) )
-				},
-				{
-					WM_SHOWWINDOW,
-					0u,
-					0u,
-					0u,
-					AfxSig_vbw,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(BOOL, UINT) >(&ThisClass::OnShowWindow) ) )
-				},
-				{
-					WM_DESTROY,
-					0u,
-					0u,
-					0u,
-					AfxSig_vv,
-					static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void (AFX_MSG_CALL CWnd::*)(void) >(&ThisClass::OnDestroy) ) )
-				},
-				{
-					0u,
-					0u,
-					0u,
-					0u,
-					AfxSig_end,
-					(AFX_PMSG)( 0 )
-				}
-			};
+		static const AFX_MSGMAP_ENTRY _messageEntries[ ] = {
+				{ WM_NOTIFY,                 static_cast<WORD>( static_cast<int>( HDN_DIVIDERDBLCLICKW ) ), 0u, 0u, AfxSigNotify_v,  reinterpret_cast<AFX_PMSG>(static_cast<void(AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*)>(&COwnerDrawnListCtrl::OnHdnDividerdblclick))                 },
+				{ WM_NOTIFY,                 static_cast<WORD>( static_cast<int>( HDN_ITEMCLICKW ) ),       0u, 0u, AfxSigNotify_v,  reinterpret_cast<AFX_PMSG>(static_cast<void(AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*)>(&COwnerDrawnListCtrl::OnHdnItemclick))                       },
+				{ WM_NOTIFY,                 static_cast<WORD>( static_cast<int>( HDN_ITEMDBLCLICKW ) ),    0u, 0u, AfxSigNotify_v,  reinterpret_cast<AFX_PMSG>(static_cast<void(AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*)>(&COwnerDrawnListCtrl::OnHdnItemdblclick))                    },
+				{ WM_NOTIFY,                 static_cast<WORD>( static_cast<int>( HDN_ITEMCHANGINGW ) ),    0u, 0u, AfxSigNotify_v,  reinterpret_cast<AFX_PMSG>(static_cast<void(AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*)>(&COwnerDrawnListCtrl::OnHdnItemchanging))                    },
+				{ WM_NOTIFY+WM_REFLECT_BASE, static_cast<WORD>( static_cast<int>( LVN_GETDISPINFO ) ),      0u, 0u, AfxSigNotify_v,  reinterpret_cast<AFX_PMSG>(static_cast<void(AFX_MSG_CALL CCmdTarget::*)(NMHDR*, LRESULT*)>(&COwnerDrawnListCtrl::OnLvnGetdispinfo))                     },
+				{ WM_ERASEBKGND,             0u,                                                            0u, 0u, AfxSig_bD,       static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<BOOL(AFX_MSG_CALL CWnd::*)(CDC*)>(&COwnerDrawnListCtrl::OnEraseBkgnd)))                   },
+				{ WM_VSCROLL,                0u,                                                            0u, 0u, AfxSig_vwwW,     static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(UINT, UINT, CScrollBar*)>(&COwnerDrawnListCtrl::OnVScroll)))   },
+				{ WM_SHOWWINDOW,             0u,                                                            0u, 0u, AfxSig_vbw,      static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(BOOL, UINT)>(&COwnerDrawnListCtrl::OnShowWindow)))             },
+				{ WM_DESTROY,                0u,                                                            0u, 0u, AfxSig_vv,       static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(void)>(&COwnerDrawnListCtrl::OnDestroy)))                      },
+				{ 0u, 0u, 0u, 0u, AfxSig_end, (AFX_PMSG)( 0 )                             }
+				};
 		static const AFX_MSGMAP messageMap = { &CListCtrl::GetThisMessageMap, &_messageEntries[0] };
 		return &messageMap;
 		}
@@ -1500,52 +1385,55 @@ private:
 		*pResult = 0;
 		auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
 		ASSERT( item != NULL );
-		if ( item != NULL ) {
-			if ( ( di->item.mask bitand LVIF_TEXT ) != 0 ) {
-				if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
-					//easy fastpath!
-					if ( item->m_name == nullptr ) {
-						return;
-						}
-					size_t chars_remaining = 0;
-					const HRESULT res = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
-					ASSERT( SUCCEEDED( res ) );
-					if ( !SUCCEEDED( res ) ) {
-						displayWindowsMsgBoxWithMessage( global_strings::COwnerDrawnListCtrl_handle_LvnGetdispinfo_err );
-						std::terminate( );
-						}
-					return;
-					}
-
-				rsize_t chars_needed = 0;
-				rsize_t chars_written = 0;
-				ASSERT( di->item.iSubItem != column::COL_NAME );
-				const HRESULT text_res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
-				if ( !( SUCCEEDED( text_res ) ) ) {
-					if ( text_res == STRSAFE_E_INVALID_PARAMETER ) {
-						displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_INVALID_PARAMETER" );
-						ASSERT( false );
-						std::terminate( );
-						}
-					if ( text_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-						displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_INSUFFICIENT_BUFFER" );
-						ASSERT( false );
-						std::terminate( );
-						}
-					if ( text_res == STRSAFE_E_END_OF_FILE ) {
-						displayWindowsMsgBoxWithMessage( L"Unexpected error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_END_OF_FILE" );
-						ASSERT( false );
-						std::terminate( );
-						}
-					else {
-						displayWindowsMsgBoxWithMessage( L"Unknown GetText_WriteToStackBuffer error in COwnerDrawnListCtrl::handle_LvnGetdispinfo" );
-						ASSERT( false );
-						std::terminate( );
-						}
-					}
+		if ( item == NULL ) {
+			return;
+			}
+		if ( ( di->item.mask bitand LVIF_TEXT ) == 0 ) {
+			return;
+			}
+		if ( static_cast< column::ENUM_COL >( di->item.iSubItem ) == column::COL_NAME ) {
+			//Easy fastpath! No name -> no text
+			if ( item->m_name == nullptr ) {
+				return;
 				}
+			//Just copy name into buffer. No formatting required!
+			size_t chars_remaining = 0;
+			const HRESULT res_1 = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
+			ASSERT( SUCCEEDED( res_1 ) );
+			if ( SUCCEEDED( res_1 ) ) {
+				return;
+				}
+			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res_1 );
+			WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res_1, "StringCchCopyExW" );
+			if ( !SUCCEEDED( res_1 ) ) {
+				displayWindowsMsgBoxWithMessage( global_strings::COwnerDrawnListCtrl_handle_LvnGetdispinfo_err );
+				std::terminate( );
+				}
+			return;
 			}
 
+		rsize_t chars_needed = 0;
+		rsize_t chars_written = 0;
+		ASSERT( di->item.iSubItem != column::COL_NAME );
+		const HRESULT res = item->GetText_WriteToStackBuffer( static_cast< column::ENUM_COL >( di->item.iSubItem ), di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), chars_needed, chars_written );
+		ASSERT( SUCCEEDED( res ) );
+		if ( SUCCEEDED( res ) ) {
+			return;
+			}
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "(COwnerDrawnListCtrl::handle_LvnGetdispinfo): item->GetText_WriteToStackBuffer" );
+		//this first case is *maybe* tolerable.
+		if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_INSUFFICIENT_BUFFER" );
+			std::terminate( );
+			}
+		WDS_ASSERT_NEVER_REACHED( );
+		if ( res == STRSAFE_E_END_OF_FILE ) {
+			displayWindowsMsgBoxWithMessage( L"Unexpected error in COwnerDrawnListCtrl::handle_LvnGetdispinfo - STRSAFE_E_END_OF_FILE" );
+			std::terminate( );
+			}
+		displayWindowsMsgBoxWithMessage( L"Unknown GetText_WriteToStackBuffer error in COwnerDrawnListCtrl::handle_LvnGetdispinfo" );
+		std::terminate( );
 		}
 	};
 
@@ -1566,9 +1454,12 @@ inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT&
 
 inline COLORREF COwnerDrawnListItem::draw_if_selected_return_text_color( _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc ) const {
 	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
-	if ( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
-		DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
-		return textColor;
+	if ( ( state bitand ODS_SELECTED ) != 0 ) {
+		if ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) {
+			ASSERT( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) );
+			DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
+			return textColor;
+			}
 		}
 	return item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 	}

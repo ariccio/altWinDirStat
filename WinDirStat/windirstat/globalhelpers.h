@@ -98,9 +98,9 @@ _Success_( return ) bool MyQueryDosDevice           ( _In_z_ PCWSTR const drive,
 
 std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath );
 
+void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in );
 
-
-
+void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written );
 
 //WinDirStat string-formatting functions
 namespace wds_fmt {
@@ -145,8 +145,8 @@ _Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPa
 
 void displayWindowsMsgBoxWithError  ( const DWORD error = GetLastError( ) );
 
-void displayWindowsMsgBoxWithMessage( std::wstring message );
-
+void displayWindowsMsgBoxWithMessage( const std::wstring message );
+void displayWindowsMsgBoxWithMessage( const std::string message );
 void displayWindowsMsgBoxWithMessage( PCWSTR const message );
 
 void MyGetDiskFreeSpace             ( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );

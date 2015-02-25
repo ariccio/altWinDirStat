@@ -30,14 +30,6 @@ namespace {
 	inline const INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 		//duhh, there's a win32 function for this!
 		return CompareFileTime( &lhs, &rhs );
-
-		//if ( Compare_FILETIME_cast( lhs, rhs ) ) {
-		//	return -1;
-		//	}
-		//else if ( ( lhs.dwLowDateTime == rhs.dwLowDateTime ) && ( lhs.dwHighDateTime == rhs.dwHighDateTime ) ) {
-		//	return 0;
-		//	}
-		//return 1;
 		}
 
 	//Compare_FILETIME_lessthan compiles to only 6 instructions, and is only called twice, conditionally.
@@ -53,18 +45,30 @@ namespace {
 		//return ( u1.QuadPart < u2.QuadPart );
 		}
 
+	_Success_( SUCCEEDED( return ) )
+	const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) {
+		if ( strSize > 1 ) {
+			psz_text[ 0 ] = 0;
+			chars_written = 0;
+			ASSERT( chars_written == wcslen( psz_text ) );
+			return S_OK;
+			}
+		//do nothing
+		sizeBuffNeed = 6u; //you've got to be kidding me if you've passed a buffer that too small.
+		return STRSAFE_E_INSUFFICIENT_BUFFER;
+		//return StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"" );
+		}
+
 	}
 
 
-CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_rect{ 0, 0, 0, 0 }, m_lastChange( time ), m_childCount{ 0 }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ) } {
-	//m_vi( nullptr );
+CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_rect{ 0, 0, 0, 0 }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ) } {
 	SetAttributes( attr );
 	m_attr.m_done = done;
-	//m_name = std::move( name );
 	}
 
 _Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
@@ -74,113 +78,126 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const col
 	const auto percentage = ( GetFraction( ) * static_cast< DOUBLE >( 100 ) );
 	ASSERT( percentage <= 100.00 );
 	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = 64;//Generic size needed.
-		return res;
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		return res;
-		}
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
 		ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
 		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintFExW" );
+	chars_written = 0;
 	return res;
 	}
 
 _Pre_satisfies_( subitem == column::COL_NTCOMPRESS ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CItemBranch::WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_NTCOMPRESS );
-	size_t chars_remaining = 0;
+	ASSERT( strSize > 5u );
+	
 	if ( !( m_attr.compressed ) ) {
-		//do nothing
-		return StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"" );
+		return WriteToStackBuffer_do_nothing( psz_text, strSize, sizeBuffNeed, chars_written );
 		}
 	if ( m_children != nullptr ) {
-		//do nothing
-		return StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"" );
+		return WriteToStackBuffer_do_nothing( psz_text, strSize, sizeBuffNeed, chars_written );
 		}
 
+	size_t chars_remaining = 0;
 	ASSERT( m_vi != nullptr );
 	const auto percentage = ( m_vi->ntfs_compression_ratio * static_cast< DOUBLE >( 100 ) );
 	ASSERT( percentage <= 100.00 );
 	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = 64;//Generic size needed.
-		return res;
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		return res;
-		}
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
 		ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
 		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	chars_written = 0;
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintFExW" );
 	return res;
 	}
 
 
 _Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CItemBranch::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_SUBTREETOTAL );
 	const HRESULT res = wds_fmt::FormatBytes( size_recurse( ), psz_text, strSize, chars_written, sizeBuffNeed );
-	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = ( ( 64 > sizeBuffNeed ) ? 64 : sizeBuffNeed );//Generic size needed.
-		return res;
-		}
-	else if ( ( res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( res ) ) ) {
-		chars_written = 0;
-		return res;
-		}
 	ASSERT( SUCCEEDED( res ) );
-	ASSERT( chars_written == wcslen( psz_text ) );
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	chars_written = 0;
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::FormatBytes" );
 	return res;
 	}
 
 _Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CItemBranch::WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) );
 	const auto number_to_format = files_recurse( );
-	const HRESULT num_fmt_Res = wds_fmt::CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
-
-	if ( SUCCEEDED( num_fmt_Res ) ) {
-		return num_fmt_Res;
+	const HRESULT res = wds_fmt::CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
 		}
-	sizeBuffNeed = ( ( strSize > 64 ) ? ( strSize * 2 ) : 128 );
-	return num_fmt_Res;
+
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	chars_written = 0;
+	return res;
 	}
 
 _Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CItemBranch::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_LASTCHANGE );
 	const HRESULT res = wds_fmt::CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
+	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		sizeBuffNeed = SIZE_T_ERROR;
 		return S_OK;
 		}
-	ASSERT( SUCCEEDED( res ) );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+
+
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+
 	chars_written = { 0u };
 	sizeBuffNeed = { 48u };
 
@@ -189,7 +206,7 @@ HRESULT CItemBranch::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const col
 	}
 
 _Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -230,7 +247,7 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_
 	}
 
 
-COLORREF CItemBranch::ItemTextColor( ) const {
+const COLORREF CItemBranch::Concrete_ItemTextColor( ) const {
 	if ( m_attr.invalid ) {
 		//return GetItemTextColor( true );
 		return RGB( 0xFF, 0x00, 0x00 );
@@ -432,6 +449,7 @@ void CItemBranch::refresh_sizeCache( ) {
 
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::compute_size_recurse( ) const {
+	static_assert( std::is_same< decltype( std::declval<CItemBranch>( ).compute_size_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_size )>::value, "The return type of CItemBranch::compute_size_recurse needs to be fixed!!" );
 	std::uint64_t total = 0;
 
 	const auto childCount = m_childCount;
@@ -540,10 +558,7 @@ FILETIME CItemBranch::FILETIME_recurse( ) const {
 	return ft;
 	}
 
-
-
 //Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with string internals, I'll just return a pointer to the substring.
-//_Pre_satisfies_( this->m_type == IT_FILE )
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 PCWSTR const CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
@@ -598,19 +613,23 @@ _Pre_satisfies_( this->m_children._Myptr == nullptr )
 const std::wstring CItemBranch::GetExtension( ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
-		PWSTR const resultPtrStr = PathFindExtensionW( m_name );
+		//[PathFindExtensionW] returns the address of the "." that precedes the extension within pszPath if an extension is found, or the address of the terminating null character otherwise.
+		PCWSTR const resultPtrStr = PathFindExtensionW( m_name );
 		ASSERT( resultPtrStr != 0 );
 		if ( resultPtrStr != '\0' ) {
 			return resultPtrStr;
 			}
-		PCWSTR const i = wcsrchr( m_name, L'.' );
+		
+		//PathFindExtension failed for some reason.
+		//[wcsrchr] returns a pointer to the last occurrence of [character, parameter 2] in [string, parameter 1]. If [character, parameter 2] is not found, the function returns a null pointer.
+		PCWSTR const address_in_string_of_dot = wcsrchr( m_name, L'.' );
 
-		if ( i == NULL ) {
-			return _T( "." );
+		if ( address_in_string_of_dot == NULL ) {
+			return L".";
 			}
-		return std::wstring( i );
+		return address_in_string_of_dot;
 		}
-	return std::wstring( L"" );
+	return L"";
 	}
 
 
@@ -660,7 +679,7 @@ void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_ma
 	const size_t extensionPsz_size = 48;
 	_Null_terminated_ wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
 	rsize_t chars_written = 0;
-	HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size, chars_written );
+	const HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size, chars_written );
 	if ( SUCCEEDED( res ) ) {
 		auto& value = extensionMap[ extensionPsz ];
 		if ( value.files == 0 ) {
@@ -706,7 +725,9 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 	return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
-_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children ) {
+
+_At_( return, _Writable_bytes_( bytes_allocated ) )
+_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated ) {
 	const rsize_t base_memory_size_in_bytes = ( sizeof( decltype( children_heap_block_allocation::m_childCount ) ) + sizeof( Children_String_Heap_Manager ) );
 	
 	
@@ -722,7 +743,7 @@ _Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_childre
 		//shut analyze up.
 		abort( );
 		}
-
+	bytes_allocated = total_size_needed;
 	children_heap_block_allocation* const new_block = static_cast< children_heap_block_allocation* const>( memory_block );
 	new_block->m_childCount = number_of_children;
 	return new_block;

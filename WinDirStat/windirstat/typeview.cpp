@@ -93,9 +93,11 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const
 		}
 	//handled in FormatBytes.
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		ASSERT( chars_written == strSize );
-		chars_written = strSize;
-		sizeBuffNeed = ( ( 64 > sizeBuffNeed ) ? 64 : sizeBuffNeed );//Generic size needed.
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		//ASSERT( chars_written == strSize );
+		//chars_written = strSize;
+		//sizeBuffNeed = ( ( 64 > sizeBuffNeed ) ? 64 : sizeBuffNeed );//Generic size needed.
+		return res;
 		}
 	return res;
 	}
@@ -116,9 +118,10 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_
 		return res;
 		}
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = 64;//Generic size needed.
-		ASSERT( chars_written == wcslen( psz_text ) );
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		//chars_written = strSize;
+		//sizeBuffNeed = 64;//Generic size needed.
+		//ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
 		}
 	chars_written = 0;
@@ -158,9 +161,10 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_CO
 		return res;
 		}
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		sizeBuffNeed = 8;//Generic size needed, overkill;
-		ASSERT( chars_written == wcslen( psz_text ) );
+		handle_stack_insufficient_buffer( strSize, 8u, sizeBuffNeed, chars_written );
+		//chars_written = strSize;
+		//sizeBuffNeed = 8;//Generic size needed, overkill;
+		//ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
 		}
 	chars_written = 0;

@@ -348,11 +348,13 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	
 	TRACE( _T( "sizeof CItemBranch: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CItemBranch ) ) );
 #ifdef DISPLAY_FINAL_CITEMBRANCH_SIZE
+#ifndef DEBUG
 	if ( IsDebuggerPresent( ) ) {
 		const auto size_citembranch = std::to_wstring( sizeof( CItemBranch ) );
 		const std::wstring size_text( L"sizeof CItemBranch: " + size_citembranch );
 		displayWindowsMsgBoxWithMessage( size_text.c_str( ) );
 		}
+#endif
 #endif
 	return 0;
 	}

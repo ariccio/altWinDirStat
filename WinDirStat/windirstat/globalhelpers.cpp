@@ -222,6 +222,7 @@ namespace {
 
 	_Success_( SUCCEEDED( return ) ) HRESULT file_time_to_system_time_err( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( psz_formatted_datetime, strSize, chars_written );
+		ASSERT( SUCCEEDED( err_res ) );
 		if ( !SUCCEEDED( err_res ) ) {
 			TRACE( _T( "Error in file_time_to_system_time_err->CStyle_GetLastErrorAsFormattedMessage!!\r\n" ) );
 			displayWindowsMsgBoxWithMessage( L"Error in file_time_to_system_time_err->CStyle_GetLastErrorAsFormattedMessage!!\r\n" );
@@ -638,7 +639,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatDouble( _In_ cons
 	return fmt_res;
 	}
 
-
+//TODO: mark to only return STRSAFE_E_INSUFFICIENT_BUFFER, E_FAIL, or S_OK.
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
@@ -699,6 +700,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatAttributes( _In_ 
 		chars_written = 5;
 		return S_OK;
 		}
+	//TODO: refactor to use StringSafe
+	//[swprintf_s] returns the number of characters written, or –1 if an error occurred.
 	const auto alt_errCode = swprintf_s( psz_formatted_attributes, strSize, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
 	if ( alt_errCode == -1 ) {
 		return STRSAFE_E_INVALID_PARAMETER;
@@ -790,6 +793,18 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 	}
 
 
+void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
+	std::string err_str( strsafe_func_name );
+	err_str += " returned STRSAFE_E_INVALID_PARAMETER, in: file `";
+	err_str += file_name_in;
+	err_str += "`, function: `";
+	err_str += func_name_in;
+	err_str += "` line: `";
+	err_str += std::to_string( line_number_in );
+	err_str += "`! This (near universally) means an issue where incorrect compile-time constants were passed to a strsafe function. Thus it's probably not recoverable. We'll abort. Sorry!";
+	displayWindowsMsgBoxWithMessage( err_str );
+	std::terminate( );
+	}
 
 _Success_( return != false ) bool GetVolumeName( _In_z_ PCWSTR const rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
 	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
@@ -868,8 +883,16 @@ std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath ) {
 	return std::wstring( pszPath.get( ) );
 	}
 
-
-
+//this function is only called in the rare/error path, so NON-inline code is faster, and smaller.
+void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written ) {
+	chars_written = str_size;
+	if ( str_size < generic_size_needed ) {
+		size_buff_need = generic_size_needed;
+		return;
+		}
+	size_buff_need = ( str_size * 2 );
+	return;
+	}
 
 void MyGetDiskFreeSpace( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
 	ULARGE_INTEGER uavailable = { { 0 } };
@@ -1043,7 +1066,7 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 
 static_assert( !SUCCEEDED( E_FAIL ), "CStyle_GetLastErrorAsFormattedMessage doesn't return a valid error code!" );
 static_assert( SUCCEEDED( S_OK ), "CStyle_GetLastErrorAsFormattedMessage doesn't return a valid success code!" );
-//On returning E_FAIL, call GetLastError for details. That's not my idea!
+//On returning E_FAIL, call GetLastError for details. That's not my idea! //TODO: mark as only returning S_OK, E_FAIL
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
 	//const auto err = GetLastError( );
 	const auto err = error;
@@ -1139,6 +1162,17 @@ void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
 	//MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
 	WTL::AtlMessageBox( NULL, message.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
 	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
+	}
+
+void displayWindowsMsgBoxWithMessage( const std::string message ) {
+	//MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
+	
+	//see: https://code.google.com/p/hadesmem/source/browse/trunk/Include/Common/HadesCommon/I18n.hpp?r=1163
+	auto convert_obj = stdext::cvt::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>, wchar_t>( );
+
+	const auto new_wide_str = convert_obj.from_bytes( message );
+	WTL::AtlMessageBox( NULL, new_wide_str.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
+	TRACE( _T( "Error: %s\r\n" ), new_wide_str.c_str( ) );
 	}
 
 void displayWindowsMsgBoxWithMessage( PCWSTR const message ) {
