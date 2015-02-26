@@ -1666,6 +1666,7 @@ void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], 
 	surface[ 1 ] -= hf;
 	}
 
+#ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_typeview_used_stack( ) {
 	TRACE( _T( "typeview used the stack\r\n" ) );
@@ -1705,6 +1706,7 @@ void trace_heap__uses_percent( _In_ const double heap__v_total ) {
 void trace_heap__size_alloc( _In_ const double heap__size_av ) {
 	TRACE( _T( "avg size of heap alloc(pixles): %f\r\n" ), heap__size_av );
 	}
+#endif
 
 #else
 #endif

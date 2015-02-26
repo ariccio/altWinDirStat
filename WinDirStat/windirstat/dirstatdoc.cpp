@@ -235,7 +235,7 @@ namespace {
 CDirstatDoc* _theDocument;
 
 //evil global function!
-CDirstatDoc* GetDocument() {
+CDirstatDoc* GetDocument( ) {
 	ASSERT( _theDocument != NULL );
 	return _theDocument;
 	}
@@ -280,7 +280,7 @@ CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_e
 CDirstatDoc::~CDirstatDoc( ) {
 	const rsize_t iter_char_count = 128;
 
-	_Null_terminated_ wchar_t iter_char[ iter_char_count ];
+	_Null_terminated_ wchar_t iter_char[ iter_char_count ] = { 0 };
 	const auto res = _snwprintf_s( iter_char, iter_char_count, _TRUNCATE, L"WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
 	ASSERT( res >= 0 );
 	ASSERT( res < iter_char_count );
@@ -290,14 +290,34 @@ CDirstatDoc::~CDirstatDoc( ) {
 			}
 		}
 	_theDocument = { NULL };
-	m_rootItem.reset( );
+	//m_rootItem.reset( );
 	}
 
 void CDirstatDoc::DeleteContents( ) {
-	m_rootItem.reset( );
 	m_selectedItem = { NULL };
 	m_workingItem  = { NULL };
 	m_timeTextWritten = false;
+
+	//Failure to DeleteAllItems was causing UseAfterFree?
+	//if ( m_frameptr != NULL ) {
+	//	const auto DirstatView = m_frameptr->GetDirstatView( );
+	//	if ( DirstatView != NULL ) {
+	//		VERIFY( DirstatView->m_treeListControl.DeleteAllItems( ) );
+	//		m_rootItem.reset( );
+	//		m_name_pool.reset( 0u );
+	//		}
+	//	
+	//	const auto TypeView = m_frameptr->GetTypeView( );
+	//	if ( TypeView != NULL ) {
+	//		VERIFY( TypeView->m_extensionListControl.DeleteAllItems( ) );
+	//		TypeView->m_extensionListControl.m_exts.reset( );
+	//		TypeView->m_extensionListControl.m_exts_count = 0;
+	//		}
+	//	//m_frameptr->m_wndSubSplitter.DeleteView( 0, 1 );
+	//	//m_frameptr->m_wndSubSplitter.DeleteView( 0, 0 );
+	//	}
+	m_rootItem.reset( );
+	m_name_pool.reset( 0u );
 	}
 
 BOOL CDirstatDoc::OnNewDocument( ) {
@@ -427,9 +447,10 @@ _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionReco
 	}
 
 void CDirstatDoc::ForgetItemTree( ) {
-	m_selectedItem = { NULL };
-	m_workingItem  = { NULL };
-	m_rootItem.reset( );
+	DeleteContents( );
+	//m_selectedItem = { NULL };
+	//m_workingItem  = { NULL };
+	//m_rootItem.reset( );
 	}
 
 void CDirstatDoc::SortTreeList( ) {
@@ -625,14 +646,19 @@ void CDirstatDoc::VectorExtensionRecordsToMap( ) {
 		}
 	}
 
-
-
-
-
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, &( CDirstatDoc::OnUpdateEditCopy ) )
 	ON_COMMAND(ID_EDIT_COPY, &( CDirstatDoc::OnEditCopy ) )
-END_MESSAGE_MAP()
+	ON_UPDATE_COMMAND_UI( ID_FILE_OPEN, &CDirstatDoc::OnUpdateFileOpen )
+END_MESSAGE_MAP( )
+
+void CDirstatDoc::OnUpdateFileOpen( CCmdUI *pCmdUI ) {
+	if ( m_rootItem == nullptr ) {
+		return pCmdUI->Enable( TRUE );
+		}
+	return pCmdUI->Enable( FALSE );
+	}
+
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
 	pCmdUI->Enable( m_selectedItem != NULL );
@@ -672,3 +698,4 @@ void CDirstatDoc::Dump( CDumpContext& dc ) const {
 
 #else
 #endif
+

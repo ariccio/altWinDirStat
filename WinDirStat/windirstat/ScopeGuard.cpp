@@ -12,6 +12,10 @@ void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_
 			L"\r\n\t\tScope guard initialized in file: `%S`,"
 			L"\r\n\t\tfunction:                        `%S`,"
 			L"\r\n\t\tline:                            `%i`\r\n", file_name, func_name, line_number );
+#else
+	UNREFERENCED_PARAMETER( file_name );
+	UNREFERENCED_PARAMETER( func_name );
+	UNREFERENCED_PARAMETER( line_number );
 #endif
 	}
 #endif

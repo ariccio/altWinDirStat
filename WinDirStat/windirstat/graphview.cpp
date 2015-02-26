@@ -210,6 +210,7 @@ const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 //	guard.dismiss( );
 //	}
 
+#ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 inline void trace_empty_view_graphview( ) {
 	TRACE( _T( "Drawing Empty view...\r\n" ) );
@@ -229,6 +230,7 @@ inline void trace_mouse_left( ) {
 inline void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) {
 	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), x, y, path );
 	}
+#endif
 
 #else
 

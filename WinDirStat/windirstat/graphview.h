@@ -23,11 +23,13 @@ class CDirstatDoc;
 class CItemBranch;
 class CGraphView;
 
+
+#ifdef DEBUG
 inline void trace_empty_view_graphview( );
 inline void trace_call_onidle( );
 inline void trace_mouse_left( );
 inline void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path );
-
+#endif
 
 // CGraphView. The treemap window.
 class CGraphView final : public CView {
@@ -148,8 +150,9 @@ protected:
 	
 	void reset_timer_if_zero( ) {
 		if ( m_timer == 0 ) {
-			
+#ifdef DEBUG
 			trace_mouse_left( );
+#endif
 			m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.//if value is increased ( argument 2 ), program execution will take longer to reach `TRACE( _T( "Mouse has left the tree map area!\r\n" ) );` after mouse has left tree map area.
 			}
 		}
@@ -165,8 +168,9 @@ protected:
 
 	void cause_OnIdle_to_be_called_once( ) const {
 		// Cause OnIdle() to be called once.
-		
+#ifdef DEBUG
 		trace_call_onidle( );
+#endif
 		PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 		}
 
@@ -209,8 +213,9 @@ protected:
 
 
 	void DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
-		
+#ifdef DEBUG
 		trace_empty_view_graphview( );
+#endif
 		const COLORREF gray = RGB( 160, 160, 160 );
 		Inactivate( );
 
@@ -612,7 +617,9 @@ protected:
 			//return reset_timer_if_zero( );
 			return;
 			}
+#ifdef DEBUG
 		trace_focused_mouspos( point.x, point.y, item->GetPath( ).c_str( ) );
+#endif
 		//TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
 		m_frameptr->SetMessageText( item->GetPath( ).c_str( ) );
 

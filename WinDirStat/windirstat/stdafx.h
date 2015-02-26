@@ -79,7 +79,8 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 //#define SIMD_ACCESS_DEBUGGING
 //#define WDS_STRING_ALLOC_DEBUGGING
 #define DISPLAY_FINAL_CITEMBRANCH_SIZE
-#define WDS_SCOPE_GUARD_DEBUGGING
+#define WDS_OWNERDRAWNLISTITEM_DESTRUCTOR_DEBUG
+//#define WDS_SCOPE_GUARD_DEBUGGING
 
 #ifndef DEBUG
 #define DISPLAY_FINAL_CITEMBRANCH_SIZE
@@ -153,6 +154,8 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 #pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 #pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
+
+
 
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
@@ -341,6 +344,9 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #error already defined!!
 #endif
 
+#ifdef DEBUG
+#define new DEBUG_NEW
+#endif
 
 
 

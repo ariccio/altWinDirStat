@@ -8,6 +8,11 @@
 
 void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number );
 
+#ifdef new
+#pragma push_macro("new")
+#define WDS_SCOPEGUARD_PUSHED_MACRO_NEW
+#undef new
+#endif
 
 
 
@@ -92,6 +97,11 @@ template <class Fun>
 inline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
 	return ScopeGuard<Fun>( std::move( f ), file_name_in, func_name_in, line_number_in );
 	}
+
+#ifdef WDS_SCOPEGUARD_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_SCOPEGUARD_PUSHED_MACRO_NEW
+#endif
 
 #else
 

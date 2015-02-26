@@ -254,7 +254,9 @@ private:
 
 		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 		//TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), m_folder_name_heap.c_str( ) );
+#ifdef DEBUG
 		trace_full_path( m_folder_name_heap.c_str( ) );
+#endif
 		VERIFY( UpdateData( false ) );
 		}
 

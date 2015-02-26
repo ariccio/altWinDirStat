@@ -40,7 +40,9 @@ namespace {
 	
 	
 	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
+#ifdef DEBUG
 		trace_prof_string( section, entry, value );
+#endif
 		VERIFY( AfxGetApp( )->WriteProfileStringW( section, entry, value ) );
 		}
 

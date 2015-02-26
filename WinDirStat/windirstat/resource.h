@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by windirstat.rc
 //
-#define IDD_ABOUTBOX                    100
 #define ID_VIEW_ARRANGE                 127
 #define IDR_MAINFRAME                   128
 #define IDR_windirstatTYPE              129
@@ -11,23 +10,14 @@
 #define IDR_POPUPLIST                   134
 #define IDB_IMAGELIST                   135
 #define IDR_POPUPGRAPH                  136
-#define IDD_DELETE_WARNING              138
 #define IDD_INVISIBLE                   140
 #define IDD_MODALAPISHUTTLE             140
-#define IDD_PAGE_TREELIST               142
 #define IDD_PAGE_TREEMAP                143
 #define IDD_PAGE_GENERAL                144
-#define IDD_PAGE_REPORT                 146
 #define IDS_RESOURCEVERSION             199
-#define IDS_ABOUT_THANKSTOTEXT          201
-#define IDS_ABOUT_ABOUT                 202
 #define IDS_ABOUT_THANKSTO              203
-#define IDS_ABOUT_LICENSEAGREEMENT      204
-#define IDS_MYCOMPUTER                  205
 #define IDS_UDC_CONFIRMATIONss          206
 #define IDS_RUDC_CONFIRMATIONss         207
-#define IDS_THEDIRECTORYsDOESNOTEXIST   208
-#define IDS_THEFILEsDOESNOTEXIST        209
 #define IDS_TREECOL_NAME                211
 #define IDS_TREECOL_PERCENTAGE          213
 #define IDS_TREECOL_SIZE                214
@@ -35,36 +25,20 @@
 #define IDS_TREECOL_FILES               216
 #define IDS_TREECOL_SUBDIRS             217
 #define IDS_TREECOL_LASTCHANGE          218
-#define IDS__UNKNOWN_                   221
 #define IDS_UNKNOWN_ITEM                223
 #define IDS_FILES_ITEM                  224
-#define IDS_ONEREADJOB                  225
-#define IDS_sREADJOBS                   226
-#define IDS_CANNOTSETCLIPBAORDDATA      229
 #define IDS_WINDIRSTAT_SETTINGS         230
 #define IDS_SCANNING_                   231
-#define IDS__ONEITEMss                  233
-#define IDS__sITEMSss                   234
 #define IDS_UDCsCTRLd                   235
 #define IDS_REPORT_DISKUSAGE            237
 #define IDS_POLICY_NOREFRESH            239
 #define IDS_FROMsPLATFORMs              244
 #define IDS_DRIVECOL_TOTAL              251
 #define IDS_SELECTFOLDER                255
-//#define IDS_SPEC_BYTES                  265
-//#define IDS_SPEC_KB                     266
-//#define IDS_SPEC_MB                     267
-//#define IDS_SPEC_GB                     268
-//#define IDS_SPEC_TB                     269
-//#define IDS_RESETTO_DEFAULTS            270
-//#define IDS_BACKTO_USERSETTINGS         271
 #define IDS_COLLAPSE                    274
 #define IDS_EXPAND                      275
-#define IDS_CREATEPROCESSsFAILEDs       276
 #define IDS_ABOUT_AUTHORS               278
-#define IDS_TRANSLATORS                 899
 #define IDR_TEXT1                       900
-#define IDR_AUTHORS                     900
 #define IDR_TEXT2                       901
 #define IDB_BITMAP1                     902
 #define IDC_ALLDRIVES                   1000
@@ -80,10 +54,7 @@
 #define IDC_TEXT                        1012
 #define IDC_TAB                         1013
 #define IDC_CAPTION                     1014
-#define IDC_FILENAME                    1016
-#define IDC_DONTSHOWAGAIN               1017
 #define IDC_FOLLOWMOUNTPOINTS           1020
-#define IDC_PACMANANIMATION             1021
 #define IDC_FOLLOWJUNCTIONS             1021
 #define IDC_ASKFORCONFIRMATION          1022
 #define IDC_SHOWTIMESPENT               1022
@@ -114,8 +85,6 @@
 #define IDC_HINTSN                      1048
 #define IDC_UP                          1049
 #define IDC_DOWN                        1050
-#define IDC_FROM                        1050
-#define IDC_TO                          1051
 #define IDC_WORKSFORUNCPATHS            1051
 #define IDC_INAWORD                     1056
 #define IDC_APPLICATION                 1057
@@ -157,7 +126,6 @@
 #define ID_VIEW_SHOWFILETYPES           32846
 #define ID_POPUP_CANCEL                 33008
 #define ID_POPUP_TOGGLE                 33023
-#define ID_INDICATOR_MEMUSAGE           0xE702
 #define ID_INDICATOR_MEMORYUSAGE        59142
 
 // Next default values for new objects
@@ -165,7 +133,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        903
-#define _APS_NEXT_COMMAND_VALUE         33024
+#define _APS_NEXT_COMMAND_VALUE         33025
 #define _APS_NEXT_CONTROL_VALUE         1226
 #define _APS_NEXT_SYMED_VALUE           104
 #endif

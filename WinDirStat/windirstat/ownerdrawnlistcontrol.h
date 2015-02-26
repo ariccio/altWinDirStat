@@ -65,7 +65,11 @@ public:
 	COwnerDrawnListItem& operator=( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem( ) = default;
 	virtual ~COwnerDrawnListItem( ) {
+#ifdef WDS_OWNERDRAWNLISTITEM_DESTRUCTOR_DEBUG
+		TRACE( _T( "Deleting COwnerDrawnListItem (`%s` ) @ %p\r\n" ), m_name, this );
+#endif
 		m_name = nullptr;
+		m_name_length = 0u;
 		}
 
 	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
@@ -1011,13 +1015,17 @@ protected:
 				}
 			}
 
-	#ifdef COLOR_DEBUGGING
+#ifdef COLOR_DEBUGGING
+#ifdef DEBUG
 		trace_m_stripe_color_make_bright_color( m_windowColor, b );
-	#endif
+#endif
+#endif
 		m_stripeColor = CColorSpace::MakeBrightColor( m_windowColor, b );
-	#ifdef COLOR_DEBUGGING
+#ifdef COLOR_DEBUGGING
+#ifdef DEBUG
 		trace_m_stripeColor( m_stripeColor );
-	#endif
+#endif
+#endif
 
 		}
 
@@ -1256,7 +1264,9 @@ protected:
 			}
 		}
 	afx_msg void OnDestroy( ) {
+#ifdef DEBUG
 		trace_on_destroy( m_persistent_name );
+#endif
 		SavePersistentAttributes( );
 		CListCtrl::OnDestroy( );
 		}
@@ -1383,6 +1393,7 @@ private:
 	void handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESULT* pResult ) {
 		auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 		*pResult = 0;
+		ASSERT( di->item.iItem <= GetItemCount( ) );
 		auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
 		ASSERT( item != NULL );
 		if ( item == NULL ) {

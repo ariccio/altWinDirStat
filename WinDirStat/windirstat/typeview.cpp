@@ -289,6 +289,13 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) 
 	( ( CListItem* )( 0 ) )->m_name;
 	}
 
+
+#ifdef new
+#pragma push_macro("new")
+#define WDS_TYPEVIEW_PUSHED_MACRO_NEW
+#undef new
+#endif
+
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
 	VERIFY( DeleteAllItems( ) );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
@@ -356,6 +363,12 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	m_averageExtensionNameLength = static_cast<DOUBLE>( totalSizeExtensionNameLength ) / static_cast<DOUBLE>( ext_data_size );
 	SortItems( );
 	}
+
+#ifdef WDS_TYPEVIEW_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_TYPEVIEW_PUSHED_MACRO_NEW
+#endif
+
 
 void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) {
 	const auto countItems = this->GetItemCount( );

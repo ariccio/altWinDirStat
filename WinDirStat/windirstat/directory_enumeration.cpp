@@ -160,6 +160,13 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	VERIFY( FindClose( fDataHand ) );
 	}
 
+#ifdef new
+#pragma push_macro("new")
+#define WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
+#undef new
+#endif
+
+
 std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CItemBranch*, std::wstring>> sizesToWorkOn_;
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
@@ -309,6 +316,12 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 	//ThisCItem->m_children_vector.shrink_to_fit( );
 	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 	}
+
+#ifdef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
+#endif
+
 
 _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( _In_ CTreeListControl* const tree_list_control ) {
 	ASSERT( GetDocument( )->IsRootDone( ) );
@@ -465,6 +478,7 @@ const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item 
 	//TODO: trace error message
 	return UINT64_ERROR;
 	}
+
 
 
 #else

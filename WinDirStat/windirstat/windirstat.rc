@@ -145,7 +145,6 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     VK_DIVIDE,      ID_TREEMAP_SELECTPARENT, VIRTKEY, NOINVERT
     VK_ADD,         ID_TREEMAP_ZOOMIN,      VIRTKEY, NOINVERT
     VK_SUBTRACT,    ID_TREEMAP_ZOOMOUT,     VIRTKEY, NOINVERT
@@ -172,23 +171,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,219,24,50,14
     CONTROL         "",IDC_DRIVES,"SysListView32",LVS_REPORT | LVS_OWNERDRAWFIXED | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,43,262,100
     EDITTEXT        IDC_FOLDERNAME,6,161,209,14,ES_AUTOHSCROLL
-END
-
-IDD_DELETE_WARNING DIALOGEX 0, 0, 276, 150
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Warning"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "No",IDNO,163,129,50,14
-    PUSHBUTTON      "Yes",IDYES,63,129,50,14
-    CONTROL         "&Don't show this warning again.",IDC_DONTSHOWAGAIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,99,139,10
-    LTEXT           "Do you know what you are doing?",IDC_STATIC,7,7,110,8
-    LTEXT           "Your are going to remove",IDC_STATIC,7,23,82,8
-    CTEXT           "<filename>",IDC_FILENAME,7,38,262,8,SS_PATHELLIPSIS
-    LTEXT           "from your computer.",IDC_STATIC,7,53,67,8
-    LTEXT           "Deletion of system files or directories can seriously damage your system.",IDC_STATIC,7,76,262,19
-    LTEXT           "Continue?",IDC_STATIC,7,99,104,8
 END
 
 IDD_PAGE_TREEMAP DIALOGEX 0, 0, 380, 202
@@ -255,14 +237,6 @@ BEGIN
         BOTTOMMARGIN, 175
     END
 
-    IDD_DELETE_WARNING, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 269
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 143
-    END
-
     IDD_PAGE_TREEMAP, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -312,7 +286,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_FILE_OPEN            "Opens a Collection of Drives.\nOpen"
+    ID_FILE_OPEN            "Opens a folder or drive.\nOpen"
 END
 
 STRINGTABLE
@@ -390,17 +364,6 @@ BEGIN
     IDS_DRIVECOL_TOTAL      "Total"
     IDS_SELECTFOLDER        "WinDirStat - Select Folder"
 END
-
-//STRINGTABLE
-//BEGIN
-//    IDS_SPEC_BYTES          "Bytes"
-//    IDS_SPEC_KB             "KB"
-//    IDS_SPEC_MB             "MB"
-//    IDS_SPEC_GB             "GB"
-//    IDS_SPEC_TB             "TB"
-//    IDS_RESETTO_DEFAULTS    "&Reset to\r\nDefaults"
-//    IDS_BACKTO_USERSETTINGS "Back to\r\n&User Settings"
-//END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

@@ -382,7 +382,7 @@ void CMainFrame::OnClose( ) {
 
 #ifdef _DEBUG
 	// avoid memory leaks and show hourglass while deleting the tree
-	VERIFY( GetDocument( )->OnNewDocument( ) );
+	//VERIFY( GetDocument( )->OnNewDocument( ) );
 #endif
 
 	const auto Document = GetDocument( );
@@ -739,27 +739,27 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 
 void CMainFrame::SetSelectionMessageText( ) {
 	switch ( m_logicalFocus ) {
-			case LOGICAL_FOCUS::LF_NONE:
-				return SetMessageText( m_drawTiming.c_str( ) );
-			case LOGICAL_FOCUS::LF_DIRECTORYLIST:
-				{
-				const auto Document = GetDocument( );
-				ASSERT( Document != NULL );
-				if ( Document == NULL ) {
-					SetMessageText( _T( "No document?" ) );
-					return;
-					}
-				const auto Selection = Document->m_selectedItem;
-				if ( Selection == NULL ) {
-					SetMessageText( m_drawTiming.c_str( ) );
-					return;
-					}
-				SetMessageText( Selection->GetPath( ).c_str( ) );
+		case LOGICAL_FOCUS::LF_NONE:
+			return SetMessageText( m_drawTiming.c_str( ) );
+		case LOGICAL_FOCUS::LF_DIRECTORYLIST:
+			{
+			const auto Document = GetDocument( );
+			ASSERT( Document != NULL );
+			if ( Document == NULL ) {
+				SetMessageText( _T( "No document?" ) );
 				return;
 				}
+			const auto Selection = Document->m_selectedItem;
+			if ( Selection == NULL ) {
+				SetMessageText( m_drawTiming.c_str( ) );
 				return;
-			case LOGICAL_FOCUS::LF_EXTENSIONLIST:
-				return SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
+				}
+			SetMessageText( Selection->GetPath( ).c_str( ) );
+			return;
+			}
+			return;
+		case LOGICAL_FOCUS::LF_EXTENSIONLIST:
+			return SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
 		}
 	}
 

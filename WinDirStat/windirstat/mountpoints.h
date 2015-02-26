@@ -107,7 +107,9 @@ private:
 
 				const BOOL b = GetVolumeNameForVolumeMountPointW( small_buffer_volume_name, volume_, larger_buffer_size );
 				if ( !b ) {
+#ifdef DEBUG
 					trace_GetVolumeNameForVolumeMountPoint_failed( small_buffer_volume_name );
+#endif
 					}
 				}
 			m_drive[ static_cast<size_t>( i ) ] = volume_;
@@ -128,13 +130,17 @@ private:
 			_Null_terminated_ wchar_t fsname_[ volumeTCHARsize ] = { 0 };
 			const BOOL b = GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
 			if ( !b ) {
+#ifdef DEBUG
 				trace_fs_not_rea( volume );
+#endif
 				//m_volume[ volume ] = std::vector<SPointVolume>( );
 				continue;
 				}
 
 			if ( ( sysflags bitand FILE_SUPPORTS_REPARSE_POINTS ) == 0 ) {
+#ifdef DEBUG
 				trace_no_reparse( volume );
+#endif
 				//m_volume[ volume ] = std::vector<SPointVolume>( );
 				continue;
 				}
@@ -142,8 +148,9 @@ private:
 			_Null_terminated_ wchar_t point[ volumeTCHARsize ] = { 0 };
 			const HANDLE h = FindFirstVolumeMountPointW( volume, point, volumeTCHARsize );
 			if ( h == INVALID_HANDLE_VALUE ) {
-				
+#ifdef DEBUG
 				trace_no_vol_mnt( volume );
+#endif
 				//m_volume[ volume ] = std::vector<SPointVolume>( );
 				continue;
 				}
@@ -157,12 +164,17 @@ private:
 				_Null_terminated_ wchar_t mountedVolume_[ volumeTCHARsize ] = { 0 };
 				BOOL b2 = GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
 				if ( !b2 ) {
+#ifdef DEBUG
 					trace_GetVolumeNameForVolumeMountPoint_failed( uniquePath.c_str( ) );
+#endif
 					continue;
 					}
 
 				//TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath.c_str( ), mountedVolume_ );
+				
+#ifdef DEBUG
 				trace_mntpt_found( uniquePath.c_str( ), mountedVolume_ );
+#endif
 				//SPointVolume pv;
 				//pv.point = point;
 				//pv.volume = mountedVolume_;

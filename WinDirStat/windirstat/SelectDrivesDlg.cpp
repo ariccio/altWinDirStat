@@ -188,13 +188,31 @@ namespace {
 		return true;
 		}
 
-	const CDriveItem* placement_new_construct( _Inout_ CDrivesList& m_list, _In_z_ PCWSTR const new_name_ptr, _In_ const rsize_t drive_name_length ) {
+#ifdef new
+#pragma push_macro("new")
+#define WDS_SELECTDRIVESDLG_PUSHED_MACRO_NEW
+#undef new
+#endif
+
+
+	const CDriveItem* placement_new_construct( _Inout_ CDrivesList& m_list, _In_opt_z_ PCWSTR const new_name_ptr, _In_ const rsize_t drive_name_length ) {
+		if ( new_name_ptr == nullptr ) {
+			//construct a null object
+			new ( m_list.m_drives.get( ) + m_list.m_drives_count ) CDriveItem { L"", static_cast< std::uint16_t >( 0u ) };
+			const auto item = ( m_list.m_drives.get( ) + m_list.m_drives_count );
+			++( m_list.m_drives_count );
+			return item;
+			}
 		new ( m_list.m_drives.get( ) + m_list.m_drives_count ) CDriveItem { new_name_ptr, static_cast< std::uint16_t >( drive_name_length ) };
 		m_list.InsertListItem( m_list.GetItemCount( ), ( m_list.m_drives.get( ) + m_list.m_drives_count ) );
 		const auto item = ( m_list.m_drives.get( ) + m_list.m_drives_count );
 		++( m_list.m_drives_count );
 		return item;
 		}
+#ifdef WDS_SELECTDRIVESDLG_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_SELECTDRIVESDLG_PUSHED_MACRO_NEW
+#endif
 
 	}
 
@@ -337,7 +355,10 @@ void CSelectDrivesDlg::buildSelectList( ) {
 	m_list.m_drives.reset( new CDriveItem[ max_number_of_named_drives ] );
 	m_list.m_drives_count = 0;
 	for ( i = 0; i < static_cast<int>( max_number_of_named_drives ); i++, mask <<= 1 ) {
+		
+		
 		if ( ( drives bitand mask ) == 0 ) {
+			(void)placement_new_construct( m_list, nullptr, 0 );
 			continue;
 			}
 
@@ -347,6 +368,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		const HRESULT fmt_res = StringCchPrintfExW( drive_name_buffer, drive_name_buffer_size, NULL, &chars_remaining, 0, L"%c:\\", ( i + _T( 'A' ) ) );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( !SUCCEEDED( fmt_res ) ) {
+
 			build_select_list_failed( fmt_res );
 			//shut `/analyze` up.
 			return;
@@ -357,6 +379,7 @@ void CSelectDrivesDlg::buildSelectList( ) {
 
 		const auto type = GetDriveTypeW( drive_name_buffer );
 		if ( ( type == DRIVE_UNKNOWN ) || ( type == DRIVE_NO_ROOT_DIR ) ) {
+			(void)placement_new_construct( m_list, nullptr, 0 );
 			continue;
 			}
 
@@ -364,8 +387,8 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
 
 		if ( ( type != DRIVE_REMOTE ) && ( !DriveExists( drive_name_buffer, drive_name_length ) ) ) {
-			
 			LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
+			(void)placement_new_construct( m_list, nullptr, 0 );
 			continue;
 			}
 		LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
@@ -648,6 +671,7 @@ void CSelectDrivesDlg::OnDestroy( ) {
 	m_layout.OnDestroy( );
 	CDialog::OnDestroy( );
 	}
+
 
 
 #else

@@ -190,21 +190,15 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	}
 
 void CTreeListItem::childNotNull( _In_ CItemBranch* const aTreeListChild, const size_t i ) {
-	
-	//ASSERT( m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
 	if ( ( i > m_vi->cache_sortedChildren.size( ) ) /*&& ( i > 0 )*/ ) {
 		m_vi->cache_sortedChildren.resize( i + 1u );
-		//_CrtDbgBreak( );
 		}
 	else if ( i == m_vi->cache_sortedChildren.size( ) ) {
 		m_vi->cache_sortedChildren.emplace_back( aTreeListChild );
 		}
 	else {
 		ASSERT( i < m_vi->cache_sortedChildren.size( ) );
-		//TRACE( _T( "m_vi->cache_sortedChildren.at( i ): %s\r\n" ), m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).c_str( ) );
-		//TRACE( _T( "aTreeListChild: %s\r\n" ), aTreeListChild->GetText( column::COL_NAME ).c_str( ) );
 		ASSERT( m_vi->cache_sortedChildren.at( i ) == aTreeListChild );
-		//ASSERT( m_vi->cache_sortedChildren.at( i )->GetText( column::COL_NAME ).compare( aTreeListChild->GetText( column::COL_NAME ) ) == 0 );
 		ASSERT( wcscmp( m_vi->cache_sortedChildren.at( i )->m_name, aTreeListChild->m_name ) == 0u );
 		m_vi->cache_sortedChildren.at( i ) = aTreeListChild;
 		}
@@ -310,13 +304,6 @@ bool CTreeListItem::HasSiblings( ) const {
 	ASSERT( count >= 2u );
 	ASSERT( count > 0 );
 	return true;
-	////const auto child_count = GetChildrenCount_( );
-	//if ( count > 0 ) {
-	//	//do we even need to find it?
-	//	return true;//return true if `i` is in valid range ( it was found )
-	//	}
-	//ASSERT( count == 0 );
-	//return false;
 	}
 
 void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
@@ -1167,25 +1154,11 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i ) {
 	if ( item->IsExpanded( ) ) {
-#ifdef DEBUG
-		//const auto item_position = FindListItem( item );
-		
-		//this code ( GetItem( i + 1 ) ) fails!
-		//const auto child = GetItem( i + 1 );
-		//ASSERT( child != NULL );
-		//if ( child == NULL ) {
-		//	_CrtDbgBreak( );
-		//	return;
-		//	}
-		//ASSERT( child->m_parent == item );
-		
-#endif
 		VERIFY( CollapseItem( i ) );
 		}
 	else if ( item->m_parent != NULL ) {
 		SelectItem( item->m_parent );
 		}
-
 	}
 
 void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i ) {
