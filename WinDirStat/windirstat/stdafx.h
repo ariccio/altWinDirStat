@@ -189,6 +189,8 @@ extern WTL::CAppModule _Module;
 #include <atlmisc.h>        // ATL utility classes (i.e. CString)
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>
+#include <atlddx.h>         //For DDX support
+
 
 #pragma warning(disable:4702)//unreachable code
 
@@ -323,9 +325,11 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 //to catch unexpected errors. NOTE that these are still handled by the calling function via SUCCESSS( ),
 //but this macro helps catch the issue closer to the function that returned the unexpected value;
 #define WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res ) {                                                \
+	static_assert( SUCCEEDED( S_OK ), "This macro depends on SUCCEEDED( S_OK ) returning true" );                 \
 	static_assert( std::is_same<decltype( res ), const HRESULT>::value, "This macro depends on an HRESULT res" ); \
 	ASSERT( ( res ) != STRSAFE_E_END_OF_FILE );                                                                   \
 	ASSERT( FAILED( res ) );                                                                                      \
+	ASSERT( !SUCCEEDED( res ) );                                                                                  \
 	}
 
 #else

@@ -91,11 +91,11 @@ namespace {
 			OutputDebugStringA( "WDS: searching time is not yet initialized!\r\n" );
 			return;
 			}
-		_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
-		const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
+		//OutputDebugStringW converts to ASCII internally, so we'll just use char.
+		_Null_terminated_ char searching_done_str[ debug_str_size ] = { 0 };
+		const auto printf_res_1 = _snprintf_s( searching_done_str, debug_str_size, _TRUNCATE, "WDS: searching time: %f\r\n", searchingTime );
 		ASSERT( printf_res_1 != -1 );
-		//TODO: OutputDebugStringW converts to ASCII internally.
-		OutputDebugStringW( searching_done_str );
+		OutputDebugStringA( searching_done_str );
 
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_1 );
@@ -103,22 +103,22 @@ namespace {
 		}
 	
 	void debug_output_frequency( _In_ const std::int64_t m_frequency ) {
-		_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
-		const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timing frequency: %lld\r\n", m_frequency );
+		//OutputDebugStringW converts to ASCII internally, so we'll just use char.
+		_Null_terminated_ char freq_str[ debug_str_size ] = { 0 };
+		const auto printf_res_3 = _snprintf_s( freq_str, debug_str_size, _TRUNCATE, "WDS: timing frequency: %lld\r\n", m_frequency );
 		ASSERT( printf_res_3 != -1 );
-		//TODO: OutputDebugStringW converts to ASCII internally.
-		OutputDebugStringW( freq_str );
+		OutputDebugStringA( freq_str );
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_3 );
 #endif
 		}
 
 	void debug_output_time_to_draw_empty_window( _In_ const double timeToDrawEmptyWindow ) {
-		_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
-		const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: time to draw window:   %f\r\n", timeToDrawEmptyWindow );
+		//OutputDebugStringW converts to ASCII internally, so we'll just use char.
+		_Null_terminated_ char drawing_done_str[ debug_str_size ] = { 0 };
+		const auto printf_res_4 = _snprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, "WDS: time to draw window:   %f\r\n", timeToDrawEmptyWindow );
 		ASSERT( printf_res_4 != -1 );
-		//TODO: OutputDebugStringW converts to ASCII internally.
-		OutputDebugStringW( drawing_done_str );
+		OutputDebugStringA( drawing_done_str );
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_4 );
 #endif

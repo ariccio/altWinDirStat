@@ -151,6 +151,8 @@ namespace {
 		}
 
 	//continue if returns true?
+	//This is an error handling function, and is intended to be called rarely!
+	__declspec(noinline)
 	_Must_inspect_result_ _Success_( return == true ) //_In_range_ upper bound is totally arbitrary! Lower bound is enough for WRITE_BAD_FMT
 	const bool get_date_format_err( _In_ const SYSTEMTIME system_time, _In_ _In_range_( 24, 2048 ) const rsize_t str_size, _In_ const DWORD flags ) {
 		const auto err = GetLastError( );
@@ -184,6 +186,8 @@ namespace {
 		}
 
 	//continue if returns true?
+	//This is an error handling function, and is intended to be called rarely!
+	__declspec(noinline)
 	_Must_inspect_result_ _Success_( return == true )
 	const bool get_time_format_err( _In_ const rsize_t str_size, _In_ const DWORD flags ) {
 		const auto err = GetLastError( );
@@ -228,6 +232,7 @@ namespace {
 			displayWindowsMsgBoxWithMessage( L"Error in file_time_to_system_time_err->CStyle_GetLastErrorAsFormattedMessage!!\r\n" );
 			return err_res;
 			}
+		//return a failure, with the buffer filled with the error message (not intended to be read in by a function)
 		return E_FAIL;
 		}
 
@@ -278,7 +283,8 @@ namespace {
 		std::terminate( );
 		}
 
-	_Success_( SUCCEEDED( return ) ) inline HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	_Success_( return == S_OK ) inline HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+		ASSERT( strSize > 2 );
 		if ( strSize > 2 ) {
 			psz_formatted_LONGLONG_HUMAN[ 0 ] = L'0';
 			psz_formatted_LONGLONG_HUMAN[ 1 ] = 0;
@@ -289,16 +295,22 @@ namespace {
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
 		}
 
+
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
 		size_t remaining_chars = 0;
 		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
+		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( strSize >= remaining_chars );
 			chars_written = ( strSize - remaining_chars );
 			return res;
 			}
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintfExW" );
 		//chars_written = strSize;
 		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
+		//worst case, need ~( 28 + 6 )
+		//handle_stack_insufficient_buffer( strSize, 34u,  )
 		return res;
 		}
 
@@ -308,28 +320,34 @@ namespace {
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = wds_fmt::CStyle_FormatDouble( KB + B / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
+			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+			WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::CStyle_FormatDouble" );
 			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return res;
 			}
-		ASSERT( SUCCEEDED( res ) );
+		
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s KB", buffer );
+		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
+			ASSERT( wcslen( psz_formatted_LONGLONG_HUMAN ) == chars_written );
 			return fmt_res;
 			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
+
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			chars_written = strSize;
 			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return fmt_res;
 			}
+
+		chars_written = 0;
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return fmt_res;
 		}
 
@@ -338,28 +356,32 @@ namespace {
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = wds_fmt::CStyle_FormatDouble( MB + KB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
+			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+			WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::CStyle_FormatDouble" );
 			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return res;
 			}
-		ASSERT( SUCCEEDED( res ) );
+		
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s MB", buffer );
+		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
+			ASSERT( wcslen( psz_formatted_LONGLONG_HUMAN ) == chars_written );
 			return fmt_res;
 			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			chars_written = strSize;
 			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return fmt_res;
 			}
+		chars_written = 0;
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return fmt_res;
 		}
 
@@ -368,28 +390,32 @@ namespace {
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = wds_fmt::CStyle_FormatDouble( GB + MB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
+			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+			WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::CStyle_FormatDouble" );
 			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return res;
 			}
-		ASSERT( SUCCEEDED( res ) );
+		
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s GB", buffer );
+		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
+			ASSERT( wcslen( psz_formatted_LONGLONG_HUMAN ) == chars_written );
 			return fmt_res;
 			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			chars_written = strSize;
 			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return fmt_res;
 			}
+		chars_written = 0;
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return fmt_res;
 		}
 
@@ -398,28 +424,31 @@ namespace {
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = wds_fmt::CStyle_FormatDouble( TB + GB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
+			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+			WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::CStyle_FormatDouble" );
 			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return res;
 			}
-		ASSERT( SUCCEEDED( res ) );
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
 		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s TB", buffer );
+		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
+			ASSERT( wcslen( psz_formatted_LONGLONG_HUMAN ) == chars_written );
 			return fmt_res;
 			}
-		else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			chars_written = strSize;
 			ASSERT( chars_written == strSize );
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		else if ( ( fmt_res != STRSAFE_E_INSUFFICIENT_BUFFER ) && ( FAILED( fmt_res ) ) ) {
-			chars_written = 0;
-			wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 			return fmt_res;
 			}
+		chars_written = 0;
+		wds_fmt::write_BAD_FMT( psz_formatted_LONGLONG_HUMAN, chars_written );
 		return fmt_res;
 		}
 
@@ -431,12 +460,13 @@ namespace {
 
 	void convert_number_to_string_failed( _In_range_( 19, 128 ) const rsize_t bufSize, _In_ const std::int64_t number, _In_ const HRESULT strsafe_printf_res ) {
 		auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { convert_number_to_string_failed_display_debugging_info( bufSize, number ); } );
-
+		
 		if ( strsafe_printf_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_INSUFFICIENT_BUFFER in CStyle_GetNumberFormatted!(aborting)" );
 			return;
 			}
 		if ( strsafe_printf_res == STRSAFE_E_END_OF_FILE ) {
+			//this doesn't make any sense.
 			displayWindowsMsgBoxWithMessage( L"STRSAFE_E_END_OF_FILE in CStyle_GetNumberFormatted!(aborting)" );
 			return;
 			}
@@ -455,7 +485,8 @@ namespace {
 		if ( SUCCEEDED( strsafe_printf_res ) ) {
 			return;
 			}
-		ASSERT( !SUCCEEDED( strsafe_printf_res ) );
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( strsafe_printf_res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( strsafe_printf_res, "StringCchPrintfExW" );
 		
 		convert_number_to_string_failed( bufSize, number, strsafe_printf_res );
 		}
@@ -500,6 +531,8 @@ const HRESULT Children_String_Heap_Manager::copy_name_str_into_buffer( _Pre_inva
 		}
 	m_buffer_filled -= new_name_length;
 	new_name_ptr = ( m_string_buffer.get( ) + m_buffer_filled );
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchCopyExW" );
 	displayWindowsMsgBoxWithMessage( L"Copy of name_str into Children_String_Heap_Manager failed!!!" );
 	std::terminate( );
 	return res;
@@ -584,11 +617,14 @@ void normalize_RECT( _Inout_ RECT& rect ) {
 
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::FormatBytes( _In_ const std::uint64_t n, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_bytes, _In_range_( 38, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _On_failure_( _Post_valid_ ) rsize_t& size_needed ) {
 	const auto res = wds_fmt::CStyle_FormatLongLongHuman( n, psz_formatted_bytes, strSize, chars_written );
-	if ( !SUCCEEDED( res ) ) {
-		wds_fmt::write_BAD_FMT( psz_formatted_bytes, chars_written );
-		size_needed = ( strSize * 2 );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
 		return res;
 		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::CStyle_FormatLongLongHuman" );
+	wds_fmt::write_BAD_FMT( psz_formatted_bytes, chars_written );
+	size_needed = ( strSize * 2 );
 	return res;
 	}
 
@@ -627,11 +663,15 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatLongLongHuman( _I
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 	rsize_t chars_remaining = 0;
 	const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, NULL, &chars_remaining, 0, L"%.1f", d );
+	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		chars_written = ( strSize - chars_remaining );
+		ASSERT( wcslen( psz_formatted_double ) == chars_written );
 		return fmt_res;
 		}
-	else if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
+	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		chars_written = strSize;
 		return fmt_res;
 		}
@@ -648,9 +688,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 		}
 	
 	//const LCID lcid = MAKELCID( GetUserDefaultLangID( ), SORT_DEFAULT );
-
 	//const int gdfres = GetDateFormatW( lcid, DATE_SHORTDATE, &st, NULL, psz_formatted_datetime, static_cast<int>( strSize ) );
-		
 	//GRR DATE_AUTOLAYOUT doesn't work, because we're not targeting a Windows 7 minimum!!
 	//const int gdfres = GetDateFormatEx( LOCALE_NAME_INVARIANT, DATE_SHORTDATE bitor DATE_AUTOLAYOUT, )
 
@@ -677,14 +715,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 
 	chars_written += gtfres;
 	chars_written -= 1;
-
 	/*
 	This function returns 0 if it does not succeed. To get extended error information, the application can call GetLastError, which can return one of the following error codes:
 		ERROR_INSUFFICIENT_BUFFER. A supplied buffer size was not large enough, or it was incorrectly set to NULL.
 		ERROR_INVALID_FLAGS.       The values supplied for flags were not valid.
 		ERROR_INVALID_PARAMETER.   Any of the parameter values was invalid.	
 	*/
-
 	return S_OK;
 	}
 
@@ -700,15 +736,19 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatAttributes( _In_ 
 		chars_written = 5;
 		return S_OK;
 		}
-	//TODO: refactor to use StringSafe
-	//[swprintf_s] returns the number of characters written, or –1 if an error occurred.
-	const auto alt_errCode = swprintf_s( psz_formatted_attributes, strSize, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
-	if ( alt_errCode == -1 ) {
-		return STRSAFE_E_INVALID_PARAMETER;
+	rsize_t chars_remaining = 0;
+	const HRESULT alt_errCode = StringCchPrintfExW( psz_formatted_attributes, strSize, NULL, &chars_remaining, 0, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
+	ASSERT( SUCCEEDED( alt_errCode ) );
+	if ( SUCCEEDED( alt_errCode ) ) {
+		ASSERT( strSize >= chars_remaining );
+		chars_written = ( strSize - chars_remaining );
+		ASSERT( wcslen( psz_formatted_attributes ) == chars_written );
+		return alt_errCode;
 		}
-	ASSERT( alt_errCode >= 0 );
-	chars_written = static_cast<rsize_t>( alt_errCode );
-	return S_OK;
+	chars_written = 0;
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( alt_errCode );
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( alt_errCode, "StringCchPrintfExW" );
+	return alt_errCode;
 	}
 
 //
@@ -793,6 +833,8 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 	}
 
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
 	std::string err_str( strsafe_func_name );
 	err_str += " returned STRSAFE_E_INVALID_PARAMETER, in: file `";
@@ -884,6 +926,7 @@ std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath ) {
 	}
 
 //this function is only called in the rare/error path, so NON-inline code is faster, and smaller.
+__declspec(noinline)
 void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written ) {
 	chars_written = str_size;
 	if ( str_size < generic_size_needed ) {
@@ -1075,11 +1118,13 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 		chars_written = ret;
 		return S_OK;
 		}
+	const auto error_err = GetLastError( );
+	TRACE( _T( "FormatMessageW failed with error code: `%lu`!!\r\n" ), error_err );
 	if ( strSize > 41 ) {
 		wds_fmt::write_bad_fmt_msg( psz_formatted_error, chars_written );
 		return E_FAIL;
 		}
-	else if ( strSize > 8 ) {
+	if ( strSize > 8 ) {
 		wds_fmt::write_BAD_FMT( psz_formatted_error, chars_written );
 		return E_FAIL;
 		}
@@ -1087,6 +1132,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 	return E_FAIL;
 	}
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
 	psz_fmt_msg[  0 ] = L'F';
 	psz_fmt_msg[  1 ] = L'o';
@@ -1133,22 +1180,27 @@ void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) 
 	ASSERT( wcslen( psz_fmt_msg ) == chars_written );
 	}
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void displayWindowsMsgBoxWithError( const DWORD error ) {
 	const rsize_t err_msg_size = 1024;
 	_Null_terminated_ wchar_t err_msg[ err_msg_size ] = { 0 };
 	rsize_t chars_written = 0;
 
 	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written, error );
+	ASSERT( SUCCEEDED( err_res ) );
 	if ( SUCCEEDED( err_res ) ) {
 		WTL::AtlMessageBox( NULL, err_msg, TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg );
 		return;
 		}
+	TRACE( _T( "First attempt to get last error as a formatted message FAILED!\r\n" ) );
 
 	const rsize_t err_msg_size_2 = 4096;
 	_Null_terminated_ wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
 	rsize_t chars_written_2 = 0;
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );
+	ASSERT( SUCCEEDED( err_res_2 ) );
 	if ( SUCCEEDED( err_res_2 ) ) {
 		WTL::AtlMessageBox( NULL, err_msg_2, TEXT( "Error" ), MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg_2 );
@@ -1158,12 +1210,14 @@ void displayWindowsMsgBoxWithError( const DWORD error ) {
 	WTL::AtlMessageBox( NULL, _T( "Error while getting error message!\r\n" ), TEXT( "Error" ), MB_OK );
 	}
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void displayWindowsMsgBoxWithMessage( const std::wstring message ) {
-	//MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
-	WTL::AtlMessageBox( NULL, message.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
-	TRACE( _T( "Error: %s\r\n" ), message.c_str( ) );
+	displayWindowsMsgBoxWithMessage( message.c_str( ) );
 	}
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void displayWindowsMsgBoxWithMessage( const std::string message ) {
 	//MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
 	
@@ -1175,6 +1229,8 @@ void displayWindowsMsgBoxWithMessage( const std::string message ) {
 	TRACE( _T( "Error: %s\r\n" ), new_wide_str.c_str( ) );
 	}
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void displayWindowsMsgBoxWithMessage( PCWSTR const message ) {
 	WTL::AtlMessageBox( NULL, message, TEXT( "Error" ), MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
@@ -1257,6 +1313,8 @@ inline void CRect::NormalizeRect() throw()
 	}
 
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void wds_fmt::write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {
 	pszFMT[ 0 ] = 'B';
 	pszFMT[ 1 ] = 'A';
@@ -1270,6 +1328,8 @@ void wds_fmt::write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_
 	}
 
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void wds_fmt::write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage ) {
 	psz_formatted_usage[ 0  ] = 'M';
 	psz_formatted_usage[ 1  ] = 'E';
@@ -1286,6 +1346,8 @@ void wds_fmt::write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 )
 	psz_formatted_usage[ 12 ] =  0;
 	}
 
+//This is an error handling function, and is intended to be called rarely!
+__declspec(noinline)
 void wds_fmt::write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) {
 	psz_ram_usage[ 0  ] = 'R';
 	psz_ram_usage[ 1  ] = 'A';

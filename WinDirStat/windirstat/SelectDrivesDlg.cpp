@@ -469,6 +469,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 		case RADIO_ALLLOCALDRIVES:
 		case RADIO_AFOLDER:
 			m_okButton.SetFocus( );
+			m_wtl_ok_button.SetFocus( );
 			break;
 		case RADIO_SOMEDRIVES:
 			m_list.SetFocus( );
@@ -597,6 +598,7 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 				ASSERT( false );
 		}
 	m_okButton.EnableWindow( enableOk );
+	m_wtl_ok_button.EnableWindow( enableOk );
 	}
 
 LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM lparam ) {

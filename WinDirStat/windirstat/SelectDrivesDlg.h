@@ -16,6 +16,13 @@
 class CDrivesList;
 class CDriveItem;
 
+
+//http://www.codeguru.com/cpp/com-tech/atl/wtl/article.php/c16223/Displaying-the-Input-Language-indicator-in-a-WTL-dialog.htm
+//Is very helpful?
+
+//also: http://www.codeguru.com/cpp/com-tech/atl/wtl/article.php/c3609/Using-DDX-and-DDV-with-WTL.htm
+
+
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
 class CDriveItem final : public COwnerDrawnListItem {
 public:
@@ -302,6 +309,7 @@ protected:
 	static UINT                      _serial;       // Each Instance of this dialog gets a serial number
 	       CDrivesList               m_list;
 	       CButton                   m_okButton;
+		   ATL::CContainedWindowT<WTL::CButton> m_wtl_ok_button;
 	       std::vector<std::wstring> m_selectedDrives;
 	       CLayout                   m_layout;
 
