@@ -39,10 +39,6 @@ namespace {
 		//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
 		//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
 		return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
-	
-		//const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
-		//const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
-		//return ( u1.QuadPart < u2.QuadPart );
 		}
 
 	_Success_( SUCCEEDED( return ) )
@@ -227,7 +223,6 @@ _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
 	switch ( subitem )
 	{
-			
 			case column::COL_PERCENTAGE:
 				return WriteToStackBuffer_COL_PERCENTAGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_SUBTREETOTAL:
@@ -429,13 +424,6 @@ void CItemBranch::refresh_sizeCache( ) {
 		ASSERT( m_size < UINT64_ERROR );
 		return;
 		}
-
-	//if ( m_vi != nullptr ) {
-	//	//if ( m_vi->sizeCache != UINT64_ERROR ) {
-	//	//	m_vi->sizeCache = UINT64_ERROR;
-	//	//	m_vi->sizeCache = size_recurse( );
-	//	//	}
-	//	}
 	if ( m_size == UINT64_ERROR ) {
 		const auto children_size = m_childCount;
 		const auto child_array = m_children.get( );
@@ -443,43 +431,40 @@ void CItemBranch::refresh_sizeCache( ) {
 			( child_array + i )->refresh_sizeCache( );
 			}
 
-		m_size = compute_size_recurse( );
-		}
-	}
+		//---
+		std::uint64_t total = 0;
 
-_Ret_range_( 0, UINT64_MAX )
-std::uint64_t CItemBranch::compute_size_recurse( ) const {
-	static_assert( std::is_same< decltype( std::declval<CItemBranch>( ).compute_size_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_size )>::value, "The return type of CItemBranch::compute_size_recurse needs to be fixed!!" );
-	std::uint64_t total = 0;
+		const auto childCount = m_childCount;
+		const rsize_t stack_alloc_threshold = 128;
+		if ( childCount < stack_alloc_threshold ) {
+			std::uint64_t child_totals[ stack_alloc_threshold ];
+			for ( size_t i = 0; i < childCount; ++i ) {
+				child_totals[ i ] = ( child_array + i )->size_recurse( );
+				}
+			//loop vectorized!
+			for ( size_t i = 0; i < childCount; ++i ) {
+				ASSERT( total < ( UINT64_MAX / 2 ) );
+				ASSERT( child_totals[ i ] < ( UINT64_MAX / 2 ) );
+				total += child_totals[ i ];
+				}
+			}
+		else {
+			//Not vectorized: 1200, loop contains data dependencies
+			for ( size_t i = 0; i < childCount; ++i ) {
+				total += ( child_array + i )->size_recurse( );
+				}
+			}
+		//return total;
 
-	const auto childCount = m_childCount;
-	const auto child_array = m_children.get( );
-	const rsize_t stack_alloc_threshold = 128;
-	if ( childCount < stack_alloc_threshold ) {
-		std::uint64_t child_totals[ stack_alloc_threshold ];
-		for ( size_t i = 0; i < childCount; ++i ) {
-			child_totals[ i ] = ( child_array + i )->size_recurse( );
-			}
-		//loop vectorized!
-		for ( size_t i = 0; i < childCount; ++i ) {
-			ASSERT( total < ( UINT64_MAX / 2 ) );
-			ASSERT( child_totals[ i ] < ( UINT64_MAX / 2 ) );
-			total += child_totals[ i ];
-			}
+		//---
+		m_size = total;
 		}
-	else {
-		//Not vectorized: 1200, loop contains data dependencies
-		for ( size_t i = 0; i < childCount; ++i ) {
-			total += ( child_array + i )->size_recurse( );
-			}
-		}
-	return total;
 	}
 
 _Ret_range_( 0, UINT64_MAX )
 std::uint64_t CItemBranch::size_recurse( ) const {
 	static_assert( std::is_same<decltype( std::declval<CItemBranch>( ).size_recurse( ) ), decltype( std::declval<CItemBranch>( ).m_size )>::value , "The return type of CItemBranch::size_recurse needs to be fixed!!" );
-	
+	//ASSERT( m_size != UINT64_ERROR );
 	//if ( m_type == IT_FILE ) {
 	if ( !m_children ) {
 		ASSERT( m_childCount == 0 );
@@ -568,71 +553,6 @@ PCWSTR const CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	return resultPtrStr;
 	}
 
-//_Pre_satisfies_( this->m_type == IT_FILE )
-_Pre_satisfies_( this->m_children._Myptr == nullptr )
-_Success_( SUCCEEDED( return ) )
-HRESULT CItemBranch::CStyle_GetExtension( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const {
-	psz_extension[ 0 ] = 0;
-
-	PWSTR resultPtrStr = PathFindExtensionW( m_name );
-	ASSERT( resultPtrStr != '\0' );
-	if ( resultPtrStr != '\0' ) {
-		size_t extLen = 0;
-		const HRESULT res_1 = StringCchLengthW( resultPtrStr, MAX_PATH, &extLen );
-		if ( FAILED( res_1 ) ) {
-			psz_extension[ 0 ] = 0;
-			chars_written = 0;
-			return res_1;
-			}
-		if ( extLen > ( strSize ) ) {
-			psz_extension[ 0 ] = 0;
-			chars_written = 0;
-			return STRSAFE_E_INSUFFICIENT_BUFFER;
-			}
-		const HRESULT res_2 = StringCchCopyW( psz_extension, strSize, resultPtrStr );
-		if ( SUCCEEDED( res_2 ) ){
-			chars_written = extLen;
-			return res_2;
-			}
-#ifdef DEBUG
-		if ( SUCCEEDED( res_2 ) ) {
-			ASSERT( GetExtension( ).compare( psz_extension ) == 0 );
-			return res_2;
-			}
-#endif
-		return res_2;
-		}
-
-	psz_extension[ 0 ] = 0;
-	chars_written = 0;
-	return STRSAFE_E_INVALID_PARAMETER;//some generic error
-	}
-
-//_Pre_satisfies_( this->m_type == IT_FILE )
-_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
-const std::wstring CItemBranch::GetExtension( ) const {
-	//if ( m_type == IT_FILE ) {
-	if ( m_children == nullptr ) {
-		//[PathFindExtensionW] returns the address of the "." that precedes the extension within pszPath if an extension is found, or the address of the terminating null character otherwise.
-		PCWSTR const resultPtrStr = PathFindExtensionW( m_name );
-		ASSERT( resultPtrStr != 0 );
-		if ( resultPtrStr != '\0' ) {
-			return resultPtrStr;
-			}
-		
-		//PathFindExtension failed for some reason.
-		//[wcsrchr] returns a pointer to the last occurrence of [character, parameter 2] in [string, parameter 1]. If [character, parameter 2] is not found, the function returns a null pointer.
-		PCWSTR const address_in_string_of_dot = wcsrchr( m_name, L'.' );
-
-		if ( address_in_string_of_dot == NULL ) {
-			return L".";
-			}
-		return address_in_string_of_dot;
-		}
-	return L"";
-	}
-
-
 void CItemBranch::TmiSetRectangle( _In_ const RECT& rc ) const {
 	ASSERT( ( rc.right + 1 ) >= rc.left );
 	ASSERT( rc.bottom >= rc.top );
@@ -646,6 +566,7 @@ void CItemBranch::TmiSetRectangle( _In_ const RECT& rc ) const {
 _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 	const auto myLength = static_cast<DOUBLE>( m_name_length );
 	DOUBLE childrenTotal = 0;
+	//TODO: take advantage of block heap allocation in this
 	
 	//if ( m_type != IT_FILE ) {
 	if ( m_children != nullptr ) {
@@ -675,37 +596,22 @@ _Ret_range_( 0, 33000 ) DOUBLE CItemBranch::averageNameLength( ) const {
 
 //_Pre_satisfies_( this->m_type == IT_FILE )
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 
-void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const {
-	const size_t extensionPsz_size = 48;
-	_Null_terminated_ wchar_t extensionPsz[ extensionPsz_size ] = { 0 };
-	rsize_t chars_written = 0;
-	const HRESULT res = CStyle_GetExtension( extensionPsz, extensionPsz_size, chars_written );
-	if ( SUCCEEDED( res ) ) {
-		auto& value = extensionMap[ extensionPsz ];
-		if ( value.files == 0 ) {
-			value.ext = extensionPsz;
-			value.ext.shrink_to_fit( );
-			}
-		++( value.files );
-		value.bytes += m_size;
-		return;
-		}
-	//use an underscore to avoid name conflict with _DEBUG build
-	auto ext_ = GetExtension( );
-	ext_.shrink_to_fit( );
-	TRACE( _T( "Extension len: %i ( bigger than buffer! )\r\n\toffending extension:\r\n %s\r\n" ), ext_.length( ), ext_.c_str( ) );
-	auto& value = extensionMap[ ext_ ];
-	if ( value.files == 0 ) {
-		value.ext = ext_;
-		value.ext.shrink_to_fit( );
-		}
-	++( value.files );
-	extensionMap[ ext_ ].bytes += m_size;
+void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const {
+	ASSERT( m_children == nullptr );
 
+	PCWSTR const resultPtrStr = CStyle_GetExtensionStrPtr( );
+	static_assert( std::is_same< std::decay<decltype(*m_name)>::type, wchar_t>::value, "Bad division below!" );
+	const auto alt_length = ( ( std::ptrdiff_t( m_name + m_name_length ) - std::ptrdiff_t( resultPtrStr ) ) / sizeof( wchar_t ) );
+	ASSERT( wcslen( resultPtrStr ) == alt_length );
+	TRACE( _T( "Calculated length: %lld, actual length: %llu\r\n" ), LONGLONG( alt_length ), ULONGLONG( wcslen( resultPtrStr ) ) );
+	auto& value = extensionMap[ resultPtrStr ];
+	++( value.files );
+	value.bytes += m_size;
+	return;
 	}
 
 
-void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const {
+void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
 		stdRecurseCollectExtensionData_FILE( extensionMap );
@@ -732,7 +638,7 @@ _Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_childre
 	
 	
 	const rsize_t size_of_a_single_child_in_bytes = sizeof( CItemBranch );
-	const size_t size_of_children_needed_in_bytes = ( size_of_a_single_child_in_bytes * static_cast<size_t>( number_of_children ) );
+	const size_t size_of_children_needed_in_bytes = ( size_of_a_single_child_in_bytes * static_cast<size_t>( number_of_children + 1 ) );
 
 	const size_t total_size_needed = ( base_memory_size_in_bytes + size_of_children_needed_in_bytes );
 	void* const memory_block = malloc( total_size_needed );

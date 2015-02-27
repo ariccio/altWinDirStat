@@ -38,7 +38,7 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 		}
 
 	DDX_Radio(  pDX, IDC_KDIRSTAT, ( int & ) m_style );
-	DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
+	//DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
 
 	DDX_Text(   pDX, IDC_STATICBRIGHTNESS,     m_sBrightness, str_size );
 	DDX_Slider( pDX, IDC_BRIGHTNESS,           m_nBrightness );

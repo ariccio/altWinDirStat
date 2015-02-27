@@ -155,15 +155,11 @@ struct SRECT {
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord {
 	SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u } { }
-	SExtensionRecord( const SExtensionRecord& in ) {
-		ext = in.ext;
-		files = in.files;
-		bytes = in.bytes;
-		color = in.color;
-		}
-	
+
+	SExtensionRecord( const SExtensionRecord& in ) = default;
 	//SExtensionRecord( SExtensionRecord& in ) = delete;
 
+	//Yes, this is used!
 	SExtensionRecord( SExtensionRecord&& in ) {
 		ext = std::move( in.ext );
 		files = std::move( in.files );
@@ -171,7 +167,7 @@ struct SExtensionRecord {
 		color = std::move( in.color );
 		}
 
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ COLORREF color_in, _In_ std::uint64_t bytes_in, _In_ PCWSTR const ext_in ) : files { files_in }, color { color_in }, bytes { bytes_in }, ext( ext_in ) { }
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
 	/*
 	  COMPARED BY BYTES!
 	  Data stored for each extension.
@@ -190,18 +186,26 @@ struct SExtensionRecord {
 #pragma message( "Restoring data alignment.... " )
 #pragma pack(pop)
 
+//Used for mapping std::wstring -> files + bytes
+struct minimal_SExtensionRecord {
+	minimal_SExtensionRecord( ) : files { 0u }, bytes { 0u } { }
+	_Field_range_( 0, 4294967295 ) std::uint32_t files;
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
+	};
+
 class CItemBranch;
 
 
+//Yes, used
 struct s_compareSExtensionRecordByBytes {
 	public:
 	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.bytes < rhs.bytes ); }
 	};
 
-struct s_compareSExtensionRecordByNumberFiles {
-	public:
-	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.files < rhs.files ); }
-	};
+//struct s_compareSExtensionRecordByNumberFiles {
+//	public:
+//	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.files < rhs.files ); }
+//	};
 
 //enum ITEMTYPE : std::uint8_t {
 //	IT_DIRECTORY,		// Folder

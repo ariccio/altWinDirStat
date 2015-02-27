@@ -790,6 +790,23 @@ public:
 			*/
 
 
+			/*
+BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) const
+{
+	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(nArea == LVIR_BOUNDS || nArea == LVIR_ICON || nArea == LVIR_LABEL || nArea == LVIR_SELECTBOUNDS);
+
+	RECT rect;
+	rect.top = iSubItem;
+	rect.left = nArea;
+	BOOL bRet = (BOOL) ::SendMessage(m_hWnd, LVM_GETSUBITEMRECT,
+		iItem, (LPARAM) &rect);
+
+	if (bRet)
+		ref = rect;
+	return bRet;
+}
+			*/
 
 			VERIFY( GetSubItemRect( item, subitem, LVIR_LABEL, rc ) );
 			}

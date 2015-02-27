@@ -199,7 +199,7 @@ struct COptions {
 	                                       bool              m_followMountPoints    = false;
 	                                       bool              m_followJunctionPoints = false;
 										   //C4820: 'COptions' : '1' bytes padding added after data member 'COptions::m_showTimeSpent'
-	                                       bool              m_showTimeSpent        = false;
+	                                     //bool              m_showTimeSpent        = false;
 
 	_Field_size_( TREELISTCOLORCOUNT )     COLORREF          m_treelistColor[ TREELISTCOLORCOUNT ];
 	_Field_range_( 1, TREELISTCOLORCOUNT ) rsize_t           m_treelistColorCount;

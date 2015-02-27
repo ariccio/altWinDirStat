@@ -23,6 +23,8 @@
 
 #include "dirstatdoc.h"
 
+#include "graphview.h"//temporary!
+
 
 #ifdef DEBUG
 #ifndef WDS_validateRectangle_DEBUG
@@ -738,7 +740,7 @@ void CTreemap::validateRectangle( _In_ const CItemBranch* const child, _In_ cons
 	}
 #endif
 
-_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* const item, _In_ const WTL::CPoint point ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* CTreemap::FindItemByPoint( _In_ const CItemBranch* const item, _In_ const POINT point, _In_opt_ CDirstatDoc* test_doc ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -776,7 +778,32 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* C
 		const RECT child_rect = child->TmiGetRectangle( );
 		if ( ::PtInRect( &child_rect, point ) ) {
 			WDS_validateRectangle_DEBUG( child, rc );
-			const auto ret = FindItemByPoint( child, point );
+
+			TRACE( _T( "Point {%ld, %ld} inside child: %s\r\n" ), point.x, point.y, child->m_name );
+				//{
+				//RECT alt_rect = child_rect;
+				//RECT enclosing_rect = { 0, 0, 0, 0 };
+				//VERIFY( ::GetClientRect( test_graph_view->m_hWnd, &enclosing_rect ) );
+
+				//CSelectStockObject sobrush( test_device_context, NULL_BRUSH );
+				//const auto Options = GetOptions( );
+				//CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
+				//CSelectObject sopen( test_device_context, pen );
+
+				//test_graph_view->TweakSizeOfRectangleForHightlight( alt_rect, enclosing_rect );
+
+				//test_graph_view->RenderHighlightRectangle( test_device_context, alt_rect );
+
+				//}
+			//for my own amusement.
+			//if ( test_doc != NULL ) {
+			//	test_doc->SetSelection( *child );
+			//	Sleep( 500 );
+			//	test_doc->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
+			//	Sleep( 500 );
+			//	}
+
+			const auto ret = FindItemByPoint( child, point, test_doc );
 			if ( ret != NULL ) {
 				WDS_validateRectangle_DEBUG( child, rc );
 				return ret;

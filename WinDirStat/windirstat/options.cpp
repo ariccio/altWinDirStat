@@ -637,7 +637,7 @@ void COptions::SaveToRegistry( ) {
 		}
 	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryHumanFormat, m_humanFormat );
 
-	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, m_showTimeSpent );
+	//CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, m_showTimeSpent );
 	CRegistryUser::SetProfileInt( registry_strings::sectionOptions, registry_strings::entryTreemapHighlightColor, static_cast<const INT>( m_treemapHighlightColor ) );
 
 	SaveTreemapOptions( );
@@ -670,7 +670,7 @@ void COptions::LoadFromRegistry( ) {
 		}
 	m_humanFormat = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryHumanFormat, true );
 
-	m_showTimeSpent = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, false );
+	//m_showTimeSpent = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, false );
 	m_treemapHighlightColor = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryTreemapHighlightColor, RGB( 255, 255, 255 ) );
 
 	ReadTreemapOptions( );

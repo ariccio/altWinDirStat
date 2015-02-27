@@ -87,9 +87,14 @@ namespace {
 	const rsize_t debug_str_size = 100u;
 	
 	void debug_output_searching_time( _In_ const double searchingTime ) {
+		if ( searchingTime == DBL_MAX ) {
+			OutputDebugStringA( "WDS: searching time is not yet initialized!\r\n" );
+			return;
+			}
 		_Null_terminated_ wchar_t searching_done_str[ debug_str_size ] = { 0 };
 		const auto printf_res_1 = _snwprintf_s( searching_done_str, debug_str_size, _TRUNCATE, L"WDS: searching time: %f\r\n", searchingTime );
 		ASSERT( printf_res_1 != -1 );
+		//TODO: OutputDebugStringW converts to ASCII internally.
 		OutputDebugStringW( searching_done_str );
 
 #ifndef DEBUG
@@ -101,6 +106,7 @@ namespace {
 		_Null_terminated_ wchar_t freq_str[ debug_str_size ] = { 0 };
 		const auto printf_res_3 = _snwprintf_s( freq_str, debug_str_size, _TRUNCATE, L"WDS: timing frequency: %lld\r\n", m_frequency );
 		ASSERT( printf_res_3 != -1 );
+		//TODO: OutputDebugStringW converts to ASCII internally.
 		OutputDebugStringW( freq_str );
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_3 );
@@ -111,6 +117,7 @@ namespace {
 		_Null_terminated_ wchar_t drawing_done_str[ debug_str_size ] = { 0 };
 		const auto printf_res_4 = _snwprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, L"WDS: time to draw window:   %f\r\n", timeToDrawEmptyWindow );
 		ASSERT( printf_res_4 != -1 );
+		//TODO: OutputDebugStringW converts to ASCII internally.
 		OutputDebugStringW( drawing_done_str );
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_4 );
@@ -307,6 +314,8 @@ BEGIN_MESSAGE_MAP( CMainFrame, CFrameWnd )
 	ON_UPDATE_COMMAND_UI( ID_VIEW_SHOWFILETYPES, &( CMainFrame::OnUpdateViewShowfiletypes ) )
 	ON_COMMAND( ID_VIEW_SHOWFILETYPES, &( CMainFrame::OnViewShowfiletypes ) )
 	ON_COMMAND( ID_CONFIGURE, &( CMainFrame::OnConfigure ) )
+	ON_COMMAND( ID_SHOW_GRID_NAME_HACK, &( CMainFrame::OnViewShowGrid ) )
+	ON_UPDATE_COMMAND_UI( ID_SHOW_GRID_NAME_HACK, &( CMainFrame::OnUpdateViewShowGrid ) )
 	ON_WM_DESTROY( )
 	//ON_COMMAND(ID_TREEMAP_HELPABOUTTREEMAPS, OnTreemapHelpabouttreemaps)
 	ON_WM_SYSCOLORCHANGE( )
@@ -493,7 +502,12 @@ void CMainFrame::RestoreGraphView( ) {
 	const auto searchingTime = GetDocument( )->m_searchTime;
 	ASSERT( searchingTime > 0 );
 	output_debugging_info( searchingTime, timer_draw_treemap.m_frequency, timeToDrawEmptyWindow );
-	const auto avg_name_leng = GetDocument( )->m_rootItem->averageNameLength( );
+	double average_name_length_scope_holder = -1;
+	const auto root_item = GetDocument( )->m_rootItem.get( );
+	if ( root_item != nullptr ) {
+		average_name_length_scope_holder = GetDocument( )->m_rootItem->averageNameLength( );
+		}
+	const auto avg_name_leng = average_name_length_scope_holder;
 	ASSERT( timeToDrawWindow != 0 );
 	m_lastSearchTime = searchingTime;
 	if ( m_lastSearchTime == -1 ) {
@@ -666,8 +680,8 @@ void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ 
 
 	}
 
-void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f." ), unsigned( ext_data_size ), enum_timing, average_extension_length );
+void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg extension len: %.2f." ), unsigned( ext_data_size ), average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		SetMessageText( buffer_ptr );
@@ -722,18 +736,26 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	ASSERT( searchTiming >= enum_timing );
 
 	const auto extDataSize = getExtDataSize( );
-	
+	if ( extDataSize == 0 ) {
+		TRACE( _T( "0 extensions, we've probably not enumerated anything. NOT writing to status bar.\r\n" ) );
+		return;
+		}
+
 	ASSERT( searchTiming > 0.00f );
 	ASSERT( drawTiming > 0.00f );
-	ASSERT( populateTiming > 0.00f );
+	//ASSERT( populateTiming > 0.00f );//todo
 	m_drawTiming.clear( );
-	const auto total_time = ( searchTiming + drawTiming + populateTiming );
-	if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) ) {
+	double total_time_scope_holder = 0;
+	if ( ( searchTiming >= 0.00 ) && ( drawTiming > 0.00 ) && ( populateTiming > 0.00 ) ) {
+		total_time_scope_holder = ( searchTiming + drawTiming + populateTiming );
+		}
+	const auto total_time = total_time_scope_holder;
+	if ( ( searchTiming >= 0.00 ) && ( drawTiming >= 0.00 ) && ( populateTiming >= 0.00 ) && ( enum_timing < DBL_MAX ) && ( searchTiming < DBL_MAX ) ) {
 		valid_timing_to_write( populateTiming, drawTiming, averageExtLeng, enum_timing, compressed_file_timing, total_time, extDataSize, fileNameLength, buffer_ptr, buffer_size_init );
 		return;
 		}
 
-	invalid_timing_to_write( averageExtLeng, enum_timing, extDataSize, buffer_ptr, buffer_size_init );
+	invalid_timing_to_write( averageExtLeng, extDataSize, buffer_ptr, buffer_size_init );
 	return;
 	}
 
@@ -817,6 +839,23 @@ void CMainFrame::OnUpdateViewShowfiletypes( CCmdUI *pCmdUI ) {
 		return;
 		}
 	pCmdUI->SetCheck( TypeView->m_showTypes );
+	}
+
+void CMainFrame::OnViewShowGrid( ) {
+	const auto Options = GetOptions( );
+	if ( Options == NULL ) {
+		return;
+		}
+	Options->m_treemapOptions.grid = ( !( Options->m_treemapOptions.grid ) );
+	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED );
+	}
+
+void CMainFrame::OnUpdateViewShowGrid( CCmdUI *pCmdUI ) {
+	const auto Options = GetOptions( );
+	if ( Options == NULL ) {
+		return;
+		}
+	pCmdUI->SetCheck( Options->m_treemapOptions.grid ? 1 : 0 );
 	}
 
 void CMainFrame::OnViewShowfiletypes( ) {

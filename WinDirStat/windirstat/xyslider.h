@@ -59,7 +59,27 @@ protected:
 
 	void InstallTimer( ) {
 		RemoveTimer( );
-		m_timer = SetTimer( 4711, 500, NULL );
+		/*
+_AFXWIN_INLINE UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT nElapse,
+		void (CALLBACK* lpfnTimer)(HWND, UINT, UINT_PTR, DWORD))
+	{ ASSERT(::IsWindow(m_hWnd)); return ::SetTimer(m_hWnd, nIDEvent, nElapse,
+		lpfnTimer); }
+
+		*/
+		//If the window handle identifies an existing window, [IsWindow] returns [a nonzero value].
+		ASSERT( ::IsWindow( m_hWnd ) );
+		ASSERT( m_hWnd != NULL );
+		
+
+		//If [SetTimer] succeeds and the hWnd parameter is NULL, the return value is an integer identifying the new timer. An application can pass this value to the KillTimer function to destroy the timer.
+		//If [SetTimer] succeeds and the hWnd parameter is not NULL, then the return value is a nonzero integer. An application can pass the value of the nIDEvent parameter to the KillTimer function to destroy the timer.
+		//If [SetTimer] fails to create a timer, the return value is zero. To get extended error information, call GetLastError.
+		//m_timer = SetTimer( 4711, 500, NULL );
+
+		const auto temp_timer_value = ::SetTimer( m_hWnd, 4711u, 500u, NULL );
+		//TODO: check this value!
+		ASSERT( temp_timer_value != 0 );
+		m_timer = temp_timer_value;
 		}
 
 	RECT GetGripperRect( ) const {
@@ -109,8 +129,6 @@ protected:
 	afx_msg void OnSetFocus( CWnd* pOldWnd );
 	afx_msg void OnKillFocus( CWnd* pNewWnd );
 	afx_msg void OnPaint( );
-
-	_At_( nChar, _Const_ )
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);

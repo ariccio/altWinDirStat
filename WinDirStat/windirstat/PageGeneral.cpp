@@ -41,11 +41,11 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	const auto Options = GetOptions( );
 	m_humanFormat          = Options->m_humanFormat;
 	m_listGrid             = Options->m_listGrid;
-	m_listStripes          = Options->m_listGrid;
+	m_listStripes          = Options->m_listStripes;
 	m_listFullRowSelection = Options->m_listFullRowSelection;
 	m_followMountPoints    = Options->m_followMountPoints;
 	m_followJunctionPoints = Options->m_followJunctionPoints;
-	m_showTimeSpent        = Options->m_showTimeSpent;
+	//m_showTimeSpent        = Options->m_showTimeSpent;
 	
 	m_followMountPoints = false;	                 // Otherwise we would see pacman only.
 	m_ctlFollowMountPoints.ShowWindow( SW_HIDE );    // Ignorance is bliss.
@@ -65,7 +65,7 @@ void CPageGeneral::OnOK( ) {
 	//Compare with TRUE to prevent int->bool coercion
 	Options->m_followMountPoints    = ( ( m_followMountPoints    == TRUE ) ? true : false );
 	Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
-	Options->m_showTimeSpent        = ( ( m_showTimeSpent        == TRUE ) ? true : false );
+	//Options->m_showTimeSpent        = ( ( m_showTimeSpent        == TRUE ) ? true : false );
 	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ), m_appptr );
 	Options->SetListGrid            ( ( ( m_listGrid             == TRUE ) ? true : false ) );
 	Options->SetListStripes         ( ( ( m_listStripes          == TRUE ) ? true : false ) );

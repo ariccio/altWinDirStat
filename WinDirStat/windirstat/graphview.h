@@ -174,7 +174,7 @@ protected:
 		PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
 		}
 
-
+public:
 	void RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const {
 		/*
 		  The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
@@ -211,7 +211,7 @@ protected:
 			}
 		}
 
-
+protected:
 	void DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
 #ifdef DEBUG
 		trace_empty_view_graphview( );
@@ -318,6 +318,7 @@ protected:
 		const auto Options = GetOptions( );
 		CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
 		CSelectObject sopen( pdc, pen );
+
 		RenderHighlightRectangle( pdc, rc );
 		}
 	
@@ -372,7 +373,7 @@ protected:
 		//VERIFY( dcmem.DeleteDC( ) );
 		}
 
-
+public:
 	//TODO: put in anonymous namespace
 	void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient ) const {
 		if ( m_treemap.m_options.grid ) {
@@ -393,7 +394,7 @@ protected:
 			}
 		}
 
-
+protected:
 	//only called from one place
 	inline void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
 		const auto childCount = item.m_childCount;
@@ -489,7 +490,16 @@ protected:
 			//return CView::OnLButtonDown( nFlags, point );
 			return;
 			}
-		const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
+		//CPaintDC test_device_context(this);
+		//OnPrepareDC(&test_device_context);
+		//DrawEmptyView( test_device_context );
+		////OnDraw(&test_device_context);
+		//CDC offscreen_buffer;
+		//VERIFY( offscreen_buffer.CreateCompatibleDC( &test_device_context ) );
+		////CSelectObject sobmp2( offscreen_buffer, m_bitmap );
+		////CSelectObject sobmp2( test_device_context, m_bitmap );
+
+		const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point, Document ) );
 		if ( item == NULL ) {
 			//return CView::OnLButtonDown( nFlags, point );
 			return;
@@ -580,18 +590,15 @@ protected:
 
 
 	afx_msg void OnMouseMove( UINT /*nFlags*/, CPoint point ) {
-		//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 		//Perhaps surprisingly, Document == NULL CAN be a valid condition. We don't have to set the message to anything if there's no document.
 		auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ reset_timer_if_zero( ); } );
 		if ( Document == NULL ) {
-			//return reset_timer_if_zero( );
 			return;
 			}
 		const auto root = Document->m_rootItem.get( );
 		if ( root == NULL ) {
 			TRACE( _T( "FindItemByPoint CANNOT find a point when given a NULL root! So let's not try.\r\n" ) );
-			//return reset_timer_if_zero( );
 			return;
 			}
 
@@ -603,18 +610,33 @@ protected:
 			}
 
 		if ( !IsDrawn( ) ) {
-			//return reset_timer_if_zero( );
 			return;
 			}
-		const auto item = static_cast< const CItemBranch* >( m_treemap.FindItemByPoint( root, point ) );
+		/*
+		void CView::OnPaint()
+		{
+			// standard paint routine
+			CPaintDC dc(this);
+			OnPrepareDC(&dc);
+			OnDraw(&dc);
+		}
+		*/
+		//CPaintDC test_device_context(this);
+		//OnPrepareDC(&test_device_context);
+		////OnDraw(&test_device_context);
+		//DrawEmptyView( test_device_context );
+		//CDC offscreen_buffer;
+		//VERIFY( offscreen_buffer.CreateCompatibleDC( &test_device_context ) );
+		////CSelectObject sobmp2( offscreen_buffer, m_bitmap );
+		////CSelectObject sobmp2( test_device_context, m_bitmap );
+
+		const auto item = static_cast< const CItemBranch* >( m_treemap.FindItemByPoint( root, point, NULL ) );
 		if ( item == NULL ) {
 			TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
-			//return reset_timer_if_zero( );
 			return;
 			}
 		ASSERT( m_frameptr != NULL );
 		if ( m_frameptr == NULL ) {
-			//return reset_timer_if_zero( );
 			return;
 			}
 #ifdef DEBUG
@@ -624,7 +646,6 @@ protected:
 		m_frameptr->SetMessageText( item->GetPath( ).c_str( ) );
 
 		reset_timer_if_zero( );
-		guard.dismiss( );
 		}
 
 	afx_msg void OnDestroy( ) {

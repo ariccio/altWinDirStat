@@ -208,7 +208,7 @@ INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_C
 		case column::COL_DESCRIPTION:
 		case column::COL_EXTENSION:
 			//return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
-			ASSERT( false );//not ever reached?
+			//ASSERT( false );//not ever reached?
 			return default_compare( other );
 
 		case column::COL_COLOR:
@@ -569,8 +569,7 @@ void CTypeView::SetSelection( ) {
 			PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
 			//ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
 			if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
-				const auto ext = item->GetExtension( );
-				m_extensionListControl.SelectExtension( ext.c_str( ) );
+				m_extensionListControl.SelectExtension( item->CStyle_GetExtensionStrPtr( ) );
 				}
 			}
 		}

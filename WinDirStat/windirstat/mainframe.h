@@ -133,7 +133,7 @@ public:
 	
 	void   valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init );
 
-	void   invalid_timing_to_write( _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init );
+	void   invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init );
 
 	_Pre_satisfies_( searchTiming >= compressed_file_timing )
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing );
@@ -174,7 +174,10 @@ public:
 	afx_msg void OnUpdateViewShowtreemap(CCmdUI *pCmdUI);
 	afx_msg void OnViewShowtreemap();
 	afx_msg void OnUpdateViewShowfiletypes(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateViewShowGrid(CCmdUI *pCmdUI);//TODO:
 	afx_msg void OnViewShowfiletypes();
+	afx_msg void OnViewShowGrid();//TODO:
+
 	afx_msg void OnConfigure();
 	afx_msg void OnDestroy();
 

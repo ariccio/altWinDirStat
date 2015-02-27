@@ -45,8 +45,8 @@ class CItemBranch final : public CTreeListItem {
 
 		void refresh_sizeCache( );
 
-		_Ret_range_( 0, UINT64_MAX )
-		std::uint64_t compute_size_recurse( ) const;
+		//_Ret_range_( 0, UINT64_MAX )
+		//std::uint64_t compute_size_recurse( ) const;
 
 		_Ret_range_( 0, UINT64_MAX )
 		std::uint64_t size_recurse( ) const;
@@ -105,10 +105,10 @@ class CItemBranch final : public CTreeListItem {
 		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const;
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
-		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 		
 		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
-		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 		
 		//unconditionally called only ONCE, so we ask for inlining.
 		inline void    SetAttributes                 ( _In_ const DWORD attr );
@@ -116,15 +116,15 @@ class CItemBranch final : public CTreeListItem {
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
-		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
-			const std::wstring GetExtension             ( ) const;
+		//_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
+		//	const std::wstring GetExtension             ( ) const;
 		
 		_Pre_satisfies_( this->m_children._Myptr == nullptr )
 			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
 		
-		_Pre_satisfies_( this->m_children._Myptr == nullptr )
-		_Success_( SUCCEEDED( return ) )
-			HRESULT      CStyle_GetExtension      (  WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const;
+		//_Pre_satisfies_( this->m_children._Myptr == nullptr )
+		//_Success_( SUCCEEDED( return ) )
+		//	HRESULT      CStyle_GetExtension      (  WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const;
 
 
 		std::wstring GetPath                       ( ) const;

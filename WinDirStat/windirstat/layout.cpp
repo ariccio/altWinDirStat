@@ -38,6 +38,7 @@ CPoint CDC::MoveTo(int x, int y)
 
 	ASSERT( hDC != NULL );
 	POINT point_1 = { 0, 0 };
+	
 	VERIFY( ::MoveToEx( hDC, start.x, start.y, &point_1 ) );
 
 	//VERIFY( pdc.LineTo( end ) );

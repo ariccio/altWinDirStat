@@ -24,7 +24,6 @@ class CDirstatView;
 class CDirstatDoc;
 class CItemBranch;
 
-
 namespace {
 	const UINT _nIdTreeListControl = 4711;
 	}

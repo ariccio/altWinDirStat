@@ -15,7 +15,6 @@ class CItemBranch;
 class CMainFrame;
 class CDirstatApp;
 
-
 // The treemap colors as calculated in CDirstatDoc::SetExtensionColors() all have the "brightness" BASE_BRIGHTNESS. I define brightness as a number from 0 to 3.0: (r+g+b)/255. RGB(127, 255, 0), for example, has a brightness of 2.5.
 #define BASE_BRIGHTNESS 1.8
 

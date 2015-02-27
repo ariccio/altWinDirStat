@@ -288,7 +288,7 @@ CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelect
 _Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
 	CDialog::DoDataExchange( pDX );
 	DDX_Control( pDX, IDC_DRIVES, m_list );
-	DDX_Radio( pDX, IDC_ALLDRIVES, static_cast<int>( m_radio ) );
+	//DDX_Radio( pDX, IDC_ALLDRIVES, static_cast<int>( m_radio ) );
 	
 	//I hate CString.
 	//CString local_folder_name = m_folder_name_heap.c_str( );
@@ -322,7 +322,7 @@ BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
 	ON_EN_CHANGE(IDC_FOLDERNAME,              &( CSelectDrivesDlg::UpdateButtons ) )
 	ON_WM_MEASUREITEM()
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES,    &( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
-	ON_BN_CLICKED(IDC_ALLLOCALDRIVES,         &( CSelectDrivesDlg::UpdateButtons ) )
+	//ON_BN_CLICKED(IDC_ALLLOCALDRIVES,         &( CSelectDrivesDlg::UpdateButtons ) )
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_WM_DESTROY()

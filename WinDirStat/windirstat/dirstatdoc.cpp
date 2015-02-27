@@ -125,7 +125,7 @@ namespace {
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
 		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
-		TRACE( _T( "\r\n\r\nGenerating bright colors from default colors......\r\n" ) );
+		TRACE( _T( "\r\n\r\nGenerating brizght colors from default colors......\r\n" ) );
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( i = 0; i < 13; ++i ) {
 #ifdef COLOR_DEBUGGING
@@ -140,10 +140,10 @@ namespace {
 		TRACE( _T( ".....done!\r\n\r\n" ) );
 		return i;
 		}
-	void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::unordered_map<std::wstring, SExtensionRecord>& extensionMap ) {
+	void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) {
 		extensionRecords.reserve( extensionMap.size( ) + 1 );
 		for ( auto& anExt : extensionMap ) {
-			extensionRecords.emplace_back( std::move( anExt.second ) );
+			extensionRecords.emplace_back( std::move( anExt.second.files ), std::move( anExt.second.bytes ), std::move( anExt.first ) );
 			}
 		}
 
@@ -579,9 +579,12 @@ void CDirstatDoc::RebuildExtensionData() {
 	
 	m_extensionRecords.clear( );
 	
-	std::unordered_map<std::wstring, SExtensionRecord> extensionMap;
+	std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;
 
-	auto rootTemp = m_rootItem.get( );
+	const auto rootTemp = m_rootItem.get( );
+	if ( rootTemp == nullptr ) {
+		return;
+		}
 	
 	extensionMap.reserve( rootTemp->files_recurse( ) );
 

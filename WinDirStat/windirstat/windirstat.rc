@@ -90,14 +90,13 @@ BEGIN
     BEGIN
         MENUITEM "&Copy Path\tCtrl+C",          ID_EDIT_COPY
     END
-    POPUP "&Treemap"
-    BEGIN
-        MENUITEM "&Show Treemap\tF9",           ID_VIEW_SHOWTREEMAP
-    END
     POPUP "&Options"
     BEGIN
+        MENUITEM "Show Grid",                   ID_SHOW_GRID_NAME_HACK
+        MENUITEM SEPARATOR
         MENUITEM "Show File &Types\tF8",        ID_VIEW_SHOWFILETYPES
         MENUITEM "Show Tree&map\tF9",           ID_VIEW_SHOWTREEMAP
+        MENUITEM "Show List Stripes",           ID_OPTIONS_SHO
         MENUITEM "Show S&tatusbar",             ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
         MENUITEM "&Configure WinDirStat...",    ID_CONFIGURE
@@ -125,9 +124,6 @@ IDR_POPUPGRAPH MENU
 BEGIN
     POPUP "POPUP_GRAPH"
     BEGIN
-        MENUITEM "Zoom &in\t+",                 32783
-        MENUITEM "Zoom &out\t-",                32784
-        MENUITEM "&Select Parent\t/",           ID_TREEMAP_SELECTPARENT
         MENUITEM SEPARATOR
         MENUITEM "&Copy Path\tCtrl+C",          57634
         MENUITEM "&Explorer Here\tCtrl+E",      32774
@@ -163,7 +159,6 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "altWinDirStat - Select Drives"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "&All Local Drives",IDC_ALLLOCALDRIVES,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,7,99,10
     CONTROL         "&Individual Drives",IDC_SOMEDRIVES,"Button",BS_AUTORADIOBUTTON,7,31,91,10
     CONTROL         "A &Folder",IDC_AFOLDER,"Button",BS_AUTORADIOBUTTON,7,150,100,10
     PUSHBUTTON      "...",IDC_BROWSEFOLDER,219,161,50,14
@@ -192,7 +187,6 @@ BEGIN
     GROUPBOX        "St&yle",IDC_STATIC,7,146,63,49
     CONTROL         "&KDirStat",IDC_KDIRSTAT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,159,42,10
     CONTROL         "Se&quoiaView",IDC_SEQUOIAVIEW,"Button",BS_AUTORADIOBUTTON,12,176,53,10
-    CONTROL         "Show &Grid",IDC_TREEMAPGRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,150,54,10
     PUSHBUTTON      "Grid &Color",IDC_TREEMAPGRIDCOLOR,134,150,85,14,0,WS_EX_RIGHT
     PUSHBUTTON      "H&ighlighting Rectangle",IDC_TREEMAPHIGHLIGHTCOLOR,76,175,143,14,0,WS_EX_RIGHT
     CTEXT           "Static",IDC_STATICSCALEFACTOR,339,7,32,8
@@ -216,8 +210,6 @@ BEGIN
     CONTROL         "&Full Row Selection",IDC_FULLROWSELECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,38,76,75,10
     CONTROL         "Show &Grid",IDC_SHOWGRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,38,93,68,10
     CONTROL         "Show S&tripes",IDC_SHOWSTRIPES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,38,110,68,10
-    CONTROL         "Show &Time spent during the Scan",IDC_SHOWTIMESPENT,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,200,38,110,19
 END
 
 
@@ -291,7 +283,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_APP_ABOUT            "Shows Program, Version, and Copyright Information.\nInfo"
     ID_APP_EXIT             "Quits the Application.\nQuit"
 END
 
@@ -332,24 +323,15 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUT_THANKSTO      "Thanks To"
-END
-
-STRINGTABLE
-BEGIN
     IDS_COLLAPSE            "Co&llapse"
     IDS_EXPAND              "E&xpand"
-    IDS_ABOUT_AUTHORS       "Authors"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_TREECOL_NAME        "Name"
-    IDS_TREECOL_PERCENTAGE  "Percentage"
     IDS_TREECOL_SIZE        "Size"
     IDS_TREECOL_ITEMS       "Items"
     IDS_TREECOL_FILES       "Files"
-    IDS_TREECOL_SUBDIRS     "Subdirs"
     IDS_TREECOL_LASTCHANGE  "Last Change"
 END
 

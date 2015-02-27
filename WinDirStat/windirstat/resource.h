@@ -116,6 +116,7 @@
 #define ID_TREEMAP_ZOOMOUT              32784
 #define ID_TREEMAP_SELECTPARENT         32785
 #define ID_TREEMAP_REBUILDTREEMAP       32786
+#define ID_SHOW_GRID_NAME_HACK          32787
 #define ID_SETTINGS_SHOWTREEMAP         32789
 #define ID_SETTINGS_SHOWTOOLBAR         32790
 #define ID_SETTINGS_SHOW                32791
@@ -126,6 +127,9 @@
 #define ID_VIEW_SHOWFILETYPES           32846
 #define ID_POPUP_CANCEL                 33008
 #define ID_POPUP_TOGGLE                 33023
+#define ID_Menu33025                    33025
+#define ID_SHOW_GRID                    33026
+#define ID_OPTIONS_SHO                  33027
 #define ID_INDICATOR_MEMORYUSAGE        59142
 
 // Next default values for new objects
@@ -133,8 +137,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        903
-#define _APS_NEXT_COMMAND_VALUE         33025
+#define _APS_NEXT_COMMAND_VALUE         33028
 #define _APS_NEXT_CONTROL_VALUE         1226
-#define _APS_NEXT_SYMED_VALUE           104
+#define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif
