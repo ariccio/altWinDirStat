@@ -208,7 +208,6 @@ extern WTL::CAppModule _Module;
 #include <utility>
 #include <atomic>
 #include <tuple>
-#include <condition_variable>
 //#include <iterator>
 //#include <PathCch.h>
 //#pragma comment(lib, "Pathcch")

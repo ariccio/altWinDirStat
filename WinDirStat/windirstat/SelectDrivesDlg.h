@@ -22,24 +22,6 @@ class CDriveItem;
 
 //also: http://www.codeguru.com/cpp/com-tech/atl/wtl/article.php/c3609/Using-DDX-and-DDV-with-WTL.htm
 
-namespace my_threads {
-	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
-	}
-
-
-struct drive_info_struct {
-	drive_info_struct( ) = default;
-	drive_info_struct ( const drive_info_struct & in ) = delete;
-	drive_info_struct & operator=( const drive_info_struct & in ) = delete;
-
-	std::atomic<PWSTR>              m_name;         // Result: name like "BOOT (C:)", valid if m_success
-	std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
-	std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
-	//C4820: 'CDriveInformationThread' : '7' bytes padding added after data member 'CDriveInformationThread::m_success'
-	std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
-	std::atomic<LPARAM>             m_driveItem;    // The list item, we belong to
-	};
-
 
 // CDriveItem. An item in the CDrivesList Control. All methods are called by the gui thread.
 class CDriveItem final : public COwnerDrawnListItem {
@@ -158,11 +140,11 @@ public:
 						const UINT                      m_serial;       // serial number of m_dialog
 						const rsize_t                   m_threadNum;
 	// "[out]"-parameters
-						//std::atomic<PWSTR>              m_name;         // Result: name like "BOOT (C:)", valid if m_success
-						//std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
-						//std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
-						////C4820: 'CDriveInformationThread' : '7' bytes padding added after data member 'CDriveInformationThread::m_success'
-						//std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
+						std::atomic<PWSTR>              m_name;         // Result: name like "BOOT (C:)", valid if m_success
+						std::atomic<std::uint64_t>      m_totalBytes;   // Result: capacity of the drive, valid if m_success
+						std::atomic<std::uint64_t>      m_freeBytes;    // Result: free space on the drive, valid if m_success
+						//C4820: 'CDriveInformationThread' : '7' bytes padding added after data member 'CDriveInformationThread::m_success'
+						std::atomic<bool>               m_success;      // Result: false, iff drive is unaccessible.
 						CRITICAL_SECTION*               dialog_CRITICAL_SECTION_running_threads;
 						_Guarded_by_( dialog_CRITICAL_SECTION_running_threads ) std::vector<CDriveInformationThread*>* dialog_running_threads;
 	};
@@ -243,14 +225,14 @@ public:
 
 
 // CSelectDrivesDlg. The initial dialog, where the user can select one or more drives or a folder for scanning.
-class CSelectDrivesDlg final : public ATL::CDialogImpl<CSelectDrivesDlg>, public WTL::CWinDataExchange<CSelectDrivesDlg> {
+class CSelectDrivesDlg final : public CDialog {
 	DECLARE_DYNAMIC( CSelectDrivesDlg )
 	enum {
 		IDD = IDD_SELECTDRIVES
 		};
 
 public:
-	CSelectDrivesDlg( );
+	CSelectDrivesDlg( CWnd* pParent = NULL );
 	virtual ~CSelectDrivesDlg( ) final {
 		DeleteCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
 		}
@@ -282,17 +264,15 @@ private:
 #ifdef DEBUG
 		trace_full_path( m_folder_name_heap.c_str( ) );
 #endif
-		//VERIFY( UpdateData( false ) );
+		VERIFY( UpdateData( false ) );
 		}
 
 	_Pre_satisfies_( m_radio != RADIO_AFOLDER )
 	void handle_RADIO_other( );
 protected:
-	//_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;
-	//                virtual BOOL OnInitDialog   (                    ) override final;
-	//_Pre_defensive_ virtual void OnOK           (                    ) override final;
-
-	void OnOK( );
+	_Pre_defensive_ virtual void DoDataExchange ( CDataExchange* pDX ) override final;
+	                virtual BOOL OnInitDialog   (                    ) override final;
+	_Pre_defensive_ virtual void OnOK           (                    ) override final;
 
 
 	void buildSelectList( );
@@ -314,9 +294,7 @@ protected:
 
 	void setListOptions( );
 
-	LRESULT UpdateButtons_FolderName( UINT uNotifyCode, int nID, HWND wndCtl );
-
-	_Pre_defensive_ LRESULT UpdateButtons          ( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ );
+	_Pre_defensive_ void UpdateButtons          (                    );
 
 public:
 	       // Dialog Data
@@ -334,159 +312,46 @@ protected:
 		   ATL::CContainedWindowT<WTL::CButton> m_wtl_ok_button;
 	       std::vector<std::wstring> m_selectedDrives;
 	       CLayout                   m_layout;
-		   CString m_path_buffer_for_WTL;
 
-private:
-	       const rsize_t largest_possible_filepath = 33000u;
-		   std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer;
-		   PWSTR m_buffer_ptr;
-protected:
-
-#pragma warning(push)
-
-#pragma warning(disable:4365)
-#pragma warning(disable:4555)
-
-BEGIN_MSG_MAP( CSelectDrivesDlg )
-	MESSAGE_HANDLER( WM_INITDIALOG, ( CSelectDrivesDlg::OnInitDialog ) )
-	COMMAND_ID_HANDLER( IDC_BROWSEFOLDER, ( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
-	COMMAND_ID_HANDLER( IDC_AFOLDER, ( CSelectDrivesDlg::UpdateButtons ) )
-	COMMAND_ID_HANDLER( IDC_SOMEDRIVES, ( CSelectDrivesDlg::UpdateButtons ) )
-	COMMAND_HANDLER_EX( IDC_FOLDERNAME, EN_CHANGE, ( CSelectDrivesDlg::UpdateButtons_FolderName ) )
-	MESSAGE_HANDLER( WM_MEASUREITEM, ( CSelectDrivesDlg::OnMeasureItem ) )
-	NOTIFY_HANDLER( IDC_DRIVES, LVN_ITEMCHANGED, ( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
-	MESSAGE_HANDLER( WM_SIZE, ( CSelectDrivesDlg::OnSize ) )
-	MESSAGE_HANDLER( WM_GETMINMAXINFO, ( CSelectDrivesDlg::OnGetMinMaxInfo ) )
-	MESSAGE_HANDLER( WM_DESTROY, ( CSelectDrivesDlg::OnDestroy ) )
-	MESSAGE_HANDLER( WMU_OK, ( CSelectDrivesDlg::OnWmuOk ) )
-	MESSAGE_HANDLER( my_threads::WMU_THREADFINISHED, ( CSelectDrivesDlg::OnWmuThreadFinished ) )
-	MESSAGE_HANDLER( WM_SYSCOLORCHANGE, ( CSelectDrivesDlg::OnSysColorChange ) )
-END_MSG_MAP()
-
-
-BEGIN_DDX_MAP(CSelectDrivesDlg)
-	//DDX_Text( IDC_FOLDERNAME, m_path_buffer_for_WTL )
-		if(nCtlID == (UINT)-1 || nCtlID == IDC_FOLDERNAME) \
-		{ \
-			if(!CWinDataExchange::DDX_Text(IDC_FOLDERNAME, m_path_buffer_for_WTL, sizeof(m_path_buffer_for_WTL), bSaveAndValidate)) \
-				return FALSE; \
-		}
-	DDX_CONTROL( IDOK, m_okButton )
-	DDX_CONTROL( IDC_DRIVES, m_list )
-END_DDX_MAP()
-
-#pragma warning(pop)
-
-
-	LRESULT OnInitDialog( UINT /*nMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
-	
-	LRESULT OnBnClickedBrowsefolder( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled );
-	//afx_msg void OnLbnSelchangeDrives();
-	LRESULT OnMeasureItem( UINT /*nMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled ) {
-
-		//https://msdn.microsoft.com/en-us/library/windows/desktop/bb775925.aspx
-		PMEASUREITEMSTRUCT const pMeasureItemStruct = reinterpret_cast<MEASUREITEMSTRUCT*>( lParam );
-		ASSERT( pMeasureItemStruct->CtlID == wParam );
-		if ( pMeasureItemStruct->CtlID == IDC_DRIVES ) {
+	DECLARE_MESSAGE_MAP()
+	afx_msg void OnBnClickedBrowsefolder();
+	afx_msg void OnLbnSelchangeDrives();
+	afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct ) {
+		if ( nIDCtl == IDC_DRIVES ) {
 			pMeasureItemStruct->itemHeight = 20;
-			pMeasureItemStruct->itemWidth = 0;
-			bHandled = TRUE;//?
-			return 0;//?
-			//return TRUE;
+			return;
 			}
-		bHandled = FALSE;
-		return 0;
-		//CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
-
+		CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
 		}
-	LRESULT OnLvnItemchangedDrives( int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled ) {
-
-		//UNREFERENCED_PARAMETER( pNMHDR );
+	afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
+		UNREFERENCED_PARAMETER( pNMHDR );
 		m_radio = RADIO_SOMEDRIVES;
-		//VERIFY( UpdateData( false ) );
-		//UpdateButtons( );
-		//*pResult = 0;
-		bHandled = FALSE;
-		return 0;
+		VERIFY( UpdateData( false ) );
+		UpdateButtons( );
+		*pResult = 0;
 		}
-	LRESULT OnGetMinMaxInfo( UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled ) {
-		//https://msdn.microsoft.com/en-us/library/windows/desktop/ms632626.aspx
-		PMINMAXINFO const lpMMI = reinterpret_cast< PMINMAXINFO >( lParam );
+	afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
 		m_layout.OnGetMinMaxInfo( lpMMI );
-		bHandled = FALSE;
-		return 0;
-		//CDialog::OnGetMinMaxInfo( lpMMI );
+		CDialog::OnGetMinMaxInfo( lpMMI );
 		}
-	LRESULT OnDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
+	afx_msg void OnDestroy( );
 
-	//LRESULT OnOk( /*UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled*/ ) {
-	//	EndDialog( IDOK );
-	//	return 0;
-	//	}
-
-	LRESULT OnWmuOk( UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ ) {
+	afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM ) {
 		OnOK( );
 		return 0;
 		}
 
-
-
-	afx_msg _Function_class_( "GUI_THREAD" ) LRESULT OnWmuThreadFinished( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
+	afx_msg _Function_class_( "GUI_THREAD" ) LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
 	
-	LRESULT OnSysColorChange( UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled ) {
-		//CDialog::OnSysColorChange( );
+	afx_msg void OnSysColorChange( ) {
+		CDialog::OnSysColorChange( );
 		m_list.SysColorChanged( );
-		bHandled = FALSE;
-		return 0;
 		}
 
-	LRESULT OnSize( UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ ) {
-		//CDialog::OnSize( nType, cx, cy );
+	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
+		CDialog::OnSize( nType, cx, cy );
 		m_layout.OnSize( );
-		return 0;
 		}
-
-
-
-	//DECLARE_MESSAGE_MAP()
-	//afx_msg void OnBnClickedBrowsefolder();
-	//afx_msg void OnLbnSelchangeDrives();
-	//afx_msg void OnMeasureItem( const INT nIDCtl, PMEASUREITEMSTRUCT pMeasureItemStruct ) {
-	//	if ( nIDCtl == IDC_DRIVES ) {
-	//		pMeasureItemStruct->itemHeight = 20;
-	//		return;
-	//		}
-	//	CDialog::OnMeasureItem( nIDCtl, pMeasureItemStruct );
-	//	}
-	//afx_msg void OnLvnItemchangedDrives( NMHDR* pNMHDR, LRESULT* pResult ) {
-	//	UNREFERENCED_PARAMETER( pNMHDR );
-	//	m_radio = RADIO_SOMEDRIVES;
-	//	VERIFY( UpdateData( false ) );
-	//	UpdateButtons( );
-	//	*pResult = 0;
-	//	}
-	//afx_msg void OnGetMinMaxInfo( _Out_ MINMAXINFO* lpMMI ) {
-	//	m_layout.OnGetMinMaxInfo( lpMMI );
-	//	CDialog::OnGetMinMaxInfo( lpMMI );
-	//	}
-	//afx_msg void OnDestroy( );
-
-	//afx_msg LRESULT OnWmuOk( const WPARAM, const LPARAM ) {
-	//	OnOK( );
-	//	return 0;
-	//	}
-
-	//afx_msg _Function_class_( "GUI_THREAD" ) LRESULT OnWmuThreadFinished( const WPARAM, const LPARAM lparam );
-	//
-	//afx_msg void OnSysColorChange( ) {
-	//	CDialog::OnSysColorChange( );
-	//	m_list.SysColorChanged( );
-	//	}
-
-	//afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
-	//	CDialog::OnSize( nType, cx, cy );
-	//	m_layout.OnSize( );
-	//	}
 
 	};
 

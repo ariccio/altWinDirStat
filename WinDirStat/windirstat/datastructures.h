@@ -549,9 +549,9 @@ namespace global_strings {
 	
 	_Null_terminated_ const wchar_t select_folder_dialog_title_text[ ] = L"WinDirStat - Select Folder";
 
-	_Null_terminated_ const wchar_t GetDriveInformation_failed_fmt_str[ ] = L"WDS: thread ()->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n";
+	_Null_terminated_ const wchar_t GetDriveInformation_failed_fmt_str[ ] = L"WDS: thread (%p)->GetDriveInformation failed!, name: %s, total: %I64u, free: %I64u\r\n";
 
-	_Null_terminated_ const wchar_t GetDriveInformation_succeed_fmt_str[ ] = L"thread ()->GetDriveInformation succeeded!, name:%s, total: %I64u, free: %I64u\r\n";
+	_Null_terminated_ const wchar_t GetDriveInformation_succeed_fmt_str[ ] = L"thread (%p)->GetDriveInformation succeeded!, name:%s, total: %I64u, free: %I64u\r\n";
 	}
 
 #else
