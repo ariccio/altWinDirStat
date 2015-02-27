@@ -16,7 +16,7 @@
 
 
 namespace {
-	UINT WMU_THREADFINISHED = RegisterWindowMessageW( _T( "{F03D3293-86E0-4c87-B559-5FD103F5AF58}" ) );
+	
 
 	const rsize_t volume_name_size = ( MAX_PATH + 1u );
 	const rsize_t max_number_of_named_drives = 32u;
@@ -99,11 +99,11 @@ namespace {
 		return;
 		}
 
-	void log_GetDriveInformation_failed_or_succeeded( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_z_ PCWSTR const format_str ) {
+	void log_GetDriveInformation_failed_or_succeeded( _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_z_ PCWSTR const format_str ) {
 		const rsize_t buffer_size = 256;
 		_Null_terminated_ wchar_t buffer_debug_out_1[ buffer_size ] = { 0 };
-		TRACE( format_str, thread, name, total, free );
-		const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out_1, buffer_size, format_str, thread, name, total, free );
+		TRACE( format_str, name, total, free );
+		const HRESULT pf_res_1 = StringCchPrintfW( buffer_debug_out_1, buffer_size, format_str, name, total, free );
 		ASSERT( SUCCEEDED( pf_res_1 ) );
 		if ( SUCCEEDED( pf_res_1 ) ) {
 			OutputDebugStringW( buffer_debug_out_1 );
@@ -112,19 +112,19 @@ namespace {
 		return;
 		}
 
-	void log_GetDriveInformation_failed( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
-		return log_GetDriveInformation_failed_or_succeeded( thread, name, total, free, global_strings::GetDriveInformation_failed_fmt_str );
+	void log_GetDriveInformation_failed( _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+		return log_GetDriveInformation_failed_or_succeeded( name, total, free, global_strings::GetDriveInformation_failed_fmt_str );
 		}
 
-	void log_GetDriveInformation_succeeded( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
-		return log_GetDriveInformation_failed_or_succeeded( thread, name, total, free, global_strings::GetDriveInformation_succeed_fmt_str );
+	void log_GetDriveInformation_succeeded( _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free ) {
+		return log_GetDriveInformation_failed_or_succeeded( name, total, free, global_strings::GetDriveInformation_succeed_fmt_str );
 		}
 
-	void log_GetDriveInformation_result( _In_ const CDriveInformationThread* const thread, _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
+	void log_GetDriveInformation_result( _In_z_ PCWSTR const name, _In_ const std::uint64_t total, _In_ const std::uint64_t free, _In_ const bool success ) {
 		if ( success ) {
-			return log_GetDriveInformation_succeeded( thread, name, total, free );
+			return log_GetDriveInformation_succeeded( name, total, free );
 			}
-		return log_GetDriveInformation_failed( thread, name, total, free );
+		return log_GetDriveInformation_failed( name, total, free );
 		}
 
 	void build_select_list_failed( const HRESULT fmt_res ) {
@@ -216,7 +216,7 @@ namespace {
 
 	}
 
-CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num, _In_ CRITICAL_SECTION* const cs_in, _In_ std::vector<CDriveInformationThread*>* const dlg_in ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ), m_dialog( dialog ), m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( false ), dialog_CRITICAL_SECTION_running_threads( cs_in ), dialog_running_threads( dlg_in ) {
+CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM driveItem, HWND dialog, UINT serial, rsize_t thread_num, _In_ CRITICAL_SECTION* const cs_in, _In_ std::vector<CDriveInformationThread*>* const dlg_in ) : m_path( std::move( path ) ), m_driveItem( driveItem ), m_serial( serial ), m_threadNum( thread_num ), m_dialog( dialog ), /*m_totalBytes( 0 ), m_freeBytes( 0 ), m_success( false ),*/ dialog_CRITICAL_SECTION_running_threads( cs_in ), dialog_running_threads( dlg_in ) {
 	ASSERT( m_bAutoDelete );
 
 	EnterCriticalSection( dialog_CRITICAL_SECTION_running_threads );
@@ -233,23 +233,31 @@ CDriveInformationThread::CDriveInformationThread( _In_ std::wstring path, LPARAM
 
 BOOL CDriveInformationThread::InitInstance( ) {
 	const auto drive_tuple = RetrieveDriveInformation( m_path );
-	auto m_name_previous = m_name.load( );
-	if ( m_name_previous != std::get<1>( drive_tuple ) ) {
-		delete[ ] m_name_previous;
-		m_name.store( nullptr );
-		m_name_previous = nullptr;
-		}
+	//auto m_name_previous = m_name.load( );
+	//if ( m_name_previous != std::get<1>( drive_tuple ) ) {
+	//	delete[ ] m_name_previous;
+	//	m_name.store( nullptr );
+	//	m_name_previous = nullptr;
+	//	}
 
-	m_success   .store( std::get<0>( drive_tuple ) );
-	m_name      .store( std::get<1>( drive_tuple ) );
-	m_totalBytes.store( std::get<2>( drive_tuple ) );
-	m_freeBytes .store( std::get<3>( drive_tuple ) );
+	auto drive_info_struct_ptr = new drive_info_struct;
+	drive_info_struct_ptr->m_success   .store( std::get<0>( drive_tuple ) );
+	drive_info_struct_ptr->m_name      .store( std::get<1>( drive_tuple ) );
+	drive_info_struct_ptr->m_totalBytes.store( std::get<2>( drive_tuple ) );
+	drive_info_struct_ptr->m_freeBytes .store( std::get<3>( drive_tuple ) );
+
+
+
+	//m_success   .store( std::get<0>( drive_tuple ) );
+	//m_name      .store( std::get<1>( drive_tuple ) );
+	//m_totalBytes.store( std::get<2>( drive_tuple ) );
+	//m_freeBytes .store( std::get<3>( drive_tuple ) );
 	const HWND dialog = m_dialog.load( );
 
 	if ( dialog != NULL ) {
 		//Theoretically the dialog may have been closed at this point. If in the meantime the system recycled the window handle, (it may even belong to another process now?!), we are safe, because WMU_THREADFINISHED is a unique registered message.
 		TRACE( _T( "Sending WMU_THREADFINISHED! m_serial: %u\r\n" ), m_serial );
-		SendMessageW( dialog, WMU_THREADFINISHED, m_serial, reinterpret_cast<LPARAM>( this ) );
+		SendMessageW( dialog, my_threads::WMU_THREADFINISHED, m_serial, reinterpret_cast<LPARAM>( drive_info_struct_ptr ) );
 		}
 
 	EnterCriticalSection( dialog_CRITICAL_SECTION_running_threads );
@@ -279,57 +287,75 @@ UINT CSelectDrivesDlg::_serial;
 
 
 #pragma warning(suppress:4355)
-CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_ALLLOCALDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ), m_name_pool( volume_name_pool_size ) {
+CSelectDrivesDlg::CSelectDrivesDlg( /*CWnd* pParent*/ /*=NULL*/ ) : /*CDialog( CSelectDrivesDlg::IDD, pParent ),*/ m_radio( RADIO_ALLLOCALDRIVES ), m_layout( this, global_strings::select_drives_dialog_layout ), m_name_pool( volume_name_pool_size ), buffer( std::make_unique<wchar_t[]>( largest_possible_filepath ) ) {
+	static_assert( sizeof( decltype( buffer.get( )[ 0 ] ) ) == sizeof( wchar_t ), "bad memset size!" );
+	memset( buffer.get( ), 0, ( ( sizeof( decltype( buffer.get( )[ 0 ] ) ) ) * largest_possible_filepath ) );
+	m_buffer_ptr = buffer.get( );
 	_serial++;
 	//InitializeCriticalSection_wrapper( _csRunningThreads );
 	InitializeCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
 	}
 
-_Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
-	CDialog::DoDataExchange( pDX );
-	DDX_Control( pDX, IDC_DRIVES, m_list );
+//_Pre_defensive_ void CSelectDrivesDlg::DoDataExchange( CDataExchange* pDX ) {
+	//CDialog::DoDataExchange( pDX );
+	//DDX_Control( pDX, IDC_DRIVES, m_list );
 	//DDX_Radio( pDX, IDC_ALLDRIVES, static_cast<int>( m_radio ) );
 	
 	//I hate CString.
 	//CString local_folder_name = m_folder_name_heap.c_str( );
 
-	const rsize_t largest_possible_filepath = 33000u;
+	
 
-	std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer = std::make_unique<wchar_t[]>( largest_possible_filepath );
-	static_assert( sizeof( decltype( buffer.get( )[ 0 ] ) ) == sizeof( wchar_t ), "bad memset size!" );
-	memset( buffer.get( ), 0, ( ( sizeof( decltype( buffer.get( )[ 0 ] ) ) ) * largest_possible_filepath ) );
+	// = std::make_unique<wchar_t[]>( largest_possible_filepath );
+	//static_assert( sizeof( decltype( buffer.get( )[ 0 ] ) ) == sizeof( wchar_t ), "bad memset size!" );
+	
 
-	PWSTR buffer_ptr = buffer.get( );
+	//PWSTR buffer_ptr = buffer.get( );
 
-	const HRESULT res = StringCchCopyW( buffer_ptr, largest_possible_filepath, m_folder_name_heap.c_str( ) );
-	ASSERT( SUCCEEDED( res ) );
-	if ( !SUCCEEDED( res ) ) {
-		TRACE( _T( "oops!\r\n" ) );
-		}
+	//const HRESULT res = StringCchCopyW( buffer_ptr, largest_possible_filepath, m_folder_name_heap.c_str( ) );
+	//ASSERT( SUCCEEDED( res ) );
+	//if ( !SUCCEEDED( res ) ) {
+	//	TRACE( _T( "oops!\r\n" ) );
+	//	}
 
 	//DDX_Text( pDX, IDC_FOLDERNAME, local_folder_name );
-	DDX_Text( pDX, IDC_FOLDERNAME, buffer_ptr, static_cast<int>( largest_possible_filepath ) );
+	//DDX_Text( pDX, IDC_FOLDERNAME, buffer_ptr, static_cast<int>( largest_possible_filepath ) );
 	
-	DDX_Control( pDX, IDOK, m_okButton );
-	m_folder_name_heap = buffer_ptr;
-	}
+	//DDX_Control( pDX, IDOK, m_okButton );
+	//m_folder_name_heap = buffer_ptr;
+	//}
 
 
-BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
-	ON_BN_CLICKED(IDC_BROWSEFOLDER,           &( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
-	ON_BN_CLICKED(IDC_AFOLDER,                &( CSelectDrivesDlg::UpdateButtons ) )
-	ON_BN_CLICKED(IDC_SOMEDRIVES,             &( CSelectDrivesDlg::UpdateButtons ) )
-	ON_EN_CHANGE(IDC_FOLDERNAME,              &( CSelectDrivesDlg::UpdateButtons ) )
-	ON_WM_MEASUREITEM()
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES,    &( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
-	//ON_BN_CLICKED(IDC_ALLLOCALDRIVES,         &( CSelectDrivesDlg::UpdateButtons ) )
-	ON_WM_SIZE()
-	ON_WM_GETMINMAXINFO()
-	ON_WM_DESTROY()
-	ON_MESSAGE(WMU_OK,                        &( CSelectDrivesDlg::OnWmuOk ) )
-	ON_REGISTERED_MESSAGE(WMU_THREADFINISHED, &( CSelectDrivesDlg::OnWmuThreadFinished ) )
-	ON_WM_SYSCOLORCHANGE()
-END_MESSAGE_MAP()
+//BEGIN_MESSAGE_MAP(CSelectDrivesDlg, CDialog)
+//	ON_BN_CLICKED(IDC_BROWSEFOLDER,           &( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
+//	ON_BN_CLICKED(IDC_AFOLDER,                &( CSelectDrivesDlg::UpdateButtons ) )
+//	ON_BN_CLICKED(IDC_SOMEDRIVES,             &( CSelectDrivesDlg::UpdateButtons ) )
+//	ON_EN_CHANGE(IDC_FOLDERNAME,              &( CSelectDrivesDlg::UpdateButtons ) )
+//	ON_WM_MEASUREITEM()
+//	ON_NOTIFY(LVN_ITEMCHANGED, IDC_DRIVES,    &( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
+//	//ON_BN_CLICKED(IDC_ALLLOCALDRIVES,         &( CSelectDrivesDlg::UpdateButtons ) )
+//	ON_WM_SIZE()
+//	ON_WM_GETMINMAXINFO()
+//	ON_WM_DESTROY()
+//	ON_MESSAGE(WMU_OK,                        &( CSelectDrivesDlg::OnWmuOk ) )
+//	ON_REGISTERED_MESSAGE(WMU_THREADFINISHED, &( CSelectDrivesDlg::OnWmuThreadFinished ) )
+//	ON_WM_SYSCOLORCHANGE()
+//END_MESSAGE_MAP()
+
+//BEGIN_MSG_MAP( CSelectDrivesDlg )
+//	COMMAND_ID_HANDLER( IDC_BROWSEFOLDER, ( CSelectDrivesDlg::OnBnClickedBrowsefolder ) )
+//	COMMAND_ID_HANDLER( IDC_AFOLDER, ( CSelectDrivesDlg::UpdateButtons ) )
+//	COMMAND_ID_HANDLER( IDC_SOMEDRIVES( CSelectDrivesDlg::UpdateButtons ) )
+//	COMMAND_HANDLER_EX( IDC_FOLDERNAME, EN_CHANGE, ( CSelectDrivesDlg::UpdateButtons ) )
+//	MESSAGE_HANDLER( WM_MEASUREITEM, ( CSelectDrivesDlg::OnMeasureItem ) )
+//	NOTIFY_HANDLER( IDC_DRIVES, LVN_ITEMCHANGED, ( CSelectDrivesDlg::OnLvnItemchangedDrives ) )
+//	MESSAGE_HANDLER( WM_SIZE, ( CSelectDrivesDlg::OnSize ) )
+//	MESSAGE_HANDLER( WM_GETMINMAXINFO, ( CSelectDrivesDlg::OnGetMinMaxInfo ) )
+//	MESSAGE_HANDLER( WM_DESTROY, ( CSelectDrivesDlg::OnDestroy ) )
+//	MESSAGE_HANDLER( WMU_OK, ( CSelectDrivesDlg::OnWmuOk ) )
+//	MESSAGE_HANDLER( WMU_THREADFINISHED, ( CSelectDrivesDlg::OnWmuThreadFinished ) )
+//	MESSAGE_HANDLER( WM_SYSCOLORCHANGE ( CSelectDrivesDlg::OnSysColorChange ) )
+//END_MSG_MAP()
 
 void CSelectDrivesDlg::setListOptions( ) {
 	const auto Options = GetOptions( );
@@ -345,7 +371,7 @@ void CSelectDrivesDlg::initWindow( ) {
 	VERIFY( ::UpdateWindow( m_hWnd ) );
 	UpdateWindow(             );
 	BringWindowToTop(         );
-	SetForegroundWindow(      );
+	SetForegroundWindow( m_hWnd );
 	}
 
 void CSelectDrivesDlg::buildSelectList( ) {
@@ -434,12 +460,12 @@ void CSelectDrivesDlg::buildSelectList( ) {
 		}
 	}
 
-BOOL CSelectDrivesDlg::OnInitDialog( ) {
+LRESULT CSelectDrivesDlg::OnInitDialog( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ ) {
 	WTL::CWaitCursor wc;
-	VERIFY( CDialog::OnInitDialog( ) );
-	if ( WMU_THREADFINISHED == 0 ) {
+	//VERIFY( CDialog::OnInitDialog( ) );
+	if ( my_threads::WMU_THREADFINISHED == 0 ) {
 		TRACE( "RegisterMessage() failed. Using WM_USER + 123\r\n" );
-		WMU_THREADFINISHED = WM_USER + 123;
+		my_threads::WMU_THREADFINISHED = WM_USER + 123;
 		}
 
 	VERIFY( ModifyStyle( 0, WS_CLIPCHILDREN ) );
@@ -454,6 +480,8 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	m_list.OnColumnsInserted( );
 
 	m_folder_name_heap = CPersistence::GetSelectDrivesFolder( );
+	m_path_buffer_for_WTL = m_folder_name_heap.c_str( );
+
 	//m_folderName = m_folder_name_heap.c_str( );
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 
@@ -462,7 +490,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 	buildSelectList( );
 	m_list.SortItems( );
 	m_radio = CPersistence::GetSelectDrivesRadio( );
-	VERIFY( UpdateData( false ) );
+	//VERIFY( UpdateData( false ) );
 
 	switch ( m_radio )
 	{
@@ -477,11 +505,20 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 		default:
 			m_list.SetFocus( );
 	}
-	UpdateButtons( );
-	return false; // we have set the focus.
+
+	/*
+LRESULT CSelectDrivesDlg::UpdateButtons_FolderName( UINT uNotifyCode, int nID, HWND wndCtl ) {
+	BOOL handled_junk = FALSE;
+	return UpdateButtons( HIWORD( uNotifyCode ), LOWORD( uNotifyCode ), wndCtl, handled_junk );
 	}
 
-void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
+	*/
+	BOOL junk = FALSE;
+	UpdateButtons( 0, 0, 0, junk );
+	return 0; // we have set the focus.
+	}
+
+LRESULT CSelectDrivesDlg::OnBnClickedBrowsefolder( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ ) {
 	TRACE( _T( "User wants to select a folder to analyze...\r\n" ) );
 	
 	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
@@ -495,13 +532,14 @@ void CSelectDrivesDlg::OnBnClickedBrowsefolder( ) {
 		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 		TRACE( _T( "User chose: %s\r\n" ), m_folder_name_heap.c_str( ) );
 		m_radio = RADIO_AFOLDER;
-		VERIFY( UpdateData( false ) );
-		UpdateButtons( );
+		//VERIFY( UpdateData( false ) );
+		//UpdateButtons( );
 		}
 	else {
 		TRACE( _T( "user hit cancel - no changes necessary.\r\n" ) );
 		}
 
+	return 0;
 	}
 
 
@@ -534,7 +572,7 @@ void CSelectDrivesDlg::handle_RADIO_other( ) {
 
 _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 	TRACE( _T( "User hit ok...\r\n" ) );
-	VERIFY( UpdateData( ) );
+	//VERIFY( UpdateData( ) );
 
 	m_drives.clear( );
 	m_selectedDrives.clear( );
@@ -548,18 +586,24 @@ _Pre_defensive_ void CSelectDrivesDlg::OnOK( ) {
 
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	CPersistence::SetSelectDrivesRadio ( m_radio          );
-	CPersistence::SetSelectDrivesFolder( m_folder_name_heap.c_str( ) );
+	CPersistence::SetSelectDrivesFolder( m_path_buffer_for_WTL );
 	CPersistence::SetSelectDrivesDrives( m_selectedDrives );
 
 	if ( m_selectedDrives.size( ) > 1 ) {
 		displayWindowsMsgBoxWithMessage( L"Scanning multiple drives at once is NOT currently implemented. Please try one at a time." );
 		}
 
-	CDialog::OnOK( );
+	EndDialog( IDOK );
+	//CDialog::OnOK( );
 	}
 
-_Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
-	VERIFY( UpdateData( ) );
+LRESULT CSelectDrivesDlg::UpdateButtons_FolderName( UINT uNotifyCode, int /*nID*/, HWND wndCtl ) {
+	BOOL handled_junk = FALSE;
+	return UpdateButtons( HIWORD( uNotifyCode ), LOWORD( uNotifyCode ), wndCtl, handled_junk );
+	}
+
+_Pre_defensive_ LRESULT CSelectDrivesDlg::UpdateButtons( WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ ) {
+	//VERIFY( UpdateData( ) );
 	BOOL enableOk = FALSE;
 	switch ( m_radio )
 		{
@@ -599,36 +643,41 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 		}
 	m_okButton.EnableWindow( enableOk );
 	m_wtl_ok_button.EnableWindow( enableOk );
+	return 0;
 	}
 
-LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( const WPARAM serial, const LPARAM lparam ) {
+//const WPARAM serial, const LPARAM lparam
+LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/ ) {
 	/*
 	  This message is _sent_ by a CDriveInformationThread.
 	  */
 	TRACE( _T( "Entering OnWmuThreadFinished...\r\n" ) );
-	if ( serial != _serial ) {
+	if ( wParam != _serial ) {
 		TRACE( _T( "Leaving OnWmuThreadFinished: invalid serial (window handle recycled?)\r\n" ) );
 		return 0;
 		}
-	const auto thread = reinterpret_cast< CDriveInformationThread * > ( lparam );
+	drive_info_struct* drive_info = reinterpret_cast< drive_info_struct* > ( lParam );
 	//EnterCriticalSection( &_csRunningThreads );
 	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
 
 	//auto driveItem = thread->GetDriveInformation( success, name, total, free );
-	auto driveItem = thread->m_driveItem;
-	const std::uint64_t total = thread->m_totalBytes.load( );
-	const std::uint64_t free = thread->m_freeBytes.load( );
-	const bool success = thread->m_success.load( );
-	const std::wstring name = thread->m_name.load( );
-	const auto old_name_value = thread->m_name.load( );
-	thread->m_name.store( nullptr );
+	auto driveItem = drive_info->m_driveItem.load( );
+	const std::uint64_t total = drive_info->m_totalBytes.load( );
+	const std::uint64_t free = drive_info->m_freeBytes.load( );
+	const bool success = drive_info->m_success.load( );
+	const std::wstring name = drive_info->m_name.load( );
+	const auto old_name_value = drive_info->m_name.load( );
+	drive_info->m_name.store( nullptr );
 	delete[ ] old_name_value;
+	delete drive_info;
+	drive_info = nullptr;
+
 	//delete[ ] thread->m_name.load( );
 	
 	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
 	//LeaveCriticalSection( &_csRunningThreads );
 	
-	log_GetDriveInformation_result( thread, name.c_str( ), total, free, success );
+	log_GetDriveInformation_result( name.c_str( ), total, free, success );
 
 	// For paranoia's sake we check, whether driveItem is in our list. (and we so find its index.)
 	//auto fi = zeroInitLVFINDINFO( );
@@ -659,7 +708,8 @@ LRESULT _Function_class_( "GUI_THREAD" ) CSelectDrivesDlg::OnWmuThreadFinished( 
 	return 0;//NULL??
 	}
 
-void CSelectDrivesDlg::OnDestroy( ) {
+LRESULT CSelectDrivesDlg::OnDestroy( UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ ) {
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/ms632620
 	EnterCriticalSection( &m_running_threads_CRITICAL_SECTION );
 
 	for ( auto& aThread : m_running_threads ) {
@@ -671,7 +721,8 @@ void CSelectDrivesDlg::OnDestroy( ) {
 	LeaveCriticalSection( &m_running_threads_CRITICAL_SECTION );
 	//CDriveInformationThread::InvalidateDialogHandle( );
 	m_layout.OnDestroy( );
-	CDialog::OnDestroy( );
+	return 0;
+	//CDialog::OnDestroy( );
 	}
 
 
