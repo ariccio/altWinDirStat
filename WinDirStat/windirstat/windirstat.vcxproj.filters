@@ -158,6 +158,9 @@
     <ClInclude Include="ScopeGuard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="COM_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap1.bmp">

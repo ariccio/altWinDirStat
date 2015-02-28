@@ -279,7 +279,7 @@ UINT CSelectDrivesDlg::_serial;
 
 
 #pragma warning(suppress:4355)
-CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_ALLLOCALDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ), m_name_pool( volume_name_pool_size ) {
+CSelectDrivesDlg::CSelectDrivesDlg( CWnd* pParent /*=NULL*/ ) : CDialog( CSelectDrivesDlg::IDD, pParent ), m_radio( RADIO_SOMEDRIVES ), m_layout( static_cast<CWnd*>( this ), global_strings::select_drives_dialog_layout ), m_name_pool( volume_name_pool_size ) {
 	_serial++;
 	//InitializeCriticalSection_wrapper( _csRunningThreads );
 	InitializeCriticalSection_wrapper( m_running_threads_CRITICAL_SECTION );
@@ -466,7 +466,7 @@ BOOL CSelectDrivesDlg::OnInitDialog( ) {
 
 	switch ( m_radio )
 	{
-		case RADIO_ALLLOCALDRIVES:
+		//case RADIO_ALLLOCALDRIVES:
 		case RADIO_AFOLDER:
 			m_okButton.SetFocus( );
 			m_wtl_ok_button.SetFocus( );
@@ -515,8 +515,7 @@ void CSelectDrivesDlg::handle_RADIO_other( ) {
 			//`/analyze` is confused.
 			return;
 			}
-		if (    ( m_radio == RADIO_ALLLOCALDRIVES          ) && 
-				( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
+		if (    ( !IsSUBSTedDrive( item->m_path.c_str( ) ) ) ||
 				( m_radio == RADIO_SOMEDRIVES              ) && 
 				( ( LVIS_SELECTED == m_list.GetItemState( i, LVIS_SELECTED ) ) )
 					                                        ) {
@@ -563,9 +562,9 @@ _Pre_defensive_ void CSelectDrivesDlg::UpdateButtons( ) {
 	BOOL enableOk = FALSE;
 	switch ( m_radio )
 		{
-			case RADIO_ALLLOCALDRIVES:
-				enableOk = TRUE;
-				break;
+			//case RADIO_ALLLOCALDRIVES:
+				//enableOk = TRUE;
+				//break;
 			case RADIO_SOMEDRIVES:
 				enableOk = ( ( m_list.GetSelectedCount( ) > 0 ) ? TRUE : FALSE );
 				break;

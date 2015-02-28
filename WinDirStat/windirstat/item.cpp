@@ -603,7 +603,7 @@ void CItemBranch::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_ma
 	static_assert( std::is_same< std::decay<decltype(*m_name)>::type, wchar_t>::value, "Bad division below!" );
 	const auto alt_length = ( ( std::ptrdiff_t( m_name + m_name_length ) - std::ptrdiff_t( resultPtrStr ) ) / sizeof( wchar_t ) );
 	ASSERT( wcslen( resultPtrStr ) == alt_length );
-	TRACE( _T( "Calculated length: %lld, actual length: %llu\r\n" ), LONGLONG( alt_length ), ULONGLONG( wcslen( resultPtrStr ) ) );
+	//TRACE( _T( "Calculated length: %lld, actual length: %llu\r\n" ), LONGLONG( alt_length ), ULONGLONG( wcslen( resultPtrStr ) ) );
 	auto& value = extensionMap[ resultPtrStr ];
 	++( value.files );
 	value.bytes += m_size;

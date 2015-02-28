@@ -748,6 +748,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h" />
+    <ClInclude Include="COM_helpers.h" />
     <ClInclude Include="datastructures.h" />
     <ClInclude Include="directory_enumeration.h" />
     <ClInclude Include="dirstatdoc.h" />

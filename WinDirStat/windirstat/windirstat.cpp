@@ -10,14 +10,14 @@
 #define WDS_WINDIRSTAT_CPP
 
 #include "graphview.h"
-#include "SelectDrivesDlg.h"
+//#include "SelectDrivesDlg.h"
 #include "dirstatdoc.h"
 #include "options.h"
 #include "windirstat.h"
 #include "mainframe.h"
 #include "globalhelpers.h"
 #include "ScopeGuard.h"
-
+#include "COM_helpers.h"
 
 
 CMainFrame* GetMainFrame( ) {
@@ -223,6 +223,12 @@ SetProcessMitigationPolicy(
 		enable_strict_HANDLE_check_mitigation( SetProcessMitigationPolicy_f );
 		}
 
+
+	std::wstring test_file_open( ) {
+		TRACE( _T( "Displaying shell folder selection dialog...\r\n" ) );
+		return OnOpenAFolder( NULL );
+		}
+
 	}
 
 
@@ -384,14 +390,19 @@ void CDirstatApp::OnAppAbout( ) {
 	}
 
 void CDirstatApp::OnFileOpen( ) {
-	CSelectDrivesDlg dlg;
-	if ( IDOK == dlg.DoModal( ) ) {
-		//ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
-		const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), dlg.m_folder_name_heap.c_str( ), dlg.m_drives );
-		if ( path.find( '|' ) == std::wstring::npos ) {
-			m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
-			}
+	const auto path_str = test_file_open( );
+	if ( !( path_str.empty( ) ) ) {
+		m_pDocTemplate->OpenDocumentFile( path_str.c_str( ), true );
 		}
+	
+	//CSelectDrivesDlg dlg;
+	//if ( IDOK == dlg.DoModal( ) ) {
+	//	//ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
+	//	const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), dlg.m_folder_name_heap.c_str( ), dlg.m_drives );
+	//	if ( path.find( '|' ) == std::wstring::npos ) {
+	//		m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
+	//		}
+	//	}
 	}
 
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {

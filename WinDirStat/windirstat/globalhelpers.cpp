@@ -1243,7 +1243,7 @@ std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring fo
 	std::wstring ret;
 	TRACE( _T( "Encoding selection %s\r\n" ), folder.c_str( ) );
 	switch ( radio ) {
-			case RADIO_ALLLOCALDRIVES:
+			//case RADIO_ALLLOCALDRIVES:
 			case RADIO_SOMEDRIVES:
 				{
 				for ( size_t i = 0; i < drives.size( ); i++ ) {

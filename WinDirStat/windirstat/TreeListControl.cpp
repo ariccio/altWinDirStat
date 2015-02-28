@@ -14,7 +14,7 @@
 #include "TreeListControl.h"
 #include "item.h"
 #include "typeview.h"
-#include "SelectDrivesDlg.h"
+//#include "SelectDrivesDlg.h"
 
 
 #include "globalhelpers.h"
