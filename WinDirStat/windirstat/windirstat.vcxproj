@@ -723,13 +723,11 @@
     <ClCompile Include="globalhelpers.cpp" />
     <ClCompile Include="graphview.cpp" />
     <ClCompile Include="item.cpp" />
-    <ClCompile Include="layout.cpp" />
     <ClCompile Include="mainframe.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="PageGeneral.cpp" />
     <ClCompile Include="PageTreemap.cpp" />
     <ClCompile Include="ScopeGuard.cpp" />
-    <ClCompile Include="SelectDrivesDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -756,7 +754,6 @@
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
     <ClInclude Include="item.h" />
-    <ClInclude Include="layout.h" />
     <ClInclude Include="mainframe.h" />
     <ClInclude Include="mountpoints.h" />
     <ClInclude Include="nt_kernel_support.h" />
@@ -766,7 +763,6 @@
     <ClInclude Include="PageTreemap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ScopeGuard.h" />
-    <ClInclude Include="SelectDrivesDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TreeListControl.h" />
     <ClInclude Include="treemap.h" />
