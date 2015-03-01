@@ -92,11 +92,16 @@ void DeleteCriticalSection_wrapper( _Pre_valid_ _Post_invalid_ CRITICAL_SECTION&
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error = GetLastError( ) );
 
-_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR const relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
 
-_Success_( return ) bool MyQueryDosDevice           ( _In_z_ PCWSTR const drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
+//Unused?
+//_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR const relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
 
-std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath );
+//Unused?
+//_Success_( return ) bool MyQueryDosDevice           ( _In_z_ PCWSTR const drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
+
+
+//Unused?
+//std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath );
 
 void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in );
 
@@ -129,17 +134,19 @@ namespace wds_fmt {
 	
 	void write_BAD_FMT      ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written );
 	
-	void FormatVolumeName   ( _In_ const std::wstring& rootPath, _In_z_ PCWSTR const volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
+	//Unused?
+	//void FormatVolumeName   ( _In_ const std::wstring& rootPath, _In_z_ PCWSTR const volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 	}
 
 
 _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
+                             //Unused?
+                             //bool DriveExists       ( _In_z_ _In_reads_( path_len ) PCWSTR const path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
 
-                             bool DriveExists       ( _In_z_ _In_reads_( path_len ) PCWSTR const path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
-
-_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
-_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath );
+							 //Unused?
+//_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
+//_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath );
 
 //void check8Dot3NameCreationAndNotifyUser( );
 
@@ -149,14 +156,17 @@ void displayWindowsMsgBoxWithMessage( const std::wstring message );
 void displayWindowsMsgBoxWithMessage( const std::string message );
 void displayWindowsMsgBoxWithMessage( PCWSTR const message );
 
-void MyGetDiskFreeSpace             ( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
+
+//Unused?
+//void MyGetDiskFreeSpace             ( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
 
 //void trace_helper(  )
 
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
 
-std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
+//Unused?
+//std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
 RECT BuildRECT( const SRECT& in );
 

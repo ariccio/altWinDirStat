@@ -206,7 +206,7 @@ extern WTL::CAppModule _Module;
 //#include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <atomic>
+//#include <atomic>
 #include <tuple>
 //#include <iterator>
 //#include <PathCch.h>

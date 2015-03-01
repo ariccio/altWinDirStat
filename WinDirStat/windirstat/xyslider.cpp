@@ -138,7 +138,9 @@ void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
 	
 	//TODO: check this!
 	ASSERT( color_res_1 != CLR_INVALID );
-	(void)color_res_1;
+	if ( color_res_1 == CLR_INVALID ) {
+		TRACE( _T( "SetBkColor( pdc.m_hDC, GetSysColor( COLOR_BTNFACE ) ) failed!!\r\n" ) );
+		}
 
 	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
 	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &m_rcAll, NULL, 0u, NULL ) );
@@ -169,14 +171,13 @@ _AFXWIN_INLINE BOOL CDC::DrawEdge(LPRECT lpRect, UINT nEdge, UINT nFlags)
 	
 	//TODO: check this!
 	ASSERT( color_res_2 != CLR_INVALID );
-	(void)color_res_2;
+
+	if ( color_res_2 == CLR_INVALID ) {
+		TRACE( _T( "::SetBkColor( pdc.m_hDC, RGB( 255, 255, 255 ) ) failed!!\r\n" ) );
+		}
 
 	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-	const BOOL text_out_res_2 = ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL );
-	
-	//TODO: check this!
-	ASSERT( text_out_res_2 != 0 );
-	( void ) text_out_res_2;
+	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
 
 	//--------------------------------
 
@@ -363,6 +364,9 @@ void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
 	const COLORREF bk_color_res_1 = ::SetBkColor( pdc.m_hDC, color );
 	ASSERT( bk_color_res_1 != CLR_INVALID );
 	( void ) bk_color_res_1;
+	if ( bk_color_res_1 == CLR_INVALID ) {
+		TRACE( _T( "::SetBkColor( pdc.m_hDC, color ) failed!!\r\n" ) );
+		}
 
 	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
 	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );

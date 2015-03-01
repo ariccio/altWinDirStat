@@ -14,13 +14,12 @@
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
-#include "TreeListControl.h"
+//#include "TreeListControl.h"
 #include "item.h"
 #include "typeview.h"
 
-
 #include "dirstatview.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 #include "windirstat.h"
 #include "mainframe.h"
 
@@ -43,84 +42,84 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	_At_( i, _Pre_satisfies_( i == 0 ) )
-	std::vector<std::wstring> addTokens( _In_ const std::wstring s, _Inout_ rsize_t& i, _In_ const wchar_t EncodingSeparator ) {
-		std::vector<std::wstring> sa;
-		while ( i < s.length( ) ) {
-			std::wstring token;
-			while ( i < s.length( ) && s.at( i ) != EncodingSeparator ) {
-				token += s.at( i++ );
-				}
-			const std::wstring test( std::move( token ) );
-			TRACE( _T( "string to trim: %s\r\n" ), test.c_str( ) );
-			const auto idx_past_last_leading_space = test.find_first_not_of( L' ' );
+	//_At_( i, _Pre_satisfies_( i == 0 ) )
+	//std::vector<std::wstring> addTokens( _In_ const std::wstring s, _Inout_ rsize_t& i, _In_ const wchar_t EncodingSeparator ) {
+	//	std::vector<std::wstring> sa;
+	//	while ( i < s.length( ) ) {
+	//		std::wstring token;
+	//		while ( i < s.length( ) && s.at( i ) != EncodingSeparator ) {
+	//			token += s.at( i++ );
+	//			}
+	//		const std::wstring test( std::move( token ) );
+	//		TRACE( _T( "string to trim: %s\r\n" ), test.c_str( ) );
+	//		const auto idx_past_last_leading_space = test.find_first_not_of( L' ' );
 
-			const std::wstring test_leading_spaces_trimmed( ( idx_past_last_leading_space == std::wstring::npos ) ? ( test.c_str( ) + test.length( ) - 1 ) : ( test.c_str( ) + idx_past_last_leading_space ) );
+	//		const std::wstring test_leading_spaces_trimmed( ( idx_past_last_leading_space == std::wstring::npos ) ? ( test.c_str( ) + test.length( ) - 1 ) : ( test.c_str( ) + idx_past_last_leading_space ) );
 
-			TRACE( _T( "string starting at (one past the) last leading space: %s\r\n" ), test_leading_spaces_trimmed.c_str( ) );
+	//		TRACE( _T( "string starting at (one past the) last leading space: %s\r\n" ), test_leading_spaces_trimmed.c_str( ) );
 
-			const auto idx_past_last_trailing_space = test_leading_spaces_trimmed.find_last_not_of( L' ' );
+	//		const auto idx_past_last_trailing_space = test_leading_spaces_trimmed.find_last_not_of( L' ' );
 
-			const std::wstring test_leading_and_trailing_spaces_trimmed( ( idx_past_last_trailing_space != std::wstring::npos ) ? test_leading_spaces_trimmed.substr( 0, ( idx_past_last_trailing_space + 1 ) ) : test_leading_spaces_trimmed );
+	//		const std::wstring test_leading_and_trailing_spaces_trimmed( ( idx_past_last_trailing_space != std::wstring::npos ) ? test_leading_spaces_trimmed.substr( 0, ( idx_past_last_trailing_space + 1 ) ) : test_leading_spaces_trimmed );
 
-			TRACE( _T( "string with trailing spaces trimmed: %s\r\n" ), test_leading_and_trailing_spaces_trimmed.c_str( ) );
+	//		TRACE( _T( "string with trailing spaces trimmed: %s\r\n" ), test_leading_and_trailing_spaces_trimmed.c_str( ) );
 
-			ASSERT( !test_leading_and_trailing_spaces_trimmed.empty( ) );
+	//		ASSERT( !test_leading_and_trailing_spaces_trimmed.empty( ) );
 
-			//const std::wstring w_token( test_leading_and_trailing_spaces_trimmed );
-			//ASSERT( !w_token.empty( ) );
+	//		//const std::wstring w_token( test_leading_and_trailing_spaces_trimmed );
+	//		//ASSERT( !w_token.empty( ) );
 
-			sa.emplace_back( std::move( test_leading_and_trailing_spaces_trimmed ) );
+	//		sa.emplace_back( std::move( test_leading_and_trailing_spaces_trimmed ) );
 
-			if ( i < s.length( ) ) {
-				i++;
-				}
-			}
-		return sa;
-		}
-
-
-	void DecodeSingleSelection( _In_ std::wstring f, _Inout_ std::vector<std::wstring>& drives, _Out_ std::wstring& folder ) {
-		if ( f.length( ) == 2 && f[ 1 ] == _T( ':' ) ) {
-			ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
-			f += _T( "\\" );
-			
-			const auto strcmp_path = f.compare( 0, 4, L"\\\\?\\", 0, 4 );
-			if ( strcmp_path != 0 ) {
-				auto fixedPath = L"\\\\?\\" + f;
-				TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
-				f = fixedPath;
-				}
-
-			TRACE( _T( "Inserting drive: %s\r\n" ), f.c_str( ) );
-			drives.emplace_back( f );
-			folder = L"";//there is no folder.
-			}
-		else {
-			// Remove trailing backslash, if any and not drive-root.
-			if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
-				f = f.substr( 0, f.length( ) - 1 );
-				}
-			TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f.c_str( ) );
-			folder = f;
-			}
-		}
-
-	std::vector<std::wstring> DecodeSelection( _In_ PCWSTR const s, _Inout_ std::wstring& folder ) {
-		
-		TRACE( _T( "decoding selection: %s\r\n" ), s );
-		std::vector<std::wstring> drives;
-		// s is either something like "C:\programme" or something like "C:|D:|E:".
-		rsize_t i = 0;
-		const auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+	//		if ( i < s.length( ) ) {
+	//			i++;
+	//			}
+	//		}
+	//	return sa;
+	//	}
 
 
-		ASSERT( sa.size( ) > 0 );
-		for ( size_t j = 0; j < sa.size( ); j++ ) {
-			DecodeSingleSelection( sa.at( j ), drives, folder );
-			}
-		return drives;
-		}
+	//void DecodeSingleSelection( _In_ std::wstring f, _Inout_ std::vector<std::wstring>& drives, _Out_ std::wstring& folder ) {
+	//	if ( f.length( ) == 2 && f[ 1 ] == _T( ':' ) ) {
+	//		ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
+	//		f += _T( "\\" );
+	//		
+	//		const auto strcmp_path = f.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	//		if ( strcmp_path != 0 ) {
+	//			auto fixedPath = L"\\\\?\\" + f;
+	//			TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
+	//			f = fixedPath;
+	//			}
+
+	//		TRACE( _T( "Inserting drive: %s\r\n" ), f.c_str( ) );
+	//		drives.emplace_back( f );
+	//		folder = L"";//there is no folder.
+	//		}
+	//	else {
+	//		// Remove trailing backslash, if any and not drive-root.
+	//		if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
+	//			f = f.substr( 0, f.length( ) - 1 );
+	//			}
+	//		TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f.c_str( ) );
+	//		folder = f;
+	//		}
+	//	}
+
+	//std::vector<std::wstring> DecodeSelection( _In_ PCWSTR const s, _Inout_ std::wstring& folder ) {
+	//	
+	//	TRACE( _T( "decoding selection: %s\r\n" ), s );
+	//	std::vector<std::wstring> drives;
+	//	// s is either something like "C:\programme" or something like "C:|D:|E:".
+	//	rsize_t i = 0;
+	//	const auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
+
+
+	//	ASSERT( sa.size( ) > 0 );
+	//	for ( size_t j = 0; j < sa.size( ); j++ ) {
+	//		DecodeSingleSelection( sa.at( j ), drives, folder );
+	//		}
+	//	return drives;
+	//	}
 
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
@@ -337,11 +336,12 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	return TRUE;
 	}
 
-void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFolders ) {
+void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
+	const std::wstring root_folder( pszPathName );
 	FILETIME t;
 	//zeroDate( t );
 	memset_zero_struct( t );
-	const auto new_name_length = rootFolders.at( 0u ).length( );
+	const auto new_name_length = root_folder.length( );
 	ASSERT( new_name_length < UINT16_MAX );
 
 	m_rootItem.reset( );
@@ -351,11 +351,11 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 
 	PWSTR new_name_ptr = nullptr;
 	//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, rootFolders.at( 0 ) );
-	const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), rootFolders.at( 0u ) );
+	const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), root_folder );
 
 	if ( !SUCCEEDED( copy_res ) ) {
 		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
-		displayWindowsMsgBoxWithMessage( rootFolders.at( 0u ) );
+		displayWindowsMsgBoxWithMessage( root_folder );
 		}
 
 	//                                          IT_DIRECTORY
@@ -364,21 +364,21 @@ void CDirstatDoc::buildDriveItems( _In_ const std::vector<std::wstring>& rootFol
 
 	}
 
-std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
-	std::vector<std::wstring> rootFolders;
-	if ( drives.size( ) > 0 ) {
-		m_showMyComputer = ( drives.size( ) > 1 );
-		for ( size_t i = 0; i < drives.size( ); i++ ) {
-			rootFolders.emplace_back( drives[ i ] );
-			}
-		}
-	else {
-		ASSERT( !folder.empty( ) );
-		m_showMyComputer = false;
-		rootFolders.emplace_back( folder );
-		}
-	return rootFolders;
-	}
+//std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
+//	std::vector<std::wstring> rootFolders;
+//	if ( drives.size( ) > 0 ) {
+//		m_showMyComputer = ( drives.size( ) > 1 );
+//		for ( size_t i = 0; i < drives.size( ); i++ ) {
+//			rootFolders.emplace_back( drives[ i ] );
+//			}
+//		}
+//	else {
+//		ASSERT( !folder.empty( ) );
+//		m_showMyComputer = false;
+//		rootFolders.emplace_back( folder );
+//		}
+//	return rootFolders;
+//	}
 
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
@@ -397,12 +397,12 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 			}
 		}
 
-	std::wstring folder;
-	const auto drives( DecodeSelection( pszPathName, folder ) );
+	//const std::wstring folder( pszPathName );
+	//const auto drives( DecodeSelection( pszPathName, folder ) );
 	check8Dot3NameCreationAndNotifyUser( );
 
-	const auto rootFolders_( buildRootFolders( drives, folder ) );
-	buildDriveItems( rootFolders_ );
+	//const auto rootFolders_( folder );
+	buildDriveItems( pszPathName );
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 

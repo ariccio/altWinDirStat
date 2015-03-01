@@ -68,8 +68,8 @@ public:
 
 protected:
 	
-	std::vector<std::wstring> buildRootFolders( _In_     const std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
-	void buildDriveItems                      ( _In_     const std::vector<std::wstring>&          rootFolders );
+	//std::vector<std::wstring> buildRootFolders( _In_     const std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
+	void buildDriveItems                      ( _In_z_     PCWSTR const pszPathName );
 	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 
 	void VectorExtensionRecordsToMap          ( );
