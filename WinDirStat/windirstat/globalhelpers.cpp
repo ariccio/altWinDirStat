@@ -1120,6 +1120,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 		}
 	const auto error_err = GetLastError( );
 	TRACE( _T( "FormatMessageW failed with error code: `%lu`!!\r\n" ), error_err );
+	( void ) error_err;
 	if ( strSize > 41 ) {
 		wds_fmt::write_bad_fmt_msg( psz_formatted_error, chars_written );
 		return E_FAIL;

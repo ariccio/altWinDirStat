@@ -1,3 +1,7 @@
+
+#ifndef WDS_COM_HELPERS_H_INCLUDED
+#define WDS_COM_HELPERS_H_INCLUDED
+
 #include "stdafx.h"
 #include "ScopeGuard.h"
 
@@ -262,3 +266,6 @@ std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
 
 
 
+#else
+
+#endif

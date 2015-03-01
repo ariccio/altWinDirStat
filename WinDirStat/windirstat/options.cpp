@@ -350,6 +350,7 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 	}
 
 void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc ) {
+	//TODO: BUGBUG: check return value!
 	GetRect( MakeDialogRectangleEntry( name ), rc );
 	RECT temp = rc;
 	SanifyRect( temp );
