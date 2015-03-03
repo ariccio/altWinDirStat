@@ -621,6 +621,7 @@ void CItemBranch::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std
 		}
 	const auto childCount = m_childCount;
 	const auto local_m_children = m_children.get( );
+	//todo: Iterate over the heapmanager items instead
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < childCount; ++i ) {
 		( local_m_children + i )->stdRecurseCollectExtensionData( extensionMap );

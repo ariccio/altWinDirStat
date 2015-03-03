@@ -11,7 +11,7 @@
 
 namespace {
 
-	_Success_( return != UINT64_MAX )
+	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
 	std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 		ULARGE_INTEGER ret;
 		ret.QuadPart = 0;//zero initializing this is critical!

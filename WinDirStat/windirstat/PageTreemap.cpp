@@ -19,7 +19,7 @@
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
-	CPropertyPage::DoDataExchange( pDX );
+	CWnd::DoDataExchange( pDX );
 
 	//DDX_Control( pDX, IDC_PREVIEW,             m_preview );
 	DDX_Control( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
@@ -74,7 +74,7 @@ END_MESSAGE_MAP()
 
 
 BOOL CPageTreemap::OnInitDialog( ) {
-	VERIFY( CPropertyPage::OnInitDialog( ) );
+	VERIFY( CDialog::OnInitDialog( ) );
 
 	ValuesAltered( ); // m_undo is invalid
 
@@ -90,12 +90,12 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	m_options = Options->m_treemapOptions;
 	m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
 
-	VERIFY( UpdateData( false ) );
+	VERIFY( CWnd::UpdateData( false ) );
 	return TRUE;
 	}
 
 void CPageTreemap::OnOK( ) {
-	VERIFY( UpdateData( ) );
+	VERIFY( CWnd::UpdateData( ) );
 	const auto Options = GetOptions( );
 	Options->SetTreemapOptions( m_options );
 	Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
@@ -103,8 +103,8 @@ void CPageTreemap::OnOK( ) {
 	}
 
 void CPageTreemap::OnSomethingChanged( ) {
-	VERIFY( UpdateData( ) );
-	VERIFY( UpdateData( false ) );
+	VERIFY( CWnd::UpdateData( ) );
+	VERIFY( CWnd::UpdateData( false ) );
 	SetModified( );
 	}
 
@@ -169,7 +169,7 @@ void CPageTreemap::OnBnClickedReset( ) {
 	m_options = o;
 
 	ValuesAltered( !m_altered );
-	VERIFY( UpdateData( false ) );
+	VERIFY( CWnd::UpdateData( false ) );
 	SetModified( );
 	}
 

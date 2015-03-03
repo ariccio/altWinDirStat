@@ -31,6 +31,9 @@ inline void trace_mouse_left( );
 inline void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path );
 #endif
 
+//TweakSizeOfRectangleForHightlight is called once, unconditionally.
+inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient, _In_ const bool grid );
+
 // CGraphView. The treemap window.
 class CGraphView final : public CView {
 protected:
@@ -83,7 +86,7 @@ public:
 	void SuspendRecalculation( _In_ const bool suspend ) {
 		m_recalculationSuspended = suspend;
 		if ( !suspend ) {
-			Invalidate( );
+			CWnd::Invalidate( );
 			}
 		}
 
@@ -98,10 +101,10 @@ protected:
 		VERIFY( CView::PreCreateWindow( cs ) ); // this registers a wndclass
 	
 		WNDCLASS wc;
-		VERIFY( GetClassInfoW( AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
+		VERIFY( ::GetClassInfoW( ::AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
 		wc.hbrBackground = { NULL };
 		wc.lpszClassName = _T( "windirstat_graphview_class" );
-		cs.lpszClass = reinterpret_cast<PCWSTR>( RegisterClassW( &wc ) );
+		cs.lpszClass = reinterpret_cast<PCWSTR>( ::RegisterClassW( &wc ) );
 	
 		return TRUE;
 
@@ -171,7 +174,7 @@ protected:
 #ifdef DEBUG
 		trace_call_onidle( );
 #endif
-		PostAppMessageW( GetCurrentThreadId( ), WM_NULL, 0, 0 );
+		PostAppMessageW( ::GetCurrentThreadId( ), WM_NULL, 0, 0 );
 		}
 
 public:
@@ -217,7 +220,7 @@ protected:
 		trace_empty_view_graphview( );
 #endif
 		const COLORREF gray = RGB( 160, 160, 160 );
-		Inactivate( );
+		CGraphView::Inactivate( );
 
 		RECT rc;
 
@@ -312,7 +315,7 @@ protected:
 
 		RECT rc = item->TmiGetRectangle( );
 
-		TweakSizeOfRectangleForHightlight( rc, rcClient );
+		TweakSizeOfRectangleForHightlight( rc, rcClient, m_treemap.m_options.grid );
 
 		CSelectStockObject sobrush( pdc, NULL_BRUSH );
 		const auto Options = GetOptions( );
@@ -327,7 +330,7 @@ protected:
 		WTL::CWaitCursor wc;
 
 		VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
-		auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { cause_OnIdle_to_be_called_once( ); } );
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { CGraphView::cause_OnIdle_to_be_called_once( ); } );
 
 		CSelectObject sobmp( offscreen_buffer, m_bitmap );
 		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -362,7 +365,7 @@ protected:
 		CDC offscreen_buffer;
 		VERIFY( offscreen_buffer.CreateCompatibleDC( &Screen_Device_Context ) );
 
-		if ( !IsDrawn( ) ) {
+		if ( !CGraphView::IsDrawn( ) ) {
 			DoDraw( Screen_Device_Context, offscreen_buffer, rc );
 			}
 
@@ -374,25 +377,6 @@ protected:
 		}
 
 public:
-	//TODO: put in anonymous namespace
-	void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient ) const {
-		if ( m_treemap.m_options.grid ) {
-			rc.right++;
-			rc.bottom++;
-			}
-		if ( rcClient.left < rc.left ) {
-			rc.left--;
-			}
-		if ( rcClient.top < rc.top ) {
-			rc.top--;
-			}
-		if ( rc.right < rcClient.right ) {
-			rc.right++;
-			}
-		if ( rc.bottom < rcClient.bottom ) {
-			rc.bottom++;
-			}
-		}
 
 protected:
 	//only called from one place
@@ -458,7 +442,7 @@ protected:
 		CView::OnSize( nType, cx, cy );
 		WTL::CSize sz( cx, cy );
 		if ( sz != m_size ) {
-			Inactivate( );
+			CGraphView::Inactivate( );
 			m_size = sz;
 			}
 		}
@@ -534,12 +518,12 @@ protected:
 
 	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final {
 		if ( !( STATIC_DOWNCAST( CDirstatDoc, m_pDocument ) )->IsRootDone( ) ) {
-			Inactivate( );
+			CGraphView::Inactivate( );
 			}
 
 		switch ( lHint ) {
 				case UpdateAllViews_ENUM::HINT_NEWROOT:
-					EmptyView( );
+					CGraphView::EmptyView( );
 					return CView::OnUpdate( pSender, lHint, pHint );
 
 				case 0:
@@ -551,11 +535,11 @@ protected:
 
 
 				case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
-					VERIFY( RedrawWindow( ) );
+					VERIFY( CWnd::RedrawWindow( ) );
 					return;
 
 				case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
-					Inactivate( );
+					CGraphView::Inactivate( );
 					return CView::OnUpdate( pSender, lHint, pHint );
 
 				default:
@@ -609,7 +593,7 @@ protected:
 			std::terminate( );
 			}
 
-		if ( !IsDrawn( ) ) {
+		if ( !( CGraphView::IsDrawn( ) ) ) {
 			return;
 			}
 		/*
@@ -650,7 +634,7 @@ protected:
 
 	afx_msg void OnDestroy( ) {
 		if ( m_timer != 0 ) {
-			VERIFY( KillTimer( m_timer ) );
+			VERIFY( CWnd::KillTimer( m_timer ) );
 			}
 		m_timer = 0;
 		CView::OnDestroy( );
@@ -658,8 +642,8 @@ protected:
 	
 	afx_msg void OnTimer( UINT_PTR /*nIDEvent*/ ) {
 		WTL::CPoint point;
-		VERIFY( GetCursorPos( &point ) );
-		ScreenToClient( &point );
+		VERIFY( ::GetCursorPos( &point ) );
+		CWnd::ScreenToClient( &point );
 
 		RECT rc;
 		/*
@@ -674,7 +658,7 @@ protected:
 		if ( !PtInRect( &rc, point ) ) {
 			TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
 			m_frameptr->SetSelectionMessageText( );
-			VERIFY( KillTimer( m_timer ) );
+			VERIFY( CWnd::KillTimer( m_timer ) );
 			m_timer = 0;
 			}
 		}

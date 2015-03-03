@@ -42,85 +42,6 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	//_At_( i, _Pre_satisfies_( i == 0 ) )
-	//std::vector<std::wstring> addTokens( _In_ const std::wstring s, _Inout_ rsize_t& i, _In_ const wchar_t EncodingSeparator ) {
-	//	std::vector<std::wstring> sa;
-	//	while ( i < s.length( ) ) {
-	//		std::wstring token;
-	//		while ( i < s.length( ) && s.at( i ) != EncodingSeparator ) {
-	//			token += s.at( i++ );
-	//			}
-	//		const std::wstring test( std::move( token ) );
-	//		TRACE( _T( "string to trim: %s\r\n" ), test.c_str( ) );
-	//		const auto idx_past_last_leading_space = test.find_first_not_of( L' ' );
-
-	//		const std::wstring test_leading_spaces_trimmed( ( idx_past_last_leading_space == std::wstring::npos ) ? ( test.c_str( ) + test.length( ) - 1 ) : ( test.c_str( ) + idx_past_last_leading_space ) );
-
-	//		TRACE( _T( "string starting at (one past the) last leading space: %s\r\n" ), test_leading_spaces_trimmed.c_str( ) );
-
-	//		const auto idx_past_last_trailing_space = test_leading_spaces_trimmed.find_last_not_of( L' ' );
-
-	//		const std::wstring test_leading_and_trailing_spaces_trimmed( ( idx_past_last_trailing_space != std::wstring::npos ) ? test_leading_spaces_trimmed.substr( 0, ( idx_past_last_trailing_space + 1 ) ) : test_leading_spaces_trimmed );
-
-	//		TRACE( _T( "string with trailing spaces trimmed: %s\r\n" ), test_leading_and_trailing_spaces_trimmed.c_str( ) );
-
-	//		ASSERT( !test_leading_and_trailing_spaces_trimmed.empty( ) );
-
-	//		//const std::wstring w_token( test_leading_and_trailing_spaces_trimmed );
-	//		//ASSERT( !w_token.empty( ) );
-
-	//		sa.emplace_back( std::move( test_leading_and_trailing_spaces_trimmed ) );
-
-	//		if ( i < s.length( ) ) {
-	//			i++;
-	//			}
-	//		}
-	//	return sa;
-	//	}
-
-
-	//void DecodeSingleSelection( _In_ std::wstring f, _Inout_ std::vector<std::wstring>& drives, _Out_ std::wstring& folder ) {
-	//	if ( f.length( ) == 2 && f[ 1 ] == _T( ':' ) ) {
-	//		ASSERT( ( f.length( ) == 2 ) && ( f[ 1 ] == _T( ':' ) ) );
-	//		f += _T( "\\" );
-	//		
-	//		const auto strcmp_path = f.compare( 0, 4, L"\\\\?\\", 0, 4 );
-	//		if ( strcmp_path != 0 ) {
-	//			auto fixedPath = L"\\\\?\\" + f;
-	//			TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
-	//			f = fixedPath;
-	//			}
-
-	//		TRACE( _T( "Inserting drive: %s\r\n" ), f.c_str( ) );
-	//		drives.emplace_back( f );
-	//		folder = L"";//there is no folder.
-	//		}
-	//	else {
-	//		// Remove trailing backslash, if any and not drive-root.
-	//		if ( f.length( ) > 0 && f.back( ) == _T( '\\' ) && ( f.length( ) != 3 || f[ 1 ] != _T( ':' ) ) ) {
-	//			f = f.substr( 0, f.length( ) - 1 );
-	//			}
-	//		TRACE( _T( "Whoops! %s is not a drive, it's a folder!\r\n" ), f.c_str( ) );
-	//		folder = f;
-	//		}
-	//	}
-
-	//std::vector<std::wstring> DecodeSelection( _In_ PCWSTR const s, _Inout_ std::wstring& folder ) {
-	//	
-	//	TRACE( _T( "decoding selection: %s\r\n" ), s );
-	//	std::vector<std::wstring> drives;
-	//	// s is either something like "C:\programme" or something like "C:|D:|E:".
-	//	rsize_t i = 0;
-	//	const auto sa = addTokens( std::wstring( s ), i, _T( '|' ) );// `|` is the encoding separator, which is not allowed in file names.
-
-
-	//	ASSERT( sa.size( ) > 0 );
-	//	for ( size_t j = 0; j < sa.size( ); j++ ) {
-	//		DecodeSingleSelection( sa.at( j ), drives, folder );
-	//		}
-	//	return drives;
-	//	}
-
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
 		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
@@ -229,6 +150,68 @@ namespace {
 			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 		}
+
+	void SetExtensionColors( _Inout_ std::vector<SExtensionRecord>& extensionsToSet ) {
+		/*
+		  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key (no longer accurate description). The color assigned is chosen by rotating through a default palette.
+		*/
+		COLORREF colorArray[ 13 ];
+
+		const auto sizeOfArray = GetDefaultPaletteAsArray( colorArray );
+
+
+		std::vector<COLORREF>::size_type processed = 0;
+
+		//Not vectorized: 1304, loop includes assignments of different sizes
+		for ( auto& anExtension : extensionsToSet ) {
+			//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
+			auto test = colorArray[ processed % ( sizeOfArray ) ];
+			++processed;
+			if ( processed < ( sizeOfArray ) ) {
+				test = colorArray[ processed ];
+				}
+			anExtension.color = test;
+	#ifdef _DEBUG
+	#ifdef EXTENSION_LIST_DEBUG
+			TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext.c_str( ), anExtension.color );
+	#endif
+	#endif
+
+			}
+	#ifdef _DEBUG
+	#ifdef EXTENSION_LIST_DEBUG
+		for ( const auto& a : extensionsToSet ) {
+			static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
+			static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
+			TRACE( _T( "%s: (Bytes: %I64u), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), std::uint64_t( a.bytes ), a.color, a.files );
+			ASSERT( a.color != 0 );
+			}
+	#endif
+	#endif
+		}
+
+	void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>& extension_records, _In_ const CItemBranch* const root_item ) {
+		std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;
+		extensionMap.reserve( root_item->files_recurse( ) );
+
+		root_item->stdRecurseCollectExtensionData( extensionMap );
+		AddFileExtensionData( extension_records, extensionMap );
+		SetExtensionColors( extension_records );
+		std::sort( extension_records.begin( ), extension_records.end( ), s_compareSExtensionRecordByBytes( ) );
+
+		extension_records.shrink_to_fit( );
+
+		}
+
+	void convert_vector_of_extension_records_to_map( _In_ const std::vector<SExtensionRecord>* const records, _Inout_ std::unordered_map<std::wstring, COLORREF>& color_map ) {
+		if ( records != NULL ) {
+			color_map.reserve( records->size( ) );
+			for ( const auto& aRecord : ( *records ) ) {
+				color_map[ aRecord.ext ] = aRecord.color;
+				}
+			}
+		}
+
 	}
 
 CDirstatDoc* _theDocument;
@@ -268,7 +251,7 @@ CDirstatDoc* GetDocument( ) {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_showMyComputer( true ), m_searchTime( DBL_MAX ), m_iterations( 0 ), m_compressed_file_timing( -1 ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
+CDirstatDoc::CDirstatDoc( ) : /*m_workingItem( NULL ),*/ m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), /*m_showMyComputer( true ),*/ m_searchTime( DBL_MAX ), /*m_iterations( 0 ),*/ m_compressed_file_timing( -1 ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -277,24 +260,25 @@ CDirstatDoc::CDirstatDoc( ) : m_workingItem( NULL ), m_selectedItem( NULL ), m_e
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
-	const rsize_t iter_char_count = 128;
 
-	_Null_terminated_ wchar_t iter_char[ iter_char_count ] = { 0 };
-	const auto res = _snwprintf_s( iter_char, iter_char_count, _TRUNCATE, L"WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
-	ASSERT( res >= 0 );
-	ASSERT( res < iter_char_count );
-	if ( res >= 0 ) {
-		if ( res < iter_char_count ) {
-			OutputDebugStringW( iter_char );
-			}
-		}
+	//const rsize_t iter_char_count = 128;
+	//_Null_terminated_ char iter_char[ iter_char_count ] = { 0 };
+	//const auto res = _snprintf_s( iter_char, iter_char_count, _TRUNCATE, "WDS: ~CDirstatDoc %u iterations\r\n", unsigned( m_iterations ) );
+	//ASSERT( res >= 0 );
+	//ASSERT( res < iter_char_count );
+	//if ( res >= 0 ) {
+	//	if ( res < iter_char_count ) {
+	//		OutputDebugStringA( iter_char );
+	//		}
+	//	}
+
 	_theDocument = { NULL };
 	//m_rootItem.reset( );
 	}
 
 void CDirstatDoc::DeleteContents( ) {
 	m_selectedItem = { NULL };
-	m_workingItem  = { NULL };
+	//m_workingItem  = { NULL };
 	m_timeTextWritten = false;
 
 	//Failure to DeleteAllItems was causing UseAfterFree?
@@ -332,7 +316,7 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 			}
 		}
 	TRACE( _T( "New document...\r\n" ) );
-	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
+	CDocument::UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return TRUE;
 	}
 
@@ -364,26 +348,9 @@ void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 
 	}
 
-//std::vector<std::wstring> CDirstatDoc::buildRootFolders( _In_ const std::vector<std::wstring>& drives, _In_ std::wstring& folder ) {
-//	std::vector<std::wstring> rootFolders;
-//	if ( drives.size( ) > 0 ) {
-//		m_showMyComputer = ( drives.size( ) > 1 );
-//		for ( size_t i = 0; i < drives.size( ); i++ ) {
-//			rootFolders.emplace_back( drives[ i ] );
-//			}
-//		}
-//	else {
-//		ASSERT( !folder.empty( ) );
-//		m_showMyComputer = false;
-//		rootFolders.emplace_back( folder );
-//		}
-//	return rootFolders;
-//	}
-
-
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	m_frameptr = GetMainFrame( );
-	++m_iterations;
+	//++m_iterations;
 	m_appptr->m_mountPoints.Initialize( );
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
 	VERIFY( CDocument::OnNewDocument( ) ); // --> DeleteContents()
@@ -407,13 +374,13 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
 	m_searchStartTime = help_QueryPerformanceCounter( );	
-	m_workingItem = m_rootItem.get( );
+	//m_workingItem = m_rootItem.get( );
 
 	m_frameptr->m_wndSplitter.SetSplitterPos( 1.0 );
 	m_frameptr->m_wndSubSplitter.SetSplitterPos( 1.0 );
 	
 	
-	UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
+	CDocument::UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return true;
 	}
 
@@ -422,7 +389,8 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 		RebuildExtensionData( );
 		}
 	if ( m_colorMap.empty( ) ) {
-		VectorExtensionRecordsToMap( );
+		//VectorExtensionRecordsToMap( );
+		convert_vector_of_extension_records_to_map( GetExtensionRecords( ), m_colorMap );
 		}
 		
 	if ( m_colorMap.count( ext ) > 0 ) {
@@ -430,7 +398,8 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 		}
 	TRACE( _T( "Extension %s not in colorMap!\r\n" ), ext );
 	RebuildExtensionData( );
-	VectorExtensionRecordsToMap( );
+	//VectorExtensionRecordsToMap( );
+	convert_vector_of_extension_records_to_map( GetExtensionRecords( ), m_colorMap );
 	if ( m_colorMap.count( ext ) > 0 ) {
 		return m_colorMap.at( ext );
 		}
@@ -446,12 +415,12 @@ _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionReco
  	return &m_extensionRecords;
 	}
 
-void CDirstatDoc::ForgetItemTree( ) {
-	DeleteContents( );
-	//m_selectedItem = { NULL };
-	//m_workingItem  = { NULL };
-	//m_rootItem.reset( );
-	}
+//void CDirstatDoc::ForgetItemTree( ) {
+//	DeleteContents( );
+//	//m_selectedItem = { NULL };
+//	//m_workingItem  = { NULL };
+//	//m_rootItem.reset( );
+//	}
 
 void CDirstatDoc::SortTreeList( ) {
 	ASSERT( m_rootItem != NULL );
@@ -472,7 +441,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	const auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart );
 			
-	UpdateAllViews( NULL );
+	CDocument::UpdateAllViews( NULL );
 	if ( doneTime.QuadPart != 0 ) {
 		m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
 		}
@@ -496,11 +465,12 @@ bool CDirstatDoc::Work( ) {
 	//return: true if done or suspended.
 
 	if ( ( !m_rootItem ) || m_timeTextWritten ) {
-		ASSERT( m_workingItem == NULL );
+		//ASSERT( m_workingItem == NULL );
 		return true;
 		}
 	if ( !m_rootItem->m_attr.m_done ) {
 		WTL::CWaitCursor wc;
+
 		auto path( m_rootItem->GetPath( ) );
 		const auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 		if ( strcmp_path != 0 ) {
@@ -515,20 +485,20 @@ bool CDirstatDoc::Work( ) {
 		m_rootItem->refresh_sizeCache( );
 
 		//SetWorkingItem( NULL );
-		m_workingItem = NULL;
+		//m_workingItem = NULL;
 		const auto res = OnWorkFinished( );
 		const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
 		ASSERT( DirStatView != NULL );
 		if ( DirStatView == NULL ) {
 			displayWindowsMsgBoxWithMessage( L"DirStatView is NULL!!! this should never happen!!" );
 			std::terminate( );
-
 			return false;//so analyze understands.
 			}
+		
 		m_rootItem->AddChildren( &( DirStatView->m_treeListControl ) );
 		return res;
 		}
-	ASSERT( m_workingItem != NULL );
+	//ASSERT( m_workingItem != NULL );
 	return false;
 	}
 
@@ -560,13 +530,13 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path.c_str( ) );
-		std::wstring pathMsg( L"Path (" + path + L") is invalid!\r\n");
+		const std::wstring pathMsg( L"Path (" + path + L") is invalid!\r\n");
 		AfxMessageBox( pathMsg.c_str( ) );
 		displayWindowsMsgBoxWithError( );
 		return;
 		}
 
-	const auto ShellExRes = ShellExecuteWithAssocDialog( *AfxGetMainWnd( ), std::move( path ) );
+	const auto ShellExRes = ShellExecuteWithAssocDialog( ( AfxGetMainWnd( )->m_hWnd ), std::move( path ) );
 	if ( ShellExRes < 33 ) {
 		return displayWindowsMsgBoxWithError( );
 		}
@@ -575,79 +545,86 @@ void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
 void CDirstatDoc::RebuildExtensionData() {
 	//Assigns colors to all known file types (i.e. `Extensions`)
 
-	WTL::CWaitCursor wc;
+	//WTL::CWaitCursor wc;
 	
 	m_extensionRecords.clear( );
+
+	//void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>& m_extensionRecords, _In_ const CItemBranch const* m_rootItem )
+
 	
-	std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;
 
 	const auto rootTemp = m_rootItem.get( );
 	if ( rootTemp == nullptr ) {
 		return;
 		}
-	
-	extensionMap.reserve( rootTemp->files_recurse( ) );
 
-	rootTemp->stdRecurseCollectExtensionData( extensionMap );
-	AddFileExtensionData( m_extensionRecords, extensionMap );
+	rebuild_extension_data( m_extensionRecords, rootTemp );
 
-	stdSetExtensionColors( m_extensionRecords );
-	std::sort( m_extensionRecords.begin( ), m_extensionRecords.end( ), s_compareSExtensionRecordByBytes( ) );
+	//std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;
+	//extensionMap.reserve( rootTemp->files_recurse( ) );
 
-	m_extensionRecords.shrink_to_fit( );
+	//rootTemp->stdRecurseCollectExtensionData( extensionMap );
+	//AddFileExtensionData( m_extensionRecords, extensionMap );
+	//SetExtensionColors( m_extensionRecords );
+	//std::sort( m_extensionRecords.begin( ), m_extensionRecords.end( ), s_compareSExtensionRecordByBytes( ) );
+
+	//m_extensionRecords.shrink_to_fit( );
+
+
 	m_extensionDataValid = true;
 	}
 
-void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& extensionsToSet ) {
-	/*
-	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key (no longer accurate description). The color assigned is chosen by rotating through a default palette.
-	*/
-	//const auto colorVector = GetDefaultPaletteAsVector( );
+//void CDirstatDoc::stdSetExtensionColors( _Inout_ std::vector<SExtensionRecord>& extensionsToSet ) {
+//	/*
+//	  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key (no longer accurate description). The color assigned is chosen by rotating through a default palette.
+//	*/
+//	//const auto colorVector = GetDefaultPaletteAsVector( );
+//
+//	COLORREF colorArray[ 13 ];
+//
+//	const auto sizeOfArray = GetDefaultPaletteAsArray( colorArray );
+//
+//
+//	std::vector<COLORREF>::size_type processed = 0;
+//
+//	//Not vectorized: 1304, loop includes assignments of different sizes
+//	for ( auto& anExtension : extensionsToSet ) {
+//		//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
+//		auto test = colorArray[ processed % ( sizeOfArray ) ];
+//		++processed;
+//		if ( processed < ( sizeOfArray ) ) {
+//			test = colorArray[ processed ];
+//			}
+//		anExtension.color = test;
+//#ifdef _DEBUG
+//#ifdef EXTENSION_LIST_DEBUG
+//		TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext.c_str( ), anExtension.color );
+//#endif
+//#endif
+//
+//		}
+//#ifdef _DEBUG
+//#ifdef EXTENSION_LIST_DEBUG
+//	for ( const auto& a : extensionsToSet ) {
+//		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
+//		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
+//		TRACE( _T( "%s: (Bytes: %I64u), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), std::uint64_t( a.bytes ), a.color, a.files );
+//		ASSERT( a.color != 0 );
+//		}
+//#endif
+//#endif
+//	}
 
-	COLORREF colorArray[ 13 ];
-
-	const auto sizeOfArray = GetDefaultPaletteAsArray( colorArray );
-
-
-	std::vector<COLORREF>::size_type processed = 0;
-
-	//Not vectorized: 1304, loop includes assignments of different sizes
-	for ( auto& anExtension : extensionsToSet ) {
-		//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
-		auto test = colorArray[ processed % ( sizeOfArray ) ];
-		++processed;
-		if ( processed < ( sizeOfArray ) ) {
-			test = colorArray[ processed ];
-			}
-		anExtension.color = test;
-#ifdef _DEBUG
-#ifdef EXTENSION_LIST_DEBUG
-		TRACE( _T( "processed: %i, ( processed (mod) colorVector.size() ): %i, c: %lu, color @ [%s]: %lu\r\n" ), processed, ( processed % colorVector.size()), test, anExtension.ext.c_str( ), anExtension.color );
-#endif
-#endif
-
-		}
-#ifdef _DEBUG
-#ifdef EXTENSION_LIST_DEBUG
-	for ( const auto& a : extensionsToSet ) {
-		static_assert( sizeof( LONGLONG ) == 8, "bad format specifiers!" );
-		static_assert( sizeof( DWORD ) == sizeof( unsigned long ), "bad format specifiers!" );
-		TRACE( _T( "%s: (Bytes: %I64u), (Color: %lu), (Files: %I32x)\r\n" ), a.ext.c_str( ), std::uint64_t( a.bytes ), a.color, a.files );
-		ASSERT( a.color != 0 );
-		}
-#endif
-#endif
-	}
-
-void CDirstatDoc::VectorExtensionRecordsToMap( ) {
-	auto records = GetExtensionRecords( );
-	if ( records != NULL ) {
-		m_colorMap.reserve( records->size( ) );
-		for ( const auto& aRecord : ( *records ) ) {
-			m_colorMap[ aRecord.ext ] = aRecord.color;
-			}
-		}
-	}
+//void convert_vector_of_extension_records_to_map( _In_ const std::vector<SExtensionRecord>* const records, _Inout_ std::unordered_map<std::wstring, COLORREF> color_map )
+//void CDirstatDoc::VectorExtensionRecordsToMap( ) {
+//	auto records = GetExtensionRecords( );
+//	if ( records != NULL ) {
+//		m_colorMap.reserve( records->size( ) );
+//		for ( const auto& aRecord : ( *records ) ) {
+//			m_colorMap[ aRecord.ext ] = aRecord.color;
+//			}
+//		}
+//	}
 
 BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, &( CDirstatDoc::OnUpdateEditCopy ) )

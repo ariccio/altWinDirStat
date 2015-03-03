@@ -20,7 +20,7 @@
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
 _Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {
-	COptionsPropertySheet* sheet = STATIC_DOWNCAST( COptionsPropertySheet, GetParent( ) );
+	COptionsPropertySheet* sheet = STATIC_DOWNCAST( COptionsPropertySheet, CWnd::GetParent( ) );
 	ASSERT( sheet != NULL );
 	return sheet;
 	}
@@ -37,7 +37,7 @@ END_MESSAGE_MAP()
 
 
 BOOL CPageGeneral::OnInitDialog( ) {
-	CPropertyPage::OnInitDialog( );
+	CDialog::OnInitDialog( );
 	const auto Options = GetOptions( );
 	m_humanFormat          = Options->m_humanFormat;
 	m_listGrid             = Options->m_listGrid;
@@ -54,12 +54,12 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
 
 
-	VERIFY( UpdateData( false ) );
+	VERIFY( CWnd::UpdateData( false ) );
 	return TRUE;
 	}
 
 void CPageGeneral::OnOK( ) {
-	VERIFY( UpdateData( ) );
+	VERIFY( CWnd::UpdateData( ) );
 	ASSERT( m_appptr != NULL );
 	const auto Options = GetOptions( );
 	//Compare with TRUE to prevent int->bool coercion

@@ -31,7 +31,7 @@ public:
 protected:
 
 	virtual void DoDataExchange( CDataExchange* pDX ) override final {
-		CPropertyPage::DoDataExchange( pDX );
+		CWnd::DoDataExchange( pDX );
 		DDX_Check   ( pDX, IDC_HUMANFORMAT,       m_humanFormat             );
 		DDX_Check   ( pDX, IDC_FOLLOWMOUNTPOINTS, m_followMountPoints       );
 		DDX_Check   ( pDX, IDC_FOLLOWJUNCTIONS,   m_followJunctionPoints    );

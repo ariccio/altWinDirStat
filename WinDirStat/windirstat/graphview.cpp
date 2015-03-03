@@ -232,6 +232,26 @@ inline void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ 
 	}
 #endif
 
+//TweakSizeOfRectangleForHightlight is called once, unconditionally.
+inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient, _In_ const bool grid ) {
+	if ( grid ) {
+		rc.right++;
+		rc.bottom++;
+		}
+	if ( rcClient.left < rc.left ) {
+		rc.left--;
+		}
+	if ( rcClient.top < rc.top ) {
+		rc.top--;
+		}
+	if ( rc.right < rcClient.right ) {
+		rc.right++;
+		}
+	if ( rc.bottom < rcClient.bottom ) {
+		rc.bottom++;
+		}
+	}
+
 #else
 
 #endif

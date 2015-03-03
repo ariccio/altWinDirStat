@@ -25,7 +25,7 @@ public:
 	CPreview( ) : m_color{ 0u } { }
 	void SetColor( _In_ const COLORREF color ) {
 		m_color = color;
-		if ( IsWindow( ) ) {
+		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
 			//InvalidateRect( NULL );
@@ -61,7 +61,7 @@ _AFXWIN_INLINE BOOL CDC::DrawEdge(LPRECT lpRect, UINT nEdge, UINT nFlags)
 		VERIFY( DrawEdge( hDC, &rc, EDGE_BUMP, BF_RECT bitor BF_ADJUST ) );
 
 		auto color_scope_holder = m_color;
-		const HWND parent = GetParent( );
+		const HWND parent = ::GetParent( m_hWnd );
 			
 		auto window_info = zero_init_struct<WINDOWINFO>( );
 		window_info.cbSize = sizeof( WINDOWINFO );
@@ -135,10 +135,10 @@ ENSURE(lpRect);
 		VERIFY( ::ClientToScreen( m_hWnd, &point ) );
 		//ClientToScreen( &point );
 
-		const auto this_parent = GetParent( );
+		const HWND this_parent = ::GetParent( m_hWnd );
 
 		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-		VERIFY( ::ScreenToClient( this_parent.m_hWnd, &point ) );
+		VERIFY( ::ScreenToClient( this_parent, &point ) );
 			
 		//this_parent->ScreenToClient( &point );
 
@@ -160,7 +160,7 @@ _AFXWIN_INLINE LRESULT CWnd::SendMessage(UINT message, WPARAM wParam, LPARAM lPa
 		*/
 		//this_parent->SendMessageW( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 			
-		const HWND parent = GetParent( );
+		const HWND parent = ::GetParent( m_hWnd );
 		::SendMessageW( parent, WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 		return 0;
 	}
@@ -201,7 +201,31 @@ protected:
 			VERIFY( m_preview.Create( m_hWnd, rc, _T( "" ), WS_CHILD | WS_VISIBLE, 0, 4711, NULL ) );
 
 			VERIFY( CWnd::ModifyStyle( 0, WS_CLIPCHILDREN ) );
+			/*
+BOOL CWnd::ModifyStyle(DWORD dwRemove, DWORD dwAdd, UINT nFlags)
+{
+	ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL));
+
+	if (m_pCtrlSite == NULL)
+		return ModifyStyle(m_hWnd, dwRemove, dwAdd, nFlags);
+	else
+		return m_pCtrlSite->ModifyStyle(dwRemove, dwAdd, nFlags);
+}
+			*/
 			}
+		/*
+void CWnd::OnPaint()
+{
+	if (m_pCtrlCont != NULL)
+	{
+		// Paint windowless controls
+		CPaintDC dc(this);
+		m_pCtrlCont->OnPaint(&dc);
+	}
+
+	Default();
+}
+		*/
 		CButton::OnPaint( );
 		}
 
@@ -215,13 +239,41 @@ protected:
 	afx_msg void OnBnClicked( ) {
 		WTL::CColorDialog dlg( m_preview.m_color );
 		if ( IDOK == dlg.DoModal( ) ) {
+			const auto dialog_ctrl_id = ::GetDlgCtrlID( m_hWnd );
 			m_preview.SetColor( dlg.GetColor( ) );
 			NMHDR hdr;
 			hdr.hwndFrom = m_hWnd;
-			hdr.idFrom = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
+			hdr.idFrom = static_cast<UINT_PTR>( dialog_ctrl_id );
 			hdr.code = COLBN_CHANGED;
 			TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), static_cast<ULONGLONG>( hdr.idFrom ) );
-			CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
+			/*
+_AFXWIN_INLINE CWnd* CWnd::GetParent() const
+	{ ASSERT(::IsWindow(m_hWnd)); return CWnd::FromHandle(::GetParent(m_hWnd)); }
+			*/
+
+			/*
+int CWnd::GetDlgCtrlID() const
+{
+	ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL));
+
+	if (m_pCtrlSite == NULL)
+		return ::GetDlgCtrlID(m_hWnd);//<this is the branch that we take.
+	else
+		return m_pCtrlSite->GetDlgCtrlID();
+}
+			*/
+			ASSERT( ::IsWindow( m_hWnd ) );
+			//const auto parent_wnd = CWnd::FromHandle( ::GetParent( m_hWnd ) );
+			
+
+			/*
+_AFXWIN_INLINE LRESULT CWnd::_AFX_FUNCNAME(SendMessage)(UINT message, WPARAM wParam, LPARAM lParam) const
+	{ ASSERT(::IsWindow(m_hWnd)); return ::SendMessage(m_hWnd, message, wParam, lParam); }
+			*/
+			ASSERT( ::IsWindow( m_hWnd ) );
+
+			::SendMessageW( m_hWnd, WM_NOTIFY, static_cast< WPARAM >( dialog_ctrl_id ), ( LPARAM ) &hdr );
+			//parent_wnd->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( dialog_ctrl_id ), ( LPARAM ) &hdr );
 			}
 		}
 
@@ -233,7 +285,12 @@ protected:
 			//m_preview.InvalidateRect( NULL );
 			
 			}
-		CButton::OnEnable( bEnable );
+		/*
+_AFXWIN_INLINE void CWnd::OnEnable(BOOL)
+	{ Default(); }
+		*/
+
+		CWnd::OnEnable( bEnable );
 		}
 	};
 

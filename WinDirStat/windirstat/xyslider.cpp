@@ -42,7 +42,7 @@ void CXySlider::Initialize( ) {
 		//GetWindowRect( rc );
 
 
-		GetParent( )->ScreenToClient( &rc );
+		CWnd::GetParent( )->ScreenToClient( &rc );
 		if ( ( rc.right - rc.left ) % 2 == 0 ) {
 			rc.right--;
 			}
@@ -114,7 +114,7 @@ void CXySlider::NotifyParent( ) const {
 	hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
 	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
-	GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
+	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
 	}
 
 void CXySlider::PaintBackground( _In_ CDC& pdc ) {
@@ -333,17 +333,18 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 	//ASSERT_VALID( pdc );
 	RECT rc = GetGripperRect( );
 
-	COLORREF color = GetSysColor( COLOR_BTNFACE );
+	COLORREF color_scopeholder = ::GetSysColor( COLOR_BTNFACE );
 	if ( m_gripperHighlight ) {
-		INT r = GetRValue( color );
-		INT g = GetGValue( color );
-		INT b = GetBValue( color );;
+		INT r = GetRValue( color_scopeholder );
+		INT g = GetGValue( color_scopeholder );
+		INT b = GetBValue( color_scopeholder );;
 		r += ( 255 - r ) / 3;
 		g += ( 255 - g ) / 3;
 		b += ( 255 - b ) / 3;
-		color = RGB( r, g, b );
+		color_scopeholder = RGB( r, g, b );
 		}
 
+	const COLORREF color = color_scopeholder;
 	//--------------------------------
 	//pdc.FillSolidRect( &rc, color );
 	/*
@@ -363,7 +364,7 @@ void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
 	//If [SetBkColor] fails, the return value is CLR_INVALID.
 	const COLORREF bk_color_res_1 = ::SetBkColor( pdc.m_hDC, color );
 	ASSERT( bk_color_res_1 != CLR_INVALID );
-	( void ) bk_color_res_1;
+
 	if ( bk_color_res_1 == CLR_INVALID ) {
 		TRACE( _T( "::SetBkColor( pdc.m_hDC, color ) failed!!\r\n" ) );
 		}
@@ -386,7 +387,7 @@ _AFXWIN_INLINE BOOL CDC::DrawEdge(LPRECT lpRect, UINT nEdge, UINT nFlags)
 
 	//--------------------------------
 
-	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) );
+	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
 	CSelectObject sopen( pdc, pen );
 
 	//--------------------------------
@@ -487,7 +488,7 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 	m_pos.y += cy;
 	CheckMinMax( m_pos.y, -m_range.cy, m_range.cy );
 
-	VERIFY( RedrawWindow( ) );
+	VERIFY( CWnd::RedrawWindow( ) );
 
 	const WTL::CPoint oldpos = m_externalPos;
 	InternToExtern( );
@@ -545,7 +546,7 @@ void CXySlider::DoDrag( _In_ const POINT point ) {
 
 	//const WTL::CPoint ptMax( m_zero + m_range + inGripper );
 
-	SetCapture( );
+	CWnd::SetCapture( );
 	do {
 		MSG msg;
 		if ( !GetMessageW( &msg, NULL, 0, 0 ) ) {
@@ -555,7 +556,7 @@ void CXySlider::DoDrag( _In_ const POINT point ) {
 		if ( msg.message == WM_LBUTTONUP ) {
 			break;
 			}
-		if ( GetCapture( ) != this ) {
+		if ( CWnd::GetCapture( ) != this ) {
 			break;
 			}
 
@@ -622,7 +623,7 @@ void CXySlider::DoPage( _In_ const POINT point ) {
 
 void CXySlider::HighlightGripper( _In_ const bool on ) {
 	m_gripperHighlight = on;
-	VERIFY( RedrawWindow( ) );
+	VERIFY( CWnd::RedrawWindow( ) );
 	}
 
 void CXySlider::RemoveTimer( ) {
@@ -642,7 +643,7 @@ _AFXWIN_INLINE BOOL CWnd::KillTimer(UINT_PTR nIDEvent)
 	}
 
 afx_msg void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
-	CStatic::OnSetFocus( pOldWnd );
+	CWnd::OnSetFocus( pOldWnd );
 	/*
 void CWnd::OnSetFocus(CWnd*)
 { 
@@ -683,7 +684,7 @@ afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
 _AFXWIN_INLINE void CWnd::OnKillFocus(CWnd*)
 	{ Default(); }
 	*/
-	CStatic::OnKillFocus( pNewWnd );
+	CWnd::OnKillFocus( pNewWnd );
 	ASSERT( ::IsWindow( m_hWnd ) );
 	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
@@ -744,7 +745,7 @@ void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
 	}
 
 void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
-	SetFocus( );
+	CWnd::SetFocus( );
 
 	const RECT rc = GetGripperRect( );
 
@@ -756,7 +757,7 @@ void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
 	}
 
 void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
-	SetFocus( );
+	CWnd::SetFocus( );
 
 	/*
 	inline BOOL CRect::PtInRect(_In_ POINT point) const throw()
@@ -774,7 +775,7 @@ void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 
 void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	POINT point;
-	VERIFY( GetCursorPos( &point ) );
+	VERIFY( ::GetCursorPos( &point ) );
 	ASSERT( ::IsWindow( m_hWnd ) );
 	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
@@ -790,7 +791,7 @@ void CXySlider::SetPos( const POINT pt ) {
 	Initialize( );
 	m_externalPos = pt;
 	ExternToIntern( );
-	Invalidate( );
+	CWnd::Invalidate( );
 	}
 
 

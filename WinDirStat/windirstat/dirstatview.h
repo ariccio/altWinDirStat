@@ -175,8 +175,8 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
-		CView::OnSize( nType, cx, cy );
-		if ( IsWindow( m_treeListControl.m_hWnd ) ) {
+		CWnd::OnSize( nType, cx, cy );
+		if ( ::IsWindow( m_treeListControl.m_hWnd ) ) {
 			const RECT rc = { 0, 0, cx, cy };
 			//If [MoveWindow] succeeds, the return value is nonzero.
 			VERIFY( ::MoveWindow( m_treeListControl.m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
@@ -210,7 +210,7 @@ protected:
 		trace_OnEraseBkgnd( );
 		//UNREFERENCED_PARAMETER( pDC );
 		//return TRUE;
-		return CView::OnEraseBkgnd( pDC );
+		return CWnd::OnEraseBkgnd( pDC );
 		}
 	afx_msg void OnDestroy( ) {
 		CView::OnDestroy( );

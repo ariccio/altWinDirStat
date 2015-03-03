@@ -118,7 +118,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy( ) {
 		RemoveTimer( );
-		CStatic::OnDestroy( );
+		CWnd::OnDestroy( );
 		}
 	afx_msg UINT OnGetDlgCode( ) {
 		return DLGC_WANTARROWS;
@@ -134,7 +134,7 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp( UINT nFlags, CPoint point ) {
 		RemoveTimer( );
-		CStatic::OnLButtonUp( nFlags, point );
+		CWnd::OnLButtonUp( nFlags, point );
 		}
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LRESULT OnSetPos( WPARAM, LPARAM lparam ) {

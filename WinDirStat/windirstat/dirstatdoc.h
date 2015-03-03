@@ -58,7 +58,7 @@ public:
 
 
 	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   );
-	void ForgetItemTree                    ( );
+	//void ForgetItemTree                    ( );
 	void SortTreeList                      ( );	
 
 
@@ -70,12 +70,12 @@ protected:
 	
 	//std::vector<std::wstring> buildRootFolders( _In_     const std::vector<std::wstring>& drives,        _In_    std::wstring& folder );
 	void buildDriveItems                      ( _In_z_     PCWSTR const pszPathName );
-	void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
+	//void stdSetExtensionColors                ( _Inout_        std::vector<SExtensionRecord>& extensionsToSet );
 
-	void VectorExtensionRecordsToMap          ( );
+	//void VectorExtensionRecordsToMap          ( );
 	void RebuildExtensionData                 ( );
 	
-	bool                                      m_showMyComputer;       // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
+	//bool                                      m_showMyComputer;       // True, if the user selected more than one drive for scanning. In this case, we need a root pseudo item ("My Computer").
 	bool                                      m_extensionDataValid;   // If this is false, m_extensionData must be rebuilt
 	//C4820: 'CDirstatDoc' : '5' bytes padding added after data member 'CDirstatDoc::m_timeTextWritten' (dirstatdoc.cpp)
 	bool                                      m_timeTextWritten;
@@ -83,11 +83,11 @@ protected:
 
 
 public:
-	std::uint16_t                             m_iterations;
+	//std::uint16_t                             m_iterations;
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
 	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
 	CItemBranch const*                        m_selectedItem;         // Currently selected item, or NULL
-	CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
+	//CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
 	//C4820: 'CDirstatDoc' : '6' bytes padding added after data member 'CDirstatDoc::m_iterations' (dirstatdoc.cpp)
 	Children_String_Heap_Manager              m_name_pool;
 

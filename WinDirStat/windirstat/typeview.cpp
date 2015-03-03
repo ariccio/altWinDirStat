@@ -301,7 +301,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );
 
-	SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
+	CListCtrl::SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
 	m_exts.reset( );
 	
 	const size_t ext_data_size = extData->size( );
@@ -334,9 +334,9 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		}
 
 	std::uint64_t totalSizeExtensionNameLength = 0;
-	SetItemCount( static_cast<int>( ext_data_size + 1 ) );
+	CListCtrl::SetItemCount( static_cast<int>( ext_data_size + 1 ) );
 	TRACE( _T( "Built buffer of extension records, inserting....\r\n" ) );
-	SetRedraw( FALSE );
+	CWnd::SetRedraw( FALSE );
 	const auto local_m_exts = m_exts.get( );
 
 	//INT_PTR count = 0;
@@ -352,7 +352,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		InsertListItem( static_cast<INT_PTR>( i ), ( local_m_exts + i ) );
 		}
 
-	SetRedraw( TRUE );
+	CWnd::SetRedraw( TRUE );
 	auto doneTime = help_QueryPerformanceCounter( );
 	ASSERT( frequency.QuadPart != 0 );
 	const DOUBLE adjustedTimingFrequency = ( static_cast<DOUBLE>( 1.00 ) ) / static_cast<DOUBLE>( frequency.QuadPart );
@@ -371,26 +371,26 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 
 void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) {
-	const auto countItems = this->GetItemCount( );
-	SetRedraw( FALSE );
+	const auto countItems = CListCtrl::GetItemCount( );
+	CWnd::SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
 		if ( ( wcscmp( GetListItem( i )->m_name, ext ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext, i );
-			SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
-			EnsureVisible( i, false );
+			CListCtrl::SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
+			CListCtrl::EnsureVisible( i, false );
 			break;
 			}
 
 		}
-	SetRedraw( TRUE );
+	CWnd::SetRedraw( TRUE );
 	}
 
 _Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const {
-	auto pos = GetFirstSelectedItemPosition( );
+	auto pos = CListCtrl::GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return L"";
 		}
-	const auto i = GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
+	const auto i = CListCtrl::GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
 	const auto item = GetListItem( i );
 	return item->m_name;
 	}
@@ -524,7 +524,7 @@ void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
 	}
 
 void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
-	InvalidateRect( NULL );
+	CWnd::InvalidateRect( NULL );
 	m_extensionListControl.InvalidateRect( NULL );
 	m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
 	}
@@ -606,7 +606,7 @@ void CTypeView::OnSetFocus( CWnd* pOldWnd ) {
 
 void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 	CView::OnSize(nType, cx, cy);
-	if ( IsWindow( m_extensionListControl.m_hWnd ) ) {
+	if ( ::IsWindow( m_extensionListControl.m_hWnd ) ) {
 		const RECT rc = { 0, 0, cx, cy };
 		
 		ASSERT( ::IsWindow( m_hWnd ) );

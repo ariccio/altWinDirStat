@@ -413,7 +413,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	
 	if ( doc != NULL ) {
 		if ( !doc->Work( ) ) {
-			ASSERT( doc->m_workingItem != NULL );
+			//ASSERT( doc->m_workingItem != NULL );
 			more = TRUE;
 			}
 		}

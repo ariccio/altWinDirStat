@@ -447,7 +447,7 @@ protected:
 		INT order_temp[ stack_array_size ] = { 0 };
 
 		const bool showSelectionAlways = IsShowSelectionAlways( );
-		const auto thisHeaderCtrl = GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
+		const auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
 		const auto resize_size = thisHeaderCtrl->GetItemCount( );
 
@@ -527,7 +527,7 @@ public:
 		//TRACE statements in headers output the FULL source file path. Ick.
 		//TRACE( _T( "Loading persistent attributes....\r\n" ) );
 
-		const auto itemCount_default_type = GetHeaderCtrl( )->GetItemCount( );
+		const auto itemCount_default_type = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
 		const auto itemCount = static_cast<size_t>( itemCount_default_type );
 		const rsize_t countArray = 10;
 
@@ -541,7 +541,7 @@ public:
 	
 		INT col_order_array[ countArray ] = { 0 };
 
-		const auto res_2 = GetColumnOrderArray( col_order_array, itemCount_default_type );
+		const auto res_2 = CListCtrl::GetColumnOrderArray( col_order_array, itemCount_default_type );
 		if ( res_2 == 0 ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::LoadPersistenAttributes - GetColumnOrderArray failed!(aborting)" );
 			std::terminate( );
@@ -549,27 +549,27 @@ public:
 
 		CPersistence::GetColumnOrder( m_persistent_name, col_order_array, itemCount );
 
-		const auto res2 = SetColumnOrderArray( static_cast<int>( itemCount ), col_order_array );
+		const auto res2 = CListCtrl::SetColumnOrderArray( static_cast<int>( itemCount ), col_order_array );
 		if ( res2 == 0 ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::LoadPersistenAttributes - SetColumnOrderArray failed!(aborting)" );
 			std::terminate( );
 			}
 
 		for ( size_t i = 0; i < itemCount; i++ ) {
-			col_order_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
+			col_order_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
 			}
 		CPersistence::GetColumnWidths( m_persistent_name, col_order_array, itemCount );
 
 		for ( size_t i = 0; i < itemCount; i++ ) {
 			// To avoid "insane" settings we set the column width to maximal twice the default width.
-			const auto maxWidth = GetColumnWidth( static_cast<int>( i ) ) * 2;
+			const auto maxWidth = CListCtrl::GetColumnWidth( static_cast<int>( i ) ) * 2;
 		
 	#pragma push_macro("min")
 	#undef min
 			const auto w = std::min( col_order_array[ i ], maxWidth );
 	#pragma pop_macro("min")
 
-			VERIFY( SetColumnWidth( static_cast<int>( i ), w ) );
+			VERIFY( CListCtrl::SetColumnWidth( static_cast<int>( i ), w ) );
 			}
 		// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 		}
@@ -578,14 +578,14 @@ public:
 		const rsize_t col_array_size = 128;
 		int col_array[ col_array_size ] = { 0 };
 
-		const auto itemCount = GetHeaderCtrl( )->GetItemCount( );
+		const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
 
 		if ( !( itemCount < col_array_size ) ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SavePersistentAttributes - GetItemCount returned an itemCount of a size bigger than the array allocated!(aborting)" );
 			std::terminate( );
 			}
 
-		const auto get_res = GetColumnOrderArray( col_array, itemCount );
+		const auto get_res = CListCtrl::GetColumnOrderArray( col_array, itemCount );
 
 		if ( get_res == 0 ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SavePersistentAttributes - GetColumnOrderArray failed!(aborting)" );
@@ -596,7 +596,7 @@ public:
 		CPersistence::SetColumnOrder( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 
 		for ( INT_PTR i = 0; i < itemCount; i++ ) {
-			col_array[ i ] = GetColumnWidth( static_cast<int>( i ) );
+			col_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
 			}
 		CPersistence::SetColumnWidths( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 		}
@@ -604,7 +604,7 @@ public:
 	void SortItems( ) {
 		VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
 		auto hditem = zero_init_struct<HDITEM>( );
-		auto thisHeaderCtrl = GetHeaderCtrl( );
+		auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
 		const rsize_t text_char_count = 260u;
@@ -674,19 +674,19 @@ public:
 		  This method MUST be called BEFORE the Control is shown.
 		*/
 		// The pacmen shall not draw over our header control.
-		VERIFY( ModifyStyle( 0, WS_CLIPCHILDREN ) );
+		VERIFY( CWnd::ModifyStyle( 0, WS_CLIPCHILDREN ) );
 
 		// Where does the 1st Item begin vertically?
-		if ( GetItemCount( ) > 0 ) {
+		if ( CListCtrl::GetItemCount( ) > 0 ) {
 			RECT rc;
-			VERIFY( GetItemRect( 0, &rc, LVIR_BOUNDS ) );
+			VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
 			m_yFirstItem = rc.top;
 			}
 		else {
 			InsertItem( 0, _T( "_tmp" ), 0 );
 			RECT rc;
-			VERIFY( GetItemRect( 0, &rc, LVIR_BOUNDS ) );
-			VERIFY( DeleteItem( 0 ) );
+			VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
+			VERIFY( CListCtrl::DeleteItem( 0 ) );
 			m_yFirstItem = rc.top;
 			}
 
@@ -697,9 +697,9 @@ public:
 		WTL::CWaitCursor wc;
 
 		INT width = 10;
-		const auto itemCount = GetItemCount( );
+		const auto itemCount = CListCtrl::GetItemCount( );
 		for ( INT i = 0; i < itemCount; i++ ) {
-			ASSERT( itemCount == GetItemCount( ) );
+			ASSERT( itemCount == CListCtrl::GetItemCount( ) );
 			const auto item = GetItem( i );
 			if ( item == NULL ) {
 				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::AdjustColumnWidth - item == NULL (aborting)" );
@@ -708,13 +708,13 @@ public:
 				return;
 				}
 			const auto w = GetSubItemWidth( item, col );
-			ASSERT( w == ( GetStringWidth( item->m_name ) + 20 ) );
+			ASSERT( w == ( CListCtrl::GetStringWidth( item->m_name ) + 20 ) );
 			//ASSERT( w == ( GetStringWidth( item->m_name ) + 10 ) );
 			if ( w > width ) {
 				width = w;
 				}
 			}
-		VERIFY( SetColumnWidth( col, width + 5 ) );
+		VERIFY( CListCtrl::SetColumnWidth( col, width + 5 ) );
 		}
 	
 	void InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
@@ -730,17 +730,17 @@ public:
 		}
 	
 	void AddExtendedStyle( _In_ const DWORD exStyle ) {
-		SetExtendedStyle( GetExtendedStyle( ) bitor exStyle );
+		CListCtrl::SetExtendedStyle( CListCtrl::GetExtendedStyle( ) bitor exStyle );
 		}
 	
 	//COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 
 	COLORREF GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
-		auto selected = ( GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
+		auto selected = ( CListCtrl::GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 		if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
 			return GetHighlightTextColor( );
 			}
-		return GetSysColor( COLOR_WINDOWTEXT );
+		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
 	RECT GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, CHeaderCtrl* const thisHeader ) const {
@@ -752,7 +752,7 @@ public:
 			hditem.mask = HDI_WIDTH;
 			VERIFY( thisHeader->GetItem( 0, &hditem ) );
 
-			VERIFY( GetItemRect( item, rc, LVIR_LABEL ) );
+			VERIFY( CListCtrl::GetItemRect( item, rc, LVIR_LABEL ) );
 			rc.left = rc.right - hditem.cxy;
 			}
 		else {
@@ -808,7 +808,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 }
 			*/
 
-			VERIFY( GetSubItemRect( item, subitem, LVIR_LABEL, rc ) );
+			VERIFY( CListCtrl::GetSubItemRect( item, subitem, LVIR_LABEL, rc ) );
 			}
 
 		if ( m_showGrid ) {
@@ -820,10 +820,10 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 	COwnerDrawnListItem* GetItem( _In_ _In_range_( 0, INT_MAX )   const int i ) const {
-		ASSERT( i < GetItemCount( ) );
-		const auto itemCount = GetItemCount( );
+		ASSERT( i < CListCtrl::GetItemCount( ) );
+		const auto itemCount = CListCtrl::GetItemCount( );
 		if ( i < itemCount ) {
-			return reinterpret_cast< COwnerDrawnListItem* >( GetItemData( static_cast<int>( i ) ) );
+			return reinterpret_cast< COwnerDrawnListItem* >( CListCtrl::GetItemData( static_cast<int>( i ) ) );
 			}
 		return NULL;
 		}
@@ -837,7 +837,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 	void ShowFullRowSelection( _In_ const bool show ) {
 		m_showFullRowSelection = show;
-		if ( IsWindow( m_hWnd ) ) {
+		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
 			//InvalidateRect( NULL );
@@ -846,7 +846,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 	void ShowGrid( _In_ const bool show ) {
 		m_showGrid = show;
-		if ( IsWindow( m_hWnd ) ) {
+		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
 			//InvalidateRect( NULL );
@@ -855,7 +855,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 	void ShowStripes( _In_ const bool show ) {
 		m_showStripes = show;
-		if ( IsWindow( m_hWnd ) ) {
+		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
 			//InvalidateRect( NULL );
@@ -864,7 +864,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 	COLORREF GetHighlightColor( ) const {
 		if ( HasFocus( ) ) {
-			return GetSysColor( COLOR_HIGHLIGHT );
+			return ::GetSysColor( COLOR_HIGHLIGHT );
 			}
 		return RGB( 190, 190, 190 );
 		}
@@ -872,7 +872,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 	_Success_( return != COLORREF( 0 ) )
 	COLORREF GetHighlightTextColor( ) const {
 		if ( HasFocus( ) ) {
-			return GetSysColor( COLOR_HIGHLIGHTTEXT );
+			return ::GetSysColor( COLOR_HIGHLIGHTTEXT );
 			}
 		return RGB( 0, 0, 0 );
 		}
@@ -899,7 +899,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 		return ::GetFocus( ) == m_hWnd;
 		}
 	bool IsShowSelectionAlways( ) const {
-		return ( GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
+		return ( CWnd::GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
 		}
 
 	bool AscendingDefault( ) const {
@@ -1018,7 +1018,7 @@ protected:
 
 		const DOUBLE diff      = 0.07;		// Try to alter the brightness by diff.
 		const DOUBLE threshold = 1.04;	// If result would be brighter, make color darker.
-		m_windowColor          = GetSysColor( COLOR_WINDOW );
+		m_windowColor          = ::GetSysColor( COLOR_WINDOW );
 
 		auto b = CColorSpace::GetColorBrightness( m_windowColor );
 
@@ -1073,7 +1073,7 @@ private:
 		if ( chars_written_2 == 0 ) {
 			return 0;
 			}
-		CSelectObject sofont( dc, *( GetFont( ) ) );
+		CSelectObject sofont( dc, *( CWnd::GetFont( ) ) );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
@@ -1088,22 +1088,22 @@ private:
 	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ CClientDC& dc ) const {
 		//column::COL_NAME requires very little work!
 		if ( item->m_name_length == 0 ) {
-			ASSERT( 0 == GetStringWidth( item->m_name ) );
+			ASSERT( 0 == CListCtrl::GetStringWidth( item->m_name ) );
 			return 0;
 			}
-		CSelectObject sofont( dc, *( GetFont( ) ) );
+		CSelectObject sofont( dc, *( CWnd::GetFont( ) ) );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( item->m_name, static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 			
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
-		ASSERT( ( rc.right - rc.left ) == GetStringWidth( item->m_name ) );
+		ASSERT( ( rc.right - rc.left ) == CListCtrl::GetStringWidth( item->m_name ) );
 		return ( rc.right - rc.left );
 		}
 
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX )
 	INT GetWidth_not_ownerdrawn( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ RECT& rc, _In_ CClientDC& dc ) const {
-		const auto thisHeaderCtrl = GetHeaderCtrl( );
+		const auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 		if ( subitem == column::COL_NAME ) {
 			return GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, dc );
 			}
@@ -1123,7 +1123,7 @@ private:
 			return 0;
 			}
 
-		CSelectObject sofont( dc, *( GetFont( ) ) );
+		CSelectObject sofont( dc, *( CWnd::GetFont( ) ) );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		dc.DrawTextW( psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
 
@@ -1185,7 +1185,7 @@ private:
 		readable = 0;
 
 
-		auto x   = -GetScrollPos( SB_HORZ );
+		auto x   = -( CWnd::GetScrollPos( SB_HORZ ) );
 		auto hdi = zero_init_struct<HDITEM>( );
 		hdi.mask = HDI_WIDTH;
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
@@ -1232,7 +1232,7 @@ protected:
 	//DECLARE_MESSAGE_MAP()
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
-		ASSERT( GetHeaderCtrl( )->GetItemCount( ) > 0 );
+		ASSERT( CListCtrl::GetHeaderCtrl( )->GetItemCount( ) > 0 );
 		//TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
 		handle_EraseBkgnd( pDC );
 		return true;
@@ -1253,7 +1253,7 @@ protected:
 	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
 		CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
 		// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly when scrolled (under Windows XP). So we force a complete repaint here.
-		InvalidateRect( NULL );
+		CWnd::InvalidateRect( NULL );
 		}
 	afx_msg void OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 		const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
@@ -1273,8 +1273,8 @@ protected:
 		}
 	afx_msg void OnHdnItemchanging( NMHDR *pNMHDR, LRESULT *pResult ) {
 		UNREFERENCED_PARAMETER( pNMHDR );
-		Default( );
-		InvalidateRect( NULL );
+		CWnd::Default( );
+		CWnd::InvalidateRect( NULL );
 		ASSERT( pResult != NULL );
 		if ( pResult != NULL ) {
 			*pResult = 0;
@@ -1314,9 +1314,9 @@ private:
 
 	void handle_EraseBkgnd( _In_ CDC* pDC ) {
 		// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
-		if ( GetItemCount( ) > 0 ) {
+		if ( CListCtrl::GetItemCount( ) > 0 ) {
 			RECT rc;
-			VERIFY( GetItemRect( GetTopIndex( ), &rc, LVIR_BOUNDS ) );
+			VERIFY( CListCtrl::GetItemRect( CListCtrl::GetTopIndex( ), &rc, LVIR_BOUNDS ) );
 			m_yFirstItem = rc.top;
 			}
 		// else: if we did the same thing as in OnColumnsCreated(), we get repaint problems.
@@ -1324,12 +1324,12 @@ private:
 		const COLORREF gridColor = RGB( 212, 208, 200 );
 
 		RECT rcClient;
-		GetClientRect( &rcClient );
+		CWnd::GetClientRect( &rcClient );
 
 		RECT rcHeader;
-		const auto header_ctrl = GetHeaderCtrl( );
+		const auto header_ctrl = CListCtrl::GetHeaderCtrl( );
 		header_ctrl->GetWindowRect( &rcHeader );
-		ScreenToClient( &rcHeader );
+		CWnd::ScreenToClient( &rcHeader );
 
 		RECT rcBetween   = rcClient;// between header and first item
 		rcBetween.top    = rcHeader.bottom;
@@ -1344,7 +1344,7 @@ private:
 
 		int column_order[ column_buf_size ] = { 0 };
 
-		VERIFY( GetColumnOrderArray( column_order, header_ctrl_item_count ) );
+		VERIFY( CListCtrl::GetColumnOrderArray( column_order, header_ctrl_item_count ) );
 
 		int vertical_buf_temp[ column_buf_size ] = { 0 };
 		rsize_t vertical_readable = 0;
@@ -1355,18 +1355,18 @@ private:
 			draw_grid_for_EraseBkgnd( gridColor, pDC, rcClient, vertical_readable, vertical_buf_temp );
 			}
 
-		const auto bgcolor    = GetSysColor( COLOR_WINDOW );
+		const auto bgcolor    = ::GetSysColor( COLOR_WINDOW );
 		const int  gridWidth  = ( m_showGrid ? 1 : 0 );
-		const auto lineCount  = GetCountPerPage( ) + 1;
-		const auto firstItem  = GetTopIndex( );
+		const auto lineCount  = CListCtrl::GetCountPerPage( ) + 1;
+		const auto firstItem  = CListCtrl::GetTopIndex( );
 		//((( a ) < ( b )) ? ( a ) : ( b ))
 		//((( firstItem + lineCount ) < ( CListCtrl::GetItemCount( ) )) ? ( firstItem + lineCount ) : ( CListCtrl::GetItemCount( ) ))
 		//const auto lastItem   = ( min( firstItem + lineCount, CListCtrl::GetItemCount( ) ) - 1 );
-		const auto lastItem = ( ( ( firstItem + lineCount ) < ( GetItemCount( ) ) ) ? ( firstItem + lineCount ) : ( GetItemCount( ) ) );
+		const auto lastItem = ( ( ( firstItem + lineCount ) < ( CListCtrl::GetItemCount( ) ) ) ? ( firstItem + lineCount ) : ( CListCtrl::GetItemCount( ) ) );
 
-		ASSERT( GetItemCount( ) == 0 || firstItem < GetItemCount( ) );
-		ASSERT( GetItemCount( ) == 0 || lastItem <= GetItemCount( ) );
-		ASSERT( GetItemCount( ) == 0 || lastItem >= firstItem );
+		ASSERT( CListCtrl::GetItemCount( ) == 0 || firstItem < CListCtrl::GetItemCount( ) );
+		ASSERT( CListCtrl::GetItemCount( ) == 0 || lastItem <= CListCtrl::GetItemCount( ) );
+		ASSERT( CListCtrl::GetItemCount( ) == 0 || lastItem >= firstItem );
 
 		const auto itemCount = ( lastItem - firstItem + 1 );
 
@@ -1380,7 +1380,7 @@ private:
 		
 		for ( INT i = 0; i < itemCount; i++ ) {
 			pDC->FillSolidRect( &fill, bgcolor );
-			VERIFY( OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) ) );
+			VERIFY( ::OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) ) );
 			}
 
 		const auto rowHeight = m_rowHeight;
@@ -1410,7 +1410,7 @@ private:
 	void handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESULT* pResult ) {
 		auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 		*pResult = 0;
-		ASSERT( di->item.iItem <= GetItemCount( ) );
+		ASSERT( di->item.iItem <= CListCtrl::GetItemCount( ) );
 		auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
 		ASSERT( item != NULL );
 		if ( item == NULL ) {
@@ -1503,8 +1503,15 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* cons
 	// Increase indentation according to tree-level
 	fixup_align_for_indent( indent, rcRest );
 
-	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
+	/*
+_AFXWIN_INLINE CFont* CWnd::GetFont() const
+	{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
+		(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
+	*/
 
+	//TODO: performance issue in the line below due to CHandleMap::FromHandle
+	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
+	
 	//subtract 6 from rcRest.right, add 6 to rcRest.left
 	VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
 
@@ -1538,7 +1545,7 @@ inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* cons
 
 	*focusLeft = rcLabel.left;
 
-	if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list->HasFocus( ) && ( width == NULL ) && ( !list->m_showFullRowSelection ) ) {
+	if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list->HasFocus( ) && ( width == NULL ) && ( !( list->m_showFullRowSelection ) ) ) {
 		pdc.DrawFocusRect( &rcLabel );
 		rcLabel.left = rc.left;
 		rc = rcLabel;

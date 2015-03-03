@@ -241,7 +241,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll /*= true*/ );
 				
 				void DeleteItem( _In_ _In_range_( 0, INT_MAX ) const int i ) {
-					ASSERT( i < GetItemCount( ) );
+					ASSERT( i < CListCtrl::GetItemCount( ) );
 					auto const anItem = GetItem( i );
 					if ( anItem != NULL ) {
 						anItem->SetExpanded( false );
@@ -249,7 +249,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 						anItem->m_vi.reset( );
 						//auto newVI = anItem->m_vi->rcTitle;
 						}
-					VERIFY( COwnerDrawnListCtrl::DeleteItem( i ) );
+					VERIFY( CListCtrl::DeleteItem( i ) );
 					}
 
 

@@ -86,7 +86,7 @@ public:
 	        void               SelectExtension             ( _In_z_ PCWSTR const ext                        );
 	
 	void SysColorChanged( ) {
-		InitializeColors( );
+		COwnerDrawnListCtrl::InitializeColors( );
 		}
 	
 	//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.

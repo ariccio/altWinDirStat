@@ -69,7 +69,7 @@ namespace {
 			}
 		~COpenClipboard( ) {
 			if ( m_open ) {
-				VERIFY( CloseClipboard( ) );
+				VERIFY( ::CloseClipboard( ) );
 				}
 			}
 		private:
@@ -165,15 +165,15 @@ _AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
 	//If [MoveWindow] succeeds, the return value is nonzero.
 	VERIFY( ::MoveWindow( m_hWnd, rc2.left, rc2.top, ( rc2.right - rc2.left ), ( rc2.bottom - rc2.top ), TRUE ) );
 
-	VERIFY( SetActivePage( CPersistence::GetConfigPage( GetPageCount( ) - 1 ) ) );
+	VERIFY( CPropertySheet::SetActivePage( CPersistence::GetConfigPage( GetPageCount( ) - 1 ) ) );
 	return bResult;
 	}
 
 BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) {
-	CPersistence::SetConfigPage( GetActiveIndex( ) );
+	CPersistence::SetConfigPage( CPropertySheet::GetActiveIndex( ) );
 
 	CRect rc;
-	GetWindowRect( rc );
+	CWnd::GetWindowRect( rc );
 	CPersistence::SetConfigPosition( rc.TopLeft( ) );
 	ASSERT( m_pCtrlSite == NULL );
 	//INT cmd = LOWORD( wParam );
@@ -208,9 +208,9 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
 
 	INT dummy = 0;
-	if ( GetColumnCount( ) > 1 ) {
+	if ( CSplitterWnd::GetColumnCount( ) > 1 ) {
 		INT cxLeft = 0;
-		GetColumnInfo( 0, cxLeft, dummy );
+		CSplitterWnd::GetColumnInfo( 0, cxLeft, dummy );
 
 		if ( ( rcClient.right - rcClient.left ) > 0 ) {
 			m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.right - rcClient.left );
@@ -220,7 +220,7 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 		return;
 		}
 	INT cyUpper = 0;
-	GetRowInfo( 0, cyUpper, dummy );
+	CSplitterWnd::GetRowInfo( 0, cyUpper, dummy );
 	if ( ( rcClient.bottom - rcClient.top ) > 0 ) {
 		m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.bottom - rcClient.top );
 		}
@@ -238,16 +238,19 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 
 	//auto splitter_persist = scopeGuard( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); }, __FILE__, __FUNCSIG__, __LINE__ );
 	//WDS_SCOPEGUARD_INSTANCE
+
+	//TODO: BUGBUG: THE FOLLOWING LINE SHOULD NOT BE COMMENTED OUT!
 	auto splitter_persist = WDS_SCOPEGUARD_INSTANCE( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
-	if ( GetColumnCount( ) > 1 ) {
+
+	if ( CSplitterWnd::GetColumnCount( ) > 1 ) {
 		ASSERT( m_pColInfo != NULL );
 		if ( m_pColInfo == NULL ) {
 			return;
 			}
 		const auto cxLeft = static_cast< INT >( pos * ( rcClient.right - rcClient.left ) );
 		if ( cxLeft >= 0 ) {
-			SetColumnInfo( 0, cxLeft, 0 );
-			RecalcLayout( );
+			CSplitterWnd::SetColumnInfo( 0, cxLeft, 0 );
+			CSplitterWnd::RecalcLayout( );
 			return;
 			}
 		return;
@@ -258,8 +261,8 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 		}
 	const auto cyUpper = static_cast< INT >( pos * ( rcClient.bottom - rcClient.top ) );
 	if ( cyUpper >= 0 ) {
-		SetRowInfo( 0, cyUpper, 0 );
-		RecalcLayout( );
+		CSplitterWnd::SetRowInfo( 0, cyUpper, 0 );
+		CSplitterWnd::RecalcLayout( );
 		return;
 		}
 	}
@@ -271,17 +274,17 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 
 void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ CSplitterWnd::OnSize( nType, cx, cy ); } );
-	if ( GetColumnCount( ) > 1 ) {
+	if ( CSplitterWnd::GetColumnCount( ) > 1 ) {
 		const INT cxLeft = static_cast< INT >( cx * m_splitterPos );
 		if ( cxLeft > 0 ) {
-			SetColumnInfo( 0, cxLeft, 0 );
+			CSplitterWnd::SetColumnInfo( 0, cxLeft, 0 );
 			return;
 			}
 		return;
 		}
 	const INT cyUpper = static_cast< INT >( cy * m_splitterPos );
 	if ( cyUpper > 0 ) {
-		SetRowInfo( 0, cyUpper, 0 );
+		CSplitterWnd::SetRowInfo( 0, cyUpper, 0 );
 		return;
 		}
 	}
@@ -350,10 +353,10 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	m_wndDeadFocus.Create( m_hWnd, rc, _T( "_deadfocus" ), WS_CHILD, 0, dead_focus_wnd::IDC_DEADFOCUS, NULL );
 	//m_wndDeadFocus.Create( this );
 
-	EnableDocking( CBRS_ALIGN_ANY );
+	CFrameWnd::EnableDocking( CBRS_ALIGN_ANY );
 
-	LoadBarState( CPersistence::GetBarStateSection( ) );
-	ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
+	CFrameWnd::LoadBarState( CPersistence::GetBarStateSection( ) );
+	CFrameWnd::ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
 	
 	TRACE( _T( "sizeof CItemBranch: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CItemBranch ) ) );
 #ifdef DISPLAY_FINAL_CITEMBRANCH_SIZE
@@ -377,7 +380,7 @@ void CMainFrame::InitialShowWindow( ) {
 	if ( wp.showCmd != SW_SHOWMAXIMIZED ) {
 		wp.showCmd = SW_SHOWNORMAL;
 		}
-	VERIFY( SetWindowPlacement( &wp ) );
+	VERIFY( CWnd::SetWindowPlacement( &wp ) );
 	}
 
 void CMainFrame::OnClose( ) {
@@ -386,7 +389,7 @@ void CMainFrame::OnClose( ) {
 	WTL::CWaitCursor wc;
 
 	// It's too late, to do this in OnDestroy(). Because the toolbar, if undocked, is already destroyed in OnDestroy(). So we must save the toolbar state here in OnClose().
-	SaveBarState( CPersistence::GetBarStateSection( ) );
+	CFrameWnd::SaveBarState( CPersistence::GetBarStateSection( ) );
 	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) bitand WS_VISIBLE ) != 0 );
 
 #ifdef _DEBUG
@@ -396,7 +399,8 @@ void CMainFrame::OnClose( ) {
 
 	const auto Document = GetDocument( );
 	if ( Document != NULL ) {
-		Document->ForgetItemTree( );
+		//Document->ForgetItemTree( );
+		Document->DeleteContents( );
 		}
 	CFrameWnd::OnClose( );
 	const auto qpc_2 = help_QueryPerformanceCounter( );
@@ -411,7 +415,7 @@ void CMainFrame::OnClose( ) {
 	auto pmc = zero_init_struct<PROCESS_MEMORY_COUNTERS>( );
 	pmc.cb = sizeof( pmc );
 
-	if ( GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+	if ( ::GetProcessMemoryInfo( ::GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
 		TRACE( _T( "GetProcessMemoryInfo: %I64u\r\n" ), static_cast< std::uint64_t >( pmc.WorkingSetSize ) );
 		}
 	else {
@@ -422,7 +426,7 @@ void CMainFrame::OnClose( ) {
 void CMainFrame::OnDestroy( ) {
 	//auto wp = zeroInitWINDOWPLACEMENT( );
 	auto wp = zero_init_struct<WINDOWPLACEMENT>( );
-	GetWindowPlacement( &wp );
+	CWnd::GetWindowPlacement( &wp );
 	CPersistence::SetMainWindowPlacement( wp );
 	const auto TypeView = GetTypeView( );
 	const auto GraphView = GetGraphView( );
@@ -660,23 +664,23 @@ void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ 
 	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f." ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, unsigned( ext_data_size ), file_name_length, average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
-		SetMessageText( buffer_ptr );
+		CFrameWnd::SetMessageText( buffer_ptr );
 		m_drawTiming = buffer_ptr;
 		return;
 		}
 	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
+		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
 		return;
 		}
 	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
+		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
 		return;
 		}
 	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
+		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
 		return;
 		}
-	SetMessageText( L"Couldn't set message text, unknown error!" );
+	CFrameWnd::SetMessageText( L"Couldn't set message text, unknown error!" );
 
 	}
 
@@ -684,23 +688,23 @@ void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_le
 	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg extension len: %.2f." ), unsigned( ext_data_size ), average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
-		SetMessageText( buffer_ptr );
+		CFrameWnd::SetMessageText( buffer_ptr );
 		m_drawTiming = buffer_ptr;
 		return;
 		}
 	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
+		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
 		return;
 		}
 	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
+		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
 		return;
 		}
 	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-		SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
+		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
 		return;
 		}
-	SetMessageText( L"Couldn't set message text, unknown error!" );
+	CFrameWnd::SetMessageText( L"Couldn't set message text, unknown error!" );
 	}
 
 
@@ -762,26 +766,26 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 void CMainFrame::SetSelectionMessageText( ) {
 	switch ( m_logicalFocus ) {
 		case LOGICAL_FOCUS::LF_NONE:
-			return SetMessageText( m_drawTiming.c_str( ) );
+			return CFrameWnd::SetMessageText( m_drawTiming.c_str( ) );
 		case LOGICAL_FOCUS::LF_DIRECTORYLIST:
 			{
 			const auto Document = GetDocument( );
 			ASSERT( Document != NULL );
 			if ( Document == NULL ) {
-				SetMessageText( _T( "No document?" ) );
+				CFrameWnd::SetMessageText( _T( "No document?" ) );
 				return;
 				}
 			const auto Selection = Document->m_selectedItem;
 			if ( Selection == NULL ) {
-				SetMessageText( m_drawTiming.c_str( ) );
+				CFrameWnd::SetMessageText( m_drawTiming.c_str( ) );
 				return;
 				}
-			SetMessageText( Selection->GetPath( ).c_str( ) );
+			CFrameWnd::SetMessageText( Selection->GetPath( ).c_str( ) );
 			return;
 			}
 			return;
 		case LOGICAL_FOCUS::LF_EXTENSIONLIST:
-			return SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
+			return CFrameWnd::SetMessageText( std::wstring( L'*' + GetDocument( )->m_highlightExtension ).c_str( ) );
 		}
 	}
 
@@ -802,7 +806,7 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	CFrameWnd::OnSize( nType, cx, cy );
 
-	if ( !IsWindow( m_wndStatusBar.m_hWnd ) ) {
+	if ( !( ::IsWindow( m_wndStatusBar.m_hWnd ) ) ) {
 		return;
 		}
 	CRect rc;
