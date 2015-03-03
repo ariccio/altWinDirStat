@@ -173,6 +173,11 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_CO
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	ASSERT( subitem != column::COL_NAME );
+	if ( subitem == column::COL_NAME ) {
+		displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
+		std::terminate( );
+		}
 	switch ( subitem )
 	{
 			case column::COL_NAME:
@@ -227,7 +232,7 @@ INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_C
 	}
 	}
 
-INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+inline INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	if ( ( subitem == column::COL_EXTENSION ) || ( subitem == column::COL_DESCRIPTION ) ) {
 		default_compare( baseOther );
 		}

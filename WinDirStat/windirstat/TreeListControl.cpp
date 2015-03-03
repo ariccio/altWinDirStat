@@ -249,7 +249,24 @@ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	return NULL;
 	}
 
-INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+const COLORREF CTreeListItem::Concrete_ItemTextColor( ) const {
+	if ( m_attr.invalid ) {
+		//return GetItemTextColor( true );
+		return RGB( 0xFF, 0x00, 0x00 );
+		}
+	if ( m_attr.compressed ) {
+		return RGB( 0x00, 0x00, 0xFF );
+		}
+	else if ( m_attr.encrypted ) {
+		return GetApp( )->m_altEncryptionColor;
+		}
+	//ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
+	//return GetItemTextColor( true ); // The rest is not colored
+	return default_item_text_color( ); // The rest is not colored
+	}
+
+
+inline INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	if ( other == this ) {
 		return 0;
 		}
@@ -353,6 +370,12 @@ RECT CTreeListItem::GetTitleRect( ) const {
 	ASSERT( IsVisible( ) );
 	return BuildRECT( m_vi->rcTitle );
 	}
+
+RECT CTreeListItem::TmiGetRectangle( ) const {
+	return BuildRECT( m_rect );
+	}
+
+
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 

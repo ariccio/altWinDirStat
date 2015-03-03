@@ -58,7 +58,7 @@ namespace {
 	}
 
 
-CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_rect{ 0, 0, 0, 0 }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ) } {
+CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ) } {
 	SetAttributes( attr );
 	m_attr.m_done = done;
 	}
@@ -221,6 +221,11 @@ const HRESULT CItemBranch::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL con
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	ASSERT( subitem != column::COL_NAME );
+	if ( subitem == column::COL_NAME ) {
+		displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
+		std::terminate( );
+		}
 	switch ( subitem )
 	{
 			case column::COL_PERCENTAGE:
@@ -242,21 +247,6 @@ HRESULT CItemBranch::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_
 	}
 
 
-const COLORREF CItemBranch::Concrete_ItemTextColor( ) const {
-	if ( m_attr.invalid ) {
-		//return GetItemTextColor( true );
-		return RGB( 0xFF, 0x00, 0x00 );
-		}
-	if ( m_attr.compressed ) {
-		return RGB( 0x00, 0x00, 0xFF );
-		}
-	else if ( m_attr.encrypted ) {
-		return GetApp( )->m_altEncryptionColor;
-		}
-	//ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
-	//return GetItemTextColor( true ); // The rest is not colored
-	return default_item_text_color( ); // The rest is not colored
-	}
 
 INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
 	auto const other = static_cast< const CItemBranch* >( tlib );
@@ -398,12 +388,8 @@ void CItemBranch::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
 		}
 	pathBuf += m_name;
 	return;
-
 	}
 
-RECT CItemBranch::TmiGetRectangle( ) const {
-	return BuildRECT( m_rect );
-	}
 
 _Success_( return < SIZE_T_MAX )
 size_t CItemBranch::findItemInChildren( const CItemBranch* const theItem ) const {

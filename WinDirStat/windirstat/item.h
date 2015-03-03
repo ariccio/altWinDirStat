@@ -57,16 +57,6 @@ class CItemBranch final : public CTreeListItem {
 
 		FILETIME FILETIME_recurse( ) const;
 
-	private:
-		
-		const COLORREF Concrete_ItemTextColor( ) const;
-
-		//ItemTextColor __should__ be private!
-		virtual COLORREF ItemTextColor( ) const override final {
-			return Concrete_ItemTextColor( );
-			}
-		
-		
 	public:
 		
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
@@ -93,7 +83,7 @@ class CItemBranch final : public CTreeListItem {
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
 
 		void            TmiSetRectangle     ( _In_ const RECT& rc          ) const;
-		RECT            TmiGetRectangle     (                               ) const;
+		
 
 		// Branch/Leaf shared functions
 		_Must_inspect_result_ _Ret_maybenull_ 
@@ -129,8 +119,6 @@ class CItemBranch final : public CTreeListItem {
 
 		std::wstring GetPath                       ( ) const;
 
-		//Branch only functions
-
 		std::vector<CTreeListItem*> size_sorted_vector_of_children( ) const;
 
 		
@@ -140,20 +128,13 @@ class CItemBranch final : public CTreeListItem {
 		//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures
-				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
-												 //C4820: 'CItemBranch' : '3' bytes padding added after data member 'CItemBranch::m_attr'
-												 attribs                        m_attr;
-					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
+		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+		
+				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
+					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
 											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
-		                                 mutable SRECT                          m_rect;                // Finally, this is our coordinates in the Treemap view. (For GraphView)
-
-
-
-		//static_assert( sizeof( m_attr ) <= 1, "" );
-
 	};
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );

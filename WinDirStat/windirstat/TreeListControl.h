@@ -47,17 +47,26 @@ struct VISIBLEINFO {
 class CTreeListItem : public COwnerDrawnListItem {
 	
 
-		virtual bool           DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem,             _In_ CDC& pdc,         _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
-		virtual INT            Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
+		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
+		virtual INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
-		INT                    concrete_compare ( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
-		const bool             set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const ) const;
+		inline INT     concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+		const bool     set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const ) const;
+
+		const COLORREF Concrete_ItemTextColor( ) const;
+
+		//ItemTextColor __should__ be private!
+		virtual COLORREF ItemTextColor( ) const override final {
+			return Concrete_ItemTextColor( );
+			}
+
+		
 	public:
 
 		//default constructor DOES NOT initialize jack shit.
 		CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent ) : COwnerDrawnListItem( name, length ), m_parent( parent ) { }
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent ) : COwnerDrawnListItem( name, length ), m_parent( parent ), m_rect{ 0, 0, 0, 0 } { }
 
 		CTreeListItem( CTreeListItem& in ) = delete;
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
@@ -134,12 +143,15 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		RECT GetTitleRect( ) const;
+		RECT TmiGetRectangle(                               ) const;
 
 	public:
-		const CTreeListItem* m_parent;
-		Children_String_Heap_Manager m_name_pool;
-		// Data needed to display the item.
-		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr;
+
+		const CTreeListItem*                 m_parent;
+		Children_String_Heap_Manager         m_name_pool;
+		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr; // Data needed to display the item.
+		mutable SRECT                        m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
+		attribs                              m_attr;
 	};
 
 

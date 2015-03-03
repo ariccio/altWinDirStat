@@ -44,16 +44,43 @@ namespace {
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
 	virtual INT          Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
-
-	_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
-
-	//CItemBranch is the only non-default behavior here!
 	virtual COLORREF     ItemTextColor( ) const = 0;
 
-	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool         DrawSubitem            ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const = 0;
+	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
+	virtual HRESULT      Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
 
+
+	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
+	virtual bool         DrawSubitem        ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const = 0;
+
+public:
+	INT      compare_interface          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+		return Compare( other, subitem );
+		}
+
+	COLORREF item_text_color( ) const {
+		return ItemTextColor( );
+		}
+
+	bool     DrawSubitem_               ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
+		}
+
+
+	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
+	HRESULT  GetText_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+		const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+#ifdef DEBUG
+		if ( SUCCEEDED( res ) ) {
+			const auto len_dat_str = wcslen( psz_text );
+			ASSERT( chars_written == len_dat_str );
+			}
+#endif
+		return res;
+		}
+
+
+private:
 	//defined at the BOTTOM of this file!
 	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc ) const;
 
@@ -72,11 +99,8 @@ public:
 		m_name_length = 0u;
 		}
 
-	INT          compare_interface            ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
-		return Compare( other, subitem );
-		}
 
-	INT          CompareS                     ( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+	INT CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 		if ( sorting.column1 == column::COL_NAME ) {
 			const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
 		
@@ -95,47 +119,20 @@ public:
 			r_2 = compare_interface( other, sorting.column2 );
 		
 			if ( abs( r_2 ) < 2 && !sorting.ascending2 ) {
-				r_2 = -r_2;
+				return ( -r_2 );
 				}
 			}
 		return r_2;
 		}
-
+	
 	//defined at bottom of THIS file.
 	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _In_ RECT rc, _In_ const UINT state                       ) const;
 
-	bool         DrawSubitem_                 ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
-		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
-		}
-
-	COLORREF    item_text_color( ) const {
-		return ItemTextColor( );
-		}
 
 	COLORREF     default_item_text_color      ( ) const {
 		return GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
-	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
-	HRESULT      GetText_WriteToStackBuffer   ( _In_range_( 1, 6 ) const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-		ASSERT( subitem != column::COL_NAME );
-		if ( subitem == column::COL_NAME ) {
-			displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
-			//if ( IsDebuggerPresent( ) ) {
-				//_CrtDbgBreak( );
-				//}
-			std::terminate( );
-			}
-
-		const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
-#ifdef DEBUG
-		if ( SUCCEEDED( res ) ) {
-			const auto len_dat_str = wcslen( psz_text );
-			ASSERT( chars_written == len_dat_str );
-			}
-#endif
-		return res;
-		}
 
 protected:
 	//defined at bottom of THIS file.
@@ -143,7 +140,7 @@ protected:
 	//HRESULT      WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 	_Success_( SUCCEEDED( return ) )
-	HRESULT WriteToStackBuffer_default( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR derived_type ) const {
+	HRESULT WriteToStackBuffer_default( const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR derived_type ) const {
 		sizeBuffNeed = SIZE_T_ERROR;
 		size_t chars_remaining = 0;
 		ASSERT( strSize > 8 );
