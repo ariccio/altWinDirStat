@@ -12,7 +12,7 @@
 namespace {
 
 	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
-	std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
+	__forceinline std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 		ULARGE_INTEGER ret;
 		ret.QuadPart = 0;//zero initializing this is critical!
 		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
@@ -112,6 +112,104 @@ namespace {
 
 		//process_vector_of_compressed_file_futures( sizesToWorkOn_ );
 		}
+
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::wstring>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+		std::vector<FILEINFO> vecFiles;
+		std::vector<DIRINFO>  vecDirs;
+
+		vecFiles.reserve( 50 );//pseudo-arbitrary number
+
+		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
+
+		//std::sort( vecFiles.begin( ), vecFiles.end( ) );
+
+		const auto fileCount = vecFiles.size( );
+		const auto dirCount  = vecDirs.size( );
+	
+		const auto total_count = ( fileCount + dirCount );
+
+		ASSERT( ThisCItem->m_childCount == 0 );
+		if ( total_count > 0 ) {
+			ThisCItem->m_children.reset( new CItemBranch[ total_count ] );
+			}
+		////true for 2 means DIR
+
+
+		//TODO: BUGBUG: need +1 here, else ASSERT( ( m_buffer_filled + new_name_length ) < m_buffer_size ) fails!
+		std::uint64_t total_length = 1u;
+		for ( const auto& aFile : vecFiles ) {
+			total_length += static_cast<std::uint64_t>( aFile.name.length( ) );
+		
+			//for the null terminator
+			++total_length;
+			}
+		for ( const auto& aDir : vecDirs ) {
+			total_length += static_cast<std::uint64_t>( aDir.name.length( ) );
+		
+			//for the null terminator
+			++total_length;
+			}
+
+		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
+		const std::uint64_t total_size_alloc = ( total_length );
+
+	#ifdef WDS_STRING_ALLOC_DEBUGGING
+		TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
+	#endif
+
+
+		ThisCItem->m_name_pool.reset( total_size_alloc );
+
+		ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
+
+		//ASSERT( path.back( ) != _T( '\\' ) );
+		//sizesToWorkOn_ CANNOT BE CONST!!
+		auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
+		std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
+		dirsToWorkOn.reserve( dirCount );
+		const auto thisOptions = GetOptions( );
+
+		//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
+		for ( const auto& dir : vecDirs ) {
+			const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
+			const auto new_name_length = dir.name.length( );
+			ASSERT( new_name_length < UINT16_MAX );
+
+			PWSTR new_name_ptr = nullptr;
+			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
+			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
+
+			if ( !SUCCEEDED( copy_res ) ) {
+				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
+				displayWindowsMsgBoxWithMessage( dir.name.c_str( ) );
+				}
+			else {
+				//                                                                                               IT_DIRECTORY
+				const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+				//detect overflows. highly unlikely.
+				ASSERT( ThisCItem->m_childCount < 4294967290 );
+
+				++( ThisCItem->m_childCount );
+				//ThisCItem->m_children_vector.emplace_back( newitem );
+
+				if ( !newitem->m_attr.m_done ) {
+					ASSERT( !dontFollow );
+					dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
+					}
+				else {
+					ASSERT( dontFollow );
+					newitem->m_size = 0;
+					}
+				}
+			}
+		ASSERT( ThisCItem->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
+		ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
+		//ThisCItem->m_children_vector.shrink_to_fit( );
+		return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
+		}
+
+
 	}
 
 
@@ -221,101 +319,6 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 	return sizesToWorkOn_;
 	}
 
-_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::wstring>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
-	std::vector<FILEINFO> vecFiles;
-	std::vector<DIRINFO>  vecDirs;
-
-	vecFiles.reserve( 50 );//pseudo-arbitrary number
-
-	FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
-
-	//std::sort( vecFiles.begin( ), vecFiles.end( ) );
-
-	const auto fileCount = vecFiles.size( );
-	const auto dirCount  = vecDirs.size( );
-	
-	const auto total_count = ( fileCount + dirCount );
-
-	ASSERT( ThisCItem->m_childCount == 0 );
-	if ( total_count > 0 ) {
-		ThisCItem->m_children.reset( new CItemBranch[ total_count ] );
-		}
-	////true for 2 means DIR
-
-
-	//TODO: BUGBUG: need +1 here, else ASSERT( ( m_buffer_filled + new_name_length ) < m_buffer_size ) fails!
-	std::uint64_t total_length = 1u;
-	for ( const auto& aFile : vecFiles ) {
-		total_length += static_cast<std::uint64_t>( aFile.name.length( ) );
-		
-		//for the null terminator
-		++total_length;
-		}
-	for ( const auto& aDir : vecDirs ) {
-		total_length += static_cast<std::uint64_t>( aDir.name.length( ) );
-		
-		//for the null terminator
-		++total_length;
-		}
-
-	static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
-	const std::uint64_t total_size_alloc = ( total_length );
-
-#ifdef WDS_STRING_ALLOC_DEBUGGING
-	TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
-#endif
-
-
-	ThisCItem->m_name_pool.reset( total_size_alloc );
-
-	ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
-
-	//ASSERT( path.back( ) != _T( '\\' ) );
-	//sizesToWorkOn_ CANNOT BE CONST!!
-	auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
-	std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
-	dirsToWorkOn.reserve( dirCount );
-	const auto thisOptions = GetOptions( );
-
-	//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
-	for ( const auto& dir : vecDirs ) {
-		const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
-		const auto new_name_length = dir.name.length( );
-		ASSERT( new_name_length < UINT16_MAX );
-
-		PWSTR new_name_ptr = nullptr;
-		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
-		const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
-
-		if ( !SUCCEEDED( copy_res ) ) {
-			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
-			displayWindowsMsgBoxWithMessage( dir.name.c_str( ) );
-			}
-		else {
-			//                                                                                               IT_DIRECTORY
-			const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
-
-			//detect overflows. highly unlikely.
-			ASSERT( ThisCItem->m_childCount < 4294967290 );
-
-			++( ThisCItem->m_childCount );
-			//ThisCItem->m_children_vector.emplace_back( newitem );
-
-			if ( !newitem->m_attr.m_done ) {
-				ASSERT( !dontFollow );
-				dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
-				}
-			else {
-				ASSERT( dontFollow );
-				newitem->m_size = 0;
-				}
-			}
-		}
-	ASSERT( ThisCItem->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
-	ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
-	//ThisCItem->m_children_vector.shrink_to_fit( );
-	return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
-	}
 
 #ifdef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
 #pragma pop_macro("new")
@@ -323,6 +326,7 @@ _Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CIt
 #endif
 
 
+//TODO: WTF IS THIS DOING HERE??!?
 _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( _In_ CTreeListControl* const tree_list_control ) {
 	ASSERT( GetDocument( )->IsRootDone( ) );
 	ASSERT( m_attr.m_done );

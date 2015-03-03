@@ -6,6 +6,8 @@
 
 #include "stdafx.h"
 #include "globalhelpers.h"
+#include "ChildrenHeapManager.h"
+
 
 #ifndef WDS_DIRSTATDOC_H
 #define WDS_DIRSTATDOC_H

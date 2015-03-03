@@ -15,10 +15,10 @@
 
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
-#include "ownerdrawnlistcontrol.h"
-#include "TreeListControl.h"
+//#include "ownerdrawnlistcontrol.h"
+//#include "TreeListControl.h"
 #include "item.h"
-#include "typeview.h"
+//#include "typeview.h"
 
 
 #include "dirstatdoc.h"

@@ -716,6 +716,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ChildrenHeapManager.cpp" />
     <ClCompile Include="colorbutton.cpp" />
     <ClCompile Include="directory_enumeration.cpp" />
     <ClCompile Include="dirstatdoc.cpp" />
@@ -745,6 +746,7 @@
     <ClCompile Include="xyslider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ChildrenHeapManager.h" />
     <ClInclude Include="colorbutton.h" />
     <ClInclude Include="COM_helpers.h" />
     <ClInclude Include="datastructures.h" />

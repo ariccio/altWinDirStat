@@ -58,10 +58,7 @@ namespace {
 	}
 
 
-CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ) } {
-	SetAttributes( attr );
-	m_attr.m_done = done;
-	}
+//CItemBranch::CItemBranch( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ), std::move( attr ), std::move( done ) } { }
 
 _Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
 const HRESULT CItemBranch::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
@@ -294,21 +291,6 @@ std::vector<CTreeListItem*> CItemBranch::size_sorted_vector_of_children( ) const
 	return children;
 	}
 
-//Unconditionally called only ONCE, so we ask for inlining.
-//Encodes the attributes to fit (in) 1 byte
-inline void CItemBranch::SetAttributes( _In_ const DWORD attr ) {
-	if ( attr == INVALID_FILE_ATTRIBUTES ) {
-		m_attr.invalid = true;
-		return;
-		}
-	m_attr.readonly   = ( ( attr bitand FILE_ATTRIBUTE_READONLY      ) != 0 );
-	m_attr.hidden     = ( ( attr bitand FILE_ATTRIBUTE_HIDDEN        ) != 0 );
-	m_attr.system     = ( ( attr bitand FILE_ATTRIBUTE_SYSTEM        ) != 0 );
-	m_attr.compressed = ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
-	m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
-	m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
-	m_attr.invalid    = false;
-	}
 
 INT CItemBranch::GetSortAttributes( ) const {
 	INT ret = 0;
@@ -537,15 +519,6 @@ PCWSTR const CItemBranch::CStyle_GetExtensionStrPtr( ) const {
 	PCWSTR const resultPtrStr = PathFindExtensionW( m_name );
 	ASSERT( resultPtrStr != '\0' );
 	return resultPtrStr;
-	}
-
-void CItemBranch::TmiSetRectangle( _In_ const RECT& rc ) const {
-	ASSERT( ( rc.right + 1 ) >= rc.left );
-	ASSERT( rc.bottom >= rc.top );
-	m_rect.left   = static_cast<short>( rc.left );
-	m_rect.top    = static_cast<short>( rc.top );
-	m_rect.right  = static_cast<short>( rc.right );
-	m_rect.bottom = static_cast<short>( rc.bottom );
 	}
 
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "windirstat.h"
+//#include "windirstat.h"
 
 #ifndef WDS_PAGEGENERAL_H
 #define WDS_PAGEGENERAL_H
@@ -13,6 +13,7 @@
 
 class COptionsPropertySheet;
 class CPageGeneral;
+class CDirstatApp;
 
 // CPageGeneral. "Settings" property page "General".
 class CPageGeneral final : public CPropertyPage {

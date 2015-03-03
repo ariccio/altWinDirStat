@@ -10,10 +10,10 @@
 #define WDS_TREELISTCONTROL_CPP
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
-#include "ownerdrawnlistcontrol.h"
+//#include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
 #include "item.h"
-#include "typeview.h"
+//#include "typeview.h"
 //#include "SelectDrivesDlg.h"
 
 
@@ -249,6 +249,15 @@ CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	return NULL;
 	}
 
+void CTreeListItem::TmiSetRectangle( _In_ const RECT& rc ) const {
+	ASSERT( ( rc.right + 1 ) >= rc.left );
+	ASSERT( rc.bottom >= rc.top );
+	m_rect.left   = static_cast<short>( rc.left );
+	m_rect.top    = static_cast<short>( rc.top );
+	m_rect.right  = static_cast<short>( rc.right );
+	m_rect.bottom = static_cast<short>( rc.bottom );
+	}
+
 const COLORREF CTreeListItem::Concrete_ItemTextColor( ) const {
 	if ( m_attr.invalid ) {
 		//return GetItemTextColor( true );
@@ -375,6 +384,21 @@ RECT CTreeListItem::TmiGetRectangle( ) const {
 	return BuildRECT( m_rect );
 	}
 
+//Unconditionally called only ONCE, so we ask for inlining.
+//Encodes the attributes to fit (in) 1 byte
+//void CTreeListItem::SetAttributes( _In_ const DWORD attr ) {
+//	if ( attr == INVALID_FILE_ATTRIBUTES ) {
+//		m_attr.invalid = true;
+//		return;
+//		}
+//	m_attr.readonly   = ( ( attr bitand FILE_ATTRIBUTE_READONLY      ) != 0 );
+//	m_attr.hidden     = ( ( attr bitand FILE_ATTRIBUTE_HIDDEN        ) != 0 );
+//	m_attr.system     = ( ( attr bitand FILE_ATTRIBUTE_SYSTEM        ) != 0 );
+//	m_attr.compressed = ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
+//	m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
+//	m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+//	m_attr.invalid    = false;
+//	}
 
 
 IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )

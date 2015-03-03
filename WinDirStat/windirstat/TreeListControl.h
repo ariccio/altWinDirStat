@@ -13,6 +13,7 @@
 
 
 #include "ownerdrawnlistcontrol.h"
+#include "ChildrenHeapManager.h"
 //#include "pacman.h"
 
 
@@ -62,16 +63,37 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		
 	public:
+		//Unconditionally called only ONCE, so we ask for inlining.
+		//Encodes the attributes to fit (in) 1 byte
+		__forceinline void SetAttributes( _In_ const DWORD attr ) {
+			if ( attr == INVALID_FILE_ATTRIBUTES ) {
+				m_attr.invalid = true;
+				return;
+				}
+			m_attr.readonly   = ( ( attr bitand FILE_ATTRIBUTE_READONLY      ) != 0 );
+			m_attr.hidden     = ( ( attr bitand FILE_ATTRIBUTE_HIDDEN        ) != 0 );
+			m_attr.system     = ( ( attr bitand FILE_ATTRIBUTE_SYSTEM        ) != 0 );
+			m_attr.compressed = ( ( attr bitand FILE_ATTRIBUTE_COMPRESSED    ) != 0 );
+			m_attr.encrypted  = ( ( attr bitand FILE_ATTRIBUTE_ENCRYPTED     ) != 0 );
+			m_attr.reparse    = ( ( attr bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
+			m_attr.invalid    = false;
+			}
 
 		//default constructor DOES NOT initialize jack shit.
-		CTreeListItem( ) { }
+		__forceinline CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent ) : COwnerDrawnListItem( name, length ), m_parent( parent ), m_rect{ 0, 0, 0, 0 } { }
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent, const DWORD attr, const bool done ) : COwnerDrawnListItem( name, length ), m_parent( parent ), m_rect{ 0, 0, 0, 0 } {
+			SetAttributes( attr );
+			m_attr.m_done = done;
+			}
 
 		CTreeListItem( CTreeListItem& in ) = delete;
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
 
 		virtual ~CTreeListItem( ) = default;
+
+		//unconditionally called only ONCE, so we ask for inlining.
+		
 
 
 		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
@@ -143,10 +165,11 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		RECT GetTitleRect( ) const;
-		RECT TmiGetRectangle(                               ) const;
+
+		RECT TmiGetRectangle(                              ) const;
+		void TmiSetRectangle( _In_ const RECT& rc          ) const;
 
 	public:
-
 		const CTreeListItem*                 m_parent;
 		Children_String_Heap_Manager         m_name_pool;
 		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr; // Data needed to display the item.

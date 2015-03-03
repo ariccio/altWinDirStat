@@ -25,10 +25,10 @@ class CItemBranch final : public CTreeListItem {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length );
+		CItemBranch  ( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ), std::move( attr ), std::move( done ) } { }
 		
 		//default constructor DOES NOT initialize.
-		CItemBranch  ( ) { }
+		__forceinline CItemBranch ( ) { }
 
 		virtual ~CItemBranch( ) final = default;
 
@@ -39,14 +39,7 @@ class CItemBranch final : public CTreeListItem {
 		_Success_( return < SIZE_T_MAX )
 		size_t findItemInChildren( const CItemBranch* const theItem ) const;
 
-		//bool operator<( const CItemBranch& rhs ) const {
-		//	return size_recurse( ) < rhs.size_recurse( );
-		//	}
-
 		void refresh_sizeCache( );
-
-		//_Ret_range_( 0, UINT64_MAX )
-		//std::uint64_t compute_size_recurse( ) const;
 
 		_Ret_range_( 0, UINT64_MAX )
 		std::uint64_t size_recurse( ) const;
@@ -82,10 +75,6 @@ class CItemBranch final : public CTreeListItem {
 
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
 
-		void            TmiSetRectangle     ( _In_ const RECT& rc          ) const;
-		
-
-		// Branch/Leaf shared functions
 		_Must_inspect_result_ _Ret_maybenull_ 
 		const CItemBranch* GetParentItem            (                                                  ) const { return static_cast< const CItemBranch* >( m_parent ); };
 
@@ -93,6 +82,7 @@ class CItemBranch final : public CTreeListItem {
 		
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
 		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const;
+
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
@@ -100,22 +90,13 @@ class CItemBranch final : public CTreeListItem {
 		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 		
-		//unconditionally called only ONCE, so we ask for inlining.
-		inline void    SetAttributes                 ( _In_ const DWORD attr );
+
 		
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
-
-		//_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
-		//	const std::wstring GetExtension             ( ) const;
 		
 		_Pre_satisfies_( this->m_children._Myptr == nullptr )
 			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
-		
-		//_Pre_satisfies_( this->m_children._Myptr == nullptr )
-		//_Success_( SUCCEEDED( return ) )
-		//	HRESULT      CStyle_GetExtension      (  WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_extension, const rsize_t strSize, _Out_ rsize_t& chars_written ) const;
-
 
 		std::wstring GetPath                       ( ) const;
 

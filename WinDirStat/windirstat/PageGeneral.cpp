@@ -12,7 +12,7 @@
 #include "pagegeneral.h"
 #include "options.h"
 
-//#include "windirstat.h"
+#include "windirstat.h"
 #include "mainframe.h"		// COptionsPropertySheet
 
 

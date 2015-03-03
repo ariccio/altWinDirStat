@@ -90,7 +90,8 @@ public:
 	COwnerDrawnListItem( _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
 	COwnerDrawnListItem( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem& operator=( const COwnerDrawnListItem& in ) = delete;
-	COwnerDrawnListItem( ) = default;
+	__forceinline COwnerDrawnListItem( ) = default;
+
 	virtual ~COwnerDrawnListItem( ) {
 #ifdef WDS_OWNERDRAWNLISTITEM_DESTRUCTOR_DEBUG
 		TRACE( _T( "Deleting COwnerDrawnListItem (`%s` ) @ %p\r\n" ), m_name, this );

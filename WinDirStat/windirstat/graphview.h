@@ -439,7 +439,7 @@ protected:
 
 
 	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
-		CView::OnSize( nType, cx, cy );
+		CWnd::OnSize( nType, cx, cy );
 		WTL::CSize sz( cx, cy );
 		if ( sz != m_size ) {
 			CGraphView::Inactivate( );
@@ -451,7 +451,7 @@ protected:
 	afx_msg void OnLButtonDown( UINT nFlags, CPoint point ) {
 		//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-		auto guard = WDS_SCOPEGUARD_INSTANCE( [=]{ CView::OnLButtonDown( nFlags, point ); } );
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [=]{ CWnd::OnLButtonDown( nFlags, point ); } );
 		if ( Document == NULL ) {
 			TRACE( _T( "User clicked on nothing. User CAN click on nothing. That's a sane case.\r\n" ) );
 			//return CView::OnLButtonDown( nFlags, point );
