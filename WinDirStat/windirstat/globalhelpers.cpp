@@ -494,7 +494,19 @@ namespace {
 
 }
 
-
+_Success_( SUCCEEDED( return ) )
+const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) {
+	if ( strSize > 1 ) {
+		psz_text[ 0 ] = 0;
+		chars_written = 0;
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return S_OK;
+		}
+	//do nothing
+	sizeBuffNeed = 6u; //you've got to be kidding me if you've passed a buffer that too small.
+	return STRSAFE_E_INSUFFICIENT_BUFFER;
+	//return StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"" );
+	}
 
 
 QPC_timer::QPC_timer( ) : m_frequency( help_QueryPerformanceFrequency( ).QuadPart ), m_start( 0 ), m_end( 0 ) {

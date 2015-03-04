@@ -20,7 +20,6 @@
 #include "dirstatview.h"
 
 class CDirstatDoc;
-class CItemBranch;
 class CGraphView;
 
 
@@ -274,7 +273,7 @@ protected:
 		}
 
 
-	void RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
+	void RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 		const auto rc = item.m_rect;
 		if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 			return;
@@ -380,7 +379,7 @@ public:
 
 protected:
 	//only called from one place
-	inline void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CItemBranch& item, _In_ const std::wstring& ext ) const {
+	inline void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 		const auto childCount = item.m_childCount;
 		const auto item_m_children = item.m_children.get( );
 
@@ -483,7 +482,7 @@ protected:
 		////CSelectObject sobmp2( offscreen_buffer, m_bitmap );
 		////CSelectObject sobmp2( test_device_context, m_bitmap );
 
-		const auto item = static_cast< CItemBranch* >( m_treemap.FindItemByPoint( root, point, Document ) );
+		const auto item = static_cast< CTreeListItem* >( m_treemap.FindItemByPoint( root, point, Document ) );
 		if ( item == NULL ) {
 			//return CView::OnLButtonDown( nFlags, point );
 			return;
@@ -614,7 +613,7 @@ protected:
 		////CSelectObject sobmp2( offscreen_buffer, m_bitmap );
 		////CSelectObject sobmp2( test_device_context, m_bitmap );
 
-		const auto item = static_cast< const CItemBranch* >( m_treemap.FindItemByPoint( root, point, NULL ) );
+		const auto item = static_cast< const CTreeListItem* >( m_treemap.FindItemByPoint( root, point, NULL ) );
 		if ( item == NULL ) {
 			TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
 			return;

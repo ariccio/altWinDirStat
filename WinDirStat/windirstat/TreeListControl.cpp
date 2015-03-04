@@ -43,6 +43,12 @@ namespace {
 		return path;
 		}
 
+	//Compare_FILETIME compiles to only 4 instructions, and is only called once, conditionally.
+	//passing `lhs` & `rhs` by value cause WORSE codegen!
+	inline const INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
+		//duhh, there's a win32 function for this!
+		return CompareFileTime( &lhs, &rhs );
+		}
 
 
 	//int __cdecl _compareProc_orig( const void* const p1, const void* const p2 ) {
@@ -51,11 +57,11 @@ namespace {
 	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 	//	}
 	_Success_( return != NULL ) _Ret_maybenull_
-	CItemBranch* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
+	CTreeListItem* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
-		for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
-			if ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
-				return ( &( static_cast< const CItemBranch* >( root_item )->m_children[ i ] ) );
+		for ( size_t i = 0; i < root_item->m_childCount; ++i ) {
+			if ( &( static_cast< const CTreeListItem* >( root_item )->m_children[ i ] ) == ( static_cast< const CTreeListItem* >( path.at( steps_from_target ) ) ) ) {
+				return ( &( static_cast< const CTreeListItem* >( root_item )->m_children[ i ] ) );
 				}
 			}
 		return nullptr;
@@ -75,7 +81,7 @@ namespace {
 		const auto root_item = parent_ptr;
 		//CItemBranch* child = nullptr;
 
-		CItemBranch* child = find_second_level_item_in_root_item( root_item, path, steps_from_target );
+		CTreeListItem* child = find_second_level_item_in_root_item( root_item, path, steps_from_target );
 
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
 		//for ( size_t i = 0; i < root_item->GetChildrenCount_( ); ++i ) {
@@ -94,14 +100,14 @@ namespace {
 				return;
 				}
 			for ( size_t i = 0; i < child->m_childCount; ++i ) {
-				if ( &( child->m_children[ i ] ) == ( static_cast< const CItemBranch* >( path.at( steps_from_target ) ) ) ) {
+				if ( &( child->m_children[ i ] ) == ( static_cast< const CTreeListItem* >( path.at( steps_from_target ) ) ) ) {
 					child = &( child->m_children[ i ] );
 					break;
 					}
 				}
 			--steps_from_target;
 			}
-		while ( ( steps_from_target > 0 ) && ( child != static_cast< const CItemBranch* >( item ) ) );
+		while ( ( steps_from_target > 0 ) && ( child != static_cast< const CTreeListItem* >( item ) ) );
 
 			TRACE( _T( "halted at: %s\r\n" ), child->m_name );
 
@@ -200,7 +206,7 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	return set_plusminus_and_title_rects( rcLabel, rc_const );
 	}
 
-void CTreeListItem::childNotNull( _In_ CItemBranch* const aTreeListChild, const size_t i ) {
+void CTreeListItem::childNotNull( _In_ CTreeListItem* const aTreeListChild, const size_t i ) {
 	if ( ( i > m_vi->cache_sortedChildren.size( ) ) /*&& ( i > 0 )*/ ) {
 		m_vi->cache_sortedChildren.resize( i + 1u );
 		}
@@ -219,7 +225,7 @@ _Pre_satisfies_( this->m_vi._Myptr != nullptr )
 void CTreeListItem::SortChildren( _In_ const CTreeListControl* const ctrl ) {
 	ASSERT( IsVisible( ) );
 
-	const auto thisBranch = static_cast<const CItemBranch* >( this );
+	const auto thisBranch = static_cast<const CTreeListItem* >( this );
 
 	m_vi->cache_sortedChildren = thisBranch->size_sorted_vector_of_children( );
 
@@ -231,21 +237,148 @@ void CTreeListItem::SortChildren( _In_ const CTreeListControl* const ctrl ) {
 		}
 	}
 
-std::uint64_t CTreeListItem::size_recurse_( ) const {
-	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).size_recurse_( ) ), decltype( std::declval<CItemBranch>( ).size_recurse( ) )>::value , "The return type of CTreeListItem::size_recurse_ needs to be fixed!!" );
-	return static_cast< const CItemBranch* >( this )->size_recurse( );
+//std::uint64_t CTreeListItem::size_recurse_( ) const {
+//	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).size_recurse_( ) ), decltype( std::declval<CItemBranch>( ).size_recurse( ) )>::value , "The return type of CTreeListItem::size_recurse_ needs to be fixed!!" );
+//	return static_cast< const CItemBranch* >( this )->size_recurse( );
+//	}
+
+INT CTreeListItem::GetSortAttributes( ) const {
+	INT ret = 0;
+
+	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
+	ret += ( m_attr.readonly   ) ? 1000000 : 0; // R
+	ret += ( m_attr.hidden     ) ? 100000  : 0; // H
+	ret += ( m_attr.system     ) ? 10000   : 0; // S
+	ret += ( m_attr.compressed ) ? 100     : 0; // C
+	ret += ( m_attr.encrypted  ) ? 10      : 0; // E
+
+	return ( ( m_attr.invalid ) ? 0 : ret );
 	}
 
-_Ret_range_( 0, UINT32_MAX ) 
-std::uint32_t CTreeListItem::GetChildrenCount_( ) const {
-	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).GetChildrenCount_( ) ), decltype( std::declval<CItemBranch>( ).m_childCount )>::value , "The return type of CTreeListItem::GetChildrenCount_ needs to be fixed!!" );
-	return m_childCount;
+
+DOUBLE CTreeListItem::GetFraction( ) const {
+	const auto myParent = GetParentItem( );
+	if ( myParent == NULL ) {
+		return static_cast<DOUBLE>( 1.0 );//root item? must be whole!
+		}
+	const auto parentSize = myParent->size_recurse( );
+	if ( parentSize == 0 ) {//root item?
+		return static_cast<DOUBLE>( 1.0 );
+		}
+	const auto my_size = size_recurse( );
+	ASSERT( my_size != UINT64_ERROR );
+	ASSERT( my_size <= parentSize );
+	return static_cast<DOUBLE>( my_size ) / static_cast<DOUBLE>( parentSize );
 	}
 
-_Ret_maybenull_
-CItemBranch* CTreeListItem::children_ptr( ) const {
-	return static_cast< const CItemBranch* >( this )->m_children.get( );
+
+//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+_Ret_range_( 0, 4294967295 )
+std::uint32_t CTreeListItem::files_recurse( ) const {
+	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).files_recurse( ) ), decltype( std::declval<CTreeListItem>( ).m_childCount )>::value , "The return type of CItemBranch::files_recurse needs to be fixed!!" );
+
+	if ( m_children == nullptr ) {
+		return 1;
+		}
+	std::uint32_t total = 0;
+	static_assert( std::is_same<decltype( total ), decltype( std::declval<CTreeListItem>( ).m_childCount )>::value , "The type of total needs to be fixed!!" );
+	
+	const auto childCount = m_childCount;
+	const auto my_m_children = m_children.get( );
+	const rsize_t stack_alloc_threshold = 128;
+	if ( childCount < stack_alloc_threshold ) {
+		std::uint32_t child_totals[ stack_alloc_threshold ];
+		for ( size_t i = 0; i < childCount; ++i ) {
+			child_totals[ i ] = ( my_m_children + i )->files_recurse( );
+			}
+
+		//std::accumulate works nicely even though it includes iterators.
+		//numeric(19) loop vectorized!
+		total = std::accumulate( child_totals, ( child_totals + childCount ), static_cast<std::uint32_t>( 0 ) );
+		++total;
+		return total;
+		}
+	//Not vectorized: 1304, loop includes assignments of different sizes
+	for ( size_t i = 0; i < childCount; ++i ) {
+		total += ( my_m_children + i )->files_recurse( );
+		}
+	total += 1;
+	return total;
 	}
+
+
+//Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with string internals, I'll just return a pointer to the substring.
+_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
+PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const {
+	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
+
+	PCWSTR const resultPtrStr = PathFindExtensionW( m_name );
+	ASSERT( resultPtrStr != '\0' );
+	return resultPtrStr;
+	}
+
+
+std::vector<CTreeListItem*> CTreeListItem::size_sorted_vector_of_children( ) const {
+	std::vector<CTreeListItem*> children;
+	const auto child_count = m_childCount;
+	children.reserve( child_count );
+	const auto local_m_children = m_children.get( );
+	if ( m_children != nullptr ) {
+		//Not vectorized: 1200, loop contains data dependencies
+		for ( size_t i = 0; i < child_count; ++i ) {
+			children.emplace_back( local_m_children + i );
+			}
+		}
+#ifdef DEBUG
+	else {
+		ASSERT( m_childCount == 0 );
+		}
+#endif
+	//TODO: qsort is bleh
+	qsort( children.data( ), static_cast< const size_t >( children.size( ) ), sizeof( CTreeListItem* ), &CItem_compareBySize );
+	//std::sort( children.begin( ), children.end( ), [] ( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) { return static_cast< const CTreeListItem* >( lhs )->size_recurse( ) < static_cast< const CTreeListItem* >( rhs )->size_recurse( ); } );
+	return children;
+	}
+
+_Ret_range_( 0, UINT64_MAX )
+std::uint64_t CTreeListItem::size_recurse( ) const {
+	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).size_recurse( ) ), decltype( std::declval<CTreeListItem>( ).m_size )>::value , "The return type of CItemBranch::size_recurse needs to be fixed!!" );
+	//ASSERT( m_size != UINT64_ERROR );
+	//if ( m_type == IT_FILE ) {
+	if ( !m_children ) {
+		ASSERT( m_childCount == 0 );
+		if ( m_parent == NULL ) {
+			return 0;
+			}
+		ASSERT( m_size < UINT64_ERROR );
+		return m_size;
+		}
+	if ( m_size != UINT64_ERROR ) {
+		return m_size;
+		}
+	WDS_ASSERT_NEVER_REACHED( );
+	//ASSERT( m_size == UINT64_ERROR );
+	//const auto total = compute_size_recurse( );
+	//ASSERT( m_size == UINT64_ERROR );
+	//m_size = total;
+	//ASSERT( total < ( UINT64_MAX / 2 ) );
+	//return total;
+	return UINT64_ERROR;
+	}
+
+
+
+
+//_Ret_range_( 0, UINT32_MAX ) 
+//std::uint32_t CTreeListItem::GetChildrenCount_( ) const {
+//	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).GetChildrenCount_( ) ), decltype( std::declval<CTreeListItem>( ).m_childCount )>::value , "The return type of CTreeListItem::GetChildrenCount_ needs to be fixed!!" );
+//	return m_childCount;
+//	}
+
+//_Ret_maybenull_
+//CTreeListItem* CTreeListItem::children_ptr( ) const {
+//	return static_cast< const CTreeListItem* >( this )->m_children.get( );
+//	}
 
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
 CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
@@ -297,7 +430,7 @@ inline INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const othe
 		return 2;
 		}
 	if ( m_parent == other->m_parent ) {
-		const auto thisBranch = static_cast< const CItemBranch* >( this );//ugly, I know
+		const auto thisBranch = static_cast< const CTreeListItem* >( this );//ugly, I know
 		return thisBranch->CompareSibling( other, subitem );
 		}
 	const auto my_indent = GetIndent( );
@@ -317,7 +450,7 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RAN
 	}
 
 FILETIME CTreeListItem::FILETIME_recurse( ) const {
-	const auto my_m_children = static_cast<const CItemBranch*>( this )->m_children.get( );
+	const auto my_m_children = static_cast<const CTreeListItem*>( this )->m_children.get( );
 	if ( my_m_children == nullptr ) {
 		return m_lastChange;
 		}
@@ -343,7 +476,7 @@ FILETIME CTreeListItem::FILETIME_recurse( ) const {
 _Success_( return < child_count )
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const {
 	ASSERT( child_count > 0u );
-	ASSERT( child_count == GetChildrenCount_( ) );
+	ASSERT( child_count == m_childCount );
 	for ( size_t i = 0u; i < child_count; i++ ) {
 		if ( child == GetSortedChild( i ) ) {
 			return i;
@@ -357,7 +490,7 @@ bool CTreeListItem::HasSiblings( ) const {
 	if ( m_parent == NULL ) {
 		return false;
 		}
-	const auto count = m_parent->GetChildrenCount_( );
+	const auto count = m_parent->m_childCount;
 	if ( count < 2u ) {
 		ASSERT( count == 1u );
 		return false;
@@ -402,6 +535,375 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 	m_vi.reset( );
 	}
 
+std::wstring CTreeListItem::GetPath( ) const {
+	std::wstring pathBuf;
+	pathBuf.reserve( MAX_PATH );
+	UpwardGetPathWithoutBackslash( pathBuf );
+	ASSERT( wcslen( m_name ) == m_name_length );
+	ASSERT( wcslen( m_name ) < 33000 );
+	ASSERT( pathBuf.length( ) < 33000 );
+	return pathBuf;
+	}
+
+//_Pre_satisfies_( this->m_type == IT_FILE )
+_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
+void CTreeListItem::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const {
+	ASSERT( m_children == nullptr );
+
+	PCWSTR const resultPtrStr = CStyle_GetExtensionStrPtr( );
+	static_assert( std::is_same< std::decay<decltype(*m_name)>::type, wchar_t>::value, "Bad division below!" );
+#ifdef DEBUG
+	const auto alt_length = ( ( std::ptrdiff_t( m_name + m_name_length ) - std::ptrdiff_t( resultPtrStr ) ) / sizeof( wchar_t ) );
+	ASSERT( wcslen( resultPtrStr ) == alt_length );
+#endif
+	//TRACE( _T( "Calculated length: %lld, actual length: %llu\r\n" ), LONGLONG( alt_length ), ULONGLONG( wcslen( resultPtrStr ) ) );
+	auto& value = extensionMap[ resultPtrStr ];
+	++( value.files );
+	value.bytes += m_size;
+	return;
+	}
+
+void CTreeListItem::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const {
+	//if ( m_type == IT_FILE ) {
+	if ( m_children == nullptr ) {
+		stdRecurseCollectExtensionData_FILE( extensionMap );
+		return;
+		}
+	const auto childCount = m_childCount;
+	const auto local_m_children = m_children.get( );
+	//todo: Iterate over the heapmanager items instead
+	//Not vectorized: 1200, loop contains data dependencies
+	for ( size_t i = 0; i < childCount; ++i ) {
+		( local_m_children + i )->stdRecurseCollectExtensionData( extensionMap );
+		}
+	}
+
+
+_Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( subitem == column::COL_PERCENTAGE );
+	size_t chars_remaining = 0;
+	const auto percentage = ( GetFraction( ) * static_cast< DOUBLE >( 100 ) );
+	ASSERT( percentage <= 100.00 );
+	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		chars_written = ( strSize - chars_remaining );
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintFExW" );
+	chars_written = 0;
+	return res;
+	}
+
+_Pre_satisfies_( subitem == column::COL_NTCOMPRESS ) _Success_( SUCCEEDED( return ) )
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	//auto res = StringCchPrintfW( psz_text, strSize, L"%.1f%%", ( GetFraction( ) * static_cast<DOUBLE>( 100 ) ) );
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( subitem == column::COL_NTCOMPRESS );
+	ASSERT( strSize > 5u );
+	
+	if ( !( m_attr.compressed ) ) {
+		return WriteToStackBuffer_do_nothing( psz_text, strSize, sizeBuffNeed, chars_written );
+		}
+	if ( m_children != nullptr ) {
+		return WriteToStackBuffer_do_nothing( psz_text, strSize, sizeBuffNeed, chars_written );
+		}
+
+	size_t chars_remaining = 0;
+	ASSERT( m_vi != nullptr );
+	const auto percentage = ( m_vi->ntfs_compression_ratio * static_cast< DOUBLE >( 100 ) );
+	ASSERT( percentage <= 100.00 );
+	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		chars_written = ( strSize - chars_remaining );
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	chars_written = 0;
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintFExW" );
+	return res;
+	}
+
+
+_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( subitem == column::COL_SUBTREETOTAL );
+	const HRESULT res = wds_fmt::FormatBytes( size_recurse( ), psz_text, strSize, chars_written, sizeBuffNeed );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	chars_written = 0;
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "wds_fmt::FormatBytes" );
+	return res;
+	}
+
+_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) _Success_( SUCCEEDED( return ) )
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) );
+	const auto number_to_format = files_recurse( );
+	const HRESULT res = wds_fmt::CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		ASSERT( chars_written == wcslen( psz_text ) );
+		return res;
+		}
+
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+	chars_written = 0;
+	return res;
+	}
+
+_Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _Success_( SUCCEEDED( return ) )
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( subitem == column::COL_LASTCHANGE );
+	const HRESULT res = wds_fmt::CStyle_FormatFileTime( FILETIME_recurse( ), psz_text, strSize, chars_written );
+	ASSERT( SUCCEEDED( res ) );
+	if ( SUCCEEDED( res ) ) {
+		sizeBuffNeed = SIZE_T_ERROR;
+		return S_OK;
+		}
+	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
+		return res;
+		}
+
+
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+
+	chars_written = { 0u };
+	sizeBuffNeed = { 48u };
+
+	//_CrtDbgBreak( );//not handled yet.
+	return STRSAFE_E_INVALID_PARAMETER;
+	}
+
+_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+#ifndef DEBUG
+	UNREFERENCED_PARAMETER( subitem );
+#endif
+	ASSERT( subitem == column::COL_ATTRIBUTES );
+	const HRESULT res = wds_fmt::CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
+	ASSERT( SUCCEEDED( res ) );
+	if ( !SUCCEEDED( res ) ) {
+		sizeBuffNeed = { 8u };//Generic size needed, overkill;
+		chars_written = { 0u };
+		//_CrtDbgBreak( );//not handled yet.
+		return res;
+		}
+	ASSERT( chars_written == wcslen( psz_text ) );
+	return res;
+	}
+
+_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+HRESULT CTreeListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	ASSERT( subitem != column::COL_NAME );
+	if ( subitem == column::COL_NAME ) {
+		displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
+		std::terminate( );
+		}
+	switch ( subitem )
+	{
+			case column::COL_PERCENTAGE:
+				return WriteToStackBuffer_COL_PERCENTAGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_SUBTREETOTAL:
+				return WriteToStackBuffer_COL_SUBTREETOTAL( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_ITEMS:
+				return WriteToStackBuffer_COL_FILES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_NTCOMPRESS:
+				return WriteToStackBuffer_COL_NTCOMPRESS( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_LASTCHANGE:
+				return WriteToStackBuffer_COL_LASTCHANGE( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_ATTRIBUTES:
+				return WriteToStackBuffer_COL_ATTRIBUTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+			case column::COL_NAME:
+			default:
+				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CTreeListItem::" );
+	}
+	}
+
+
+INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
+	auto const other = static_cast< const CTreeListItem* >( tlib );
+	switch ( subitem ) {
+			case column::COL_NAME:
+				return signum( wcscmp( m_name, other->m_name ) );
+			case column::COL_PERCENTAGE:
+				return signum( GetFraction( ) - other->GetFraction( ) );
+			case column::COL_SUBTREETOTAL:
+				return signum( static_cast<std::int64_t>( size_recurse( ) ) - static_cast<std::int64_t>( other->size_recurse( ) ) );
+			case column::COL_ITEMS:
+				return signum( static_cast<std::int64_t>( files_recurse( ) ) - static_cast<std::int64_t>( other->files_recurse( ) ) );
+			case column::COL_NTCOMPRESS:
+				return ( ( ( m_vi != nullptr ) && ( other->m_vi != nullptr ) ) ? ( signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio ) ) : 0 );
+			case column::COL_LASTCHANGE:
+				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
+
+			case column::COL_ATTRIBUTES:
+				return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
+			default:
+				ASSERT( false );
+				return 666;
+		}
+	}
+
+void CTreeListItem::refresh_sizeCache( ) {
+	//if ( m_type == IT_FILE ) {
+	if ( m_children == nullptr ) {
+		ASSERT( m_childCount == 0 );
+		ASSERT( m_size < UINT64_ERROR );
+		return;
+		}
+	if ( m_size == UINT64_ERROR ) {
+		const auto children_size = m_childCount;
+		const auto child_array = m_children.get( );
+		for ( size_t i = 0; i < children_size; ++i ) {
+			( child_array + i )->refresh_sizeCache( );
+			}
+
+		//---
+		std::uint64_t total = 0;
+
+		const auto childCount = m_childCount;
+		const rsize_t stack_alloc_threshold = 128;
+		if ( childCount < stack_alloc_threshold ) {
+			std::uint64_t child_totals[ stack_alloc_threshold ];
+			for ( size_t i = 0; i < childCount; ++i ) {
+				child_totals[ i ] = ( child_array + i )->size_recurse( );
+				}
+			//loop vectorized!
+			for ( size_t i = 0; i < childCount; ++i ) {
+				ASSERT( total < ( UINT64_MAX / 2 ) );
+				ASSERT( child_totals[ i ] < ( UINT64_MAX / 2 ) );
+				total += child_totals[ i ];
+				}
+			}
+		else {
+			//Not vectorized: 1200, loop contains data dependencies
+			for ( size_t i = 0; i < childCount; ++i ) {
+				total += ( child_array + i )->size_recurse( );
+				}
+			}
+		//return total;
+
+		//---
+		m_size = total;
+		}
+	}
+
+
+_Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
+	const auto myLength = static_cast<DOUBLE>( m_name_length );
+	DOUBLE childrenTotal = 0;
+	//TODO: take advantage of block heap allocation in this
+	
+	//if ( m_type != IT_FILE ) {
+	if ( m_children != nullptr ) {
+		const auto childCount = m_childCount;
+		const auto my_m_children = m_children.get( );
+		const rsize_t stack_alloc_threshold = 128;
+		if ( childCount < stack_alloc_threshold ) {
+			DOUBLE children_totals[ stack_alloc_threshold ] = { 0 };
+			for ( size_t i = 0; i < childCount; ++i ) {
+				children_totals[ i ] = ( my_m_children + i )->averageNameLength( );
+				}
+			for ( size_t i = 0; i < childCount; ++i ) {
+				childrenTotal += children_totals[ i ];
+				}
+			}
+		else {
+			//Not vectorized: 1200, loop contains data dependencies
+			for ( size_t i = 0; i < childCount; ++i ) {
+				childrenTotal += ( my_m_children + i )->averageNameLength( );
+				}
+			}
+		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( childCount + 1u );
+		}
+	ASSERT( m_childCount == 0 );
+	return myLength;
+	}
+
+void CTreeListItem::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
+	auto myParent = GetParentItem( );
+	if ( myParent != NULL ) {
+		myParent->UpwardGetPathWithoutBackslash( pathBuf );
+		}
+#ifdef DEBUG
+	auto guard_assert = WDS_SCOPEGUARD_INSTANCE( [ &] { ASSERT( wcslen( m_name ) == m_name_length ); } );
+#endif
+	ASSERT( wcslen( m_name ) < 33000 );
+	if ( m_children == nullptr ) {
+		//ASSERT( m_parent != NULL );
+		if ( m_parent != NULL ) {
+			//WTF IS GOING ON HERE
+			//TODO: BUGBUG: what is dis?
+			if ( m_parent->m_parent != NULL ) {
+				pathBuf += L'\\';
+				pathBuf += m_name;
+				return;
+				}
+			pathBuf += L'\\';
+			pathBuf += m_name;
+			return;
+			}
+		ASSERT( pathBuf.empty( ) );
+		pathBuf = m_name;
+		return;
+		//ASSERT( false );
+		//return;
+		}
+	if ( !pathBuf.empty( ) ) {
+		if ( pathBuf.back( ) != L'\\' ) {//if pathBuf is empty, it's because we don't have a parent ( we're the root ), so we already have a "\\"
+			pathBuf += L'\\';
+			pathBuf += m_name;
+			return;
+			}
+		pathBuf += m_name;
+		return;
+		}
+	pathBuf += m_name;
+	return;
+	}
 
 _Pre_satisfies_( this->m_vi._Myptr != nullptr ) 
 RECT CTreeListItem::GetPlusMinusRect( ) const {
@@ -788,7 +1290,7 @@ void CTreeListControl::handle_OnContextMenu( CPoint pt ) const {
 	CMenu menu;
 	VERIFY( menu.LoadMenuW( IDR_POPUPLIST ) );
 	const auto sub = menu.GetSubMenu( 0 );
-	PrepareDefaultMenu( static_cast<CItemBranch*>( item ), sub );
+	PrepareDefaultMenu( static_cast<CTreeListItem*>( item ), sub );
 
 	const RECT& rcTitle = trect;
 	// Show pop-up menu and act accordingly. The menu shall not overlap the label but appear horizontally at the cursor position,  vertically under (or above) the label.
@@ -822,7 +1324,7 @@ void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 	VERIFY( CListCtrl::EnsureVisible( i, false ) );
 	}
 
-void CTreeListControl::PrepareDefaultMenu( _In_ const CItemBranch* const item, _Out_ CMenu* const menu ) const {
+void CTreeListControl::PrepareDefaultMenu( _In_ const CTreeListItem* const item, _Out_ CMenu* const menu ) const {
 	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == nullptr ) {
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
@@ -883,7 +1385,7 @@ void CTreeListControl::InsertItem( _In_ const CTreeListItem* const item, _In_ _I
 	}
 
 int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
-	if ( item->GetChildrenCount_( ) > 0 ) {
+	if ( item->m_childCount > 0 ) {
 		if ( item->HasSiblings( ) ) {
 			if ( item->IsExpanded( ) ) {
 				return static_cast<int>( ENUM_NODE::NODE_MINUS_SIBLING );
@@ -1106,7 +1608,7 @@ bool CTreeListControl::SelectedItemCanToggle( ) const {
 		}
 	const auto item = GetItem( i );
 	if ( item != NULL ) {
-		return ( item->GetChildrenCount_( ) > 0 );
+		return ( item->m_childCount > 0 );
 		}
 	ASSERT( item != NULL );
 	return false;
@@ -1129,7 +1631,7 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t c = 0; c < count; c++ ) {
-		ASSERT( count == item->GetChildrenCount_( ) );
+		ASSERT( count == item->m_childCount );
 		const auto child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
 		ASSERT( child != NULL );
 		if ( child != NULL ) {
@@ -1152,7 +1654,7 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 	}
 
 void CTreeListControl::OnItemDoubleClick ( _In_ _In_range_( 0, INT_MAX ) const int i ) {
-	const auto item = static_cast< const CItemBranch* >( GetItem( i ) );
+	const auto item = static_cast< const CTreeListItem* >( GetItem( i ) );
 	if ( item != NULL ) {
 		//if ( item->m_type == IT_FILE ) {
 		if ( item->m_children == nullptr ) {
@@ -1172,7 +1674,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
 	ASSERT( maxwidth == ( CListCtrl::GetStringWidth( item->m_name ) + 10 ) );
-	const auto count    = item->GetChildrenCount_( );
+	const auto count    = item->m_childCount;
 	if ( count == 0 ) {
 		TRACE( _T( "item `%s` has a child count of ZERO! Not expanding! \r\n" ), item->m_name );
 		return;
@@ -1250,7 +1752,7 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 		ExpandItemAndScroll( i );
 		CWnd::SetRedraw( TRUE );
 		}
-	else if ( item->GetChildrenCount_( ) > 0 ) {
+	else if ( item->m_childCount > 0 ) {
 		const auto sortedItemAtZero = item->GetSortedChild( 0 );
 		if ( sortedItemAtZero != NULL ){
 			SelectItem( sortedItemAtZero );
@@ -1371,6 +1873,36 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item )
 		}
 	VERIFY( CListCtrl::EnsureVisible( i, false ) );
 	}
+
+INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
+	const auto size1 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p1 ) ) )->size_recurse( );
+	const auto size2 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p2 ) ) )->size_recurse( );
+	return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
+	}
+
+_At_( return, _Writable_bytes_( bytes_allocated ) )
+_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated ) {
+	const rsize_t base_memory_size_in_bytes = ( sizeof( decltype( children_heap_block_allocation::m_childCount ) ) + sizeof( Children_String_Heap_Manager ) );
+	
+	
+	const rsize_t size_of_a_single_child_in_bytes = sizeof( CTreeListItem );
+	const size_t size_of_children_needed_in_bytes = ( size_of_a_single_child_in_bytes * static_cast<size_t>( number_of_children + 1 ) );
+
+	const size_t total_size_needed = ( base_memory_size_in_bytes + size_of_children_needed_in_bytes );
+	void* const memory_block = malloc( total_size_needed );
+	if ( memory_block == NULL ) {
+		displayWindowsMsgBoxWithMessage( L"can't allocate enough memory for children block! (aborting)" );
+		std::terminate( );
+
+		//shut analyze up.
+		abort( );
+		}
+	bytes_allocated = total_size_needed;
+	children_heap_block_allocation* const new_block = static_cast< children_heap_block_allocation* const>( memory_block );
+	new_block->m_childCount = number_of_children;
+	return new_block;
+	}
+
 
 #else
 

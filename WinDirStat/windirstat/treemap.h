@@ -10,7 +10,6 @@
 #define WDS_TREEMAP_H_INCLUDED
 
 
-class CItemBranch;
 class CTreeListItem;
 class CGraphView;
 class CDirstatDoc;
@@ -79,45 +78,45 @@ public:
 
 	void UpdateCushionShading      ( _In_ const bool               newVal                                   );
 	void SetOptions                ( _In_ const Treemap_Options&           options                                  );
-	void RecurseCheckTree          ( _In_ const CItemBranch* const item                                     ) const;
+	void RecurseCheckTree          ( _In_ const CTreeListItem* const item                                     ) const;
 #ifdef DEBUG
-	void validateRectangle         ( _In_ const CItemBranch* const child, _In_ const RECT             rc  ) const;
+	void validateRectangle         ( _In_ const CTreeListItem* const child, _In_ const RECT             rc  ) const;
 #endif
 	void compensateForGrid         ( _Inout_    RECT&             rc,    _In_       CDC&               pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC& offscreen_buffer, _Inout_    RECT& rc, _In_ const CItemBranch* const root,  _In_ const Treemap_Options& options );
-	//void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const RECT& rc, _In_       CItemBranch* const root,  _In_opt_ const Treemap_Options* const options = NULL );
+	void DrawTreemap               ( _In_ CDC& offscreen_buffer, _Inout_    RECT& rc, _In_ const CTreeListItem* const root,  _In_ const Treemap_Options& options );
+	//void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const RECT& rc, _In_       CTreeListItem* const root,  _In_opt_ const Treemap_Options* const options = NULL );
 	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const RECT rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL );
 
-	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CItemBranch* FindItemByPoint( _In_ const CItemBranch* const root, _In_ const POINT point, _In_opt_ CDirstatDoc* test_doc ) const;
+	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem* FindItemByPoint( _In_ const CTreeListItem* const root, _In_ const POINT point, _In_opt_ CDirstatDoc* test_doc ) const;
 
 
 protected:
 
 	void SetPixels        ( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const;
 
-	void RecurseDrawGraph ( _In_ CDC& offscreen_buffer, _In_ const CItemBranch* const     item,   _In_ const RECT& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RecurseDrawGraph ( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const     item,   _In_ const RECT& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
 
-	void RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const RECT rc, _In_ const DOUBLE height, _In_ const CItemBranch* const item ) const;
+	void RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const RECT rc, _In_ const DOUBLE height, _In_ const CTreeListItem* const item ) const;
 
 	void DrawCushion      ( _In_ CDC& offscreen_buffer, _In_ const RECT&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
 	void DrawSolidRect    ( _In_ CDC& pdc, _In_ const RECT&              rc,        _In_ const COLORREF        col,            _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
-	void DrawChildren     ( _In_ CDC& pdc, _In_ const CItemBranch*  const parent,    _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
+	void DrawChildren     ( _In_ CDC& pdc, _In_ const CTreeListItem*  const parent,    _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
 	
 
 
 	//KDS -> KDirStat
-	DOUBLE KDS_CalcNextRow ( _In_ const CItemBranch* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
+	DOUBLE KDS_CalcNextRow ( _In_ const CTreeListItem* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
 		
-	bool KDS_PlaceChildren ( _In_ const CItemBranch* const parent, _Inout_    std::vector<double>& childWidth, _Inout_ std::vector<double>& rows,            _Inout_    std::vector<size_t>& childrenPerRow ) const;
-	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
+	bool KDS_PlaceChildren ( _In_ const CTreeListItem* const parent, _Inout_    std::vector<double>& childWidth, _Inout_ std::vector<double>& rows,            _Inout_    std::vector<size_t>& childrenPerRow ) const;
+	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CTreeListItem* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	
-	void KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CItemBranch* const parent ) const;
+	void KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const;
 
 
 	//SQV -> SequoiaView
-	void SQV_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CItemBranch* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
-	void RenderLeaf        ( _In_ CDC&  offscreen_buffer,          _In_ const CItemBranch* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
+	void SQV_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RenderLeaf        ( _In_ CDC&  offscreen_buffer,          _In_ const CTreeListItem* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
 	void RenderRectangle   ( _In_ CDC&  offscreen_buffer,          _In_ const RECT&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
 
 	//if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`

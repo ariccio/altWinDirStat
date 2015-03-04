@@ -18,7 +18,6 @@
 
 
 
-class CItemBranch;
 
 
 class CTreeListItem;
@@ -82,7 +81,9 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize jack shit.
 		__forceinline CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent, const DWORD attr, const bool done, const std::uint64_t size, const FILETIME time ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u } {
+
+		//const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length 
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u } {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -92,20 +93,93 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		virtual ~CTreeListItem( ) = default;
 
+
+
+
+
+
+
+
+
+
+
+
+		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
+		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
+
+		_Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
+		  const HRESULT WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+		_Pre_satisfies_( subitem == column::COL_NTCOMPRESS ) _Success_( SUCCEEDED( return ) )
+		  const HRESULT WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+		_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
+		 inline const HRESULT WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+		_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) _Success_( SUCCEEDED( return ) )
+		 inline const HRESULT WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+		_Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _Success_( SUCCEEDED( return ) )
+		 inline const HRESULT WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+		_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
+		 inline const HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+
+
+
+
+
 		FILETIME FILETIME_recurse( ) const;
 
-		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
-		std::uint64_t size_recurse_( ) const;
-		_Ret_range_( 0, UINT32_MAX ) std::uint32_t GetChildrenCount_( ) const;
+		_Ret_range_( 0, UINT64_MAX )
+		std::uint64_t size_recurse( ) const;
 
-		_Ret_maybenull_
-		CItemBranch* children_ptr( ) const;
+		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		_Ret_range_( 0, 4294967295 )
+		std::uint32_t files_recurse( ) const;
+
+		const CTreeListItem* GetParentItem            (                                                  ) const { return m_parent; };
+
+		DOUBLE  GetFraction                   (                                                                   ) const;
+
+		std::vector<CTreeListItem*> size_sorted_vector_of_children( ) const;
+
+		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
+
+		void refresh_sizeCache( );
+
+		_Pre_satisfies_( this->m_parent == NULL )
+		void AddChildren( _In_ CTreeListControl* const tree_list_control );
+
+		//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
+		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const;
+
+		std::wstring GetPath                       ( ) const;
+
+		INT     GetSortAttributes             (                                                                   ) const;
+
+		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
+
+		//_Ret_range_( 0, UINT32_MAX ) std::uint32_t GetChildrenCount_( ) const;
+
+		//_Ret_maybenull_
+		//CItemBranch* children_ptr( ) const;
 		
+		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
+		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
+
+
+		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
+
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
 		CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 
 		_Success_( return < child_count )
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;
+
+		_Pre_satisfies_( this->m_children._Myptr == nullptr )
+			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
+
 
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		std::int16_t  GetIndent( ) const {
@@ -142,10 +216,10 @@ class CTreeListItem : public COwnerDrawnListItem {
 		_Pre_satisfies_( this->m_parent != NULL )
 		bool  HasSiblings                       (                                           ) const;
 		
-		void childNotNull( _In_ CItemBranch* const aTreeListChild, const size_t i );
+		void childNotNull( _In_ CTreeListItem* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const {
-			return ( children_ptr( ) != NULL );
+			return ( m_children != NULL );
 			}
 		
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
@@ -169,17 +243,18 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 	public:
 	//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
-		                         const CTreeListItem*               m_parent;
-		                               Children_String_Heap_Manager m_name_pool;
-		                       mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr; // Data needed to display the item.
-		                       mutable SRECT                        m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
-		                               attribs                      m_attr;
+		                         const CTreeListItem*                   m_parent;
+		                               Children_String_Heap_Manager     m_name_pool;
+		                       mutable std::unique_ptr<VISIBLEINFO>     m_vi = nullptr; // Data needed to display the item.
+		                       mutable SRECT                            m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
+		                               attribs                          m_attr;
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
-		_Field_range_( 0, 4294967295 ) std::uint32_t                m_childCount;
+		_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_size;                // OwnSize
-		                               FILETIME                     m_lastChange;          // Last modification time OF SUBTREE
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size;                // OwnSize
+		                               FILETIME                         m_lastChange;          // Last modification time OF SUBTREE
+		_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
 	};
 
 
@@ -275,7 +350,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void insertItemsAdjustWidths                   ( _In_     const CTreeListItem* const item, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t count, _Inout_ _Out_range_( 0, INT_MAX ) INT& maxwidth, _In_ const bool scroll, _In_ _In_range_( 0, INT_MAX ) const INT_PTR i );
 				int  countItemsToDelete                        ( _In_     const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i );
 
-				void PrepareDefaultMenu                        ( _In_     const CItemBranch*   const item, _Out_ CMenu* const menu ) const;
+				void PrepareDefaultMenu                        ( _In_     const CTreeListItem*   const item, _Out_ CMenu* const menu ) const;
 
 				void OnItemDoubleClick                         ( _In_ _In_range_( 0, INT_MAX ) const int i );
 				void ExpandItem                                ( _In_ _In_range_( 0, INT_MAX ) const int i, _In_ const bool scroll /*= true*/ );
@@ -325,6 +400,42 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 		afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 		afx_msg void OnSetFocus( _In_ CWnd* pOldWnd );
 };
+
+INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );
+
+
+//If a class contains an unsized array, it cannot be used as the base class for another class. In addition, a class containing an unsized array cannot be used to declare any member except the last member of another class. A class containing an unsized array cannot have a direct or indirect virtual base class.
+//The sizeof operator, when applied to a class containing an unsized array, returns the amount of storage required for all members except the unsized array. Implementors of classes that contain unsized arrays should provide alternate methods for obtaining the correct size of the class.
+//You cannot declare arrays of objects that have unsized array components. Also, performing pointer arithmetic on pointers to such objects generates an error message.
+//newer, more efficient allocation strategy will use a struct with the child count, child name heap manager, and an UNSIZED ARRAY as the children array.
+//may need to merge CTreeListItem & CItemBranch to make this work in a clean manner.
+//See also: "MEM54-CPP. Provide placement new with properly-aligned pointers to sufficient storage capacity"
+//           https://www.securecoding.cert.org/confluence/display/cplusplus/MEM54-CPP.+Provide+placement+new+with+properly-aligned+pointers+to+sufficient+storage+capacity
+//It'll have to use a struct that'll look something like this:
+struct children_heap_block_allocation {
+	children_heap_block_allocation( ) : m_childCount { 0u } { }
+	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
+	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;
+
+	~children_heap_block_allocation( ) {
+		for ( size_t i = 0u; i < m_childCount; ++i ) {
+			m_children[ i ].~CTreeListItem( );
+			}
+		}
+
+	_Field_range_( 0, 4294967295 )
+		std::uint32_t                m_childCount;
+		Children_String_Heap_Manager m_name_pool;
+		//maybe we could also store the NON-NTFS-compressed folder size here?
+
+#pragma warning( suppress: 4200 )//yes, this is Microsoft-specific
+		CTreeListItem                m_children[ ];//unsized array is a MICROSOFT-SPECIFIC extension to C++ that emulates C's Flexible Array Member.
+		//there are VERY active discussions in the C++ CWG (core working group) to develop some standardized version of array data members of runtime-bound.
+	};
+
+_At_( return, _Writable_bytes_( bytes_allocated ) )
+_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated );
+
 
 
 

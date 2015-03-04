@@ -358,12 +358,12 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	CFrameWnd::LoadBarState( CPersistence::GetBarStateSection( ) );
 	CFrameWnd::ShowControlBar( &m_wndStatusBar, CPersistence::GetShowStatusbar( ), false );
 	
-	TRACE( _T( "sizeof CItemBranch: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CItemBranch ) ) );
+	TRACE( _T( "sizeof CTreeListItem: %I64u\r\n" ), static_cast< std::uint64_t >( sizeof( CTreeListItem ) ) );
 #ifdef DISPLAY_FINAL_CITEMBRANCH_SIZE
 #ifndef DEBUG
 	if ( IsDebuggerPresent( ) ) {
-		const auto size_citembranch = std::to_wstring( sizeof( CItemBranch ) );
-		const std::wstring size_text( L"sizeof CItemBranch: " + size_citembranch );
+		const auto size_citembranch = std::to_wstring( sizeof( CTreeListItem ) );
+		const std::wstring size_text( L"sizeof CTreeListItem: " + size_citembranch );
 		displayWindowsMsgBoxWithMessage( size_text.c_str( ) );
 		}
 #endif

@@ -22,7 +22,6 @@
 
 class CDirstatView;
 class CDirstatDoc;
-class CItemBranch;
 
 namespace {
 	const UINT _nIdTreeListControl = 4711;
@@ -235,7 +234,7 @@ protected:
 			}
 		// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
 		const bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-		const auto item = static_cast< CItemBranch * >( m_treeListControl.GetItem( pNMLV->iItem ) );
+		const auto item = static_cast< CTreeListItem * >( m_treeListControl.GetItem( pNMLV->iItem ) );
 		ASSERT( item != NULL );//We got a NULL item??!? WTF
 		if ( item == NULL ) {
 			return;

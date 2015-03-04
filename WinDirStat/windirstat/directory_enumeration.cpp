@@ -71,7 +71,7 @@ namespace {
 		}
 
 
-	void compose_compressed_file_size_and_fixup_child( CItemBranch* const child, const std::wstring path ) {
+	void compose_compressed_file_size_and_fixup_child( CTreeListItem* const child, const std::wstring path ) {
 		const auto size_child = GetCompressedFileSize_filename( path );
 		if ( size_child != UINT64_MAX ) {
 			ASSERT( child != NULL );
@@ -86,7 +86,7 @@ namespace {
 		}
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	std::vector<std::future<void>> start_workers( std::vector<std::pair<CItemBranch*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+	std::vector<std::future<void>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
 		std::vector<std::future<void>> workers;
 		workers.reserve( dirsToWorkOnCount );
@@ -121,7 +121,7 @@ namespace {
 
 
 
-	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::wstring>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
 		std::vector<FILEINFO> vecFiles;
 		std::vector<DIRINFO>  vecDirs;
 
@@ -138,7 +138,7 @@ namespace {
 
 		ASSERT( ThisCItem->m_childCount == 0 );
 		if ( total_count > 0 ) {
-			ThisCItem->m_children.reset( new CItemBranch[ total_count ] );
+			ThisCItem->m_children.reset( new CTreeListItem[ total_count ] );
 			}
 		////true for 2 means DIR
 
@@ -173,7 +173,7 @@ namespace {
 		//ASSERT( path.back( ) != _T( '\\' ) );
 		//sizesToWorkOn_ CANNOT BE CONST!!
 		auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
-		std::vector<std::pair<CItemBranch*, std::wstring>> dirsToWorkOn;
+		std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
 		dirsToWorkOn.reserve( dirCount );
 		const auto thisOptions = GetOptions( );
 
@@ -194,7 +194,7 @@ namespace {
 			else {
 				//                                                                                               IT_DIRECTORY
 
-				const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 				//detect overflows. highly unlikely.
 				ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -269,8 +269,8 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 
 
 
-std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
-	std::vector<std::pair<CItemBranch*, std::wstring>> sizesToWorkOn_;
+std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+	std::vector<std::pair<CTreeListItem*, std::wstring>> sizesToWorkOn_;
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
 
@@ -293,7 +293,7 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 				}
 			else {
 				//                                                                                            IT_FILE
-				auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
@@ -313,7 +313,7 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 				}
 			else {
 				//                                                                            IT_FILE
-				::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				}
 			}
 		//detect overflows. highly unlikely.
@@ -327,7 +327,7 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 
 
 //TODO: WTF IS THIS DOING HERE??!?
-_Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( _In_ CTreeListControl* const tree_list_control ) {
+_Pre_satisfies_( this->m_parent == NULL ) void CTreeListItem::AddChildren( _In_ CTreeListControl* const tree_list_control ) {
 	ASSERT( GetDocument( )->IsRootDone( ) );
 	ASSERT( m_attr.m_done );
 	if ( m_parent == NULL ) {
@@ -335,7 +335,7 @@ _Pre_satisfies_( this->m_parent == NULL ) void CItemBranch::AddChildren( _In_ CT
 		}
 	}
 
-DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	ASSERT( ThisCItem->m_childCount == 0 );
@@ -399,7 +399,7 @@ DOUBLE DoSomeWorkShim( _In_ CItemBranch* const ThisCItem, std::wstring path, _In
 	}
 
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
+void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
 	//This is temporary.
 	UNREFERENCED_PARAMETER( isRootRecurse );
 
@@ -430,7 +430,7 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 	//process_vector_of_compressed_file_futures( vector_of_compressed_file_futures );
 
 
-	std::vector<std::pair<CItemBranch*, std::wstring>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
+	std::vector<std::pair<CTreeListItem*, std::wstring>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& a_pair : vector_of_compressed_file_futures ) {
@@ -450,7 +450,7 @@ void DoSomeWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ cons
 
 _Success_( return < UINT64_ERROR )
 const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item ) {
-	const auto derived_item = static_cast< const CItemBranch* const >( item );
+	const auto derived_item = static_cast< const CTreeListItem* const >( item );
 	const auto path = derived_item->GetPath( );
 	const HANDLE file_handle = CreateFileW( path.c_str( ), FILE_READ_ATTRIBUTES | FILE_READ_EA, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( file_handle == INVALID_HANDLE_VALUE ) {

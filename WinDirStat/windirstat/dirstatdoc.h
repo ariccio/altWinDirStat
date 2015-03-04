@@ -13,7 +13,7 @@
 #define WDS_DIRSTATDOC_H
 
 
-class CItemBranch;
+class CTreeListItem;
 class CMainFrame;
 class CDirstatApp;
 
@@ -55,8 +55,8 @@ public:
 	bool OnWorkFinished                    ( );
 	
 	_Pre_satisfies_( item.m_children._Myptr == nullptr )
-	void OpenItem ( _In_     const CItemBranch& item                                                  );
-	void SetSelection ( _In_ const CItemBranch& item );
+	void OpenItem ( _In_     const CTreeListItem& item                                                  );
+	void SetSelection ( _In_ const CTreeListItem& item );
 
 
 	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   );
@@ -87,8 +87,8 @@ protected:
 public:
 	//std::uint16_t                             m_iterations;
 	std::wstring                              m_highlightExtension;   // Currently highlighted extension
-	std::unique_ptr<CItemBranch>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
-	CItemBranch const*                        m_selectedItem;         // Currently selected item, or NULL
+	std::unique_ptr<CTreeListItem>              m_rootItem;             // The very root item. CDirstatDoc owns this item and all of it's children - the whole tree.
+	CTreeListItem const*                        m_selectedItem;         // Currently selected item, or NULL
 	//CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
 	//C4820: 'CDirstatDoc' : '6' bytes padding added after data member 'CDirstatDoc::m_iterations' (dirstatdoc.cpp)
 	Children_String_Heap_Manager              m_name_pool;

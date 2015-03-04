@@ -190,7 +190,7 @@ namespace {
 	#endif
 		}
 
-	void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>& extension_records, _In_ const CItemBranch* const root_item ) {
+	void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>& extension_records, _In_ const CTreeListItem* const root_item ) {
 		std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;
 		extensionMap.reserve( root_item->files_recurse( ) );
 
@@ -343,7 +343,7 @@ void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 		}
 
 	//                                          IT_DIRECTORY
-	m_rootItem = std::make_unique<CItemBranch>( UINT64_ERROR, t, 0, false, reinterpret_cast<CItemBranch*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
+	m_rootItem = std::make_unique<CTreeListItem>( UINT64_ERROR, t, 0, false, reinterpret_cast<CTreeListItem*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
 	//m_rootItem->m_parent = { NULL };
 
 	}
@@ -507,8 +507,8 @@ bool CDirstatDoc::IsRootDone( ) const {
 	return retVal;
 	}
 
-void CDirstatDoc::SetSelection( _In_ const CItemBranch& item ) {
-	m_selectedItem = const_cast< CItemBranch* >( &item );
+void CDirstatDoc::SetSelection( _In_ const CTreeListItem& item ) {
+	m_selectedItem = const_cast< CTreeListItem* >( &item );
 	m_frameptr->SetSelectionMessageText( );
 	}
 
@@ -520,7 +520,7 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 
 //_Pre_satisfies_( item.m_type == IT_FILE )
 _Pre_satisfies_( item.m_children._Myptr == nullptr )
-void CDirstatDoc::OpenItem( _In_ const CItemBranch& item ) {
+void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 	WTL::CWaitCursor wc;
 	std::wstring path;
 	//if ( item.m_type == IT_FILE ) {

@@ -193,7 +193,7 @@ struct minimal_SExtensionRecord {
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	};
 
-class CItemBranch;
+class CTreeListItem;
 
 
 //Yes, used
@@ -410,7 +410,7 @@ namespace UpdateAllViews_ENUM {
 	}
 
 struct pair_of_item_and_path {
-	CItemBranch* ptr;
+	CTreeListItem* ptr;
 	std::wstring path;
 	};
 

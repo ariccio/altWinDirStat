@@ -35,7 +35,8 @@ inline type_struct_to_init zero_init_struct( ) {
 	return the_struct;
 	}
 
-
+_Success_( SUCCEEDED( return ) )
+const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written );
 
 
 struct QPC_timer {
