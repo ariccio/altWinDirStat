@@ -187,7 +187,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <Optimization>Disabled</Optimization>
+      <Optimization>Custom</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -213,7 +213,7 @@
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -243,7 +243,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <Optimization>Disabled</Optimization>
+      <Optimization>Custom</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -265,7 +265,7 @@
       <ShowIncludes>false</ShowIncludes>
       <ErrorReporting>Send</ErrorReporting>
       <OmitFramePointers>false</OmitFramePointers>
-      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

@@ -108,6 +108,17 @@ namespace {
 			//END new algorithm
 		}
 
+	//Compare_FILETIME_lessthan compiles to only 6 instructions, and is only called twice, conditionally.
+	//When NOT inlined requires 5 more instructions at call site.
+	//When inlined requires only 5 instructions (total) at call site.
+	inline const bool Compare_FILETIME_lessthan( const FILETIME& t1, const FILETIME& t2 ) {
+		//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
+		//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+		return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+		}
+
+
+
 	}
 
 struct compare_CTreeListItems {
@@ -305,6 +316,30 @@ INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RAN
 	return concrete_compare( other, subitem );
 	}
 
+FILETIME CTreeListItem::FILETIME_recurse( ) const {
+	const auto my_m_children = static_cast<const CItemBranch*>( this )->m_children.get( );
+	if ( my_m_children == nullptr ) {
+		return m_lastChange;
+		}
+	auto ft = zero_init_struct<FILETIME>( );
+	if ( Compare_FILETIME_lessthan( ft, m_lastChange ) ) {
+		ft = m_lastChange;
+		}
+	
+	const auto childCount = m_childCount;
+	
+	//Not vectorized: 1304, loop includes assignments of different sizes
+	for ( size_t i = 0; i < childCount; ++i ) {
+		const auto ft_child = ( my_m_children + i )->FILETIME_recurse( );
+		if ( Compare_FILETIME_lessthan( ft, ft_child ) ) {
+			ft = ft_child;
+			}
+		}
+	return ft;
+	}
+
+
+
 _Success_( return < child_count )
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const {
 	ASSERT( child_count > 0u );
@@ -342,17 +377,17 @@ void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
 		else {
 			ASSERT( m_parent != NULL );
 			m_vi->indent = m_parent->GetIndent( ) + 1;
-			if ( static_cast< const CItemBranch* >( this )->m_attr.compressed ) {
+			if ( m_attr.compressed ) {
 				auto uncompressed_size_temp = get_uncompressed_file_size( this );
 				if ( uncompressed_size_temp == 0 ) {
-					uncompressed_size_temp = static_cast< const CItemBranch* >( this )->m_size;
+					uncompressed_size_temp = m_size;
 					}
 				if ( uncompressed_size_temp == UINT64_ERROR ) {
-					uncompressed_size_temp = static_cast< const CItemBranch* >( this )->m_size;
+					uncompressed_size_temp = m_size;
 					}
 				if ( uncompressed_size_temp != 0 ) {
 					const auto uncompressed_size = uncompressed_size_temp;
-					const auto ratio = ( static_cast< const double >( static_cast< const CItemBranch* >( this )->m_size ) / static_cast< const double >( uncompressed_size ) );
+					const auto ratio = ( static_cast< const double >( m_size ) / static_cast< const double >( uncompressed_size ) );
 					m_vi->ntfs_compression_ratio = ratio;
 					}
 				else {

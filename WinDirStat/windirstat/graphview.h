@@ -25,10 +25,10 @@ class CGraphView;
 
 
 #ifdef DEBUG
-inline void trace_empty_view_graphview( );
-inline void trace_call_onidle( );
-inline void trace_mouse_left( );
-inline void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path );
+void trace_empty_view_graphview( );
+void trace_call_onidle( );
+void trace_mouse_left( );
+void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path );
 #endif
 
 //TweakSizeOfRectangleForHightlight is called once, unconditionally.

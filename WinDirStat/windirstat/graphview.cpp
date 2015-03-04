@@ -212,22 +212,22 @@ const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 
 #ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_empty_view_graphview( ) {
+void trace_empty_view_graphview( ) {
 	TRACE( _T( "Drawing Empty view...\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_call_onidle( ) { 
+void trace_call_onidle( ) { 
 	TRACE( _T( "\"[Causing] OnIdle() to be called once\"\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_mouse_left( ) {
+void trace_mouse_left( ) {
 	TRACE( _T( "Mouse has left the tree map area?\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) {
+void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) {
 	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), x, y, path );
 	}
 #endif

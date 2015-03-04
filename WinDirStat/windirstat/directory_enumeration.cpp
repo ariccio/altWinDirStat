@@ -3,10 +3,16 @@
 #include "directory_enumeration.h"
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
+#include "item.h"
 
 #ifndef WDS_DIRECTORY_ENUMERATION_CPP
 #define WDS_DIRECTORY_ENUMERATION_CPP
 
+#ifdef new
+#pragma push_macro("new")
+#define WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
+#undef new
+#endif
 
 
 namespace {
@@ -113,6 +119,8 @@ namespace {
 		//process_vector_of_compressed_file_futures( sizesToWorkOn_ );
 		}
 
+
+
 	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CItemBranch*, std::wstring>>,std::vector<std::pair<CItemBranch*, std::wstring>>> readJobNotDoneWork( _In_ CItemBranch* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
 		std::vector<FILEINFO> vecFiles;
 		std::vector<DIRINFO>  vecDirs;
@@ -185,6 +193,7 @@ namespace {
 				}
 			else {
 				//                                                                                               IT_DIRECTORY
+
 				const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CItemBranch { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 				//detect overflows. highly unlikely.
@@ -258,11 +267,6 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 	VERIFY( FindClose( fDataHand ) );
 	}
 
-#ifdef new
-#pragma push_macro("new")
-#define WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
-#undef new
-#endif
 
 
 std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CItemBranch* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
@@ -320,10 +324,6 @@ std::vector<std::pair<CItemBranch*, std::wstring>> addFiles_returnSizesToWorkOn(
 	}
 
 
-#ifdef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
-#pragma pop_macro("new")
-#undef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
-#endif
 
 
 //TODO: WTF IS THIS DOING HERE??!?
@@ -483,6 +483,10 @@ const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item 
 	return UINT64_ERROR;
 	}
 
+#ifdef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
+#endif
 
 
 #else

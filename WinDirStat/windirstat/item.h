@@ -25,7 +25,7 @@ class CItemBranch final : public CTreeListItem {
 	static_assert( sizeof( unsigned long long ) == sizeof( std::uint64_t ), "Bad parameter size! Check all functions that accept an unsigned long long or a std::uint64_t!" );
 
 	public:
-		CItemBranch  ( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_size{ size }, m_lastChange( time ), m_childCount{ 0u }, CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ), std::move( attr ), std::move( done ) } { }
+		CItemBranch  ( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CItemBranch* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : CTreeListItem{ std::move( name ), std::move( length ), std::move( parent ), std::move( attr ), std::move( done ), std::move( size ), std::move( time ) } { }
 		
 		//default constructor DOES NOT initialize.
 		__forceinline CItemBranch ( ) { }
@@ -33,7 +33,6 @@ class CItemBranch final : public CTreeListItem {
 		virtual ~CItemBranch( ) final = default;
 
 		CItemBranch& operator=( const CItemBranch& in ) = delete;
-
 		CItemBranch( CItemBranch& in )  = delete;
 
 		_Success_( return < SIZE_T_MAX )
@@ -47,8 +46,6 @@ class CItemBranch final : public CTreeListItem {
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Ret_range_( 0, 4294967295 )
 		std::uint32_t files_recurse( ) const;
-
-		FILETIME FILETIME_recurse( ) const;
 
 	public:
 		
@@ -106,16 +103,10 @@ class CItemBranch final : public CTreeListItem {
 		_Pre_satisfies_( this->m_parent == NULL )
 		void AddChildren( _In_ CTreeListControl* const tree_list_control );
 
-		//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
-
-		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
-		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
-		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		
-				  _Field_range_( 0, 4294967295 ) std::uint32_t                  m_childCount;
+		
 					_Field_size_( m_childCount ) std::unique_ptr<CItemBranch[]> m_children;
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t                  m_size;                // OwnSize
-											     FILETIME                       m_lastChange;          // Last modification time OF SUBTREE
+		
 	};
 
 INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 );

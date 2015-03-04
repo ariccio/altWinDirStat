@@ -32,14 +32,6 @@ namespace {
 		return CompareFileTime( &lhs, &rhs );
 		}
 
-	//Compare_FILETIME_lessthan compiles to only 6 instructions, and is only called twice, conditionally.
-	//When NOT inlined requires 5 more instructions at call site.
-	//When inlined requires only 5 instructions (total) at call site.
-	inline const bool Compare_FILETIME_lessthan( const FILETIME& t1, const FILETIME& t2 ) {
-		//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
-		//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
-		return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
-		}
 
 	_Success_( SUCCEEDED( return ) )
 	const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) {
@@ -257,7 +249,7 @@ INT CItemBranch::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_
 			case column::COL_ITEMS:
 				return signum( static_cast<std::int64_t>( files_recurse( ) ) - static_cast<std::int64_t>( other->files_recurse( ) ) );
 			case column::COL_NTCOMPRESS:
-				return signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio );
+				return ( ( ( m_vi != nullptr ) && ( other->m_vi != nullptr ) ) ? ( signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio ) ) : 0 );
 			case column::COL_LASTCHANGE:
 				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
 
@@ -490,26 +482,6 @@ std::uint32_t CItemBranch::files_recurse( ) const {
 	return total;
 	}
 
-FILETIME CItemBranch::FILETIME_recurse( ) const {
-	if ( m_children == nullptr ) {
-		return m_lastChange;
-		}
-	auto ft = zero_init_struct<FILETIME>( );
-	if ( Compare_FILETIME_lessthan( ft, m_lastChange ) ) {
-		ft = m_lastChange;
-		}
-	
-	const auto childCount = m_childCount;
-	const auto my_m_children = m_children.get( );
-	//Not vectorized: 1304, loop includes assignments of different sizes
-	for ( size_t i = 0; i < childCount; ++i ) {
-		const auto ft_child = ( my_m_children + i )->FILETIME_recurse( );
-		if ( Compare_FILETIME_lessthan( ft, ft_child ) ) {
-			ft = ft_child;
-			}
-		}
-	return ft;
-	}
 
 //Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with string internals, I'll just return a pointer to the substring.
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 

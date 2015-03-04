@@ -82,7 +82,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize jack shit.
 		__forceinline CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent, const DWORD attr, const bool done ) : COwnerDrawnListItem( name, length ), m_parent( parent ), m_rect{ 0, 0, 0, 0 }, m_childCount{ 0u } {
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent, const DWORD attr, const bool done, const std::uint64_t size, const FILETIME time ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u } {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -92,9 +92,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 
 		virtual ~CTreeListItem( ) = default;
 
-		//unconditionally called only ONCE, so we ask for inlining.
-		
-
+		FILETIME FILETIME_recurse( ) const;
 
 		//these functions downcast `this` to a CItemBranch* to enable static polymorphism
 		std::uint64_t size_recurse_( ) const;
@@ -170,6 +168,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void TmiSetRectangle( _In_ const RECT& rc          ) const;
 
 	public:
+	//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		                         const CTreeListItem*               m_parent;
 		                               Children_String_Heap_Manager m_name_pool;
 		                       mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr; // Data needed to display the item.
@@ -178,6 +177,9 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
 		_Field_range_( 0, 4294967295 ) std::uint32_t                m_childCount;
+		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t      m_size;                // OwnSize
+		                               FILETIME                     m_lastChange;          // Last modification time OF SUBTREE
 	};
 
 
