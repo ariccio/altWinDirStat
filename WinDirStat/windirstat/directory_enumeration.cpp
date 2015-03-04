@@ -1,12 +1,15 @@
 #include "stdafx.h"
 
+#pragma once 
+#ifndef WDS_DIRECTORY_ENUMERATION_CPP
+#define WDS_DIRECTORY_ENUMERATION_CPP
+
 #include "directory_enumeration.h"
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
 #include "item.h"
+#include "TreeListControl.h"
 
-#ifndef WDS_DIRECTORY_ENUMERATION_CPP
-#define WDS_DIRECTORY_ENUMERATION_CPP
 
 #ifdef new
 #pragma push_macro("new")

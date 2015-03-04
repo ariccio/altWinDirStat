@@ -5,7 +5,7 @@
 
 #include "stdafx.h"
 #include "windirstat.h"
-#include "options.h"
+
 
 #ifndef WDS_MAINFRAME_H
 #define WDS_MAINFRAME_H
@@ -35,9 +35,8 @@ public:
 	CMySplitterWnd& operator=( const CMySplitterWnd& in ) = delete;
 	CMySplitterWnd( const CMySplitterWnd& in ) = delete;
 
-	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-		CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-		}
+	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name );
+
 	void RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
 		SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
 		}

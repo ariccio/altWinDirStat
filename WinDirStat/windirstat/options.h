@@ -5,7 +5,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 
 #ifndef WDS_OPTIONS_H
 #define WDS_OPTIONS_H
@@ -34,6 +34,11 @@ namespace helpers {
 	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name );
 	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name );
 	}
+
+#ifdef DEBUG
+void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value );
+
+#endif
 
 namespace {
 	

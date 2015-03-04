@@ -4,7 +4,6 @@
 #define WDS_CHILDREN_HEAP_MANAGER_H_INCLUDED
 
 #include "stdafx.h"
-#include "globalhelpers.h"
 
 
 struct Children_String_Heap_Manager {

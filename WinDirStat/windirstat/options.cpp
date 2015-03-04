@@ -113,6 +113,15 @@ namespace helpers {
 		}
 	}
 
+#ifdef DEBUG
+
+//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
+void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value ) {
+	TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
+	}
+
+#endif
+
 namespace {
 	COptions _theOptions;
 
@@ -350,8 +359,14 @@ void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& vali
 	}
 
 void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc ) {
-	//TODO: BUGBUG: check return value!
-	GetRect( MakeDialogRectangleEntry( name ), rc );
+	
+	const HRESULT rectangle_result = GetRect( MakeDialogRectangleEntry( name ), rc );
+	ASSERT( SUCCEEDED( rectangle_result ) );
+	if ( !SUCCEEDED( rectangle_result ) ) {
+		//TODO: BUGBUG: Fill with default values!
+		TRACE( _T( "GetRect( MakeDialogRectangleEntry( %s ), rc ) failed!! THIS ISN'T GOOD!\r\n" ), name );
+		}
+
 	RECT temp = rc;
 	SanifyRect( temp );
 	rc = temp;

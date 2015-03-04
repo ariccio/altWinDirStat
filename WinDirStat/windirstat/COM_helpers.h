@@ -1,9 +1,11 @@
+#include "stdafx.h"
+
+#pragma once
 
 #ifndef WDS_COM_HELPERS_H_INCLUDED
 #define WDS_COM_HELPERS_H_INCLUDED
 
-#include "stdafx.h"
-#include "ScopeGuard.h"
+
 
 //several are from the "Show Shell Common File Dialog" sample
 
@@ -77,30 +79,32 @@ class CFileDialogEventHandler : public IFileDialogEvents, public IFileDialogCont
 
 	// 
 	// IFileDialogEvents methods
-	// 
+	//
 
-	IFACEMETHODIMP OnFileOk( IFileDialog* ) {
+
+	//TODO: I think the MSDN sample might've done something wrong with all the S_OKs
+	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnFolderChange( IFileDialog* ) {
+	IFACEMETHODIMP OnFolderChange( __RPC__in_opt IFileDialog* ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnFolderChanging( IFileDialog*, IShellItem* ) {
+	IFACEMETHODIMP OnFolderChanging( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem* ) {
 		return S_OK;
 		}
 	IFACEMETHODIMP OnHelp( IFileDialog* ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnSelectionChange( IFileDialog* ) {
+	IFACEMETHODIMP OnSelectionChange( __RPC__in_opt IFileDialog* ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnTypeChange( IFileDialog* ) {
+	IFACEMETHODIMP OnTypeChange( __RPC__in_opt IFileDialog* ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnShareViolation( IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE* ) {
+	IFACEMETHODIMP OnShareViolation( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_SHAREVIOLATION_RESPONSE* ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnOverwrite( IFileDialog*, IShellItem*, FDE_OVERWRITE_RESPONSE* ) {
+	IFACEMETHODIMP OnOverwrite( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_OVERWRITE_RESPONSE* ) {
 		return S_OK;
 		}
 
@@ -108,37 +112,18 @@ class CFileDialogEventHandler : public IFileDialogEvents, public IFileDialogCont
 	// IFileDialogControlEvents methods
 	// 
 
-	IFACEMETHODIMP OnItemSelected( IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem ) {
-		IFileDialog *pfd = NULL;
-		const HRESULT pfdc_query_interface_result = pfdc->QueryInterface( &pfd );
-		if ( !SUCCEEDED( pfdc_query_interface_result ) ) {
-			return pfdc_query_interface_result;
-			}
-		auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { pfd->Release( ); } );
-		if ( dwIDCtl == CONTROL_RADIOBUTTONLIST ) {
-			switch ( dwIDItem ) {
-					case CONTROL_RADIOBUTTON1:
-						return pfd->SetTitle( L"Windows Vista" );
-						//break;
+	//Keeping OnItemSelected in the implementation file means that we don't need to include ScopeGuard.h in the header.
+	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem );
 
-					case CONTROL_RADIOBUTTON2:
-						return pfd->SetTitle( L"Windows 7" );
-						//break;
-				}
-			}
-		//pfd->Release( );
-		//if ( SUCCEEDED( hr ) ) {
-		//	}
-		return pfdc_query_interface_result;
-		}
 
-	IFACEMETHODIMP OnButtonClicked( IFileDialogCustomize*, DWORD ) {
+
+	IFACEMETHODIMP OnButtonClicked( __RPC__in_opt IFileDialogCustomize*, DWORD ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnControlActivating( IFileDialogCustomize*, DWORD ) {
+	IFACEMETHODIMP OnControlActivating( __RPC__in_opt IFileDialogCustomize*, DWORD ) {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnCheckButtonToggled( IFileDialogCustomize*, DWORD, BOOL ) {
+	IFACEMETHODIMP OnCheckButtonToggled( __RPC__in_opt IFileDialogCustomize*, DWORD, BOOL ) {
 		return S_OK;
 		}
 
@@ -155,114 +140,11 @@ class CFileDialogEventHandler : public IFileDialogEvents, public IFileDialogCont
 
 
 //https://code.msdn.microsoft.com/CppShellCommonFileDialog-17b20409/sourcecode?fileId=52757&pathId=1435971692
-const HRESULT CFileDialogEventHandler_CreateInstance( _In_ REFIID riid, _COM_Outptr_ void** ppv ) {
-	*ppv = NULL;
-	auto pFileDialogEventHandler = new CFileDialogEventHandler( );
-	const HRESULT file_dialog_event_handler_query_interface_result = pFileDialogEventHandler->QueryInterface( riid, ppv );
-	pFileDialogEventHandler->Release( );
-	return file_dialog_event_handler_query_interface_result;
-	}
+const HRESULT CFileDialogEventHandler_CreateInstance( _In_ REFIID riid, _COM_Outptr_ void** ppv );
 
 
-
-std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
-	IFileDialog* file_dialog = nullptr;
-	const HRESULT create_file_dialog_result = CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &file_dialog ) );
-	if ( !SUCCEEDED( create_file_dialog_result ) ) {
-		TRACE( _T( "create_file_dialog_result-> FAILED!\r\n" ) );
-		return L"";
-		}
-	auto file_dialog_guard = WDS_SCOPEGUARD_INSTANCE( [ &] { file_dialog->Release( ); } );
-
-	IFileDialogEvents* file_dialog_event = NULL;
-	const HRESULT dialog_event_handler_create_instance_result = CFileDialogEventHandler_CreateInstance( IID_PPV_ARGS( &file_dialog_event ) );
-	if ( !SUCCEEDED( dialog_event_handler_create_instance_result ) ) {
-		TRACE( _T( "CFileDialogEventHandler_CreateInstance-> FAILED!\r\n" ) );
-		return L"";
-		}
-
-	auto file_dialog_event_guard = WDS_SCOPEGUARD_INSTANCE( [ &] { file_dialog_event->Release( ); } );
-	
-	DWORD dwCookie_temp = 0;
-	const HRESULT file_dialog_advise_cookie_result = file_dialog->Advise( file_dialog_event, &dwCookie_temp );
-	if ( !SUCCEEDED( file_dialog_advise_cookie_result ) ) {
-		TRACE( _T( "file_dialog->Advise FAILED!\r\n" ) );
-		return L"";
-		}
-
-	const DWORD dwCookie = dwCookie_temp;
-
-	auto file_dialog_advise_cookie_guard = WDS_SCOPEGUARD_INSTANCE( [ &] { file_dialog->Unadvise( dwCookie ); } );
-
-	DWORD dialog_options_flags = 0;
-
-	const HRESULT get_file_dialog_options_result = file_dialog->GetOptions( &dialog_options_flags );
-	if ( !SUCCEEDED( get_file_dialog_options_result ) ) {
-		TRACE( _T( "file_dialog->GetOptions FAILED!\r\n" ) );
-		return L"";
-		}
-
-	const HRESULT set_file_dialog_options_result = file_dialog->SetOptions( dialog_options_flags bitor FOS_FORCEFILESYSTEM bitor FOS_PICKFOLDERS bitor FOS_FORCESHOWHIDDEN );
-	if ( !SUCCEEDED( set_file_dialog_options_result ) ) {
-		TRACE( _T( "file_dialog->SetOptions FAILED!\r\n" ) );
-		return L"";
-		}
-
-	//const HRESULT set_file_dialog_types_result = file_dialog->SetFileTypes( ARRAYSIZE( c_rgSaveTypes ), c_rgSaveTypes );
-	//if ( !SUCCEEDED( set_file_dialog_types_result ) ) {
-	//	TRACE( _T( "file_dialog->SetFileTypes FAILED!\r\n" ) );
-	//	return;
-		//}
-
-	//const HRESULT set_file_type_index_result = file_dialog->SetFileTypeIndex( 1 );
-	//if ( !SUCCEEDED( set_file_type_index_result ) ) {
-	//	TRACE( _T( "file_dialog->SetFileTypeIndex FAILED!\r\n" ) );
-	//	return;
-	//	}
-
-	//const HRESULT set_file_type_default_extension = file_dialog->SetDefaultExtension( L"d" );
-	//if ( !SUCCEEDED( set_file_type_default_extension ) ) {
-	//	TRACE( _T( "file_dialog->SetDefaultExtension FAILED!\r\n" ) );
-	//	return;
-	//	}
-
-	const HRESULT file_dialog_show_dialog_result = file_dialog->Show( NULL );
-	if ( !SUCCEEDED( file_dialog_show_dialog_result ) ) {
-		TRACE( _T( "file_dialog->Show FAILED!\r\n" ) );
-		return L"";
-		}
-
-	IShellItem* shell_item_result = nullptr;
-	const HRESULT file_dialog_get_result_result = file_dialog->GetResult( &shell_item_result );
-	if ( !SUCCEEDED( file_dialog_get_result_result ) ) {
-		TRACE( _T( "file_dialog->GetResult FAILED!\r\n" ) );
-		return L"";
-		}
-
-	auto psi_result_guard = WDS_SCOPEGUARD_INSTANCE( [ &] { shell_item_result->Release( ); } );
-
-	PWSTR file_path_temp = nullptr;
-	const HRESULT shell_item_get_display_name_result = shell_item_result->GetDisplayName( SIGDN_FILESYSPATH, &file_path_temp );
-	if ( !SUCCEEDED( shell_item_get_display_name_result ) ) {
-		TRACE( _T( "shell_item_result->GetDisplayName FAILED!\r\n" ) );
-		return L"";
-		}
-	
-	PWSTR const file_path = file_path_temp;
-
-	auto file_path_guard = WDS_SCOPEGUARD_INSTANCE( [ &] { CoTaskMemFree( file_path ); } );
-	std::wstring path_string( file_path );
-	return path_string;
-
-	//const HRESULT task_dialog_result = TaskDialog( NULL, NULL, L"CommonFileDialogApp", file_path, NULL, TDCBF_OK_BUTTON, TD_INFORMATION_ICON, NULL );
-	//if ( !SUCCEEDED( task_dialog_result ) ) {
-	//	TRACE( _T( "TaskDialog FAILED!\r\n" ) );
-	//	return;
-	//	}
-
-
-	//TRACE( _T( "OpenAFolder is returning SUCESSFULLY!\r\n" ) );
-	}
+//Keeping OnOpenAFolder in the implementation file means that we don't need to include ScopeGuard.h in the header.
+std::wstring OnOpenAFolder( HWND /*hWnd*/ );
 
 
 

@@ -1,11 +1,15 @@
 #pragma once
 
 #include "stdafx.h"
-#include "item.h"
+
 
 
 #ifndef WDS_DIRECTOY_ENUMERATION_H
 #define WDS_DIRECTOY_ENUMERATION_H
+
+class CTreeListItem;
+class CDirstatApp;
+
 
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path );
 

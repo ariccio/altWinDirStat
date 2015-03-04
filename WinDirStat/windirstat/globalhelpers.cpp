@@ -283,7 +283,7 @@ namespace {
 		std::terminate( );
 		}
 
-	_Success_( return == S_OK ) inline HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	_Success_( SUCCEEDED( return ) ) inline HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 		ASSERT( strSize > 2 );
 		if ( strSize > 2 ) {
 			psz_formatted_LONGLONG_HUMAN[ 0 ] = L'0';
@@ -292,6 +292,7 @@ namespace {
 			ASSERT( wcslen( psz_formatted_LONGLONG_HUMAN ) == chars_written );
 			return S_OK;
 			}
+		chars_written = 0;
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
 		}
 
@@ -1558,10 +1559,6 @@ void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name ) {
 	TRACE( _T( "%s received OnDestroy!\r\n" ), m_persistent_name );
 	}
 
-//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value ) {
-	TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
-	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_no_vol_mnt( _In_z_ PCWSTR const volume ) {

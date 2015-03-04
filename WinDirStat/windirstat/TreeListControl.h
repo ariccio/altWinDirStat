@@ -17,9 +17,6 @@
 //#include "pacman.h"
 
 
-
-
-
 class CTreeListItem;
 class CTreeListControl;
 class CSortingListItem;
@@ -40,7 +37,7 @@ struct VISIBLEINFO {
 
 	};
 
-//
+// `/d1reportSingleClassLayoutCItemBranch`
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.

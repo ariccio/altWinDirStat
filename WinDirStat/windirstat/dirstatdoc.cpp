@@ -19,7 +19,7 @@
 #include "typeview.h"
 
 #include "dirstatview.h"
-//#include "globalhelpers.h"
+#include "globalhelpers.h"
 #include "windirstat.h"
 #include "mainframe.h"
 

@@ -7,6 +7,7 @@
 
 
 #include  "ChildrenHeapManager.h"
+#include "globalhelpers.h"
 
 _Success_( SUCCEEDED( return ) )
 const HRESULT Children_String_Heap_Manager::copy_name_str_into_buffer( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {

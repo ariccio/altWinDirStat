@@ -11,7 +11,7 @@
 #define WDS_TYPEVIEW_H
 
 
-
+#include "ChildrenHeapManager.h"
 //#include "dirstatdoc.h"	// SExtensionRecord
 
 class CTypeView;

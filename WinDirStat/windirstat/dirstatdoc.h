@@ -5,7 +5,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
 #include "ChildrenHeapManager.h"
 
 
