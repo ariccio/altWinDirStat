@@ -126,6 +126,8 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 //You cannot declare arrays of objects that have unsized array components. Also, performing pointer arithmetic on pointers to such objects generates an error message.
 //newer, more efficient allocation strategy will use a struct with the child count, child name heap manager, and an UNSIZED ARRAY as the children array.
 //may need to merge CTreeListItem & CItemBranch to make this work in a clean manner.
+//See also: "MEM54-CPP. Provide placement new with properly-aligned pointers to sufficient storage capacity"
+//           https://www.securecoding.cert.org/confluence/display/cplusplus/MEM54-CPP.+Provide+placement+new+with+properly-aligned+pointers+to+sufficient+storage+capacity
 //It'll have to use a struct that'll look something like this:
 struct children_heap_block_allocation {
 	children_heap_block_allocation( ) : m_childCount { 0u } { }

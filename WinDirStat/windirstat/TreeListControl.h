@@ -82,7 +82,7 @@ class CTreeListItem : public COwnerDrawnListItem {
 		//default constructor DOES NOT initialize jack shit.
 		__forceinline CTreeListItem( ) { }
 
-		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent, const DWORD attr, const bool done ) : COwnerDrawnListItem( name, length ), m_parent( parent ), m_rect{ 0, 0, 0, 0 } {
+		CTreeListItem( _In_z_ _Readable_elements_( length ) PCWSTR const&& name, const std::uint16_t&& length, _In_ CTreeListItem* const parent, const DWORD attr, const bool done ) : COwnerDrawnListItem( name, length ), m_parent( parent ), m_rect{ 0, 0, 0, 0 }, m_childCount{ 0u } {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -170,11 +170,14 @@ class CTreeListItem : public COwnerDrawnListItem {
 		void TmiSetRectangle( _In_ const RECT& rc          ) const;
 
 	public:
-		const CTreeListItem*                 m_parent;
-		Children_String_Heap_Manager         m_name_pool;
-		mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr; // Data needed to display the item.
-		mutable SRECT                        m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
-		attribs                              m_attr;
+		                         const CTreeListItem*               m_parent;
+		                               Children_String_Heap_Manager m_name_pool;
+		                       mutable std::unique_ptr<VISIBLEINFO> m_vi = nullptr; // Data needed to display the item.
+		                       mutable SRECT                        m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
+		                               attribs                      m_attr;
+		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
+		_Field_range_( 0, 4294967295 ) std::uint32_t                m_childCount;
 	};
 
 

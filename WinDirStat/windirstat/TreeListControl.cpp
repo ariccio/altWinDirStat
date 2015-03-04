@@ -228,7 +228,7 @@ std::uint64_t CTreeListItem::size_recurse_( ) const {
 _Ret_range_( 0, UINT32_MAX ) 
 std::uint32_t CTreeListItem::GetChildrenCount_( ) const {
 	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).GetChildrenCount_( ) ), decltype( std::declval<CItemBranch>( ).m_childCount )>::value , "The return type of CTreeListItem::GetChildrenCount_ needs to be fixed!!" );
-	return static_cast< const CItemBranch* >( this )->m_childCount;
+	return m_childCount;
 	}
 
 _Ret_maybenull_
