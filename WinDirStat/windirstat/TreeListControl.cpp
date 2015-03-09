@@ -1417,6 +1417,7 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	CWnd::SetRedraw( FALSE );
 	InsertItem( root, 0 );
 	CWnd::SetRedraw( TRUE );
+	//
 	//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
 	ExpandItemAndScroll( 0 );//otherwise ambiguous call - is it a NULL pointer?
 	
