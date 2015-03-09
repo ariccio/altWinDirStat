@@ -170,7 +170,9 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 
 //only called from one place
 inline void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
-	const auto childCount = item.m_childCount;
+	ASSERT( item.m_child_info != nullptr );
+	ASSERT( item.m_childCount == item.m_child_info->m_childCount );
+	const auto childCount = item.m_child_info->m_childCount;
 	const auto item_m_children = item.m_children.get( );
 
 	//Not vectorized: 1200, loop contains data dependencies

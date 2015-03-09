@@ -25,6 +25,17 @@ class CImageList;
 class CDirstatDoc;
 
 
+struct child_info final {
+	child_info( ) : m_name_pool( ), m_childCount { 0u } { }
+	child_info( const child_info& in ) = delete;
+	child_info& operator=( const child_info& in ) = delete;
+
+	                               Children_String_Heap_Manager m_name_pool;
+	_Field_range_( 0, 4294967295 ) std::uint32_t                m_childCount;
+
+	};
+
+
 struct attribs final {
 	bool readonly   : 1;
 	bool hidden     : 1;
@@ -97,7 +108,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 
 		//const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length 
-		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u } {
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u }, m_child_info( nullptr ) {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -188,7 +199,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
 		CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 
-		_Success_( return < child_count )
+		_Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;
 
 		_Pre_satisfies_( this->m_children._Myptr == nullptr )
@@ -258,7 +269,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 	public:
 	//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		                         const CTreeListItem*                   m_parent;
-		                               Children_String_Heap_Manager     m_name_pool;
+		//                             Children_String_Heap_Manager     m_name_pool;
 		                       mutable std::unique_ptr<VISIBLEINFO>     m_vi = nullptr; // Data needed to display the item.
 		                       mutable SRECT                            m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
 		                               attribs                          m_attr;
@@ -269,8 +280,8 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size;                // OwnSize
 		                               FILETIME                         m_lastChange;          // Last modification time OF SUBTREE
 		_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
+		                               std::unique_ptr<child_info>      m_child_info;
 	};
-
 
 
 

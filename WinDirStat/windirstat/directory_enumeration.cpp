@@ -279,11 +279,14 @@ namespace {
 	
 		const auto total_count = ( fileCount + dirCount );
 
-		ASSERT( ThisCItem->m_childCount == 0 );
-		if ( total_count > 0 ) {
-			ThisCItem->m_children.reset( new CTreeListItem[ total_count ] );
+
+		if ( total_count == 0 ) {
+			return std::make_pair( std::vector<std::pair<CTreeListItem*, std::wstring>>( ), std::vector<std::pair<CTreeListItem*, std::wstring>>( ) );
 			}
-		////true for 2 means DIR
+
+
+		ASSERT( ThisCItem->m_childCount == 0 );
+		ThisCItem->m_children.reset( new CTreeListItem[ total_count ] );
 
 
 		//TODO: BUGBUG: need +1 here, else ASSERT( ( m_buffer_filled + new_name_length ) < m_buffer_size ) fails!
@@ -308,10 +311,14 @@ namespace {
 		TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
 	#endif
 
+		ThisCItem->m_child_info = std::make_unique<child_info>( );
 
-		ThisCItem->m_name_pool.reset( total_size_alloc );
+		//ThisCItem->m_name_pool.reset( total_size_alloc );
+		
+		ThisCItem->m_child_info->m_name_pool.reset( total_size_alloc );
 
-		ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
+		//ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
+		ASSERT( ThisCItem->m_child_info->m_name_pool.m_buffer_filled == 0 );
 
 		//ASSERT( path.back( ) != _T( '\\' ) );
 		//sizesToWorkOn_ CANNOT BE CONST!!
@@ -319,6 +326,10 @@ namespace {
 		std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
 		dirsToWorkOn.reserve( dirCount );
 		const auto thisOptions = GetOptions( );
+
+		ASSERT( static_cast< size_t >( ThisCItem->m_childCount ) == vecFiles.size( ) );
+
+		std::uint32_t total_so_far = static_cast<std::uint32_t>( vecFiles.size( ) );
 
 		//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 		for ( const auto& dir : vecDirs ) {
@@ -328,7 +339,7 @@ namespace {
 
 			PWSTR new_name_ptr = nullptr;
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
-			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
+			const HRESULT copy_res = ThisCItem->m_child_info->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
 
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
@@ -336,13 +347,14 @@ namespace {
 				}
 			else {
 				//                                                                                               IT_DIRECTORY
-
-				const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				ASSERT( total_so_far == ThisCItem->m_childCount );
+				const auto newitem = new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 				//detect overflows. highly unlikely.
 				ASSERT( ThisCItem->m_childCount < 4294967290 );
 
 				++( ThisCItem->m_childCount );
+				++total_so_far;
 				//ThisCItem->m_children_vector.emplace_back( newitem );
 
 				if ( !newitem->m_attr.m_done ) {
@@ -355,7 +367,8 @@ namespace {
 					}
 				}
 			}
-		ASSERT( ThisCItem->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
+		ThisCItem->m_child_info->m_childCount = total_so_far;
+		ASSERT( ThisCItem->m_child_info->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 		ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 		//ThisCItem->m_children_vector.shrink_to_fit( );
 		return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
@@ -376,6 +389,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 
 	ASSERT( path.back( ) != _T( '\\' ) );
 
+	std::uint32_t total_so_far = 0u;
 
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
@@ -385,15 +399,16 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			PWSTR new_name_ptr = nullptr;
 			//ThisCItem->m_name_pool.copy_name_str_into_buffer
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
-			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
+			const HRESULT copy_res = ThisCItem->m_child_info->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
 
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (compressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
+				ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                                            IT_FILE
-				auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				auto newChild = ::new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
@@ -405,21 +420,24 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			PWSTR new_name_ptr = nullptr;
 			
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
-			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
+			const HRESULT copy_res = ThisCItem->m_child_info->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
 
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (uncompressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
+				ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                            IT_FILE
-				::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				::new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				}
 			}
 		//detect overflows. highly unlikely.
 		ASSERT( ThisCItem->m_childCount < 4294967290 );
 		++( ThisCItem->m_childCount );
+		++total_so_far;
 		}
+	ThisCItem->m_child_info->m_childCount = total_so_far;
 	return sizesToWorkOn_;
 	}
 
@@ -511,7 +529,18 @@ WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 		path = fixedPath;
 		}
 	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ), app );
+
+	if ( ThisCItem->m_child_info == nullptr ) {
+		ASSERT( ThisCItem->m_childCount == 0 );
+		}
+
 	if ( ThisCItem->m_childCount == 0 ) {
+		ASSERT( ThisCItem->m_child_info == nullptr );
+		}
+
+	if ( ThisCItem->m_child_info == nullptr ) {
+		ASSERT( ThisCItem->m_childCount == 0 );
+		ASSERT( ThisCItem->m_child_info == nullptr );
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
