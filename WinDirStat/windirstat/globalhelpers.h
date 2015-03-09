@@ -70,21 +70,6 @@ struct SRECT final {
 	SRECT( );
 
 	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom );
-	//SRECT( const SRECT& in ) {
-	//	left   = in.left;
-	//	top    = in.top;
-	//	right  = in.right;
-	//	bottom = in.bottom;
-	//	}
-	
-	//SRECT( const SRECT& in ) = default;
-
-	//SRECT( const CRect& in ) {
-	//	left   = static_cast<std::int16_t>( in.right );
-	//	top    = static_cast<std::int16_t>( in.top );
-	//	right  = static_cast<std::int16_t>( in.right );
-	//	bottom = static_cast<std::int16_t>( in.bottom );
-	//	}
 
 	SRECT( const RECT& in );
 
@@ -138,17 +123,6 @@ void DeleteCriticalSection_wrapper( _Pre_valid_ _Post_invalid_ CRITICAL_SECTION&
 //On returning E_FAIL, call GetLastError for details. That's not my idea!
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error = GetLastError( ) );
 
-
-//Unused?
-//_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR const relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written );
-
-//Unused?
-//_Success_( return ) bool MyQueryDosDevice           ( _In_z_ PCWSTR const drive, _Out_ _Post_z_ wchar_t ( &info )[ 512u ] );
-
-
-//Unused?
-//std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath );
-
 void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in );
 
 void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written );
@@ -179,22 +153,10 @@ namespace wds_fmt {
 	void write_bad_fmt_msg  ( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written );
 	
 	void write_BAD_FMT      ( _Out_writes_z_( 8 )  _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written );
-	
-	//Unused?
-	//void FormatVolumeName   ( _In_ const std::wstring& rootPath, _In_z_ PCWSTR const volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name );
 	}
 
 
 _Success_( SUCCEEDED( return ) ) const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
-
-                             //Unused?
-                             //bool DriveExists       ( _In_z_ _In_reads_( path_len ) PCWSTR const path, _In_ _In_range_( 0, 4 ) const rsize_t path_len );
-
-							 //Unused?
-//_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath,    _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ]                        );
-//_Success_( return != false ) bool GetVolumeName     ( _In_z_ PCWSTR const rootPath );
-
-//void check8Dot3NameCreationAndNotifyUser( );
 
 void displayWindowsMsgBoxWithError  ( const DWORD error = GetLastError( ) );
 
@@ -203,16 +165,8 @@ void displayWindowsMsgBoxWithMessage( const std::string message );
 void displayWindowsMsgBoxWithMessage( PCWSTR const message );
 
 
-//Unused?
-//void MyGetDiskFreeSpace             ( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused   );
-
-//void trace_helper(  )
-
 const LARGE_INTEGER help_QueryPerformanceCounter( );
 const LARGE_INTEGER help_QueryPerformanceFrequency( );
-
-//Unused?
-//std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives );
 
 RECT BuildRECT( const SRECT& in );
 
@@ -231,12 +185,7 @@ _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
 void CheckMinMax( _Inout_ INT& val,  _In_ const INT min_val, _In_ const INT max_val );
 
-
-//bool Compare_FILETIME_lessthan ( const FILETIME& t1,  const FILETIME& t2  ) ;
 bool Compare_FILETIME_eq   ( const FILETIME& lhs, const FILETIME& rhs ) ;
-
-//Compare_FILETIME compiles to only 6 instructions, and is only called once, conditionally.
-//INT  Compare_FILETIME      ( const FILETIME& lhs, const FILETIME& rhs ) ;
 
 void DistributeFirst( _Inout_ _Out_range_( 0, 255 ) INT& first, _Inout_ _Out_range_( 0, 255 ) INT& second, _Inout_ _Out_range_( 0, 255 ) INT& third ) ;
 void NormalizeColor( _Inout_ _Out_range_( 0, 255 ) INT& red, _Inout_ _Out_range_( 0, 255 ) INT& green, _Inout_ _Out_range_( 0, 255 ) INT& blue ) ;
@@ -257,11 +206,10 @@ void trace_m_stripeColor( _In_ const COLORREF m_stripeColor );
 
 void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name );
 
-void trace_no_vol_mnt( _In_z_ PCWSTR const volume );
-void trace_fs_not_rea( _In_z_ PCWSTR const volume );
-void trace_no_reparse( _In_z_ PCWSTR const volume );
-void trace_GetVolumeNameForVolumeMountPoint_failed( _In_z_ PCWSTR const volume );
-void trace_mntpt_found( _In_z_ PCWSTR const path, _In_z_ PCWSTR const volume );
+
+
+
+
 
 void trace_full_path( _In_z_ PCWSTR const path );
 #endif

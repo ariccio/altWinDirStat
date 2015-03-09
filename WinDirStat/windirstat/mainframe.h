@@ -14,6 +14,7 @@
 
 
 #include "windirstat.h"
+#include "globalhelpers.h"
 
 class CMySplitterWnd;
 class CMainFrame;

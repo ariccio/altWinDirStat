@@ -14,7 +14,7 @@
 
 #include "treemap.h"
 #include "globalhelpers.h"
-
+#include "TreeListControl.h"
 #include "datastructures.h"
 
 
@@ -786,29 +786,6 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 			WDS_validateRectangle_DEBUG( child, rc );
 
 			TRACE( _T( "Point {%ld, %ld} inside child: %s\r\n" ), point.x, point.y, child->m_name );
-				//{
-				//RECT alt_rect = child_rect;
-				//RECT enclosing_rect = { 0, 0, 0, 0 };
-				//VERIFY( ::GetClientRect( test_graph_view->m_hWnd, &enclosing_rect ) );
-
-				//CSelectStockObject sobrush( test_device_context, NULL_BRUSH );
-				//const auto Options = GetOptions( );
-				//CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-				//CSelectObject sopen( test_device_context, pen );
-
-				//test_graph_view->TweakSizeOfRectangleForHightlight( alt_rect, enclosing_rect );
-
-				//test_graph_view->RenderHighlightRectangle( test_device_context, alt_rect );
-
-				//}
-			//for my own amusement.
-			//if ( test_doc != NULL ) {
-			//	test_doc->SetSelection( *child );
-			//	Sleep( 500 );
-			//	test_doc->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
-			//	Sleep( 500 );
-			//	}
-
 			const auto ret = FindItemByPoint( child, point, test_doc );
 			if ( ret != NULL ) {
 				WDS_validateRectangle_DEBUG( child, rc );

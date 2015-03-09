@@ -795,83 +795,6 @@ void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_fu
 	std::terminate( );
 	}
 
-//_Success_( return != false ) bool GetVolumeName( _In_z_ PCWSTR const rootPath, _Out_ _Post_z_ wchar_t ( &volumeName )[ MAX_PATH + 1u ] ) {
-//	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
-//	
-//	//GetVolumeInformation returns 0 on failure
-//	const BOOL b = GetVolumeInformationW( rootPath, volumeName, MAX_PATH, NULL, NULL, NULL, NULL, 0 );
-//
-//	if ( b == 0 ) {
-//		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
-//		}
-//	SetErrorMode( old );
-//	
-//	return ( b != 0 );
-//	}
-
-//_Success_( return != false ) 
-//bool GetVolumeName( _In_z_ PCWSTR const rootPath ) {
-//	const auto old = SetErrorMode( SEM_FAILCRITICALERRORS );
-//	
-//	//GetVolumeInformation returns 0 on failure
-//	const BOOL b = GetVolumeInformationW( rootPath, NULL, 0, NULL, NULL, NULL, NULL, 0 );
-//
-//	if ( b == 0 ) {
-//		TRACE( _T( "GetVolumeInformation(%s) failed: %u\n" ), rootPath, GetLastError( ) );
-//		}
-//	SetErrorMode( old );
-//	
-//	return ( b != 0 );
-//	}
-
-
-//void wds_fmt::FormatVolumeName( _In_ const std::wstring& rootPath, _In_z_ PCWSTR const volumeName, _Out_ _Post_z_ _Pre_writable_size_( MAX_PATH + 1u ) PWSTR formatted_volume_name ) {
-//	const HRESULT fmt_res = StringCchPrintfW( formatted_volume_name, ( MAX_PATH + 1u ), L"%s (%s)", volumeName, rootPath.substr( 0, 2 ).c_str( ) );
-//	if ( SUCCEEDED( fmt_res ) ) {
-//		return;
-//		}
-//	displayWindowsMsgBoxWithMessage( L"FormatVolumeName failed!" );
-//	std::terminate( );
-//	}
-
-//#pragma strict_gs_check(push, on)
-//_Success_( SUCCEEDED( return ) ) HRESULT GetFullPathName_WriteToStackBuffer( _In_z_ PCWSTR const relativePath, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_full_path, _In_range_( 128, 512 ) const DWORD strSize, _Out_ rsize_t& chars_written ) {
-//	psz_full_path[ 0 ] = 0;
-//	const DWORD dw = GetFullPathNameW( relativePath, strSize, psz_full_path, NULL );
-//	//ASSERT( dw >= 0 );
-//	if ( dw == 0 ) {
-//		static_assert( !SUCCEEDED( E_FAIL ), "" );
-//		return E_FAIL;
-//		}
-//	ASSERT( dw != 0 );
-//	if ( dw >= strSize ) {
-//		return STRSAFE_E_INSUFFICIENT_BUFFER;
-//		}
-//	ASSERT( dw < strSize );
-//	ASSERT( dw != 0 );
-//	if ( dw < strSize ) {
-//		ASSERT( dw == wcslen( psz_full_path ) );
-//		chars_written = dw;
-//		return S_OK;
-//		}
-//	ASSERT( false );
-//	return E_FAIL;
-//	}
-//#pragma strict_gs_check(pop)
-
-//std::wstring dynamic_GetFullPathName( _In_z_ PCWSTR const relativePath ) {
-//	rsize_t path_len = MAX_PATH;
-//	auto pszPath = std::make_unique<_Null_terminated_ wchar_t[ ]>( path_len );
-//	auto dw = GetFullPathNameW( relativePath, static_cast<DWORD>( path_len ), pszPath.get( ), NULL );
-//	while ( dw >= path_len ) {
-//		path_len *= 2;
-//		pszPath.reset( new wchar_t[ path_len ] );
-//		dw = GetFullPathNameW( relativePath, static_cast<DWORD>( path_len ), pszPath.get( ), NULL );
-//		}
-//	
-//	return std::wstring( pszPath.get( ) );
-//	}
-
 //this function is only called in the rare/error path, so NON-inline code is faster, and smaller.
 __declspec(noinline)
 void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written ) {
@@ -883,152 +806,6 @@ void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const r
 	size_buff_need = ( str_size * 2 );
 	return;
 	}
-
-//void MyGetDiskFreeSpace( _In_z_ PCWSTR const pszRootPath, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& total, _Out_ _Out_range_( 0, 18446744073709551615 ) std::uint64_t& unused ) {
-//	ULARGE_INTEGER uavailable = { { 0 } };
-//	ULARGE_INTEGER utotal     = { { 0 } };
-//	ULARGE_INTEGER ufree      = { { 0 } };
-//	uavailable.QuadPart       = 0;
-//	utotal.QuadPart           = 0;
-//	ufree.QuadPart            = 0;
-//
-//	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-//	const BOOL b = GetDiskFreeSpaceExW( pszRootPath, &uavailable, &utotal, &ufree );
-//	if ( !b ) {
-//		TRACE( _T( "\tGetDiskFreeSpaceEx(%s) failed.\r\n" ), pszRootPath );
-//		total  = utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
-//		unused = ufree.QuadPart;
-//		ASSERT( unused <= total );
-//		return;
-//		}
-//	TRACE( _T( "stats:(%s) avail: %llu, total: %llu, free: %llu\r\n" ), pszRootPath, uavailable, utotal, ufree );
-//	ASSERT( uavailable.QuadPart <= utotal.QuadPart);
-//	ASSERT( ufree.QuadPart <= utotal.QuadPart );
-//	ASSERT( uavailable.QuadPart != utotal.QuadPart );
-//	ASSERT( ufree.QuadPart != utotal.QuadPart );
-//	total  = utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
-//	unused = ufree.QuadPart;
-//	ASSERT( unused <= total );
-//	return;
-//	}
-
-//bool DriveExists( _In_z_ _In_reads_( path_len ) PCWSTR const path, _In_ _In_range_( 0, 4 ) const rsize_t path_len ) {
-//	//const auto path_ws = std::wstring( path );
-//	//ASSERT( path_ws.length( ) == wcslen( path ) );
-//	//ASSERT( path_ws.length( ) == path_len );
-//	//ASSERT( path_ws.compare( path ) == 0 );
-//	if ( path_len != 3 || path[ 1 ] != _T( ':' ) || path[ 2 ] != _T( '\\' ) ) {
-//		return false;
-//		}
-//	ASSERT( path_len >= 1 );
-//	const rsize_t size_ltr_str = 2;
-//
-//	//auto left_1_char = path.Left( 1 );
-//	//const auto left_1_char_lower = left_1_char.MakeLower( );
-//	//wchar_t ltr[ size_ltr_str ] = { 0 };
-//	//ltr[ 0 ] = left_1_char_lower[ 0 ];
-//	//ltr[ 1 ] = 0;
-//	
-//	//const auto left_1_char_ws = path_ws.substr( 0, 1 );
-//	const auto left_1_char_ws = path[ 0 ];
-//	_Null_terminated_ wchar_t ltr_ws[ size_ltr_str ] = { 0 };
-//	ltr_ws[ 0 ] = left_1_char_ws;
-//	ltr_ws[ 1 ] = 0;
-//	const auto result = _wcslwr_s( ltr_ws, size_ltr_str );
-//	ASSERT( result == 0 );
-//	if ( result != 0 ) {
-//		displayWindowsMsgBoxWithMessage( L"Failed to convert first letter of drive path to lowercase! (DriveExists)(aborting!)" );
-//		displayWindowsMsgBoxWithMessage( ltr_ws );
-//		return false;
-//		}
-//
-//	//ASSERT( wcscmp( ltr_ws, ltr ) == 0 );
-//
-//	static_assert( L'a' == 97, "wtf!" );
-//	const DWORD d = ltr_ws[ 0 ] - 97u;
-//
-//#ifdef DEBUG
-//	const INT e = ltr_ws[ 0 ] - _T( 'a' );
-//	ASSERT( ( 0x1 << d ) == ( 0x1 << e ) );
-//#pragma warning(suppress:4389)
-//	ASSERT( ( 0x1 << d ) == ( 0x1u << d ) );
-//	ASSERT( INT( 0x1 << d ) == INT( 0x1u << d ) );
-//#pragma warning(suppress:4365)
-//	const DWORD mask_test_1 = 0x1 << d;
-//	const DWORD mask_test_2 = 0x1u << d;
-//	ASSERT( mask_test_1 == mask_test_2 );
-//#endif
-//
-//	//const DWORD mask = 0x1 << d;
-//	const DWORD mask = 0x1u << d;
-//
-//	if ( ( mask bitand GetLogicalDrives( ) ) == 0 ) {
-//		return false;
-//		}
-//
-//	
-//	if ( !GetVolumeName( path ) ) {
-//		return false;
-//		}
-//
-//	return true;
-//	}
-
-
-//_Success_( return ) bool MyQueryDosDevice( _In_z_ PCWSTR const drive, _Out_ _Post_z_ wchar_t ( &drive_info )[ 512u ] ) {
-//	/*
-//	  drive is a drive spec like C: or C:\ or C:\path (path is ignored).
-//	  This function returns "", if QueryDosDevice is unsupported or drive doesn't begin with a drive letter, 'Information about MS-DOS device names' otherwise: Something like
-//
-//	  \Device\Harddisk\Volume1                               for a local drive
-//	  \Device\LanmanRedirector\;T:0000000011e98\spock\temp   for a network drive 
-//	  \??\C:\programme                                       for a SUBSTed local path
-//	  \??\T:\Neuer Ordner                                    for a SUBSTed SUBSTed path
-//	  \??\UNC\spock\temp                                     for a SUBSTed UNC path
-//
-//	  As always, I had to experimentally determine these strings, Microsoft didn't think it necessary to document them. (Sometimes I think, they even don't document such things internally...)
-//
-//	  I hope that a drive is SUBSTed iff this string starts with \??\.
-//
-//	  assarbad:
-//		It cannot be safely determined weather a path is or is not SUBSTed on NT via this API. You would have to lookup the volume mount points because SUBST only works per session by definition whereas volume mount points work across sessions (after restarts).
-//	*/
-//
-//
-//	if ( wcslen( drive ) < 2 || drive[ 1 ] != L':' ) {//parenthesis, maybe?
-//		return false;
-//		}
-//
-//	const rsize_t left_two_chars_buffer_size = 3;
-//	_Null_terminated_ wchar_t left_two_chars_buffer[ left_two_chars_buffer_size ] = { 0 };
-//	left_two_chars_buffer[ 0 ] = drive[ 0 ];
-//	left_two_chars_buffer[ 1 ] = drive[ 1 ];
-//	//left_two_chars_buffer[ 2 ] = drive[ 2 ];
-//	//d = d.Left( 2 );
-//	//ASSERT( d.Compare( left_two_chars_buffer ) == 0 );
-//	
-//	
-//	static_assert( ( sizeof( drive_info ) / sizeof( wchar_t ) ) == 512u, "" );
-//	const auto dw = QueryDosDeviceW( left_two_chars_buffer, drive_info, 512u );//eek
-//	//info.ReleaseBuffer( );
-//
-//	if ( dw != 0 ) {
-//		return true;
-//		}
-//
-//	const rsize_t error_buffer_size = 128;
-//	_Null_terminated_ wchar_t error_buffer[ error_buffer_size ] = { 0 };
-//	rsize_t error_chars_written = 0;
-//	const DWORD error_code = GetLastError( );
-//	const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_buffer, error_buffer_size, error_chars_written, error_code );
-//	if ( SUCCEEDED( fmt_res ) ) {
-//		TRACE( _T( "QueryDosDevice(%s) failed: %s\r\n" ), left_two_chars_buffer, error_buffer );
-//		return false;
-//		}
-//	TRACE( _T( "QueryDosDevice(%s) failed. Couldn't get error message for code: %u\r\n" ), left_two_chars_buffer, error_code );
-//	return false;
-//	}
-
 
 
 const LARGE_INTEGER help_QueryPerformanceCounter( ) {
@@ -1195,33 +972,6 @@ void displayWindowsMsgBoxWithMessage( PCWSTR const message ) {
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 
-
-
-// Encodes a selection from the CSelectDrivesDlg into a string which can be routed as a pseudo document "path" through MFC and finally arrives in OnOpenDocument().
-//std::wstring EncodeSelection( _In_ const RADIO radio, _In_ const std::wstring folder, _In_ const std::vector<std::wstring>& drives ) {
-//	std::wstring ret;
-//	TRACE( _T( "Encoding selection %s\r\n" ), folder.c_str( ) );
-//	switch ( radio ) {
-//			//case RADIO_ALLLOCALDRIVES:
-//			case RADIO_SOMEDRIVES:
-//				{
-//				for ( size_t i = 0; i < drives.size( ); i++ ) {
-//					if ( i > 0 ) {
-//						ret += L'|';// `|` is the encoding separator, which is not allowed in file names.;
-//						}
-//					ret += drives.at( i );
-//					}
-//				}
-//				break;
-//
-//			case RADIO_AFOLDER:
-//				return folder;
-//				break;
-//		}
-//	TRACE( _T( "Selection encoded as '%s'\r\n" ), ret.c_str( ) );
-//	return ret;
-//	}
-
 RECT BuildRECT( const SRECT& in ) {
 	//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
 	ASSERT( ( in.right + 1 ) >= in.left );
@@ -1370,30 +1120,6 @@ void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_v
 	ASSERT( min_val <= val );
 	}
 
-//bool Compare_FILETIME_lessthan( const FILETIME& t1, const FILETIME& t2 ) {
-//	//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
-//	//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
-//	return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
-//	
-//	//const auto u1 = reinterpret_cast<const ULARGE_INTEGER&>( t1 );
-//	//const auto u2 = reinterpret_cast<const ULARGE_INTEGER&>( t2 );
-//	//return ( u1.QuadPart < u2.QuadPart );
-//	}
-
-//INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
-//	//duhh, there's a win32 function for this!
-//	return CompareFileTime( &lhs, &rhs );
-//
-//
-//	//if ( Compare_FILETIME_cast( lhs, rhs ) ) {
-//	//	return -1;
-//	//	}
-//	//else if ( ( lhs.dwLowDateTime == rhs.dwLowDateTime ) && ( lhs.dwHighDateTime == rhs.dwHighDateTime ) ) {
-//	//	return 0;
-//	//	}
-//	//return 1;
-//	}
-
 bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
 	//CompareFileTime returns 0 when first FILETIME is equal to the second FILETIME
 	//Therefore: we can 'emulate' the `==` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( 0 ) );
@@ -1534,32 +1260,6 @@ void trace_m_stripeColor( _In_ const COLORREF m_stripeColor ) {
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name ) {
 	TRACE( _T( "%s received OnDestroy!\r\n" ), m_persistent_name );
-	}
-
-
-//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_no_vol_mnt( _In_z_ PCWSTR const volume ) {
-	TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
-	}
-
-//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_fs_not_rea( _In_z_ PCWSTR const volume ) {
-	TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
-	}
-
-//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_no_reparse( _In_z_ PCWSTR const volume ) {
-	TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
-	}
-
-//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_GetVolumeNameForVolumeMountPoint_failed( _In_z_ PCWSTR const volume ) {
-	TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), volume );
-	}
-
-//this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_mntpt_found( _In_z_ PCWSTR const path, _In_z_ PCWSTR const volume ) {
-	TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), path, volume );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.

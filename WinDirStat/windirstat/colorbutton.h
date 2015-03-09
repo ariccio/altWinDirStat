@@ -50,7 +50,6 @@ public:
 
 
 	//UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/
-	//UINT nFlags, CPoint point
 	LRESULT OnLButtonDown( UINT /*nMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/ ) {
 		const UINT nFlags = static_cast< UINT >( wParam );
 		//const POINT point = static_cast< POINT >( lParam );
@@ -71,23 +70,7 @@ public:
 		//this_parent->ScreenToClient( &point );
 
 		TRACE( _T( "User clicked x:%ld, y:%ld! Sending WM_LBUTTONDOWN!\r\n" ), point.x, point.y );
-			
-		/*
-		_AFXWIN_INLINE CWnd* CWnd::GetParent() const
-		{ ASSERT(::IsWindow(m_hWnd)); return CWnd::FromHandle(::GetParent(m_hWnd)); }	
-		*/
-		/*
-_AFXWIN_INLINE LRESULT CWnd::_AFX_FUNCNAME(SendMessage)(UINT message, WPARAM wParam, LPARAM lParam) const
-{ ASSERT(::IsWindow(m_hWnd)); return ::SendMessage(m_hWnd, message, wParam, lParam); }
-#pragma push_macro("SendMessage")
-#undef SendMessage
-_AFXWIN_INLINE LRESULT CWnd::SendMessage(UINT message, WPARAM wParam, LPARAM lParam) const
-{ return _AFX_FUNCNAME(SendMessage)(message, wParam, lParam); }
-#pragma pop_macro("SendMessage")
 
-		*/
-		//this_parent->SendMessageW( WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
-			
 		const HWND parent = ::GetParent( m_hWnd );
 		::SendMessageW( parent, WM_LBUTTONDOWN, nFlags, MAKELPARAM( point.x, point.y ) );
 		return 0;
@@ -99,7 +82,6 @@ _AFXWIN_INLINE LRESULT CWnd::SendMessage(UINT message, WPARAM wParam, LPARAM lPa
 // CColorButton. A Pushbutton which allows to choose a color and shows this color on its surface.
 // In the resource editor, the button should be set to "right align text", as the color will be shown in the left third.
 // When the user chose a color, the parent is notified via WM_NOTIFY and the notification code COLBN_CHANGED.
-//
 class CColorButton final : public CButton {
 public:
 
@@ -129,31 +111,7 @@ protected:
 			VERIFY( m_preview.Create( m_hWnd, rc, _T( "" ), WS_CHILD | WS_VISIBLE, 0, 4711, NULL ) );
 
 			VERIFY( CWnd::ModifyStyle( 0, WS_CLIPCHILDREN ) );
-			/*
-BOOL CWnd::ModifyStyle(DWORD dwRemove, DWORD dwAdd, UINT nFlags)
-{
-	ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL));
-
-	if (m_pCtrlSite == NULL)
-		return ModifyStyle(m_hWnd, dwRemove, dwAdd, nFlags);
-	else
-		return m_pCtrlSite->ModifyStyle(dwRemove, dwAdd, nFlags);
-}
-			*/
 			}
-		/*
-void CWnd::OnPaint()
-{
-	if (m_pCtrlCont != NULL)
-	{
-		// Paint windowless controls
-		CPaintDC dc(this);
-		m_pCtrlCont->OnPaint(&dc);
-	}
-
-	Default();
-}
-		*/
 		CButton::OnPaint( );
 		}
 
@@ -174,30 +132,9 @@ void CWnd::OnPaint()
 			hdr.idFrom = static_cast<UINT_PTR>( dialog_ctrl_id );
 			hdr.code = COLBN_CHANGED;
 			TRACE( _T( "Color button clicked! Sending WM_NOTIFY to Dialog with Ctrl ID: %llu\r\n" ), static_cast<ULONGLONG>( hdr.idFrom ) );
-			/*
-_AFXWIN_INLINE CWnd* CWnd::GetParent() const
-	{ ASSERT(::IsWindow(m_hWnd)); return CWnd::FromHandle(::GetParent(m_hWnd)); }
-			*/
-
-			/*
-int CWnd::GetDlgCtrlID() const
-{
-	ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL));
-
-	if (m_pCtrlSite == NULL)
-		return ::GetDlgCtrlID(m_hWnd);//<this is the branch that we take.
-	else
-		return m_pCtrlSite->GetDlgCtrlID();
-}
-			*/
 			ASSERT( ::IsWindow( m_hWnd ) );
 			//const auto parent_wnd = CWnd::FromHandle( ::GetParent( m_hWnd ) );
 			
-
-			/*
-_AFXWIN_INLINE LRESULT CWnd::_AFX_FUNCNAME(SendMessage)(UINT message, WPARAM wParam, LPARAM lParam) const
-	{ ASSERT(::IsWindow(m_hWnd)); return ::SendMessage(m_hWnd, message, wParam, lParam); }
-			*/
 			ASSERT( ::IsWindow( m_hWnd ) );
 
 			::SendMessageW( m_hWnd, WM_NOTIFY, static_cast< WPARAM >( dialog_ctrl_id ), ( LPARAM ) &hdr );

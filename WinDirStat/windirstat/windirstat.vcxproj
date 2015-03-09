@@ -726,6 +726,7 @@
     <ClCompile Include="globalhelpers.cpp" />
     <ClCompile Include="graphview.cpp" />
     <ClCompile Include="mainframe.cpp" />
+    <ClCompile Include="mountpoints.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="PageGeneral.cpp" />
     <ClCompile Include="PageTreemap.cpp" />

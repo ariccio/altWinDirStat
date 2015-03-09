@@ -78,6 +78,9 @@
     <ClCompile Include="datastructures.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mountpoints.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h">

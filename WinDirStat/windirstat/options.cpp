@@ -12,11 +12,13 @@
 
 #pragma message( "Including `" __FILE__ "`..." )
 
-#include "dirstatdoc.h"
+#include "options.h"
+
+#include "dirstatdoc.h"//For GetDocument( )
 #include "globalhelpers.h"
 #include "windirstat.h"
-#include "options.h"
-#include "datastructures.h"
+
+//#include "datastructures.h"
 
 
 
@@ -26,14 +28,8 @@ namespace registry_strings {
 	
 	_Null_terminated_ const wchar_t entrySplitterPosS[ ] = { _T( "%s-splitterPos" ) };
 	_Null_terminated_ const wchar_t entryColumnOrderS[ ] = { _T( "%s-columnOrder" ) };
-	
 	_Null_terminated_ const wchar_t entryDialogRectangleS[ ] = { _T( "%s-rectangle" ) };
-	
-	
-	
 	_Null_terminated_ const wchar_t entrySelectDrivesDrives[ ] = { _T( "selectDrivesDrives" ) };
-	
-	
 	_Null_terminated_ const wchar_t sectionOptions[ ] = { _T( "options" ) };
 	_Null_terminated_ const wchar_t entryListGrid[ ] = { _T( "treelistGrid" ) }; // for compatibility with 1.0.1, this entry is named treelistGrid.
 	_Null_terminated_ const wchar_t entryListStripes[ ] = { _T( "listStripes" ) };
@@ -128,57 +124,6 @@ void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, 
 namespace {
 	COptions _theOptions;
 
-	
-	
-	
-	
-	//const PCTSTR entryMainWindowPlacement       = _T( "mainWindowPlacement" );
-	//const PCTSTR entrySplitterPosS              = _T( "%s-splitterPos" );
-	//const PCTSTR entryColumnOrderS              = _T( "%s-columnOrder" );
-	//const PCTSTR entryColumnWidthsS             = _T( "%s-columnWidths" );
-	//const PCTSTR entryDialogRectangleS          = _T( "%s-rectangle" );
-	//const PCTSTR entryConfigPage                = _T( "configPage" );
-	//const PCTSTR entryConfigPositionX           = _T( "configPositionX" );
-	//const PCTSTR entryConfigPositionY           = _T( "configPositionY" );
-	//const PCTSTR entrySelectDrivesRadio         = _T( "selectDrivesRadio" );
-	//const PCTSTR entrySelectDrivesFolder        = _T( "selectDrivesFolder" );
-	//const PCTSTR entrySelectDrivesDrives        = _T( "selectDrivesDrives" );
-	//const PCTSTR entryShowDeleteWarning         = _T( "showDeleteWarning" );
-	//const PCTSTR sectionBarState                = _T( "persistence\\barstate" );
-	//const PCTSTR sectionOptions                 = _T( "options" );
-	//const PCTSTR entryListGrid                  = _T( "treelistGrid" ); // for compatibility with 1.0.1, this entry is named treelistGrid.
-	//const PCTSTR entryListStripes               = _T( "listStripes" );
-	//const PCTSTR entryListFullRowSelection      = _T( "listFullRowSelection" );
-	//const PCTSTR entryTreelistColorCount        = _T( "treelistColorCount" );
-	//const PCTSTR entryTreelistColorN            = _T( "treelistColor%d" );
-	//const PCTSTR entryHumanFormat               = _T( "humanFormat" );
-	//const PCTSTR entryShowTimeSpent             = _T( "showTimeSpent" );
-	//const PCTSTR entryTreemapHighlightColor     = _T( "treemapHighlightColor" );
-	//const PCTSTR entryTreemapStyle              = _T( "treemapStyle" );
-	//const PCTSTR entryTreemapGrid               = _T( "treemapGrid" );
-	//const PCTSTR entryTreemapGridColor          = _T( "treemapGridColor" );
-	//const PCTSTR entryBrightness                = _T( "brightness" );
-	//const PCTSTR entryHeightFactor              = _T( "heightFactor" );
-	//const PCTSTR entryScaleFactor               = _T( "scaleFactor" );
-	//const PCTSTR entryAmbientLight              = _T( "ambientLight" );
-	//const PCTSTR entryLightSourceX              = _T( "lightSourceX" );
-	//const PCTSTR entryLightSourceY              = _T( "lightSourceY" );
-	//const PCTSTR entryFollowMountPoints         = _T( "followMountPoints" );
-	//const PCTSTR entryFollowJunctionPoints      = _T( "followJunctionPoints" );
-	//const PCTSTR entryEnabled                   = _T( "enabled" );
-	//const PCTSTR entryTitle                     = _T( "title" );
-	//const PCTSTR entryWorksForDrives            = _T( "worksForDrives" );
-	//const PCTSTR entryWorksForDirectories       = _T( "worksForDirectories" );
-	//const PCTSTR entryWorksForFilesFolder       = _T( "worksForFilesFolder" );
-	//const PCTSTR entryWorksForFiles             = _T( "worksForFiles" );
-	//const PCTSTR entryWorksForUncPaths          = _T( "worksForUncPaths" );
-	//const PCTSTR entryCommandLine               = _T( "commandLine" );
-	//const PCTSTR entryRecurseIntoSubdirectories = _T( "recurseIntoSubdirectories" );
-	//const PCTSTR entryAskForConfirmation        = _T( "askForConfirmation" );
-	//const PCTSTR entryShowConsoleWindow         = _T( "showConsoleWindow" );
-	//const PCTSTR entryWaitForCompletion         = _T( "waitForCompletion" );
-	//const PCTSTR entryRefreshPolicy             = _T( "refreshPolicy" );
-
 	const COLORREF treelistColorDefault[TREELISTCOLORCOUNT] = {
 		RGB(  64,  64, 140 ),
 		RGB( 140,  64,  64 ),
@@ -192,27 +137,14 @@ namespace {
 
 	void SanifyRect( _Inout_ RECT& rc ) {
 		const INT visible = 30;
-
-		//rc.NormalizeRect( );
 		normalize_RECT( rc );
 
 		RECT rcDesktop_temp = { 0, 0, 0, 0 };
-
-		/*
-_AFXWIN_INLINE CWnd* PASCAL CWnd::GetDesktopWindow()
-	{ return CWnd::FromHandle(::GetDesktopWindow()); }
-
-_AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
-	{ ASSERT(::IsWindow(m_hWnd)); ::GetWindowRect(m_hWnd, lpRect); }
-
-		*/
 		const auto desktop_window = CWnd::FromHandle( ::GetDesktopWindow( ) );
 		ASSERT( ::IsWindow( desktop_window->m_hWnd ) );
 		
-		//If the function succeeds, the return value is nonzero.
+		//If [GetWindowRect] succeeds, the return value is nonzero.
 		VERIFY( ::GetWindowRect( desktop_window->m_hWnd, &rcDesktop_temp ) );
-
-		//CWnd::GetDesktopWindow( )->GetWindowRect( &rcDesktop_temp );
 
 		const RECT& rcDesktop = rcDesktop_temp;
 
@@ -227,14 +159,11 @@ _AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
 			}
 		if ( rc.left > rcDesktop.right - visible ) {
 			VERIFY( ::OffsetRect( &rc, -( visible ), 0 ) );
-			//rc.OffsetRect( -visible, 0 );
 			}
 		if ( rc.top < 0 ) {
-			//rc.OffsetRect( -rc.top, 0 );
 			VERIFY( ::OffsetRect( &rc, -( rc.top ), 0 ) );
 			}
 		if ( rc.top > rcDesktop.bottom - visible ) {
-			//rc.OffsetRect( 0, -visible );
 			VERIFY( ::OffsetRect( &rc, 0, -( visible ) ) );
 			}
 		}
@@ -242,15 +171,6 @@ _AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
 	std::wstring EncodeWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 		TRACE( _T( "Encoding window placement....\r\n" ) );
 		TRACE( _T( "Placement that we're encoding:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
-		//CString s;
-		//s.Format(
-		//	_T( "%u,%u," )
-		//	_T( "%ld,%ld,%ld,%ld," )
-		//	_T( "%ld,%ld,%ld,%ld" ),
-		//	wp.flags, wp.showCmd,
-		//	wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y,
-		//	wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom
-		//);
 
 		std::wstring fmt_str;
 		fmt_str += std::to_wstring( wp.flags );
@@ -396,21 +316,10 @@ void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
 	pt = rc.TopLeft( );
 	}
 
-//RADIO CPersistence::GetSelectDrivesRadio( ) {
-//	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, 0 ) );
-//	CheckMinMax( radio, 0, 2 );
-//	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
-//	return static_cast<RADIO>( radio );
-//	}
-
+//TODO: is this even used??
 void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
 	drives.clear( );
 	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesDrives, _T( "" ) );
-	
-	//const DWORD select_buf_size = MAX_PATH;
-	//wchar_t select_buf[ select_buf_size ] = { 0 };
-	
-	//const auto chars_written = CRegistryUser::CStyle_GetProfileString( select_buf, select_buf_size, registry_strings::sectionPersistence, entrySelectDrivesDrives, _T( "" ) );
 	rsize_t i = 0;
 	while ( i < s.length( ) ) {
 		std::wstring drive;

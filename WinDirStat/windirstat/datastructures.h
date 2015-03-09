@@ -300,6 +300,5 @@ namespace global_strings {
 	_Null_terminated_ const wchar_t GetDriveInformation_succeed_fmt_str[ ] = L"thread (%p)->GetDriveInformation succeeded!, name:%s, total: %I64u, free: %I64u\r\n";
 	}
 
-#else
-#error ass
+
 #endif

@@ -96,6 +96,11 @@ namespace {
 		std::wstring       path;
 		};
 
+	struct pair_of_item_and_path final {
+		CTreeListItem* ptr;
+		std::wstring path;
+		};
+
 	}
 
 

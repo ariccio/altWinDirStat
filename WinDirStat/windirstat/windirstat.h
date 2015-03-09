@@ -19,8 +19,8 @@ class CMountPoints;
 
 
 // Frequently used "globals"
-CMainFrame*   GetMainFrame( );
-CDirstatApp*  GetApp( );
+CMainFrame*  GetMainFrame( );
+CDirstatApp* GetApp( );
 
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp final : public CWinApp {
