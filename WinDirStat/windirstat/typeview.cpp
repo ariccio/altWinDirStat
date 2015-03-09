@@ -575,7 +575,6 @@ void CTypeView::SetSelection( ) {
 		const auto item = Document->m_selectedItem;
 		//if ( item != NULL && item->m_type == IT_FILE ) {
 		if ( ( item != NULL ) && ( item->m_children == nullptr ) ) {
-			ASSERT( item->m_heap_block_alloc == nullptr );
 			PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
 			//ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
 			if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {

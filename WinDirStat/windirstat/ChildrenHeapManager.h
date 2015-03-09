@@ -16,13 +16,6 @@ struct Children_String_Heap_Manager {
 	__forceinline Children_String_Heap_Manager( ) : m_buffer_size { 0u }, m_buffer_filled { 0u }, m_string_buffer { nullptr } { }
 	__forceinline Children_String_Heap_Manager( const rsize_t number_of_characters_needed ) : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 ), m_string_buffer( new wchar_t[ number_of_characters_needed ] ) { }
 
-
-	~Children_String_Heap_Manager( ) {
-		m_string_buffer.reset( nullptr );
-		m_buffer_size = 0;
-		m_buffer_filled = 0;
-		}
-
 	__forceinline void reset( const rsize_t number_of_characters_needed ) {
 		m_buffer_filled = 0u;
 		m_string_buffer.reset( new wchar_t[ number_of_characters_needed ] );

@@ -775,11 +775,6 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 	ASSERT( item->m_childCount > 0 );
 	const auto countOfChildren = item->m_childCount;
 
-	if ( item->m_childCount > 0 ) {
-		ASSERT( item->m_childCount == item->m_heap_block_alloc->m_childCount );
-		}
-
-
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
@@ -836,7 +831,6 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
 	if ( item->m_children == nullptr ) {
-		ASSERT( item->m_heap_block_alloc == nullptr );
 		//this should be fast, as we have 0 children.
 		ASSERT( item->m_childCount == 0 );
 		if ( item->size_recurse( ) == 0 ) {
@@ -877,7 +871,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 		}
 
 	if ( item->m_children == nullptr ) {
-		ASSERT( item->m_heap_block_alloc == nullptr );
 		RenderLeaf( offscreen_buffer, item, surface );
 		return;
 		}
@@ -885,11 +878,6 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 	if ( !( item->m_childCount > 0 ) ) {
 		return;
 		}
-
-	if ( item->m_childCount > 0 ) {
-		ASSERT( item->m_childCount == item->m_heap_block_alloc->m_childCount );
-		}
-
 	DrawChildren( offscreen_buffer, item, surface, height );
 	WDS_validateRectangle_DEBUG( item, rc );
 	}
@@ -909,7 +897,6 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	  return: whether the rows are horizontal.
 	*/
 	ASSERT( !( parent->m_children == nullptr ) );
-	ASSERT( parent->m_heap_block_alloc != nullptr );
 	
 	ASSERT( parent->m_childCount > 0 );
 
@@ -1327,7 +1314,6 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem*
 	rc.NormalizeRect( );
 	COLORREF colorOfItem;
 	if ( item->m_children == nullptr ) {
-		ASSERT( item->m_heap_block_alloc == nullptr );
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
 		}
 	else {
