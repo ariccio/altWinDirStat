@@ -66,60 +66,19 @@ protected:
 	};
 
 
-static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
-struct SRECT final {
-	/*
-	  short-based RECT, saves 8 bytes compared to tagRECT
-	  */
-	SRECT( );
-
-	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom );
-	//SRECT( const SRECT& in ) {
-	//	left   = in.left;
-	//	top    = in.top;
-	//	right  = in.right;
-	//	bottom = in.bottom;
-	//	}
-	
-	SRECT( const SRECT& in ) = default;
-
-	//SRECT( const CRect& in ) {
-	//	left   = static_cast<std::int16_t>( in.right );
-	//	top    = static_cast<std::int16_t>( in.top );
-	//	right  = static_cast<std::int16_t>( in.right );
-	//	bottom = static_cast<std::int16_t>( in.bottom );
-	//	}
-
-	SRECT( const RECT& in );
-
-
-	const int Width( ) const {
-		return right - left;
-		}
-
-	const int Height( ) const {
-		return bottom - top;
-		}
-
-	std::int16_t left;
-	std::int16_t top;
-	std::int16_t right;
-	std::int16_t bottom;
-	};
-
 
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
 struct SExtensionRecord final {
-	SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u } { }
+	SExtensionRecord( );
 
-	SExtensionRecord( const SExtensionRecord& in ) = default;
+	SExtensionRecord( const SExtensionRecord& in );
 	//SExtensionRecord( SExtensionRecord& in ) = delete;
 
 	//Yes, this is used!
 	SExtensionRecord( SExtensionRecord&& in );
 
-	SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
+	SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in );
 	/*
 	  COMPARED BY BYTES!
 	  Data stored for each extension.
@@ -132,7 +91,7 @@ struct SExtensionRecord final {
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	COLORREF color;
 
-	bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.ext.compare( rhs.ext ) < 0 ); }
+	const bool compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const;
 
 	};
 #pragma message( "Restoring data alignment.... " )
@@ -140,7 +99,7 @@ struct SExtensionRecord final {
 
 //Used for mapping std::wstring -> files + bytes
 struct minimal_SExtensionRecord final {
-	minimal_SExtensionRecord( ) : files { 0u }, bytes { 0u } { }
+	minimal_SExtensionRecord( );
 	_Field_range_( 0, 4294967295 ) std::uint32_t files;
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
 	};
@@ -178,48 +137,8 @@ enum class Treemap_STYLE {
 
 
 
-struct FILEINFO final {
-	FILEINFO( ) { }
-	FILEINFO( const FILEINFO& in ) = delete;
-	FILEINFO& operator=( const FILEINFO& in ) = delete;
 
-	FILEINFO& operator=( FILEINFO&& in );
 
-	FILEINFO( FILEINFO&& in );
-
-	FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ] ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ) {
-#ifdef DEBUG
-		if ( length > 34359738368 ) {
-			_CrtDbgBreak( );
-			}
-#endif
-		}
-	void reset( );
-
-	//bool operator<( const FILEINFO& rhs ) const {
-	//	return length < rhs.length;
-	//	}
-
-	std::uint64_t length;
-	FILETIME      lastWriteTime;
-	//C4820: 'FILEINFO' : '4' bytes padding added after data member 'FILEINFO::attributes'
-	DWORD         attributes;
-	std::wstring  name;
-	};
-
-struct DIRINFO final {
-	DIRINFO( ) { }
-	DIRINFO( DIRINFO&& in );
-
-	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ], _In_ std::wstring path_ ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ), path( std::move( path_ ) ) { }
-
-	std::uint64_t length;
-	FILETIME      lastWriteTime;
-	//C4820: 'DIRINFO' : '4' bytes padding added after data member 'DIRINFO::attributes'
-	DWORD         attributes;
-	std::wstring       name;
-	std::wstring       path;
-	};
 
 // The dialog has these three radio buttons.
 //enum RADIO : INT {

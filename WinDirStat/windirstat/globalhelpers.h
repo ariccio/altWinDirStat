@@ -62,6 +62,45 @@ INT signum(const T x) {
 _Success_( SUCCEEDED( return ) )
 const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written );
 
+static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
+struct SRECT final {
+	/*
+	  short-based RECT, saves 8 bytes compared to tagRECT
+	  */
+	SRECT( );
+
+	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom );
+	//SRECT( const SRECT& in ) {
+	//	left   = in.left;
+	//	top    = in.top;
+	//	right  = in.right;
+	//	bottom = in.bottom;
+	//	}
+	
+	//SRECT( const SRECT& in ) = default;
+
+	//SRECT( const CRect& in ) {
+	//	left   = static_cast<std::int16_t>( in.right );
+	//	top    = static_cast<std::int16_t>( in.top );
+	//	right  = static_cast<std::int16_t>( in.right );
+	//	bottom = static_cast<std::int16_t>( in.bottom );
+	//	}
+
+	SRECT( const RECT& in );
+
+
+	const int Width( ) const;
+
+	const int Height( ) const;
+
+	std::int16_t left;
+	std::int16_t top;
+	std::int16_t right;
+	std::int16_t bottom;
+	};
+
+
+
 
 struct QPC_timer final {
 	QPC_timer( );

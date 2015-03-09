@@ -18,10 +18,142 @@
 #undef new
 #endif
 
+//struct FILEINFO;
+
+//forward declaration
+//void FindFilesLoop ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path );
+
+namespace {
+	struct FILEINFO final {
+		FILEINFO( ) { }
+		FILEINFO( const FILEINFO& in ) = delete;
+		FILEINFO& operator=( const FILEINFO& in ) = delete;
+
+		FILEINFO& operator=( FILEINFO&& in ) {
+			length = std::move( in.length );
+			lastWriteTime = std::move( in.lastWriteTime );
+			attributes = std::move( in.attributes );
+			name = std::move( in.name );
+			return ( *this );
+			}
+
+
+		FILEINFO( FILEINFO&& in ) {
+			length = std::move( in.length );
+			lastWriteTime = std::move( in.lastWriteTime );
+			attributes = std::move( in.attributes );
+			name = std::move( in.name );
+			}
+
+
+		FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ] ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ) {
+	#ifdef DEBUG
+			if ( length > 34359738368 ) {
+				_CrtDbgBreak( );
+				}
+		#endif
+			}
+
+
+
+		void reset( ) {
+			length = 0;
+			lastWriteTime.dwLowDateTime  = 0;
+			lastWriteTime.dwHighDateTime = 0;
+			attributes = INVALID_FILE_ATTRIBUTES;
+			name.clear( );
+			}
+
+
+		bool operator<( const FILEINFO& rhs ) const {
+			return length < rhs.length;
+			}
+
+		std::uint64_t length;
+		FILETIME      lastWriteTime;
+		//C4820: 'FILEINFO' : '4' bytes padding added after data member 'FILEINFO::attributes'
+		DWORD         attributes;
+		std::wstring  name;
+		};
+
+	struct DIRINFO final {
+		DIRINFO( ) { }
+		DIRINFO( DIRINFO&& in ) {
+			length = std::move( in.length );
+			lastWriteTime = std::move( in.lastWriteTime );
+			attributes = std::move( in.attributes );
+			name = std::move( in.name );
+			path = std::move( in.path );
+			}
+
+		DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ], _In_ std::wstring path_ ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ), path( std::move( path_ ) ) { }
+
+		std::uint64_t length;
+		FILETIME      lastWriteTime;
+		//C4820: 'DIRINFO' : '4' bytes padding added after data member 'DIRINFO::attributes'
+		DWORD         attributes;
+		std::wstring       name;
+		std::wstring       path;
+		};
+
+	}
+
+
+std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
+//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
+void DoSomeWork ( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse = false );
+
+
+WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
+	ASSERT( path.back( ) == L'*' );
+	WIN32_FIND_DATA fData;
+	HANDLE fDataHand = NULL;
+	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
+	//FILETIME t;
+	FILEINFO fi;
+	//zeroFILEINFO( fi );
+	//memset_zero_struct( fi );
+	fi.reset( );
+	BOOL findNextFileRes = TRUE;
+	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
+		auto scmpVal  = wcscmp( fData.cFileName, L".." );
+		auto scmpVal2 = wcscmp( fData.cFileName, L"." );
+		if ( ( scmpVal == 0 ) || ( scmpVal2 == 0 ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
+			findNextFileRes = FindNextFileW( fDataHand, &fData );
+			continue;//No point in operating on ourselves!
+			}
+		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
+			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
+			const auto alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
+			directories.emplace_back( DIRINFO { UINT64_ERROR,
+												std::move( fData.ftLastWriteTime ),
+												std::move( fData.dwFileAttributes ),
+												fData.cFileName,
+												std::move( alt_path_this_dir )
+											  }
+									);
+			}
+		else {
+			files.emplace_back( FILEINFO {  std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ), 
+											fData.ftLastWriteTime,
+											fData.dwFileAttributes,
+											fData.cFileName
+										 }
+							  );
+			}
+		findNextFileRes = FindNextFileW( fDataHand, &fData );
+		}
+	if ( fDataHand == INVALID_HANDLE_VALUE ) {
+		return;
+		}
+	VERIFY( FindClose( fDataHand ) );
+	}
 
 namespace {
 
 
+	
+	
 
 	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
 	__forceinline WDS_DECLSPEC_NOTHROW std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
@@ -228,50 +360,7 @@ namespace {
 	}
 
 
-WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
-	ASSERT( path.back( ) == L'*' );
-	WIN32_FIND_DATA fData;
-	HANDLE fDataHand = NULL;
-	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
-	//FILETIME t;
-	FILEINFO fi;
-	//zeroFILEINFO( fi );
-	//memset_zero_struct( fi );
-	fi.reset( );
-	BOOL findNextFileRes = TRUE;
-	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
-		auto scmpVal  = wcscmp( fData.cFileName, L".." );
-		auto scmpVal2 = wcscmp( fData.cFileName, L"." );
-		if ( ( scmpVal == 0 ) || ( scmpVal2 == 0 ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
-			findNextFileRes = FindNextFileW( fDataHand, &fData );
-			continue;//No point in operating on ourselves!
-			}
-		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
-			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
-			const auto alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
-			directories.emplace_back( DIRINFO { UINT64_ERROR,
-												std::move( fData.ftLastWriteTime ),
-												std::move( fData.dwFileAttributes ),
-												fData.cFileName,
-												std::move( alt_path_this_dir )
-											  }
-									);
-			}
-		else {
-			files.emplace_back( FILEINFO {  std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ), 
-											fData.ftLastWriteTime,
-											fData.dwFileAttributes,
-											fData.cFileName
-										 }
-							  );
-			}
-		findNextFileRes = FindNextFileW( fDataHand, &fData );
-		}
-	if ( fDataHand == INVALID_HANDLE_VALUE ) {
-		return;
-		}
-	VERIFY( FindClose( fDataHand ) );
-	}
+
 
 
 
@@ -493,6 +582,58 @@ WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( const CTree
 #pragma pop_macro("new")
 #undef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
 #endif
+
+//FILEINFO::FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ] ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ) {
+//#ifdef DEBUG
+//	if ( length > 34359738368 ) {
+//		_CrtDbgBreak( );
+//		}
+//#endif
+//	}
+
+
+//FILEINFO& FILEINFO::operator=( FILEINFO&& in ) {
+//	length = std::move( in.length );
+//	lastWriteTime = std::move( in.lastWriteTime );
+//	attributes = std::move( in.attributes );
+//	name = std::move( in.name );
+//	return ( *this );
+//	}
+
+//FILEINFO::FILEINFO( FILEINFO&& in ) {
+//	length = std::move( in.length );
+//	lastWriteTime = std::move( in.lastWriteTime );
+//	attributes = std::move( in.attributes );
+//	name = std::move( in.name );
+//	}
+
+//void FILEINFO::reset( ) {
+//	length = 0;
+//	lastWriteTime.dwLowDateTime  = 0;
+//	lastWriteTime.dwHighDateTime = 0;
+//	attributes = INVALID_FILE_ATTRIBUTES;
+//	name.clear( );
+//	}
+
+//Yes, this is used!
+SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) {
+	ext = std::move( in.ext );
+	files = std::move( in.files );
+	bytes = std::move( in.bytes );
+	color = std::move( in.color );
+	}
+
+
+//DIRINFO::DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ], _In_ std::wstring path_ ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ), path( std::move( path_ ) ) { }
+
+
+//DIRINFO::DIRINFO( DIRINFO&& in ) {
+//	length = std::move( in.length );
+//	lastWriteTime = std::move( in.lastWriteTime );
+//	attributes = std::move( in.attributes );
+//	name = std::move( in.name );
+//	path = std::move( in.path );
+//	}
 
 
 #else

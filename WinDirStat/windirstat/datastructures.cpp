@@ -80,54 +80,32 @@ CSetTextColor::~CSetTextColor( ) {
 	}
 
 
-//Yes, this is used!
-SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) {
-	ext = std::move( in.ext );
-	files = std::move( in.files );
-	bytes = std::move( in.bytes );
-	color = std::move( in.color );
+
+
+
+SExtensionRecord::SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u } { }
+
+SExtensionRecord::SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
+
+SExtensionRecord::SExtensionRecord( const SExtensionRecord& in ) {
+	/*
+	std::wstring ext;
+	_Field_range_( 0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
+	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
+	COLORREF color;
+	*/
+	ext = in.ext;
+	files = in.files;
+	bytes = in.bytes;
+	color = in.color;
 	}
 
-FILEINFO& FILEINFO::operator=( FILEINFO&& in ) {
-	length = std::move( in.length );
-	lastWriteTime = std::move( in.lastWriteTime );
-	attributes = std::move( in.attributes );
-	name = std::move( in.name );
-	return ( *this );
+const bool SExtensionRecord::compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const {
+	return ( lhs.ext.compare( rhs.ext ) < 0 );
 	}
 
-FILEINFO::FILEINFO( FILEINFO&& in ) {
-	length = std::move( in.length );
-	lastWriteTime = std::move( in.lastWriteTime );
-	attributes = std::move( in.attributes );
-	name = std::move( in.name );
-	}
-
-void FILEINFO::reset( ) {
-	length = 0;
-	lastWriteTime.dwLowDateTime  = 0;
-	lastWriteTime.dwHighDateTime = 0;
-	attributes = INVALID_FILE_ATTRIBUTES;
-	name.clear( );
-	}
+minimal_SExtensionRecord::minimal_SExtensionRecord( ) : files { 0u }, bytes { 0u } { }
 
 
-DIRINFO::DIRINFO( DIRINFO&& in ) {
-	length = std::move( in.length );
-	lastWriteTime = std::move( in.lastWriteTime );
-	attributes = std::move( in.attributes );
-	name = std::move( in.name );
-	path = std::move( in.path );
-	}
-
-SRECT::SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
-SRECT::SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
-
-SRECT::SRECT( const RECT& in ) {
-	left   = static_cast<std::int16_t>( in.right );
-	top    = static_cast<std::int16_t>( in.top );
-	right  = static_cast<std::int16_t>( in.right );
-	bottom = static_cast<std::int16_t>( in.bottom );
-	}
 
 #endif

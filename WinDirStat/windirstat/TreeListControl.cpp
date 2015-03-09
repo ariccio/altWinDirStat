@@ -165,17 +165,19 @@ namespace {
 		return alt_errCode;
 		}
 
+	struct compare_CTreeListItems final {
+		compare_CTreeListItems( const CTreeListControl* const ctrl_in ) : ctrl( ctrl_in ) { }
+		compare_CTreeListItems& operator=( compare_CTreeListItems& in ) = delete;
+		bool operator()( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
+			const auto result = ( lhs->CompareS( rhs, ctrl->m_sorting ) < 0 );
+			return result;
+			}
+		const CTreeListControl* const ctrl;
+		};
+
+
 	}
 
-struct compare_CTreeListItems final {
-	compare_CTreeListItems( const CTreeListControl* const ctrl_in ) : ctrl( ctrl_in ) { }
-	compare_CTreeListItems& operator=( compare_CTreeListItems& in ) = delete;
-	bool operator()( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
-		const auto result = ( lhs->CompareS( rhs, ctrl->m_sorting ) < 0 );
-		return result;
-		}
-	const CTreeListControl* const ctrl;
-	};
 
 
 
@@ -1414,9 +1416,10 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 		}
 	CWnd::SetRedraw( FALSE );
 	InsertItem( root, 0 );
+	CWnd::SetRedraw( TRUE );
 	//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
 	ExpandItemAndScroll( 0 );//otherwise ambiguous call - is it a NULL pointer?
-	CWnd::SetRedraw( TRUE );
+	
 	}
 
 void CTreeListControl::InsertItem( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i ) {

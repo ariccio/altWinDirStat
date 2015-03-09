@@ -1634,6 +1634,25 @@ void Treemap_Options::SetLightSourcePoint   ( const POINT  pt  ) {
 	SetLightSourceYPercent( pt.y );
 	}
 
+SRECT::SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
+SRECT::SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
+
+SRECT::SRECT( const RECT& in ) {
+	left   = static_cast<std::int16_t>( in.right );
+	top    = static_cast<std::int16_t>( in.top );
+	right  = static_cast<std::int16_t>( in.right );
+	bottom = static_cast<std::int16_t>( in.bottom );
+	}
+
+
+const int SRECT::Width( ) const {
+	return right - left;
+	}
+
+const int SRECT::Height( ) const {
+	return bottom - top;
+	}
+
 #else
 
 #endif
