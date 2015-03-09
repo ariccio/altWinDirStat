@@ -282,6 +282,11 @@ namespace {
 		ASSERT( ThisCItem->m_childCount == 0 );
 		if ( total_count > 0 ) {
 			ThisCItem->m_children.reset( new CTreeListItem[ total_count ] );
+			size_t temp = 0;
+			ThisCItem->m_heap_block_alloc = ( allocate_enough_memory_for_children_block( static_cast<std::uint32_t>( total_count ), temp ) );
+			}
+		else {
+			ThisCItem->m_heap_block_alloc = nullptr;
 			}
 		////true for 2 means DIR
 
@@ -311,7 +316,13 @@ namespace {
 
 		ThisCItem->m_name_pool.reset( total_size_alloc );
 
+		if ( total_count > 0 ) {
+			ThisCItem->m_heap_block_alloc->m_name_pool.reset( total_size_alloc );
+			ASSERT( ThisCItem->m_heap_block_alloc->m_name_pool.m_buffer_filled == 0 );
+			}
+
 		ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
+		
 
 		//ASSERT( path.back( ) != _T( '\\' ) );
 		//sizesToWorkOn_ CANNOT BE CONST!!
@@ -319,6 +330,8 @@ namespace {
 		std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
 		dirsToWorkOn.reserve( dirCount );
 		const auto thisOptions = GetOptions( );
+
+		std::uint32_t count_added_so_far = static_cast<std::uint32_t>( vecFiles.size( ) );
 
 		//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 		for ( const auto& dir : vecDirs ) {
@@ -329,6 +342,12 @@ namespace {
 			PWSTR new_name_ptr = nullptr;
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
 			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
+			if ( ThisCItem->m_heap_block_alloc != nullptr ) {
+				const HRESULT copy_res_alt = ThisCItem->m_heap_block_alloc->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
+				( void ) copy_res_alt;
+				}
+
+			
 
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
@@ -338,6 +357,12 @@ namespace {
 				//                                                                                               IT_DIRECTORY
 
 				const auto newitem = new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+				const auto newitem_alt = new ( &( ThisCItem->m_children[ count_added_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+				( void ) newitem_alt;
+
+				++count_added_so_far;
 
 				//detect overflows. highly unlikely.
 				ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -376,6 +401,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 
 	ASSERT( path.back( ) != _T( '\\' ) );
 
+	std::uint32_t count_added_so_far = 0;
 
 	for ( const auto& aFile : vecFiles ) {
 		if ( ( aFile.attributes bitand FILE_ATTRIBUTE_COMPRESSED ) != 0 ) {
@@ -387,6 +413,10 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
 			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
 
+			const HRESULT copy_res_alt = ThisCItem->m_heap_block_alloc->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
+
+			( void ) copy_res_alt;
+
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (compressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
@@ -394,6 +424,13 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			else {
 				//                                                                                            IT_FILE
 				auto newChild = ::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+				auto newChild_alt = ::new ( &( ThisCItem->m_children[ count_added_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+				( void ) newChild_alt;
+
+				++count_added_so_far;
+				
 				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
@@ -407,6 +444,10 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
 			const HRESULT copy_res = ThisCItem->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
 
+			const HRESULT copy_res_alt = ThisCItem->m_heap_block_alloc->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
+
+			( void ) copy_res_alt;
+
 			if ( !SUCCEEDED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (uncompressed) name str! (addFiles_returnSizesToWorkOn)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
@@ -414,6 +455,11 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			else {
 				//                                                                            IT_FILE
 				::new ( &( ThisCItem->m_children[ ThisCItem->m_childCount ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+
+				::new ( &( ThisCItem->m_children[ count_added_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				
+				++count_added_so_far;
+
 				}
 			}
 		//detect overflows. highly unlikely.

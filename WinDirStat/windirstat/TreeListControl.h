@@ -24,6 +24,8 @@ class CSortingListItem;
 class CImageList;
 class CDirstatDoc;
 
+struct children_heap_block_allocation;
+
 
 struct attribs final {
 	bool readonly   : 1;
@@ -93,11 +95,11 @@ class CTreeListItem final : public COwnerDrawnListItem {
 			}
 
 		//default constructor DOES NOT initialize jack shit.
-		__forceinline CTreeListItem( ) { }
+		__forceinline CTreeListItem( ) : m_heap_block_alloc( nullptr ) { }
 
 
 		//const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length 
-		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u } {
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u }, m_heap_block_alloc { nullptr } {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -105,18 +107,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		CTreeListItem( CTreeListItem& in ) = delete;
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
 
-		virtual ~CTreeListItem( ) = default;
-
-
-
-
-
-
-
-
-
-
-
+		virtual ~CTreeListItem( );
 
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
@@ -138,10 +129,6 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
 		 inline const HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-
-
-
 
 		FILETIME FILETIME_recurse( ) const;
 
@@ -262,13 +249,16 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		                       mutable std::unique_ptr<VISIBLEINFO>     m_vi = nullptr; // Data needed to display the item.
 		                       mutable SRECT                            m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
 		                               attribs                          m_attr;
+
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
 		_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
+
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size;                // OwnSize
 		                               FILETIME                         m_lastChange;          // Last modification time OF SUBTREE
 		_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
+		                               children_heap_block_allocation* m_heap_block_alloc;
 	};
 
 
@@ -428,14 +418,18 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 //           https://www.securecoding.cert.org/confluence/display/cplusplus/MEM54-CPP.+Provide+placement+new+with+properly-aligned+pointers+to+sufficient+storage+capacity
 //It'll have to use a struct that'll look something like this:
 struct children_heap_block_allocation final {
-	children_heap_block_allocation( ) : m_childCount { 0u } { }
+	children_heap_block_allocation( ) : m_childCount { 0u }, m_name_pool { } { }
 	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
 	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;
 
 	~children_heap_block_allocation( ) {
-		for ( size_t i = 0u; i < m_childCount; ++i ) {
-			m_children[ i ].~CTreeListItem( );
+		if ( m_childCount > 0 ) {
+			for ( size_t i = 0u; i < m_childCount; ++i ) {
+				auto item_to_destruct = &( this->m_children[ i ] );
+				item_to_destruct->~CTreeListItem( );
+				}
 			}
+		m_childCount = 0;
 		}
 
 	_Field_range_( 0, 4294967295 )

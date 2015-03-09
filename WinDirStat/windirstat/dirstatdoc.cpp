@@ -488,6 +488,7 @@ void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 	std::wstring path;
 	//if ( item.m_type == IT_FILE ) {
 	if ( item.m_children == nullptr ) {
+		ASSERT( item.m_heap_block_alloc == nullptr );
 		path = item.GetPath( ).c_str( );
 		}
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );

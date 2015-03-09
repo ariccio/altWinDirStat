@@ -175,6 +175,21 @@ namespace {
 		const CTreeListControl* const ctrl;
 		};
 
+	inline const INT compare_sibling_NT_COMPRESS( _In_ const CTreeListItem* const left, _In_ const CTreeListItem* const right ) {
+		//return ( ( ( m_vi != nullptr ) && ( other->m_vi != nullptr ) ) ? ( signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio ) ) : 0 );
+		if ( ( left->m_vi != nullptr ) && ( right->m_vi != nullptr ) ) {
+			return signum( left->m_vi->ntfs_compression_ratio - right->m_vi->ntfs_compression_ratio );
+			}
+		return 0;
+		}
+
+	inline void check_if_called_with_name( RANGE_ENUM_COL const column::ENUM_COL subitem ) {
+		ASSERT( subitem != column::COL_NAME );
+		if ( subitem == column::COL_NAME ) {
+			displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
+			std::terminate( );
+			}
+		}
 
 	}
 
@@ -326,6 +341,11 @@ std::uint32_t CTreeListItem::files_recurse( ) const {
 	static_assert( std::is_same<decltype( total ), decltype( std::declval<CTreeListItem>( ).m_childCount )>::value , "The type of total needs to be fixed!!" );
 	
 	const auto childCount = m_childCount;
+
+	if ( m_childCount > 0 ) {
+		ASSERT( m_childCount == m_heap_block_alloc->m_childCount );
+		}
+
 	const auto my_m_children = m_children.get( );
 	const rsize_t stack_alloc_threshold = 128;
 	if ( childCount < stack_alloc_threshold ) {
@@ -363,9 +383,15 @@ PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const {
 std::vector<CTreeListItem*> CTreeListItem::size_sorted_vector_of_children( ) const {
 	std::vector<CTreeListItem*> children;
 	const auto child_count = m_childCount;
+
+	if ( m_childCount > 0 ) {
+		ASSERT( m_childCount == m_heap_block_alloc->m_childCount );
+		}
+
 	children.reserve( child_count );
 	const auto local_m_children = m_children.get( );
 	if ( m_children != nullptr ) {
+		ASSERT( m_heap_block_alloc != nullptr );
 		//Not vectorized: 1200, loop contains data dependencies
 		for ( size_t i = 0; i < child_count; ++i ) {
 			children.emplace_back( local_m_children + i );
@@ -502,7 +528,11 @@ FILETIME CTreeListItem::FILETIME_recurse( ) const {
 		}
 	
 	const auto childCount = m_childCount;
-	
+
+	if ( m_childCount > 0 ) {
+		ASSERT( m_childCount == m_heap_block_alloc->m_childCount );
+		}
+
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t i = 0; i < childCount; ++i ) {
 		const auto ft_child = ( my_m_children + i )->FILETIME_recurse( );
@@ -519,6 +549,12 @@ _Success_( return < child_count )
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const {
 	ASSERT( child_count > 0u );
 	ASSERT( child_count == m_childCount );
+
+	if ( m_childCount > 0 ) {
+		ASSERT( m_childCount == m_heap_block_alloc->m_childCount );
+		}
+
+
 	for ( size_t i = 0u; i < child_count; i++ ) {
 		if ( child == GetSortedChild( i ) ) {
 			return i;
@@ -533,6 +569,11 @@ bool CTreeListItem::HasSiblings( ) const {
 		return false;
 		}
 	const auto count = m_parent->m_childCount;
+
+	if ( m_parent->m_childCount > 0 ) {
+		ASSERT( m_parent->m_childCount == m_parent->m_heap_block_alloc->m_childCount );
+		}
+
 	if ( count < 2u ) {
 		ASSERT( count == 1u );
 		return false;
@@ -591,6 +632,7 @@ std::wstring CTreeListItem::GetPath( ) const {
 _Pre_satisfies_( this->m_children._Myptr == nullptr ) 
 void CTreeListItem::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const {
 	ASSERT( m_children == nullptr );
+	ASSERT( m_heap_block_alloc == nullptr );
 
 	PCWSTR const resultPtrStr = CStyle_GetExtensionStrPtr( );
 	static_assert( std::is_same< std::decay<decltype(*m_name)>::type, wchar_t>::value, "Bad division below!" );
@@ -608,10 +650,17 @@ void CTreeListItem::stdRecurseCollectExtensionData_FILE( _Inout_ std::unordered_
 void CTreeListItem::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
+		ASSERT( m_heap_block_alloc == nullptr );
 		stdRecurseCollectExtensionData_FILE( extensionMap );
 		return;
 		}
 	const auto childCount = m_childCount;
+
+	if ( m_childCount > 0 ) {
+		ASSERT( m_childCount == m_heap_block_alloc->m_childCount );
+		}
+
+
 	const auto local_m_children = m_children.get( );
 	//todo: Iterate over the heapmanager items instead
 	//Not vectorized: 1200, loop contains data dependencies
@@ -666,6 +715,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL c
 
 	size_t chars_remaining = 0;
 	ASSERT( m_vi != nullptr );
+
 	const auto percentage = ( m_vi->ntfs_compression_ratio * static_cast< DOUBLE >( 100 ) );
 	ASSERT( percentage <= 100.00 );
 	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", percentage );
@@ -777,13 +827,26 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL c
 	return res;
 	}
 
+CTreeListItem::~CTreeListItem( ) {
+#ifdef WDS_OWNERDRAWNLISTITEM_DESTRUCTOR_DEBUG
+	TRACE( _T( "Deleting CTreeListItem @ %p\r\n" ), this );
+#endif
+
+	if ( m_heap_block_alloc != nullptr ) {
+		m_heap_block_alloc->~children_heap_block_allocation( );
+		free( m_heap_block_alloc );
+		m_heap_block_alloc = nullptr;
+		}
+	
+	
+	}
+
+
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 HRESULT CTreeListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
-	ASSERT( subitem != column::COL_NAME );
-	if ( subitem == column::COL_NAME ) {
-		displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
-		std::terminate( );
-		}
+#ifdef DEBUG
+	check_if_called_with_name( subitem );
+#endif
 	switch ( subitem )
 	{
 			case column::COL_PERCENTAGE:
@@ -806,7 +869,7 @@ HRESULT CTreeListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENU
 
 
 INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
-	auto const other = static_cast< const CTreeListItem* >( tlib );
+	const auto other = static_cast< const CTreeListItem* >( tlib );
 	switch ( subitem ) {
 			case column::COL_NAME:
 				return signum( wcscmp( m_name, other->m_name ) );
@@ -817,14 +880,15 @@ INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _I
 			case column::COL_ITEMS:
 				return signum( static_cast<std::int64_t>( files_recurse( ) ) - static_cast<std::int64_t>( other->files_recurse( ) ) );
 			case column::COL_NTCOMPRESS:
-				return ( ( ( m_vi != nullptr ) && ( other->m_vi != nullptr ) ) ? ( signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio ) ) : 0 );
+				return compare_sibling_NT_COMPRESS( this, other );
+				//return ( ( ( m_vi != nullptr ) && ( other->m_vi != nullptr ) ) ? ( signum( m_vi->ntfs_compression_ratio - other->m_vi->ntfs_compression_ratio ) ) : 0 );
 			case column::COL_LASTCHANGE:
 				return Compare_FILETIME( FILETIME_recurse( ), other->FILETIME_recurse( ) );
 
 			case column::COL_ATTRIBUTES:
 				return signum( GetSortAttributes( ) - other->GetSortAttributes( ) );
 			default:
-				ASSERT( false );
+				WDS_ASSERT_NEVER_REACHED( );
 				return 666;
 		}
 	}
@@ -832,6 +896,7 @@ INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _I
 void CTreeListItem::refresh_sizeCache( ) {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
+		ASSERT( m_heap_block_alloc == nullptr );
 		ASSERT( m_childCount == 0 );
 		ASSERT( m_size < UINT64_ERROR );
 		return;
@@ -881,6 +946,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
 	
 	//if ( m_type != IT_FILE ) {
 	if ( m_children != nullptr ) {
+		ASSERT( m_heap_block_alloc != nullptr );
 		const auto childCount = m_childCount;
 		const auto my_m_children = m_children.get( );
 		const rsize_t stack_alloc_threshold = 128;
@@ -915,6 +981,7 @@ void CTreeListItem::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const
 #endif
 	ASSERT( wcslen( m_name ) < 33000 );
 	if ( m_children == nullptr ) {
+		ASSERT( m_heap_block_alloc == nullptr );
 		//ASSERT( m_parent != NULL );
 		if ( m_parent != NULL ) {
 			//WTF IS GOING ON HERE
@@ -1369,6 +1436,7 @@ void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 void CTreeListControl::PrepareDefaultMenu( _In_ const CTreeListItem* const item, _Out_ CMenu* const menu ) const {
 	//if ( item->m_type == IT_FILE ) {
 	if ( item->m_children == nullptr ) {
+		ASSERT( item->m_heap_block_alloc == nullptr );
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
@@ -1430,6 +1498,12 @@ void CTreeListControl::InsertItem( _In_ const CTreeListItem* const item, _In_ _I
 
 int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	if ( item->m_childCount > 0 ) {
+
+		if ( item->m_childCount > 0 ) {
+			ASSERT( item->m_childCount == item->m_heap_block_alloc->m_childCount );
+			}
+
+
 		if ( item->HasSiblings( ) ) {
 			if ( item->IsExpanded( ) ) {
 				return static_cast<int>( ENUM_NODE::NODE_MINUS_SIBLING );
@@ -1702,6 +1776,7 @@ void CTreeListControl::OnItemDoubleClick ( _In_ _In_range_( 0, INT_MAX ) const i
 	if ( item != NULL ) {
 		//if ( item->m_type == IT_FILE ) {
 		if ( item->m_children == nullptr ) {
+			ASSERT( item->m_heap_block_alloc == nullptr );
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
 			ASSERT( m_pDocument == GetDocument( ) );
 			ASSERT( m_pDocument != NULL );
@@ -1924,6 +1999,13 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 	return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 	}
 
+#ifdef new
+#pragma push_macro("new")
+#define WDS_TREELISTCONTROL_PUSHED_MACRO_NEW
+#undef new
+#endif
+
+
 _At_( return, _Writable_bytes_( bytes_allocated ) )
 _Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated ) {
 	const rsize_t base_memory_size_in_bytes = ( sizeof( decltype( children_heap_block_allocation::m_childCount ) ) + sizeof( Children_String_Heap_Manager ) );
@@ -1943,9 +2025,16 @@ _Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_childre
 		}
 	bytes_allocated = total_size_needed;
 	children_heap_block_allocation* const new_block = static_cast< children_heap_block_allocation* const>( memory_block );
+	new ( new_block ) children_heap_block_allocation( );
 	new_block->m_childCount = number_of_children;
 	return new_block;
 	}
+
+#ifdef WDS_TREELISTCONTROL_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_TREELISTCONTROL_PUSHED_MACRO_NEW
+#endif
+
 
 
 #else
