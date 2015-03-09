@@ -285,7 +285,7 @@ namespace {
 			}
 
 
-		ASSERT( ThisCItem->m_childCount == 0 );
+		//ASSERT( ThisCItem->m_childCount == 0 );
 		ThisCItem->m_children.reset( new CTreeListItem[ total_count ] );
 
 
@@ -327,7 +327,7 @@ namespace {
 		dirsToWorkOn.reserve( dirCount );
 		const auto thisOptions = GetOptions( );
 
-		ASSERT( static_cast< size_t >( ThisCItem->m_childCount ) == vecFiles.size( ) );
+		//ASSERT( static_cast< size_t >( ThisCItem->m_childCount ) == vecFiles.size( ) );
 
 		std::uint32_t total_so_far = static_cast<std::uint32_t>( vecFiles.size( ) );
 
@@ -347,13 +347,13 @@ namespace {
 				}
 			else {
 				//                                                                                               IT_DIRECTORY
-				ASSERT( total_so_far == ThisCItem->m_childCount );
+				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				const auto newitem = new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 				//detect overflows. highly unlikely.
-				ASSERT( ThisCItem->m_childCount < 4294967290 );
+				//ASSERT( ThisCItem->m_childCount < 4294967290 );
 
-				++( ThisCItem->m_childCount );
+				//++( ThisCItem->m_childCount );
 				++total_so_far;
 				//ThisCItem->m_children_vector.emplace_back( newitem );
 
@@ -369,7 +369,7 @@ namespace {
 			}
 		ThisCItem->m_child_info->m_childCount = total_so_far;
 		ASSERT( ThisCItem->m_child_info->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
-		ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
+		//ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 		//ThisCItem->m_children_vector.shrink_to_fit( );
 		return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 		}
@@ -406,7 +406,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
-				ASSERT( total_so_far == ThisCItem->m_childCount );
+				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                                            IT_FILE
 				auto newChild = ::new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
@@ -427,14 +427,14 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
-				ASSERT( total_so_far == ThisCItem->m_childCount );
+				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                            IT_FILE
 				::new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				}
 			}
 		//detect overflows. highly unlikely.
-		ASSERT( ThisCItem->m_childCount < 4294967290 );
-		++( ThisCItem->m_childCount );
+		//ASSERT( ThisCItem->m_childCount < 4294967290 );
+		//++( ThisCItem->m_childCount );
 		++total_so_far;
 		}
 	ThisCItem->m_child_info->m_childCount = total_so_far;
@@ -456,7 +456,7 @@ _Pre_satisfies_( this->m_parent == NULL ) void CTreeListItem::AddChildren( _In_ 
 WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
-	ASSERT( ThisCItem->m_childCount == 0 );
+	//ASSERT( ThisCItem->m_childCount == 0 );
 	ASSERT( ThisCItem->m_children.get( ) == nullptr );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	ASSERT( strcmp_path == 0 );
@@ -530,16 +530,16 @@ WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 		}
 	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ), app );
 
-	if ( ThisCItem->m_child_info == nullptr ) {
-		ASSERT( ThisCItem->m_childCount == 0 );
-		}
+	//if ( ThisCItem->m_child_info == nullptr ) {
+	//	ASSERT( ThisCItem->m_childCount == 0 );
+	//	}
 
-	if ( ThisCItem->m_childCount == 0 ) {
-		ASSERT( ThisCItem->m_child_info == nullptr );
-		}
+	//if ( ThisCItem->m_childCount == 0 ) {
+	//	ASSERT( ThisCItem->m_child_info == nullptr );
+	//	}
 
 	if ( ThisCItem->m_child_info == nullptr ) {
-		ASSERT( ThisCItem->m_childCount == 0 );
+		//ASSERT( ThisCItem->m_childCount == 0 );
 		ASSERT( ThisCItem->m_child_info == nullptr );
 		ASSERT( itemsToWorkOn.first.size( ) == 0 );
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );

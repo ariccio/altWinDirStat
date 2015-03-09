@@ -108,7 +108,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 
 		//const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length 
-		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_childCount { 0u }, m_child_info( nullptr ) {
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, /*m_childCount { 0u },*/ m_child_info( nullptr ) {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -275,7 +275,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		                               attribs                          m_attr;
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
-		_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
+	  //_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size;                // OwnSize
 		                               FILETIME                         m_lastChange;          // Last modification time OF SUBTREE

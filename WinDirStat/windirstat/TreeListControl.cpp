@@ -64,7 +64,7 @@ namespace {
 	CTreeListItem* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
 		ASSERT( root_item->m_child_info != nullptr );
-		ASSERT( root_item->m_childCount == root_item->m_child_info->m_childCount );
+		//ASSERT( root_item->m_childCount == root_item->m_child_info->m_childCount );
 		for ( size_t i = 0; i < root_item->m_child_info->m_childCount; ++i ) {
 			if ( &( static_cast< const CTreeListItem* >( root_item )->m_children[ i ] ) == ( static_cast< const CTreeListItem* >( path.at( steps_from_target ) ) ) ) {
 				return ( &( static_cast< const CTreeListItem* >( root_item )->m_children[ i ] ) );
@@ -106,7 +106,7 @@ namespace {
 				return;
 				}
 			ASSERT( child->m_child_info != nullptr );
-			ASSERT( child->m_childCount == child->m_child_info->m_childCount );
+			//ASSERT( child->m_childCount == child->m_child_info->m_childCount );
 			for ( size_t i = 0; i < child->m_child_info->m_childCount; ++i ) {
 				if ( &( child->m_children[ i ] ) == ( static_cast< const CTreeListItem* >( path.at( steps_from_target ) ) ) ) {
 					child = &( child->m_children[ i ] );
@@ -321,18 +321,18 @@ DOUBLE CTreeListItem::GetFraction( ) const {
 //4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 _Ret_range_( 0, 4294967295 )
 std::uint32_t CTreeListItem::files_recurse( ) const {
-	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).files_recurse( ) ), decltype( std::declval<CTreeListItem>( ).m_childCount )>::value , "The return type of CItemBranch::files_recurse needs to be fixed!!" );
+	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).files_recurse( ) ), decltype( std::declval<CTreeListItem>( ).m_child_info->m_childCount )>::value , "The return type of CItemBranch::files_recurse needs to be fixed!!" );
 
 	if ( m_children == nullptr ) {
 		ASSERT( m_child_info == nullptr );
 		return 1;
 		}
 	std::uint32_t total = 0;
-	static_assert( std::is_same<decltype( total ), decltype( std::declval<CTreeListItem>( ).m_childCount )>::value , "The type of total needs to be fixed!!" );
+	static_assert( std::is_same<decltype( total ), decltype( std::declval<CTreeListItem>( ).m_child_info->m_childCount )>::value , "The type of total needs to be fixed!!" );
 	
 
 	ASSERT( m_child_info != nullptr );
-	ASSERT( m_childCount == m_child_info->m_childCount );
+	//ASSERT( m_childCount == m_child_info->m_childCount );
 
 	const auto childCount = m_child_info->m_childCount;
 	const auto my_m_children = m_children.get( );
@@ -372,12 +372,12 @@ PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const {
 std::vector<CTreeListItem*> CTreeListItem::size_sorted_vector_of_children( ) const {
 	std::vector<CTreeListItem*> children;
 	if ( m_children == nullptr ) {
-		ASSERT( m_childCount == 0 );
+		//ASSERT( m_childCount == 0 );
 		ASSERT( m_child_info == nullptr );
 		return children;
 		}
 	ASSERT( m_child_info != nullptr );
-	ASSERT( m_childCount == m_child_info->m_childCount );
+	//ASSERT( m_childCount == m_child_info->m_childCount );
 
 	const auto child_count = m_child_info->m_childCount;
 	children.reserve( child_count );
@@ -390,7 +390,7 @@ std::vector<CTreeListItem*> CTreeListItem::size_sorted_vector_of_children( ) con
 		}
 #ifdef DEBUG
 	else {
-		ASSERT( m_childCount == 0 );
+		//ASSERT( m_childCount == 0 );
 		}
 #endif
 	//TODO: qsort is bleh
@@ -405,7 +405,7 @@ std::uint64_t CTreeListItem::size_recurse( ) const {
 	//ASSERT( m_size != UINT64_ERROR );
 	//if ( m_type == IT_FILE ) {
 	if ( !m_children ) {
-		ASSERT( m_childCount == 0 );
+		//ASSERT( m_childCount == 0 );
 		if ( m_parent == NULL ) {
 			return 0;
 			}
@@ -512,16 +512,16 @@ FILETIME CTreeListItem::FILETIME_recurse( ) const {
 	const auto my_m_children = m_children.get( );
 	if ( my_m_children == nullptr ) {
 		ASSERT( m_child_info == nullptr );
-		ASSERT( m_childCount == 0 );
+		//ASSERT( m_childCount == 0 );
 		return m_lastChange;
 		}
 	ASSERT( m_child_info != nullptr );
-	ASSERT( m_childCount == m_child_info->m_childCount );
+	//ASSERT( m_childCount == m_child_info->m_childCount );
 	auto ft = zero_init_struct<FILETIME>( );
 	if ( Compare_FILETIME_lessthan( ft, m_lastChange ) ) {
 		ft = m_lastChange;
 		}
-	ASSERT( m_childCount == m_child_info->m_childCount );
+	//ASSERT( m_childCount == m_child_info->m_childCount );
 
 	const auto childCount = m_child_info->m_childCount;
 	
@@ -540,7 +540,7 @@ FILETIME CTreeListItem::FILETIME_recurse( ) const {
 _Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
 size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const {
 	ASSERT( child_count > 0u );
-	ASSERT( child_count == m_childCount );
+	//ASSERT( child_count == m_childCount );
 	ASSERT( m_child_info != nullptr );
 	for ( size_t i = 0u; i < child_count; i++ ) {
 		if ( child == GetSortedChild( i ) ) {
@@ -556,7 +556,7 @@ bool CTreeListItem::HasSiblings( ) const {
 		return false;
 		}
 	ASSERT( m_parent->m_child_info != nullptr );
-	ASSERT( m_parent->m_childCount == m_parent->m_child_info->m_childCount );
+	//ASSERT( m_parent->m_childCount == m_parent->m_child_info->m_childCount );
 	const auto count = m_parent->m_child_info->m_childCount;
 	if ( count < 2u ) {
 		ASSERT( count == 1u );
@@ -638,7 +638,7 @@ void CTreeListItem::stdRecurseCollectExtensionData( _Inout_ std::unordered_map<s
 		}
 
 	ASSERT( m_child_info != nullptr );
-	ASSERT( m_childCount == m_child_info->m_childCount );
+	//ASSERT( m_childCount == m_child_info->m_childCount );
 	const auto childCount = m_child_info->m_childCount;
 	const auto local_m_children = m_children.get( );
 	//todo: Iterate over the heapmanager items instead
@@ -860,14 +860,14 @@ INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _I
 void CTreeListItem::refresh_sizeCache( ) {
 	//if ( m_type == IT_FILE ) {
 	if ( m_children == nullptr ) {
-		ASSERT( m_childCount == 0 );
+		//ASSERT( m_childCount == 0 );
 		ASSERT( m_child_info == nullptr );
 		ASSERT( m_size < UINT64_ERROR );
 		return;
 		}
 	if ( m_size == UINT64_ERROR ) {
 		ASSERT( m_child_info != nullptr );
-		ASSERT( m_child_info->m_childCount == m_childCount );
+		//ASSERT( m_child_info->m_childCount == m_childCount );
 
 		const auto children_size = m_child_info->m_childCount;
 		const auto child_array = m_children.get( );
@@ -879,7 +879,7 @@ void CTreeListItem::refresh_sizeCache( ) {
 		std::uint64_t total = 0;
 
 		ASSERT( m_child_info != nullptr );
-		ASSERT( m_child_info->m_childCount == m_childCount );
+		//ASSERT( m_child_info->m_childCount == m_childCount );
 
 		const auto childCount = m_child_info->m_childCount;
 		const rsize_t stack_alloc_threshold = 128;
@@ -917,7 +917,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
 	//if ( m_type != IT_FILE ) {
 	if ( m_children != nullptr ) {
 		ASSERT( m_child_info != nullptr );
-		ASSERT( m_child_info->m_childCount == m_childCount );
+		//ASSERT( m_child_info->m_childCount == m_childCount );
 		
 		const auto childCount = m_child_info->m_childCount;
 		const auto my_m_children = m_children.get( );
@@ -939,7 +939,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
 			}
 		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( childCount + 1u );
 		}
-	ASSERT( m_childCount == 0 );
+	//ASSERT( m_childCount == 0 );
 	return myLength;
 	}
 
@@ -1469,7 +1469,7 @@ void CTreeListControl::InsertItem( _In_ const CTreeListItem* const item, _In_ _I
 int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	
 	if ( ( item->m_child_info != nullptr ) && ( item->m_child_info->m_childCount > 0 ) ) {
-		ASSERT( ( item->m_child_info->m_childCount > 0 ) == ( item->m_childCount > 0 ) );
+		//ASSERT( ( item->m_child_info->m_childCount > 0 ) == ( item->m_childCount > 0 ) );
 		ASSERT( item->m_child_info != nullptr );
 		ASSERT( item->m_child_info->m_childCount > 0 );
 
@@ -1695,7 +1695,7 @@ bool CTreeListControl::SelectedItemCanToggle( ) const {
 		}
 	const auto item = GetItem( i );
 	if ( item != NULL ) {
-		ASSERT( ( item->m_childCount > 0 ) == ( item->m_child_info->m_childCount > 0 ) );
+		//ASSERT( ( item->m_childCount > 0 ) == ( item->m_child_info->m_childCount > 0 ) );
 		return ( item->m_child_info->m_childCount > 0 );
 		}
 	ASSERT( item != NULL );
@@ -1719,7 +1719,7 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t c = 0; c < count; c++ ) {
-		ASSERT( count == item->m_childCount );
+		//ASSERT( count == item->m_childCount );
 		const auto child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
 		ASSERT( child != NULL );
 		if ( child != NULL ) {
@@ -1770,7 +1770,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 		}
 
 	ASSERT( item->m_child_info != nullptr );
-	ASSERT( item->m_childCount == item->m_child_info->m_childCount );
+	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
 	
 	const auto count = item->m_child_info->m_childCount;
 	if ( count == 0 ) {
@@ -1845,8 +1845,8 @@ void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In
 
 void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT_MAX ) const int i ) {
 	
-	ASSERT( ( item->m_childCount > 0 ) == ( item->m_child_info->m_childCount > 0 ) );
-	ASSERT( item->m_childCount == item->m_child_info->m_childCount );
+	//ASSERT( ( item->m_childCount > 0 ) == ( item->m_child_info->m_childCount > 0 ) );
+	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
 
 	if ( !item->IsExpanded( ) ) {
 		//ExpandItem( i, true );
