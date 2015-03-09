@@ -719,12 +719,12 @@
     <ClCompile Include="ChildrenHeapManager.cpp" />
     <ClCompile Include="colorbutton.cpp" />
     <ClCompile Include="COM_helpers.cpp" />
+    <ClCompile Include="datastructures.cpp" />
     <ClCompile Include="directory_enumeration.cpp" />
     <ClCompile Include="dirstatdoc.cpp" />
     <ClCompile Include="dirstatview.cpp" />
     <ClCompile Include="globalhelpers.cpp" />
     <ClCompile Include="graphview.cpp" />
-    <ClCompile Include="item.cpp" />
     <ClCompile Include="mainframe.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="PageGeneral.cpp" />
@@ -756,7 +756,7 @@
     <ClInclude Include="dirstatview.h" />
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
-    <ClInclude Include="item.h" />
+    <ClInclude Include="macros_that_scare_small_children.h" />
     <ClInclude Include="mainframe.h" />
     <ClInclude Include="mountpoints.h" />
     <ClInclude Include="nt_kernel_support.h" />

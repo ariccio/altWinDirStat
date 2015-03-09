@@ -10,10 +10,13 @@
 #ifndef WDS_OPTIONS_CPP
 #define WDS_OPTIONS_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
 #include "windirstat.h"
 #include "options.h"
+#include "datastructures.h"
 
 
 
@@ -393,12 +396,12 @@ void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
 	pt = rc.TopLeft( );
 	}
 
-RADIO CPersistence::GetSelectDrivesRadio( ) {
-	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, 0 ) );
-	CheckMinMax( radio, 0, 2 );
-	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
-	return static_cast<RADIO>( radio );
-	}
+//RADIO CPersistence::GetSelectDrivesRadio( ) {
+//	auto radio = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, 0 ) );
+//	CheckMinMax( radio, 0, 2 );
+//	ASSERT( ( radio >= 0 ) && ( radio <= 2 ) );
+//	return static_cast<RADIO>( radio );
+//	}
 
 void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
 	drives.clear( );

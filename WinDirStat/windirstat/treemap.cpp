@@ -10,14 +10,17 @@
 #ifndef WDS_TREEMAP_CPP
 #define WDS_TREEMAP_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "treemap.h"
 #include "globalhelpers.h"
+
+#include "datastructures.h"
 
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 //#include "ownerdrawnlistcontrol.h"
 //#include "TreeListControl.h"
-#include "item.h"
 //#include "typeview.h"
 
 
@@ -46,6 +49,9 @@
 //#define DRAW_CUSHION_INDEX_ADJ ( index_of_this_row_0_in_array + ix )
 
 namespace {
+	const DWORD COLORFLAG_DARKER = 0x01000000;
+	const DWORD COLORFLAG_MASK   = 0x03000000;
+
 	inline void SetPixelsShim( CDC& pdc, _In_ const int x, _In_ const int y, _In_ const COLORREF color ) {
 		pdc.SetPixelV( x, y, color );
 		}

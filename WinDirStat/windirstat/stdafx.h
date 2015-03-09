@@ -3,15 +3,15 @@
 // but are changed infrequently
 //
 // see `file_header_text.txt` for licensing & contact info.
+#pragma once
 
 
 #ifndef STDAFX_INCLUDED
 #define STDAFX_INCLUDED
-#else
-#error ass
-#endif
 
-#pragma once
+#pragma message( "Including `" __FILE__ "`..." )
+
+
 
 #define _HAS_EXCEPTIONS 0
 
@@ -58,12 +58,13 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #define _ATL_ALL_WARNINGS
 
 //From helpmap.h
-#define IDH_Treemap 1003
+//#define IDH_Treemap 1003
 
-#ifdef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 
-#error
-#else
+#ifndef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+
+#else
+#error already defined!
 #endif
 
 
@@ -81,6 +82,8 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #define DISPLAY_FINAL_CITEMBRANCH_SIZE
 //#define WDS_OWNERDRAWNLISTITEM_DESTRUCTOR_DEBUG
 //#define WDS_SCOPE_GUARD_DEBUGGING
+//#define WDS_TYPEVIEW_TREEMAP_MEMORY_USAGE_DEBUGGING
+
 
 #ifndef DEBUG
 #define DISPLAY_FINAL_CITEMBRANCH_SIZE
@@ -145,13 +148,11 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 #pragma warning(disable:4530)//C++ exception handler used, but unwind semantics are not enabled.
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot in WTL.
-
 #pragma warning(disable:4302)//'type cast' : truncation from 'LPCTSTR' to 'WORD'
 
 
 //These are ALL in STL
 #pragma warning(disable:4350) //An rvalue cannot be bound to a non-const reference. In previous versions of Visual C++, it was possible to bind an rvalue to a non-const reference in a direct initialization. This code now gives a warning.
-
 #pragma warning(disable:4061) //enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label. The enumerate has no associated handler in a switch statement.
 #pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
 
@@ -225,9 +226,10 @@ extern WTL::CAppModule _Module;
 
 #include <windowsx.h>
 
-#ifdef _DEBUG
-//#define _CRTDBG_MAP_ALLOC
-#endif
+//#ifdef _DEBUG
+////#define _CRTDBG_MAP_ALLOC
+//#endif
+
 #include <stdlib.h>
 
 
@@ -275,13 +277,13 @@ extern WTL::CAppModule _Module;
 #define TREELISTCOLORCOUNT size_t( 8 )
 
 #define PALETTE_BRIGHTNESS DOUBLE( 0.6 )
-#define INDICATORS_NUMBER size_t( 2 )
+//#define INDICATORS_NUMBER size_t( 2 )
 
-#define COLORFLAG_DARKER  DWORD( 0x01000000 )
-#define COLORFLAG_LIGHTER DWORD( 0x02000000 )
-#define COLORFLAG_MASK    DWORD( 0x03000000 )
 
-#define GRIPPER_RADIUS INT( 8 )
+//#define COLORFLAG_LIGHTER DWORD( 0x02000000 )
+//#define COLORFLAG_MASK    DWORD( 0x03000000 )
+
+
 
 #define ITEM_ROW_HEIGHT 20
 static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
@@ -297,73 +299,24 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 #define XYSLIDER_CHANGED 0x88 // this is a value, I hope, that is nowhere used as notification code.
 
 
-#define CPageTreemap_maxHeight INT( 200 )
-
-#ifndef WDS_WRITES_TO_STACK
-#define WDS_WRITES_TO_STACK( strSize, chars_written ) _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( chars_written ) _Pre_satisfies_( strSize >= chars_written ) _Post_satisfies_( _Old_( chars_written ) <= chars_written )
-#else
-#error already defined!
-#endif
-
-#ifndef WDS_SCOPEGUARD_INSTANCE
-#define WDS_SCOPEGUARD_INSTANCE( func ) scopeGuard( (func), __FILE__, __FUNCSIG__, __LINE__ )
-#else
-#error already defined!!
-#endif
-
-#ifndef WDS_ASSERT_NEVER_REACHED
-//this line of code should NEVER be reached. ASSERT( false ) on reaching in Debug build.
-#define WDS_ASSERT_NEVER_REACHED( ) ASSERT( false )
-#else
-#error already defined??!?
-#endif
-
-#ifndef WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT
-
-//I don't think anything in strsafe actually ever returns STRSAFE_E_END_OF_FILE,
-//so I use this after I've handled the other error conditions (STRSAFE_E_INSUFFICIENT_BUFFER, STRSAFE_E_INVALID_PARAMETER),
-//to catch unexpected errors. NOTE that these are still handled by the calling function via SUCCESSS( ),
-//but this macro helps catch the issue closer to the function that returned the unexpected value;
-#define WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res ) {                                                \
-	static_assert( SUCCEEDED( S_OK ), "This macro depends on SUCCEEDED( S_OK ) returning true" );                 \
-	static_assert( std::is_same<decltype( res ), const HRESULT>::value, "This macro depends on an HRESULT res" ); \
-	ASSERT( ( res ) != STRSAFE_E_END_OF_FILE );                                                                   \
-	ASSERT( FAILED( res ) );                                                                                      \
-	ASSERT( !SUCCEEDED( res ) );                                                                                  \
-	}
-
-#else
-#error already defined!
-#endif
-
-#ifndef WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER
-//std::terminate( )s if ( res == STRSAFE_E_INVALID_PARAMETER ), as this is usually an issue with an incorrect compile-time constant.
-//Is a macro and not an inline function because of the use of file name, function signature, and line number.
-#define WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, strsafe_func_name )                                             \
-	if ( ( res ) == STRSAFE_E_INVALID_PARAMETER ) {                                                                   \
-		static_assert( std::is_same<decltype( res ), const HRESULT>::value, "This macro depends on an HRESULT res" ); \
-		unexpected_strsafe_invalid_parameter_handler( ( strsafe_func_name ), __FILE__, __FUNCSIG__, __LINE__ );       \
-		}
-#else
-#error already defined!!
-#endif
-
 #ifdef DEBUG
 #define new DEBUG_NEW
 #endif
 
-
-
-#ifndef DEBUG
-//#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
-#endif
+//#ifndef DEBUG
+////#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
+//#endif
 
 //some generic structures!
-#include "datastructures.h"
+//#include "datastructures.h"
 
 //WDS headers (infrequently modified)
 #include "Resource.h"
 
 
-
 #pragma warning(3:4711)
+
+
+#else
+#error ass
+#endif

@@ -9,7 +9,10 @@
 #ifndef WDS_GLOBALHELPERS_H
 #define WDS_GLOBALHELPERS_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
+#include "datastructures.h"
+#include "macros_that_scare_small_children.h"
 
 //must be inline, else compiler bitches about ODR!
 //should really just be a void* and a size_t?
@@ -35,11 +38,32 @@ inline type_struct_to_init zero_init_struct( ) {
 	return the_struct;
 	}
 
+template<class T>
+INT signum(const T x) {
+	static_assert( std::is_pod<T>::value, "what the hell are you doing, trying to use a non-pod datatype??" );
+
+	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );
+	
+	//This static_assert probably caught a bug!!! See CDriveItem::Compare - case column::COL_TOTAL & case column::COL_FREE were passing the result of an unsigned subtraction to this!!
+	static_assert( std::is_signed<T>::value, "please don't try this with an unsigned number!" );
+
+	
+	if ( x < 0 ) {
+		return -1;
+		}
+	if ( x == 0 ) {
+		return 0;
+		}
+	return 1;
+	//return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
+	}
+
+
 _Success_( SUCCEEDED( return ) )
 const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written );
 
 
-struct QPC_timer {
+struct QPC_timer final {
 	QPC_timer( );
 	void begin( );
 	void end( );
@@ -90,6 +114,7 @@ void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_fu
 
 void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written );
 
+
 //WinDirStat string-formatting functions
 namespace wds_fmt {
 
@@ -102,7 +127,6 @@ namespace wds_fmt {
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatFileTime  ( _In_ const FILETIME t,    _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
-	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  );
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written );
 
@@ -202,5 +226,42 @@ void trace_mntpt_found( _In_z_ PCWSTR const path, _In_z_ PCWSTR const volume );
 
 void trace_full_path( _In_z_ PCWSTR const path );
 #endif
+
+// Collection of all treemap options.
+struct Treemap_Options final {
+	                                Treemap_STYLE style;        // Squarification method
+									//C4820: 'Treemap_Options' : '3' bytes padding added after data member 'Treemap_Options::grid'
+	                                bool          grid;         // Whether or not to draw grid lines
+									//C4820: 'Treemap_Options' : '4' bytes padding added after data member 'Treemap_Options::gridColor'
+	                                COLORREF      gridColor;    // Color of grid lines
+	_Field_range_(  0, 1          ) DOUBLE        brightness;   // (default = 0.84)
+	_Field_range_(  0, UINT64_MAX ) DOUBLE        height;       // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
+	_Field_range_(  0, 1          ) DOUBLE        scaleFactor;  // (default = 0.90)  Factor "F"
+	_Field_range_(  0, 1          ) DOUBLE        ambientLight; // (default = 0.15)  Factor "Ia"
+	_Field_range_( -4, 4          ) DOUBLE        lightSourceX; // (default = -1.0), negative = left
+	_Field_range_( -4, 4          ) DOUBLE        lightSourceY; // (default = -1.0), negative = top
+
+	_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const;
+	_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const;
+	_Ret_range_( 0, 100 ) INT    GetScaleFactorPercent ( ) const;
+	_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const;
+	_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const;
+	_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const;
+		                  POINT  GetLightSourcePoint   ( ) const;
+
+	_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const;
+
+	void SetBrightnessPercent  ( const INT    n   );
+	void SetHeightPercent      ( const INT    n   );
+	void SetScaleFactorPercent ( const INT    n   );
+	void SetAmbientLightPercent( const INT    n   );
+	void SetLightSourceXPercent( const INT    n   );
+	void SetLightSourceYPercent( const INT    n   );
+	void SetLightSourcePoint   ( const POINT  pt  );
+	};
+
+
+
+static const Treemap_Options _defaultOptions = { Treemap_STYLE::KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 #endif

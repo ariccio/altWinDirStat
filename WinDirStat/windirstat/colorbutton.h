@@ -4,11 +4,14 @@
 
 #pragma once
 
+#include "stdafx.h"
+
 #ifndef WDS_COLORBUTTON_H
 #define WDS_COLORBUTTON_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
-#include "stdafx.h"
+
 
 
 #define COLBN_CHANGED	0x87	// this is a value, I hope, that is nowhere used as notification code.

@@ -5,34 +5,38 @@
 #ifndef WDS_COM_HELPERS_CPP_INCLUDED
 #define WDS_COM_HELPERS_CPP_INCLUDED
 
+
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "COM_helpers.h"
+#include "macros_that_scare_small_children.h"
 
 #include "ScopeGuard.h"
 
-//Keeping OnItemSelected in the implementation file means that we don't need to include ScopeGuard.h in the header.
-IFACEMETHODIMP CFileDialogEventHandler::OnItemSelected( __RPC__in_opt IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem ) {
-	IFileDialog *pfd = NULL;
-	const HRESULT pfdc_query_interface_result = pfdc->QueryInterface( &pfd );
-	if ( !SUCCEEDED( pfdc_query_interface_result ) ) {
-		return pfdc_query_interface_result;
-		}
-	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { pfd->Release( ); } );
-	if ( dwIDCtl == CONTROL_RADIOBUTTONLIST ) {
-		switch ( dwIDItem ) {
-				case CONTROL_RADIOBUTTON1:
-					return pfd->SetTitle( L"Windows Vista" );
-					//break;
-
-				case CONTROL_RADIOBUTTON2:
-					return pfd->SetTitle( L"Windows 7" );
-					//break;
-			}
-		}
-	//pfd->Release( );
-	//if ( SUCCEEDED( hr ) ) {
-	//	}
-	return pfdc_query_interface_result;
-	}
+////Keeping OnItemSelected in the implementation file means that we don't need to include ScopeGuard.h in the header.
+//IFACEMETHODIMP CFileDialogEventHandler::OnItemSelected( __RPC__in_opt IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem ) {
+//	IFileDialog *pfd = NULL;
+//	const HRESULT pfdc_query_interface_result = pfdc->QueryInterface( &pfd );
+//	if ( !SUCCEEDED( pfdc_query_interface_result ) ) {
+//		return pfdc_query_interface_result;
+//		}
+//	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { pfd->Release( ); } );
+//	if ( dwIDCtl == CONTROL_RADIOBUTTONLIST ) {
+//		switch ( dwIDItem ) {
+//				case CONTROL_RADIOBUTTON1:
+//					return pfd->SetTitle( L"Windows Vista" );
+//					//break;
+//
+//				case CONTROL_RADIOBUTTON2:
+//					return pfd->SetTitle( L"Windows 7" );
+//					//break;
+//			}
+//		}
+//	//pfd->Release( );
+//	//if ( SUCCEEDED( hr ) ) {
+//	//	}
+//	return pfdc_query_interface_result;
+//	}
 
 
 //Keeping OnOpenAFolder in the implementation file means that we don't need to include ScopeGuard.h in the header.

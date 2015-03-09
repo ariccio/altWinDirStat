@@ -10,9 +10,13 @@
 #ifndef WDS_TYPEVIEW_H
 #define WDS_TYPEVIEW_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
 #include "ChildrenHeapManager.h"
 //#include "dirstatdoc.h"	// SExtensionRecord
+#include "macros_that_scare_small_children.h"
+#include "datastructures.h"
+
 
 class CTypeView;
 class CDirstatDoc;

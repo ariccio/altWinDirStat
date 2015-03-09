@@ -10,6 +10,8 @@
 #ifndef WDS_PAGEGENERAL_H
 #define WDS_PAGEGENERAL_H
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 
 class COptionsPropertySheet;
 class CPageGeneral;

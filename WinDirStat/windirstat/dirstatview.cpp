@@ -9,6 +9,8 @@
 #ifndef WDS_DIRSTATVIEW_CPP
 #define WDS_DIRSTATVIEW_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 //
 #include "dirstatview.h"
 

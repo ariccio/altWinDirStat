@@ -8,40 +8,14 @@
 #ifndef WDS_DATASTRUCTURES_H
 #define WDS_DATASTRUCTURES_H
 
-class CSelectObject {
+#pragma message( "Including `" __FILE__ "`..." )
+
+
+class CSelectObject final {
 public:
-	CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject ) : m_pdc{ &pdc } {
-		//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
-		m_pOldObject = pdc.SelectObject( &pObject );
-		/*
-_AFXWIN_INLINE CGdiObject* CDC::SelectObject(CGdiObject* pObject)
-	{ ASSERT(m_hDC != NULL); return SelectGdiObject(m_hDC, pObject->GetSafeHandle()); }
-		
-CGdiObject* PASCAL CDC::SelectGdiObject(HDC hDC, HGDIOBJ h)
-{
-	return CGdiObject::FromHandle(::SelectObject(hDC, h));
-}
+	CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject );
+	~CSelectObject( );
 
-CGdiObject* PASCAL CGdiObject::FromHandle(HGDIOBJ h)
-{
-	CHandleMap* pMap = afxMapHGDIOBJ(TRUE); //create map if not exist
-	ASSERT(pMap != NULL);
-	CGdiObject* pObject = (CGdiObject*)pMap->FromHandle(h);
-	ASSERT(pObject == NULL || pObject->m_hObject == h);
-	return pObject;
-}
-		*/
-
-		ASSERT( m_pOldObject != NULL );
-		}
-	~CSelectObject( ) {
-		const auto retval = m_pdc->SelectObject( m_pOldObject );
-#ifdef DEBUG
-		ASSERT( retval != NULL );
-#else
-		UNREFERENCED_PARAMETER( retval );
-#endif
-		}
 	CSelectObject( const CSelectObject& in ) = delete;
 	CSelectObject& operator=( const CSelectObject& rhs ) = delete;
 protected:
@@ -49,22 +23,12 @@ protected:
 	CGdiObject* m_pOldObject;
 	};
 
-class CSelectStockObject {
+class CSelectStockObject final {
 public:
-	CSelectStockObject( _In_ CDC& pdc, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_pdc { &pdc } {
-		//"Return Value: A pointer to the CGdiObject object that was replaced if the function is successful. The actual object pointed to is a CPen, CBrush, or CFont object. If the call is unsuccessful, the return value is NULL."
-		m_pOldObject = pdc.SelectStockObject( nIndex );
-		ASSERT( m_pOldObject != NULL );
-		}
-	~CSelectStockObject( ) {
-		//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
-		const auto retval = m_pdc->SelectObject( m_pOldObject );
-#ifdef DEBUG
-		ASSERT( retval != NULL );
-#else
-		UNREFERENCED_PARAMETER( retval );
-#endif
-		}
+	CSelectStockObject( _In_ CDC& pdc, _In_ _In_range_( 0, 16 ) const INT nIndex );
+
+	~CSelectStockObject( );
+
 	CSelectStockObject( const CSelectStockObject& in ) = delete;
 	CSelectStockObject& operator=( const CSelectStockObject& rhs ) = delete;
 protected:
@@ -72,15 +36,13 @@ protected:
 	CGdiObject* m_pOldObject;
 	};
 
-class CSetBkMode {
+class CSetBkMode final {
 public:
-	_Pre_satisfies_( ( mode == OPAQUE) || ( mode == TRANSPARENT ) )
-	CSetBkMode( _In_ CDC& pdc, _In_ const INT mode ) : m_pdc { &pdc } {
-		m_oldMode = pdc.SetBkMode( mode );
-		}
-	~CSetBkMode( ) {
-		m_pdc->SetBkMode( m_oldMode );
-		}
+	_Pre_satisfies_( ( mode == OPAQUE ) || ( mode == TRANSPARENT ) )
+	CSetBkMode( _In_ CDC& pdc, _In_ const INT mode );
+	
+	~CSetBkMode( );
+
 	CSetBkMode( const CSetBkMode& in ) = delete;
 	CSetBkMode& operator=( const CSetBkMode& rhs ) = delete;
 protected:
@@ -89,15 +51,12 @@ protected:
 	int  m_oldMode;
 	};
 
-class CSetTextColor {
+class CSetTextColor final {
 public:
-	CSetTextColor( _In_ CDC& pdc, _In_ const COLORREF color ) : m_pdc { &pdc } {
-		//ASSERT_VALID( pdc );
-		m_oldColor = pdc.SetTextColor( color );
-		}
-	~CSetTextColor( ) {
-		m_pdc->SetTextColor( m_oldColor );
-		}
+	CSetTextColor( _In_ CDC& pdc, _In_ const COLORREF color );
+
+	~CSetTextColor( );
+
 	CSetTextColor( const CSetTextColor& in ) = delete;
 	CSetTextColor& operator=( const CSetTextColor& rhs ) = delete;
 protected:
@@ -108,12 +67,13 @@ protected:
 
 
 static_assert( sizeof( short ) == sizeof( std::int16_t ), "y'all ought to check SRECT" );
-struct SRECT {
+struct SRECT final {
 	/*
 	  short-based RECT, saves 8 bytes compared to tagRECT
 	  */
-	SRECT( ) : left( 0 ), top( 0 ), right( 0 ), bottom( 0 ) { }
-	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom ) : left { iLeft }, top { iTop }, right { iRight }, bottom { iBottom } { }
+	SRECT( );
+
+	SRECT( std::int16_t iLeft, std::int16_t iTop, std::int16_t iRight, std::int16_t iBottom );
 	//SRECT( const SRECT& in ) {
 	//	left   = in.left;
 	//	top    = in.top;
@@ -129,18 +89,15 @@ struct SRECT {
 	//	right  = static_cast<std::int16_t>( in.right );
 	//	bottom = static_cast<std::int16_t>( in.bottom );
 	//	}
-	SRECT( const RECT& in ) {
-		left   = static_cast<std::int16_t>( in.right );
-		top    = static_cast<std::int16_t>( in.top );
-		right  = static_cast<std::int16_t>( in.right );
-		bottom = static_cast<std::int16_t>( in.bottom );
-		}
 
-	int Width( ) const {
+	SRECT( const RECT& in );
+
+
+	const int Width( ) const {
 		return right - left;
 		}
 
-	int Height( ) const {
+	const int Height( ) const {
 		return bottom - top;
 		}
 
@@ -153,19 +110,14 @@ struct SRECT {
 
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for SExtensionRecord. Look for a message that says I'm restoring it!" )
-struct SExtensionRecord {
+struct SExtensionRecord final {
 	SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u } { }
 
 	SExtensionRecord( const SExtensionRecord& in ) = default;
 	//SExtensionRecord( SExtensionRecord& in ) = delete;
 
 	//Yes, this is used!
-	SExtensionRecord( SExtensionRecord&& in ) {
-		ext = std::move( in.ext );
-		files = std::move( in.files );
-		bytes = std::move( in.bytes );
-		color = std::move( in.color );
-		}
+	SExtensionRecord( SExtensionRecord&& in );
 
 	SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
 	/*
@@ -187,7 +139,7 @@ struct SExtensionRecord {
 #pragma pack(pop)
 
 //Used for mapping std::wstring -> files + bytes
-struct minimal_SExtensionRecord {
+struct minimal_SExtensionRecord final {
 	minimal_SExtensionRecord( ) : files { 0u }, bytes { 0u } { }
 	_Field_range_( 0, 4294967295 ) std::uint32_t files;
 	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
@@ -196,11 +148,6 @@ struct minimal_SExtensionRecord {
 class CTreeListItem;
 
 
-//Yes, used
-struct s_compareSExtensionRecordByBytes {
-	public:
-	bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.bytes < rhs.bytes ); }
-	};
 
 //struct s_compareSExtensionRecordByNumberFiles {
 //	public:
@@ -224,81 +171,21 @@ enum class Treemap_STYLE {
 	};
 
 
-template<class T>
-INT signum(T x) {
-	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );
-	
-	//This static_assert probably caught a bug!!! See CDriveItem::Compare - case column::COL_TOTAL & case column::COL_FREE were passing the result of an unsigned subtraction to this!!
-	static_assert( std::is_signed<T>::value, "please don't try this with an unsigned number!" );
-
-	if ( x < 0 ) {
-		return -1;
-		}
-	if ( x == 0 ) {
-		return 0;
-		}
-	return 1;
-	//return ( x < 0 ) ? -1 : ( x == 0 ) ? 0 : 1;
-	}
 
 
-// Collection of all treemap options.
-struct Treemap_Options {
-	                                Treemap_STYLE style;        // Squarification method
-									//C4820: 'Treemap_Options' : '3' bytes padding added after data member 'Treemap_Options::grid'
-	                                bool          grid;         // Whether or not to draw grid lines
-									//C4820: 'Treemap_Options' : '4' bytes padding added after data member 'Treemap_Options::gridColor'
-	                                COLORREF      gridColor;    // Color of grid lines
-	_Field_range_(  0, 1          ) DOUBLE        brightness;   // (default = 0.84)
-	_Field_range_(  0, UINT64_MAX ) DOUBLE        height;       // (default = 0.40)  Factor "H (really range should be 0...std::numeric_limits<double>::max/100"
-	_Field_range_(  0, 1          ) DOUBLE        scaleFactor;  // (default = 0.90)  Factor "F"
-	_Field_range_(  0, 1          ) DOUBLE        ambientLight; // (default = 0.15)  Factor "Ia"
-	_Field_range_( -4, 4          ) DOUBLE        lightSourceX; // (default = -1.0), negative = left
-	_Field_range_( -4, 4          ) DOUBLE        lightSourceY; // (default = -1.0), negative = top
-
-	_Ret_range_( 0, 100 ) INT    GetBrightnessPercent  ( ) const { return RoundDouble( brightness   * 100 );                               }
-	_Ret_range_( 0, 100 ) INT    GetHeightPercent      ( ) const { return RoundDouble( height       * 100 );                               }
-	_Ret_range_( 0, 100 ) INT    GetScaleFactorPercent ( ) const { return RoundDouble( scaleFactor  * 100 );                               }
-	_Ret_range_( 0, 100 ) INT    GetAmbientLightPercent( ) const { return RoundDouble( ambientLight * 100 );                               }
-	_Ret_range_( 0, 100 ) INT    GetLightSourceXPercent( ) const { return RoundDouble( lightSourceX * 100 );                               }
-	_Ret_range_( 0, 100 ) INT    GetLightSourceYPercent( ) const { return RoundDouble( lightSourceY * 100 );                               }
-		                  POINT  GetLightSourcePoint   ( ) const { return POINT { GetLightSourceXPercent( ), GetLightSourceYPercent( ) }; }
-
-	_Ret_range_( 0, 100 ) INT    RoundDouble ( const DOUBLE d ) const { return signum( d ) * INT( abs( d ) + 0.5 ); }
-
-	void SetBrightnessPercent  ( const INT    n   ) { brightness   = n / 100.0; }
-	void SetHeightPercent      ( const INT    n   ) { height       = n / 100.0; }
-	void SetScaleFactorPercent ( const INT    n   ) { scaleFactor  = n / 100.0; }
-	void SetAmbientLightPercent( const INT    n   ) { ambientLight = n / 100.0; }
-	void SetLightSourceXPercent( const INT    n   ) { lightSourceX = n / 100.0; }
-	void SetLightSourceYPercent( const INT    n   ) { lightSourceY = n / 100.0; }
-	void SetLightSourcePoint   ( const POINT  pt  ) {
-			SetLightSourceXPercent( pt.x );
-			SetLightSourceYPercent( pt.y );
-		}
-	};
 
 //static const Treemap_Options  _defaultOptions;				// Good values. Default for WinDirStat 1.0.2
-static const Treemap_Options _defaultOptions = { Treemap_STYLE::KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 
 
-struct FILEINFO {
+
+struct FILEINFO final {
 	FILEINFO( ) { }
 	FILEINFO( const FILEINFO& in ) = delete;
 	FILEINFO& operator=( const FILEINFO& in ) = delete;
-	FILEINFO& operator=( FILEINFO&& in ) {
-		length = std::move( in.length );
-		lastWriteTime = std::move( in.lastWriteTime );
-		attributes = std::move( in.attributes );
-		name = std::move( in.name );
-		return ( *this );
-		}
-	FILEINFO( FILEINFO&& in ) {
-		length = std::move( in.length );
-		lastWriteTime = std::move( in.lastWriteTime );
-		attributes = std::move( in.attributes );
-		name = std::move( in.name );
-		}
+
+	FILEINFO& operator=( FILEINFO&& in );
+
+	FILEINFO( FILEINFO&& in );
 
 	FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ] ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ) {
 #ifdef DEBUG
@@ -307,16 +194,11 @@ struct FILEINFO {
 			}
 #endif
 		}
-	void reset( ) {
-		length = 0;
-		lastWriteTime.dwLowDateTime  = 0;
-		lastWriteTime.dwHighDateTime = 0;
-		attributes = INVALID_FILE_ATTRIBUTES;
-		name.clear( );
-		}
-	bool operator<( const FILEINFO& rhs ) const {
-		return length < rhs.length;
-		}
+	void reset( );
+
+	//bool operator<( const FILEINFO& rhs ) const {
+	//	return length < rhs.length;
+	//	}
 
 	std::uint64_t length;
 	FILETIME      lastWriteTime;
@@ -325,15 +207,9 @@ struct FILEINFO {
 	std::wstring  name;
 	};
 
-struct DIRINFO {
+struct DIRINFO final {
 	DIRINFO( ) { }
-	DIRINFO( DIRINFO&& in ) {
-		length = std::move( in.length );
-		lastWriteTime = std::move( in.lastWriteTime );
-		attributes = std::move( in.attributes );
-		name = std::move( in.name );
-		path = std::move( in.path );
-		}
+	DIRINFO( DIRINFO&& in );
 
 	DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ], _In_ std::wstring path_ ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ), path( std::move( path_ ) ) { }
 
@@ -346,48 +222,22 @@ struct DIRINFO {
 	};
 
 // The dialog has these three radio buttons.
-enum RADIO : INT {
-	//RADIO_ALLLOCALDRIVES,
-	RADIO_SOMEDRIVES,
-	RADIO_AFOLDER
-	};
+//enum RADIO : INT {
+//	//RADIO_ALLLOCALDRIVES,
+//	RADIO_SOMEDRIVES,
+//	RADIO_AFOLDER
+//	};
 
 
-//Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
-template<class Interface>
-void SafeRelease( _In_ Interface** const ppInterfaceToRelease ) {
-	if ( *ppInterfaceToRelease != NULL ) {
-		( *ppInterfaceToRelease )->Release( );
-
-		( *ppInterfaceToRelease ) = { NULL };
-		}
-	}
-
-struct attribs {	
-	bool readonly   : 1;
-	bool hidden     : 1;
-	bool system     : 1;
-  //bool archive    : 1;//Nobody actually cares about the archive attribute!
-	bool compressed : 1;
-	bool encrypted  : 1;
-	bool reparse    : 1;
-	bool invalid    : 1;
-
-	//Not a file attribute, but a member of attribs to enable better packing
-	bool m_done     : 1;
-	};
-
-void copy_attribs( _Out_ attribs& out, _In_ const attribs& in ) {
-	static_assert( std::is_trivially_copyable<attribs>::value, "can't use memcpy!" );
-	const auto res = memcpy_s( &out, sizeof( attribs ), &in, 1 );
-	ASSERT( res == 0 );
-	if ( res != 0 ) {
-		WTL::AtlMessageBox( NULL, L"copy_attribs error!", TEXT( "Error" ), MB_OK );
-		std::terminate( );
-		}
-	return;
-	}
-
+////Boilerplate D2D code: http://msdn.microsoft.com/en-us/library/windows/desktop/dd370994(v=vs.85).aspx
+//template<class Interface>
+//void SafeRelease( _In_ Interface** const ppInterfaceToRelease ) {
+//	if ( *ppInterfaceToRelease != NULL ) {
+//		( *ppInterfaceToRelease )->Release( );
+//
+//		( *ppInterfaceToRelease ) = { NULL };
+//		}
+//	}
 
 
 
@@ -409,10 +259,6 @@ namespace UpdateAllViews_ENUM {
 
 	}
 
-struct pair_of_item_and_path {
-	CTreeListItem* ptr;
-	std::wstring path;
-	};
 
 
 #ifndef RANGE_ENUM_COL
@@ -448,15 +294,6 @@ namespace column {
 	static_assert( COL_BYTESPERCENT == 4, "typeview will break!" );
 	}
 
-// SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
-struct SSorting {
-	SSorting( ) : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending1 { false }, ascending2 { true } { }
-	_Field_range_( 0, 8 ) column::ENUM_COL  column1;
-	_Field_range_( 0, 8 ) column::ENUM_COL  column2;
-	                      bool              ascending2 : 1;
-						  //C4820: 'SSorting' : '3' bytes padding added after data member 'SSorting::ascending1'
-	                      bool              ascending1 : 1;
-	};
 
 // The "logical focus" can be 
 // - on the Directory List
@@ -468,27 +305,17 @@ enum class LOGICAL_FOCUS {
 	LF_EXTENSIONLIST
 	};
 
-// Sequence within IDB_NODES
-enum class ENUM_NODE {
-	NODE_PLUS_SIBLING,
-	NODE_PLUS_END,
-	NODE_MINUS_SIBLING,
-	NODE_MINUS_END,
-	NODE_SIBLING,
-	NODE_END,
-	NODE_LINE
-	};
 
 
-const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
-const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
-const UINT LABEL_Y_MARGIN   = 2;
+
+
+
 const UINT GENERAL_INDENT   = 5;
 
 const LONG NODE_HEIGHT = 24;	// Height of IDB_NODES
 
 
-const UINT WMU_OK = WM_USER + 100;
+//const UINT WMU_OK = WM_USER + 100;
 //#define WMU_WORKERTHREAD_FINISHED ( WM_USER + 102 )
 
 //typedef std::shared_ptr<std::tuple<std::shared_ptr<promise<std::pair<std::vector<directory_entry>, bool>>>, std::unique_ptr<windows_nt_kernel::FILE_ID_FULL_DIR_INFORMATION[]>, async_enumerate_op_req>> enumerate_state_t;

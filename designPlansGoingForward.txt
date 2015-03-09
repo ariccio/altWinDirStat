@@ -59,3 +59,5 @@
 9: Refactor to use ATL/WTL exclusively, or almost exclusively.
 
     This will mean SMALLER executables, and faster code. Win-win.
+
+10: For enumerating whole drives, memory map the MFT, then touch each 'page'. The granularity of the cache manager is 64k (see "Windows Kernel Internals", "Cache Manager"), so we need to touch one of every 8 pages.

@@ -7,6 +7,8 @@
 #ifndef WDS_NT_KERNEL_SUPPORT_H
 #define WDS_NT_KERNEL_SUPPORT_H
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "globalhelpers.h"
 
 namespace NativeAPI {

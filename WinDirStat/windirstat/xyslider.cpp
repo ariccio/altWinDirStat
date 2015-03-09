@@ -9,9 +9,20 @@
 #ifndef WDS_XYSLIDER_CPP
 #define WDS_XYSLIDER_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
+
+#include "datastructures.h"
+
 #include "xyslider.h"
 
 #include "globalhelpers.h"
+
+
+namespace {
+	const int GRIPPER_RADIUS = 8;
+
+	}
 
 
 IMPLEMENT_DYNAMIC(CXySlider, CStatic)

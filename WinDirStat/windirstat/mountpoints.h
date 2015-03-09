@@ -11,6 +11,8 @@
 
 #include "globalhelpers.h"
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 
 namespace {
 	void FindVolumeMountPointCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolumeMountPoint ) {
@@ -22,7 +24,7 @@ namespace {
 	}
 
 
-class CMountPoints {
+class CMountPoints final {
 	//struct SPointVolume {
 	//	std::wstring point;	// Path like "mount\backup\"
 	//	std::wstring volume;	// Volume identifier
@@ -73,7 +75,7 @@ public:
 		return ( ( fAttributes bitand FILE_ATTRIBUTE_REPARSE_POINT ) != 0 );
 		}
 	
-	//bool IsJunctionPoint    ( _In_ const std::wstring& path,  _In_ const attribs& attr     ) const;
+	
 private:
 	void Clear( ) {
 		for ( size_t i = 0; i < M_DRIVE_ARRAY_SIZE; ++i ) {

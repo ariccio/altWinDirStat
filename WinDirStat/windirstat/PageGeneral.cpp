@@ -9,6 +9,8 @@
 #ifndef WDS_PAGEGENERAL_CPP
 #define WDS_PAGEGENERAL_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "pagegeneral.h"
 #include "options.h"
 

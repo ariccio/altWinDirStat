@@ -10,10 +10,14 @@
 #ifndef WDS_DIRSTATVIEW_H
 #define WDS_DIRSTATVIEW_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "TreeListControl.h"
+
+
+#include "datastructures.h"
 
 #include "dirstatdoc.h"
 

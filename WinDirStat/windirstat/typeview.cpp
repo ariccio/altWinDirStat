@@ -11,7 +11,11 @@
 #ifndef WDS_TYPEVIEW_CPP
 #define WDS_TYPEVIEW_CPP
 
+
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "mainframe.h"
+#include "datastructures.h"
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"

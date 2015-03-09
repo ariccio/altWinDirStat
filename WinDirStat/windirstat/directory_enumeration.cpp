@@ -4,10 +4,11 @@
 #ifndef WDS_DIRECTORY_ENUMERATION_CPP
 #define WDS_DIRECTORY_ENUMERATION_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "directory_enumeration.h"
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
-#include "item.h"
 #include "TreeListControl.h"
 
 
@@ -20,8 +21,10 @@
 
 namespace {
 
+
+
 	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
-	__forceinline std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
+	__forceinline WDS_DECLSPEC_NOTHROW std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 		ULARGE_INTEGER ret;
 		ret.QuadPart = 0;//zero initializing this is critical!
 		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
@@ -74,7 +77,7 @@ namespace {
 		}
 
 
-	void compose_compressed_file_size_and_fixup_child( CTreeListItem* const child, const std::wstring path ) {
+	WDS_DECLSPEC_NOTHROW void compose_compressed_file_size_and_fixup_child( CTreeListItem* const child, const std::wstring path ) {
 		const auto size_child = GetCompressedFileSize_filename( path );
 		if ( size_child != UINT64_MAX ) {
 			ASSERT( child != NULL );
@@ -89,7 +92,7 @@ namespace {
 		}
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	std::vector<std::future<void>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+	WDS_DECLSPEC_NOTHROW std::vector<std::future<void>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
 		std::vector<std::future<void>> workers;
 		workers.reserve( dirsToWorkOnCount );
@@ -105,7 +108,7 @@ namespace {
 		}
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	void size_workers( _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
+	WDS_DECLSPEC_NOTHROW void size_workers( _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 		std::vector<std::future<void>> sizesToWorkOn_;
 		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
@@ -124,7 +127,7 @@ namespace {
 
 
 
-	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
 		std::vector<FILEINFO> vecFiles;
 		std::vector<DIRINFO>  vecDirs;
 
@@ -225,7 +228,7 @@ namespace {
 	}
 
 
-void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
+WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
 	ASSERT( path.back( ) == L'*' );
 	WIN32_FIND_DATA fData;
 	HANDLE fDataHand = NULL;
@@ -272,7 +275,7 @@ void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DI
 
 
 
-std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CTreeListItem*, std::wstring>> sizesToWorkOn_;
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
@@ -338,7 +341,7 @@ _Pre_satisfies_( this->m_parent == NULL ) void CTreeListItem::AddChildren( _In_ 
 		}
 	}
 
-DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	ASSERT( ThisCItem->m_childCount == 0 );
@@ -402,7 +405,7 @@ DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem, std::wstring path, _
 	}
 
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
+WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
 	//This is temporary.
 	UNREFERENCED_PARAMETER( isRootRecurse );
 
@@ -452,7 +455,7 @@ void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ co
 	}
 
 _Success_( return < UINT64_ERROR )
-const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item ) {
+WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item ) {
 	const auto derived_item = static_cast< const CTreeListItem* const >( item );
 	const auto path = derived_item->GetPath( );
 	const HANDLE file_handle = CreateFileW( path.c_str( ), FILE_READ_ATTRIBUTES | FILE_READ_EA, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );

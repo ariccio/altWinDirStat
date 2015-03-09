@@ -9,6 +9,8 @@
 #ifndef WDS_GRAPHVIEW_CPP
 #define WDS_GRAPHVIEW_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "graphview.h"
 
 //#include "dirstatview.h"

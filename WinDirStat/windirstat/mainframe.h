@@ -4,11 +4,16 @@
 #pragma once
 
 #include "stdafx.h"
-#include "windirstat.h"
 
 
 #ifndef WDS_MAINFRAME_H
 #define WDS_MAINFRAME_H
+
+
+#pragma message( "Including `" __FILE__ "`..." )
+
+
+#include "windirstat.h"
 
 class CMySplitterWnd;
 class CMainFrame;

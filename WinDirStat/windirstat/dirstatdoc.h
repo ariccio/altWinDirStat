@@ -6,11 +6,15 @@
 
 #include "stdafx.h"
 //#include "globalhelpers.h"
-#include "ChildrenHeapManager.h"
 
 
 #ifndef WDS_DIRSTATDOC_H
 #define WDS_DIRSTATDOC_H
+
+#pragma message( "Including `" __FILE__ "`..." )
+
+#include "datastructures.h"
+#include "ChildrenHeapManager.h"
 
 
 class CTreeListItem;

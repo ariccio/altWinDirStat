@@ -9,13 +9,17 @@
 #ifndef WDS_TREELISTCONTROL_CPP
 #define WDS_TREELISTCONTROL_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 //#include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
-#include "item.h"
 //#include "typeview.h"
 //#include "SelectDrivesDlg.h"
 
+#include "datastructures.h"
+
+#include "macros_that_scare_small_children.h"
 
 #include "globalhelpers.h"
 #include "windirstat.h"
@@ -123,11 +127,47 @@ namespace {
 		return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
 		}
 
+	// Sequence within IDB_NODES
+	enum class ENUM_NODE {
+		NODE_PLUS_SIBLING,
+		NODE_PLUS_END,
+		NODE_MINUS_SIBLING,
+		NODE_MINUS_END,
+		NODE_SIBLING,
+		NODE_END,
+		NODE_LINE
+		};
 
+	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
+		if ( attr.invalid ) {
+			psz_formatted_attributes[ 0 ] = L'?';
+			psz_formatted_attributes[ 1 ] = L'?';
+			psz_formatted_attributes[ 2 ] = L'?';
+			psz_formatted_attributes[ 3 ] = L'?';
+			psz_formatted_attributes[ 4 ] = L'?';
+			psz_formatted_attributes[ 5 ] =   0;
+			psz_formatted_attributes[ 6 ] =   0;
+			chars_written = 5;
+			return S_OK;
+			}
+		rsize_t chars_remaining = 0;
+		const HRESULT alt_errCode = StringCchPrintfExW( psz_formatted_attributes, strSize, NULL, &chars_remaining, 0, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
+		ASSERT( SUCCEEDED( alt_errCode ) );
+		if ( SUCCEEDED( alt_errCode ) ) {
+			ASSERT( strSize >= chars_remaining );
+			chars_written = ( strSize - chars_remaining );
+			ASSERT( wcslen( psz_formatted_attributes ) == chars_written );
+			return alt_errCode;
+			}
+		chars_written = 0;
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( alt_errCode );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( alt_errCode, "StringCchPrintfExW" );
+		return alt_errCode;
+		}
 
 	}
 
-struct compare_CTreeListItems {
+struct compare_CTreeListItems final {
 	compare_CTreeListItems( const CTreeListControl* const ctrl_in ) : ctrl( ctrl_in ) { }
 	compare_CTreeListItems& operator=( compare_CTreeListItems& in ) = delete;
 	bool operator()( const CTreeListItem* const lhs, const CTreeListItem* const rhs ) {
@@ -723,7 +763,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL c
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_ATTRIBUTES );
-	const HRESULT res = wds_fmt::CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
+	const HRESULT res = CStyle_FormatAttributes( m_attr, psz_text, strSize, chars_written );
 	ASSERT( SUCCEEDED( res ) );
 	if ( !SUCCEEDED( res ) ) {
 		sizeBuffNeed = { 8u };//Generic size needed, overkill;

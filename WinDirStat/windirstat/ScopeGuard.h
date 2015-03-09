@@ -6,6 +6,8 @@
 #ifndef WDS_SCOPEGUARD_H_INCLUDED
 #define WDS_SCOPEGUARD_H_INCLUDED
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number );
 
 #ifdef new
@@ -20,7 +22,7 @@ void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_
 // To initialize, use something like: auto g1 = scopeGuard( [ ]{ fclose( fd ); unlink( name ); }, __FILE__, __FUNCSIG__, __LINE__ );
 // To dismiss
 template <class Fun>
-class ScopeGuard {
+class ScopeGuard final {
 	Fun function_to_call_on_scope_exit;
 	bool active_;
 

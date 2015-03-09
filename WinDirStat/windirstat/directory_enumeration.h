@@ -7,8 +7,17 @@
 #ifndef WDS_DIRECTOY_ENUMERATION_H
 #define WDS_DIRECTOY_ENUMERATION_H
 
+#pragma message( "Including `" __FILE__ "`..." )
+
+#include "datastructures.h"
+
 class CTreeListItem;
 class CDirstatApp;
+
+struct pair_of_item_and_path final {
+	CTreeListItem* ptr;
+	std::wstring path;
+	};
 
 
 void    FindFilesLoop                 ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path );

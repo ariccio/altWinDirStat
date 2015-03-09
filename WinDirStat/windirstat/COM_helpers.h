@@ -5,6 +5,7 @@
 #ifndef WDS_COM_HELPERS_H_INCLUDED
 #define WDS_COM_HELPERS_H_INCLUDED
 
+#pragma message( "Including `" __FILE__ "`..." )
 
 
 //several are from the "Show Shell Common File Dialog" sample
@@ -15,15 +16,12 @@
 // It is OK for CONTROL_RADIOBUTTON2 to have the same ID as CONTROL_RADIOBUTTONLIST, 
 // because it is a child control under CONTROL_RADIOBUTTONLIST.
 //#define CONTROL_GROUP           2000
-#define CONTROL_RADIOBUTTONLIST 2
-#define CONTROL_RADIOBUTTON1    1
-#define CONTROL_RADIOBUTTON2    2
+//#define CONTROL_RADIOBUTTONLIST 2
+//#define CONTROL_RADIOBUTTON1    1
+//#define CONTROL_RADIOBUTTON2    2
 
 namespace {
-	const COMDLG_FILTERSPEC c_rgSaveTypes[ ] =
-	{
-			{ L"All folders", L"*" }
-	};
+	const COMDLG_FILTERSPEC c_rgSaveTypes[ ] = { { L"All folders", L"*" } };
 
 	}
 
@@ -45,7 +43,7 @@ namespace {
 //        drop-down list, in case the calling process wants to change the items in 
 //        the list.
 //
-class CFileDialogEventHandler : public IFileDialogEvents, public IFileDialogControlEvents {
+class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDialogControlEvents {
 	public:
 
 	// 
@@ -84,28 +82,28 @@ class CFileDialogEventHandler : public IFileDialogEvents, public IFileDialogCont
 
 	//TODO: I think the MSDN sample might've done something wrong with all the S_OKs
 	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnFolderChange( __RPC__in_opt IFileDialog* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnFolderChanging( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnHelp( IFileDialog* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnSelectionChange( __RPC__in_opt IFileDialog* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnTypeChange( __RPC__in_opt IFileDialog* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnShareViolation( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_SHAREVIOLATION_RESPONSE* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnOverwrite( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_OVERWRITE_RESPONSE* ) {
-		return S_OK;
+		return E_NOTIMPL;
 		}
 
 	// 
@@ -113,8 +111,11 @@ class CFileDialogEventHandler : public IFileDialogEvents, public IFileDialogCont
 	// 
 
 	//Keeping OnItemSelected in the implementation file means that we don't need to include ScopeGuard.h in the header.
-	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem );
+	//IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem );
 
+	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* /*pfdc*/, DWORD /*dwIDCtl*/, DWORD /*dwIDItem*/ ) {
+		return E_NOTIMPL;
+		}
 
 
 	IFACEMETHODIMP OnButtonClicked( __RPC__in_opt IFileDialogCustomize*, DWORD ) {

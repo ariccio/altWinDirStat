@@ -9,14 +9,17 @@
 #ifndef WDS_MAINFRAME_CPP
 #define WDS_MAINFRAME_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "graphview.h"
 #include "dirstatview.h"
+#include "datastructures.h"
+#include "macros_that_scare_small_children.h"
 
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 //#include "ownerdrawnlistcontrol.h"
 #include "TreeListControl.h"
-#include "item.h"
 #include "typeview.h"
 
 #include "pagetreemap.h"
@@ -49,7 +52,7 @@ namespace {
 		TRACE( _T( "Cannot open the clipboard!\r\n" ) );
 		}
 
-	class COpenClipboard {
+	class COpenClipboard final {
 		public:
 		COpenClipboard( const COpenClipboard& in ) = delete;
 		COpenClipboard& operator=( const COpenClipboard& in ) = delete;

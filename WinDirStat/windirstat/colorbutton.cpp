@@ -7,6 +7,8 @@
 #ifndef WDS_COLORBUTTON_CPP
 #define WDS_COLORBUTTON_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "colorbutton.h"
 #include "globalhelpers.h"
 

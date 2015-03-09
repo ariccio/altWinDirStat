@@ -9,12 +9,13 @@
 #ifndef WDS_TREELISTCONTROL_H
 #define WDS_TREELISTCONTROL_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
-
-
+#include "datastructures.h"
 #include "ownerdrawnlistcontrol.h"
 #include "ChildrenHeapManager.h"
 //#include "pacman.h"
+#include "macros_that_scare_small_children.h"
 
 
 class CTreeListItem;
@@ -23,7 +24,23 @@ class CSortingListItem;
 class CImageList;
 class CDirstatDoc;
 
-struct VISIBLEINFO {
+
+struct attribs final {
+	bool readonly   : 1;
+	bool hidden     : 1;
+	bool system     : 1;
+  //bool archive    : 1;//Nobody actually cares about the archive attribute!
+	bool compressed : 1;
+	bool encrypted  : 1;
+	bool reparse    : 1;
+	bool invalid    : 1;
+
+	//Not a file attribute, but a member of attribs to enable better packing
+	bool m_done     : 1;
+	};
+
+
+struct VISIBLEINFO final {
 	VISIBLEINFO( ) : indent( 0 ), isExpanded { false }, ntfs_compression_ratio { 0.0 } { }
 
 	SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
@@ -41,7 +58,7 @@ struct VISIBLEINFO {
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
-class CTreeListItem : public COwnerDrawnListItem {
+class CTreeListItem final : public COwnerDrawnListItem {
 	
 
 		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
@@ -280,6 +297,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			ASSERT( rowHeight % 2 == 0 );           // muss gerade sein//"must be straight"?
 			}
 		
+		//calls CWnd::DestroyWindow( )
 		virtual ~CTreeListControl( ) = default;
 
 #pragma warning( suppress: 4263 )
@@ -409,7 +427,7 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 //See also: "MEM54-CPP. Provide placement new with properly-aligned pointers to sufficient storage capacity"
 //           https://www.securecoding.cert.org/confluence/display/cplusplus/MEM54-CPP.+Provide+placement+new+with+properly-aligned+pointers+to+sufficient+storage+capacity
 //It'll have to use a struct that'll look something like this:
-struct children_heap_block_allocation {
+struct children_heap_block_allocation final {
 	children_heap_block_allocation( ) : m_childCount { 0u } { }
 	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
 	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;

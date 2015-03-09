@@ -1,10 +1,12 @@
 #pragma once
 
+#include "stdafx.h"
+
 #ifndef WDS_CHILDREN_HEAP_MANAGER_H_INCLUDED
 #define WDS_CHILDREN_HEAP_MANAGER_H_INCLUDED
 
-#include "stdafx.h"
 
+#pragma message( "Including `" __FILE__ "`..." )
 
 struct Children_String_Heap_Manager {
 	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;

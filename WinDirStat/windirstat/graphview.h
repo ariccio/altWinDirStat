@@ -9,12 +9,16 @@
 #ifndef WDS_GRAPHVIEW_H
 #define WDS_GRAPHVIEW_H
 
+#pragma message( "Including `" __FILE__ "`..." )
+
+#include "datastructures.h"
+
+#include "macros_that_scare_small_children.h"
 #include "treemap.h"
 #include "windirstat.h"
 #include "options.h"
 #include "globalhelpers.h"
 #include "dirstatdoc.h"
-#include "item.h"
 #include "mainframe.h"
 #include "windirstat.h"
 #include "dirstatview.h"

@@ -10,13 +10,16 @@
 #ifndef WDS_OWNERDRAWNLISTCONTROL_H
 #define WDS_OWNERDRAWNLISTCONTROL_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
+#include "datastructures.h"
 
 #include "mainframe.h"
 #include "globalhelpers.h"
 #include "options.h"
 #include "windirstat.h"
 #include "ScopeGuard.h"
+#include "macros_that_scare_small_children.h"
 
 class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
@@ -30,6 +33,19 @@ namespace CColorSpace {
 	}
 
 namespace {
+
+	// SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
+	struct SSorting final {
+		SSorting( ) : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending1 { false }, ascending2 { true } { }
+		_Field_range_( 0, 8 ) column::ENUM_COL  column1;
+		_Field_range_( 0, 8 ) column::ENUM_COL  column2;
+							  bool              ascending2 : 1;
+							  //C4820: 'SSorting' : '3' bytes padding added after data member 'SSorting::ascending1'
+							  bool              ascending1 : 1;
+		};
+
+
+
 	inline void fixup_align_for_indent( _In_ const bool indent, _Inout_ RECT& rcRest ) {
 		// Increase indentation according to tree-level
 		if ( indent ) {
@@ -38,6 +54,9 @@ namespace {
 			}
 		}
 
+	const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
+	const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
+	const UINT LABEL_Y_MARGIN   = 2;
 	}
 
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl. Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.

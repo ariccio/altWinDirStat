@@ -9,6 +9,9 @@
 #ifndef WDS_TREEMAP_H_INCLUDED
 #define WDS_TREEMAP_H_INCLUDED
 
+#pragma message( "Including `" __FILE__ "`..." )
+
+#include "globalhelpers.h"
 
 class CTreeListItem;
 class CGraphView;
@@ -51,6 +54,7 @@ public:
 		const double stack_size_av = ( ( num_times_stack_used != 0 ) ? ( static_cast< double >( total_size_stack_vector ) / static_cast< double >( num_times_stack_used ) ) : 0 );
 		const double heap__size_av = ( ( num_times_heap__used != 0 ) ? ( static_cast< double >( total_size_heap__vector ) / static_cast< double >( num_times_heap__used ) ) : 0 );
 
+#ifdef WDS_TYPEVIEW_TREEMAP_MEMORY_USAGE_DEBUGGING
 		if ( m_is_typeview ) {
 			if ( num_times_stack_used > 0 ) {
 				trace_typeview_used_stack( );
@@ -60,6 +64,8 @@ public:
 				}
 			return;
 			}
+#endif
+
 		trace_draw_cushion_stack_uses( num_times_stack_used );
 		trace_draw_cushion_heap__uses( num_times_heap__used );
 

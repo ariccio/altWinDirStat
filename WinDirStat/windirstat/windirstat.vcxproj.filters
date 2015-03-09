@@ -33,9 +33,6 @@
     <ClCompile Include="graphview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="item.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mainframe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -78,6 +75,9 @@
     <ClCompile Include="COM_helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="datastructures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h">
@@ -93,9 +93,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="graphview.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mainframe.h">
@@ -156,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ChildrenHeapManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="macros_that_scare_small_children.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

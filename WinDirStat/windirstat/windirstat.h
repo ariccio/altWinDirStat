@@ -9,6 +9,8 @@
 #ifndef WDS_WINDIRSTAT_H
 #define WDS_WINDIRSTAT_H
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "mountpoints.h"//CMountPoints : m_mountPoints, else we'd have to use PIMPL
 
 class CMainFrame;

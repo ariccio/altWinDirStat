@@ -5,10 +5,15 @@
 #pragma once
 
 #include "stdafx.h"
-//#include "globalhelpers.h"
+
 
 #ifndef WDS_OPTIONS_H
 #define WDS_OPTIONS_H
+
+#pragma message( "Including `" __FILE__ "`..." )
+
+
+#include "globalhelpers.h"
 
 struct COptions;
 class CDirstatApp;
@@ -67,7 +72,7 @@ namespace CRegistryUser {
 
 
 // CPersistence. Reads from and writes to the registry all the persistent settings like window position, column order etc.
-class CPersistence {
+class CPersistence final {
 public:
 	
 	
@@ -96,7 +101,7 @@ public:
 		}
 
 
-	static RADIO GetSelectDrivesRadio     (                                                                                                 );
+	//static RADIO GetSelectDrivesRadio     (                                                                                                 );
 
 
 	static void  SetSelectDrivesRadio( _In_    const INT radio ) {
@@ -183,7 +188,7 @@ private:
 // COptions is a singleton.
 _Success_( return != NULL ) COptions *GetOptions();
 
-struct COptions {
+struct COptions final {
 	COptions( ) = default;
 
 	void SetHumanFormat              ( _In_ const bool human, CDirstatApp* app_ptr );

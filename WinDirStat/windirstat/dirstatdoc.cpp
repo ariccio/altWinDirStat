@@ -9,13 +9,14 @@
 #ifndef WDS_DIRSTAT_DOC_CPP
 #define WDS_DIRSTAT_DOC_CPP
 
-#include "dirstatdoc.h"
+#pragma message( "Including `" __FILE__ "`..." )
 
+#include "dirstatdoc.h"
+#include "datastructures.h"
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 #include "ownerdrawnlistcontrol.h"
 //#include "TreeListControl.h"
-#include "item.h"
 #include "typeview.h"
 
 #include "dirstatview.h"
@@ -189,6 +190,12 @@ namespace {
 	#endif
 	#endif
 		}
+
+	//Yes, used
+	struct s_compareSExtensionRecordByBytes final {
+		bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.bytes < rhs.bytes ); }
+		};
+
 
 	void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>& extension_records, _In_ const CTreeListItem* const root_item ) {
 		std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;

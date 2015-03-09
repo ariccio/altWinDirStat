@@ -9,6 +9,10 @@
 #ifndef WDS_WINDIRSTAT_CPP
 #define WDS_WINDIRSTAT_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
+
+#include "macros_that_scare_small_children.h"
 #include "graphview.h"
 //#include "SelectDrivesDlg.h"
 #include "dirstatdoc.h"
@@ -59,7 +63,7 @@ SetProcessMitigationPolicy(
 	typedef WINBASEAPI BOOL( WINAPI* SetProcessMitigationPolicy_t )( _In_ _Const_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_reads_bytes_( dwLength ) _Const_ PVOID lpBuffer, _In_ _Const_ SIZE_T dwLength );
 
 
-	struct HMODULE_RAII {
+	struct HMODULE_RAII final {
 		HMODULE_RAII( _In_ std::pair<HMODULE, BOOL> pair_in ) : the_module { pair_in.first }, result { pair_in.second } { }
 		~HMODULE_RAII( ) {
 			if ( result == 0 ) {

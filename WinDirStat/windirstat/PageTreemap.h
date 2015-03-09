@@ -10,9 +10,12 @@
 #ifndef WDS_PAGETREEMAP_H
 #define WDS_PAGETREEMAP_H
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 
 #include "colorbutton.h"
 #include "xyslider.h"
+#include "globalhelpers.h"
 
 //
 // CPageTreemap. "Settings" property page "Treemap".

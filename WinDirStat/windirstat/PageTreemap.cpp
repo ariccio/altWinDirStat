@@ -9,11 +9,18 @@
 #ifndef WDS_PAGETREEMAP_CPP
 #define WDS_PAGETREEMAP_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "pagetreemap.h"
 #include "options.h"
 #include "globalhelpers.h"
 
 //#include "windirstat.h"
+
+namespace {
+
+	const int CPageTreemap_maxHeight = 200;
+	}
 
 
 IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )

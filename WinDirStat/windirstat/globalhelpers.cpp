@@ -9,6 +9,8 @@
 #ifndef WDS_GLOBALHELPERS_CPP
 #define WDS_GLOBALHELPERS_CPP
 
+#pragma message( "Including `" __FILE__ "`..." )
+
 #include "globalhelpers.h"
 #include "ScopeGuard.h"
 
@@ -694,32 +696,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 	return S_OK;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatAttributes( _In_ const attribs& attr, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_attributes, _In_range_( 6, 18 ) const rsize_t strSize, _Out_ rsize_t& chars_written  ) {
-	if ( attr.invalid ) {
-		psz_formatted_attributes[ 0 ] = L'?';
-		psz_formatted_attributes[ 1 ] = L'?';
-		psz_formatted_attributes[ 2 ] = L'?';
-		psz_formatted_attributes[ 3 ] = L'?';
-		psz_formatted_attributes[ 4 ] = L'?';
-		psz_formatted_attributes[ 5 ] =   0;
-		psz_formatted_attributes[ 6 ] =   0;
-		chars_written = 5;
-		return S_OK;
-		}
-	rsize_t chars_remaining = 0;
-	const HRESULT alt_errCode = StringCchPrintfExW( psz_formatted_attributes, strSize, NULL, &chars_remaining, 0, L"%s%s%s%s%s", ( ( attr.readonly ) ? L"R" : L"" ),  ( ( attr.hidden ) ? L"H" : L"" ),  ( ( attr.system ) ? L"S" : L"" ),  ( ( attr.compressed ) ? L"C" : L"" ), ( ( attr.encrypted ) ? L"E" : L"" ) );
-	ASSERT( SUCCEEDED( alt_errCode ) );
-	if ( SUCCEEDED( alt_errCode ) ) {
-		ASSERT( strSize >= chars_remaining );
-		chars_written = ( strSize - chars_remaining );
-		ASSERT( wcslen( psz_formatted_attributes ) == chars_written );
-		return alt_errCode;
-		}
-	chars_written = 0;
-	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( alt_errCode );
-	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( alt_errCode, "StringCchPrintfExW" );
-	return alt_errCode;
-	}
+
 
 //
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
@@ -1591,6 +1568,71 @@ void trace_full_path( _In_z_ PCWSTR const path ) {
 	}
 
 #endif
+
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetBrightnessPercent( ) const {
+	return RoundDouble( brightness   * 100 );
+	}
+
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetHeightPercent( ) const {
+	return RoundDouble( height       * 100 );
+	}
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetScaleFactorPercent( ) const {
+	return RoundDouble( scaleFactor  * 100 );
+	}
+
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetAmbientLightPercent( ) const {
+	return RoundDouble( ambientLight * 100 );
+	}
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetLightSourceXPercent( ) const {
+	return RoundDouble( lightSourceX * 100 );
+	}
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetLightSourceYPercent( ) const {
+	return RoundDouble( lightSourceY * 100 );
+	}
+
+POINT Treemap_Options::GetLightSourcePoint( ) const {
+	return POINT { GetLightSourceXPercent( ), GetLightSourceYPercent( ) };
+	}
+
+_Ret_range_( 0, 100 ) INT Treemap_Options::RoundDouble ( const DOUBLE d ) const {
+	return signum( d ) * static_cast<INT>( abs( d ) + 0.5 );
+	}
+
+void Treemap_Options::SetBrightnessPercent( const INT    n   ) {
+	brightness   = n / 100.0;
+	}
+
+void Treemap_Options::SetHeightPercent( const INT    n   ) {
+	height       = n / 100.0;
+	}
+
+void Treemap_Options::SetScaleFactorPercent( const INT    n   ) {
+	scaleFactor  = n / 100.0;
+	}
+
+void Treemap_Options::SetAmbientLightPercent( const INT    n   ) {
+	ambientLight = n / 100.0;
+	}
+
+void Treemap_Options::SetLightSourceXPercent( const INT    n   ) {
+	lightSourceX = n / 100.0; 
+	}
+
+void Treemap_Options::SetLightSourceYPercent( const INT    n   ) {
+	lightSourceY = n / 100.0;
+	}
+
+
+void Treemap_Options::SetLightSourcePoint   ( const POINT  pt  ) {
+	SetLightSourceXPercent( pt.x );
+	SetLightSourceYPercent( pt.y );
+	}
 
 #else
 

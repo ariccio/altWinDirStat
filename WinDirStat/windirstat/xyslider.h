@@ -6,10 +6,13 @@
 
 #include "stdafx.h"
 
+
 #ifndef WDS_XYSLIDER_H
 #define WDS_XYSLIDER_H
 
+#pragma message( "Including `" __FILE__ "`..." )
 
+#include "globalhelpers.h"
 
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!

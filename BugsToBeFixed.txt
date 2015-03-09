@@ -2,3 +2,6 @@
 
 
 can we get the size (minimum width of column to display the name of the object) without a call to draw it??
+
+
+the Directory List header is not always drawn, immediatley after scanning is complete
