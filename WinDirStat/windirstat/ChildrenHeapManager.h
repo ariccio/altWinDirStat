@@ -8,6 +8,7 @@
 
 #pragma message( "Including `" __FILE__ "`..." )
 
+//See N4188
 struct Children_String_Heap_Manager {
 	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;
 	Children_String_Heap_Manager( const Children_String_Heap_Manager& in ) = delete;
