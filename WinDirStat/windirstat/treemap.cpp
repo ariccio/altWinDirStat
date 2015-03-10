@@ -642,7 +642,7 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 		return;
 		}
 
-	if ( item->m_children == nullptr ) {
+	if ( item->m_child_info == nullptr ) {
 		//item doesn't have children, nothing to check
 		ASSERT( item->m_child_info == nullptr );
 		//ASSERT( item->m_childCount == 0 );
@@ -769,7 +769,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 
 	const auto gridWidth = m_options.grid ? 1 : 0;
 	
-	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || ( item->m_children == nullptr ) ) {
+	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || ( item->m_child_info == nullptr ) ) {
 		return const_cast<CTreeListItem*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
@@ -782,7 +782,8 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
 		const auto child = static_cast< CTreeListItem* >( item_vector_of_children.at( i ) );
-		ASSERT( item->m_children != nullptr );
+		ASSERT( item->m_child_info != nullptr );
+		ASSERT( item->m_child_info->m_children != nullptr );
 		ASSERT( child != NULL );
 		const RECT child_rect = child->TmiGetRectangle( );
 		if ( ::PtInRect( &child_rect, point ) ) {
@@ -833,7 +834,7 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
-	if ( item->m_children == nullptr ) {
+	if ( item->m_child_info == nullptr ) {
 		//this should be fast, as we have 0 children.
 		//ASSERT( item->m_childCount == 0 );
 		if ( item->size_recurse( ) == 0 ) {
@@ -873,7 +874,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 		//surface[ 3 ] = 0.00;
 		}
 
-	if ( item->m_children == nullptr ) {
+	if ( item->m_child_info == nullptr ) {
 		RenderLeaf( offscreen_buffer, item, surface );
 		return;
 		}
@@ -901,8 +902,9 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	/*
 	  return: whether the rows are horizontal.
 	*/
-	ASSERT( !( parent->m_children == nullptr ) );
-	
+	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info->m_children != nullptr );
+
 	//ASSERT( parent->m_childCount > 0 );
 
 	const auto parentSize = parent->size_recurse( );
@@ -1345,11 +1347,11 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem*
 		}
 	rc.NormalizeRect( );
 	COLORREF colorOfItem;
-	if ( item->m_children == nullptr ) {
+	if ( item->m_child_info == nullptr ) {
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
 		}
 	else {
-		ASSERT( item->m_children == nullptr );
+		ASSERT( item->m_child_info == nullptr );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
 	RenderRectangle( offscreen_buffer, rc, surface, colorOfItem );

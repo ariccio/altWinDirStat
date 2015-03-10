@@ -241,6 +241,7 @@ SetProcessMitigationPolicy(
 BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, &( CDirstatApp::OnAppAbout ) )
 	ON_COMMAND(ID_FILE_OPEN, &( CDirstatApp::OnFileOpen ) )
+	ON_COMMAND(ID_FILE_NEW, &( CDirstatApp::OnFileOpenLight ) )
 END_MESSAGE_MAP()
 
 
@@ -376,8 +377,11 @@ BOOL CDirstatApp::InitInstance( ) {
 	// When called by setup.exe, windirstat remained in the background, so we do a
 	m_pMainWnd->BringWindowToTop( );
 	m_pMainWnd->SetForegroundWindow( );
-	if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) {
-		OnFileOpen( );
+
+	//if ( cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen ) { <------WTF WAS GOING ON HERE!!! TODO: BUGBUG: WTF!!!
+	if ( cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen ) {
+		//OnFileOpen( );
+		OnFileOpenLight( );
 		}
 	return TRUE;
 	}
@@ -398,6 +402,49 @@ void CDirstatApp::OnFileOpen( ) {
 	if ( !( path_str.empty( ) ) ) {
 		m_pDocTemplate->OpenDocumentFile( path_str.c_str( ), true );
 		}
+	
+	//CSelectDrivesDlg dlg;
+	//if ( IDOK == dlg.DoModal( ) ) {
+	//	//ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
+	//	const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), dlg.m_folder_name_heap.c_str( ), dlg.m_drives );
+	//	if ( path.find( '|' ) == std::wstring::npos ) {
+	//		m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
+	//		}
+	//	}
+	}
+
+void CDirstatApp::OnFileOpenLight( ) {
+/*
+
+//	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
+//	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
+//	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+//	bob.SetInitialFolder( m_folder_name_heap.c_str( ) );
+//	auto resDoModal = bob.DoModal( );
+//	if ( resDoModal == IDOK ) {
+//		m_folder_name_heap = bob.GetFolderPath( );
+//		//m_folderName = m_folder_name_heap.c_str( );
+//		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+//		TRACE( _T( "User chose: %s\r\n" ), m_folder_name_heap.c_str( ) );
+//		}
+//	else {
+//		TRACE( _T( "user hit cancel - no changes necessary.\r\n" ) );
+//		}
+*/
+	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
+	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
+	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+	auto resDoModal = bob.DoModal( );
+	if ( resDoModal == IDOK ) {
+		PCWSTR const m_folder_name_heap( bob.GetFolderPath( ) );
+		if ( wcslen( m_folder_name_heap ) > 0 ) {
+			m_pDocTemplate->OpenDocumentFile( m_folder_name_heap, TRUE );
+			}
+		}
+	//const auto path_str = test_file_open( );
+	//if ( !( path_str.empty( ) ) ) {
+	//	m_pDocTemplate->OpenDocumentFile( path_str.c_str( ), true );
+	//	}
 	
 	//CSelectDrivesDlg dlg;
 	//if ( IDOK == dlg.DoModal( ) ) {

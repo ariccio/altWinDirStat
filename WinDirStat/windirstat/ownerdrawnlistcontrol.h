@@ -59,6 +59,10 @@ namespace {
 	const UINT LABEL_Y_MARGIN   = 2;
 	}
 
+
+#pragma pack(push, 1)
+#pragma message( "Whoa there! I'm changing the natural data alignment for COwnerDrawnListItem. Look for a message that says I'm restoring it!" )
+
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl. Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
@@ -210,11 +214,14 @@ protected:
 
 
 	public:
-	//_Field_z_ _Field_size_( m_name_length ) std::unique_ptr<_Null_terminated_ const wchar_t[]> m_name;
 	_Field_z_ _Field_size_( m_name_length ) PCWSTR         m_name;
 	                                        //C4820: 'COwnerDrawnListItem' : '6' bytes padding added after data member 'COwnerDrawnListItem::m_name_length'
 	                                        std::uint16_t  m_name_length;
 	};
+
+#pragma message( "Restoring data alignment.... " )
+#pragma pack(pop)
+
 
 namespace {
 	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {

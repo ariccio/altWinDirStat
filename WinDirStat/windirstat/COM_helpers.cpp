@@ -39,6 +39,7 @@
 //	}
 
 
+
 //Keeping OnOpenAFolder in the implementation file means that we don't need to include ScopeGuard.h in the header.
 std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
 	IFileDialog* file_dialog = nullptr;

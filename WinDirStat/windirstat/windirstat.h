@@ -69,6 +69,7 @@ private:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnFileOpen();
+	afx_msg void OnFileOpenLight();
 	afx_msg void OnAppAbout();
 
 	};

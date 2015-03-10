@@ -286,11 +286,10 @@ namespace {
 
 
 		//ASSERT( ThisCItem->m_childCount == 0 );
-		ThisCItem->m_children.reset( new CTreeListItem[ total_count ] );
 
 
 		//TODO: BUGBUG: need +1 here, else ASSERT( ( m_buffer_filled + new_name_length ) < m_buffer_size ) fails!
-		std::uint64_t total_length = 1u;
+		std::wstring::size_type total_length = 1u;
 		for ( const auto& aFile : vecFiles ) {
 			total_length += static_cast<std::uint64_t>( aFile.name.length( ) );
 		
@@ -305,13 +304,14 @@ namespace {
 			}
 
 		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
-		const std::uint64_t total_size_alloc = ( total_length );
+		const std::wstring::size_type total_size_alloc = ( total_length );
 
 	#ifdef WDS_STRING_ALLOC_DEBUGGING
 		TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
 	#endif
 
 		ThisCItem->m_child_info = std::make_unique<child_info>( );
+		ThisCItem->m_child_info->m_children.reset( new CTreeListItem[ total_count ] );
 
 		//ThisCItem->m_name_pool.reset( total_size_alloc );
 		
@@ -348,7 +348,7 @@ namespace {
 			else {
 				//                                                                                               IT_DIRECTORY
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
-				const auto newitem = new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				const auto newitem = new ( &( ThisCItem->m_child_info->m_children[ total_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 				//detect overflows. highly unlikely.
 				//ASSERT( ThisCItem->m_childCount < 4294967290 );
@@ -373,7 +373,54 @@ namespace {
 		//ThisCItem->m_children_vector.shrink_to_fit( );
 		return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 		}
+_Success_( return < UINT64_ERROR )
+	const std::uint64_t get_uncompressed_file_size( const std::wstring path ) {
+		const HANDLE file_handle = CreateFileW( path.c_str( ), ( FILE_READ_ATTRIBUTES bitor FILE_READ_EA ), ( FILE_SHARE_READ bitor FILE_SHARE_WRITE ), NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+		if ( file_handle == INVALID_HANDLE_VALUE ) {
+		
+			const rsize_t str_size = 128u;
+			wchar_t str_buff[ str_size ] = { 0 };
+			rsize_t chars_written = 0;
+			const auto last_error = GetLastError( );
+			const HRESULT err_msg_fmt_res = CStyle_GetLastErrorAsFormattedMessage( str_buff, str_size, chars_written, last_error );
+			if ( SUCCEEDED( err_msg_fmt_res ) ) {
+				TRACE( _T( "get_uncompressed_file_size (%s) failed, as we failed to open the file! File open error message:\r\n\t%s\r\n" ), path.c_str( ), str_buff );
+				return UINT64_ERROR;
+				}
+			TRACE( _T( "DOUBLE FAULT! get_uncompressed_file_size (%s) failed! Error getting error message!\r\n" ), path.c_str( ) );
 
+			return UINT64_ERROR;
+			}
+
+		LARGE_INTEGER large_integer = { 0 };
+
+
+		//If [GetFileSizeEx] fails, the return value is zero. To get extended error information, call GetLastError.
+		const BOOL file_size_result = GetFileSizeEx( file_handle, &large_integer );
+		close_handle( file_handle );
+
+		if ( file_size_result != 0 ) {
+			ASSERT( large_integer.QuadPart >= 0 );
+			return static_cast< const std::uint64_t >( large_integer.QuadPart );
+			}
+	#ifdef DEBUG
+		//If [GetFileAttributes] succeeds, the return value contains the attributes of the specified file or directory. If [GetFileAttributes] fails, the return value is INVALID_FILE_ATTRIBUTES. To get extended error information, call GetLastError.
+		const DWORD attrib = GetFileAttributesW( path.c_str( ) );
+		ASSERT( attrib != INVALID_FILE_ATTRIBUTES );
+		if ( attrib != INVALID_FILE_ATTRIBUTES ) {
+			if ( attrib == FILE_ATTRIBUTE_DIRECTORY ) {
+				TRACE( _T( "Couldn't get uncompressed size for `%s`, which is expected, as it's a directory!\r\n" ), path.c_str( ) );
+				return UINT64_ERROR;
+				}
+			TRACE( _T( "get_uncompressed_file_size (%s) failed!! This doesn't make sense, because it's not a directory.\r\n" ), path.c_str( ) );
+			return UINT64_ERROR;
+			}
+		TRACE( _T( "get_uncompressed_file_size (%s) failed!! What really doesn't make sense, is that we failed to get attributes for that file.\r\n" ), path.c_str( ) );
+	#endif
+
+		//TODO: trace error message
+		return UINT64_ERROR;
+		}
 
 	}
 
@@ -408,7 +455,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			else {
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                                            IT_FILE
-				auto newChild = ::new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				auto newChild = ::new ( &( ThisCItem->m_child_info->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
 				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
@@ -429,7 +476,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			else {
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                            IT_FILE
-				::new ( &( ThisCItem->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				::new ( &( ThisCItem->m_child_info->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				}
 			}
 		//detect overflows. highly unlikely.
@@ -457,7 +504,7 @@ WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem,
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	//ASSERT( ThisCItem->m_childCount == 0 );
-	ASSERT( ThisCItem->m_children.get( ) == nullptr );
+	ASSERT( ThisCItem->m_child_info == nullptr );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	ASSERT( strcmp_path == 0 );
 	if ( strcmp_path != 0 ) {
@@ -580,36 +627,15 @@ WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 _Success_( return < UINT64_ERROR )
 WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item ) {
 	const auto derived_item = static_cast< const CTreeListItem* const >( item );
-	const auto path = derived_item->GetPath( );
-	const HANDLE file_handle = CreateFileW( path.c_str( ), FILE_READ_ATTRIBUTES | FILE_READ_EA, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-	if ( file_handle == INVALID_HANDLE_VALUE ) {
-		const rsize_t str_size = 128u;
-		wchar_t str_buff[ str_size ] = { 0 };
-		rsize_t chars_written = 0;
-		const auto last_error = GetLastError( );
-		const HRESULT res = CStyle_GetLastErrorAsFormattedMessage( str_buff, str_size, chars_written, last_error );
-		if ( SUCCEEDED( res ) ) {
-			TRACE( _T( "get_uncompressed_file_size failed! error message: %s\r\n" ), str_buff );
-			return UINT64_ERROR;
-			}
-		TRACE( _T( "DOUBLE FAULT! get_uncompressed_file_size failed! Error getting error message!\r\n" ) );
-		return UINT64_ERROR;
+	std::wstring path_holder( derived_item->GetPath( ) );
+
+	auto strcmp_path = path_holder.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	if ( strcmp_path != 0 ) {
+		path_holder = ( L"\\\\?\\" + path_holder );
 		}
+	
+	return get_uncompressed_file_size( std::move( path_holder ) );
 
-	LARGE_INTEGER large_integer = { 0 };
-
-
-	//If [GetFileSizeEx] fails, the return value is zero. To get extended error information, call GetLastError.
-	const BOOL file_size_result = GetFileSizeEx( file_handle, &large_integer );
-	close_handle( file_handle );
-
-	if ( file_size_result != 0 ) {
-		ASSERT( large_integer.QuadPart >= 0 );
-		return static_cast< const std::uint64_t >( large_integer.QuadPart );
-		}
-
-	//TODO: trace error message
-	return UINT64_ERROR;
 	}
 
 #ifdef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW

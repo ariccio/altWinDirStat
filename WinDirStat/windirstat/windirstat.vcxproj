@@ -299,7 +299,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /d1reportSingleClassLayoutCTreeListItem</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -538,7 +538,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /d1reportSingleClassLayoutCTreeListItem</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>

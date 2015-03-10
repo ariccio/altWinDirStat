@@ -337,10 +337,9 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 				}
 			}
 		}
-
-	//const std::wstring folder( pszPathName );
-	//const auto drives( DecodeSelection( pszPathName, folder ) );
-	check8Dot3NameCreationAndNotifyUser( );
+	
+	//TODO: should NO LONGER be relevant.
+	//check8Dot3NameCreationAndNotifyUser( );
 
 	//const auto rootFolders_( folder );
 	buildDriveItems( pszPathName );
@@ -482,12 +481,12 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	}
 
 //_Pre_satisfies_( item.m_type == IT_FILE )
-_Pre_satisfies_( item.m_children._Myptr == nullptr )
+_Pre_satisfies_( item.m_child_info._Myptr == nullptr )
 void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 	WTL::CWaitCursor wc;
 	std::wstring path;
 	//if ( item.m_type == IT_FILE ) {
-	if ( item.m_children == nullptr ) {
+	if ( item.m_child_info == nullptr ) {
 		path = item.GetPath( ).c_str( );
 		}
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
@@ -525,9 +524,17 @@ BEGIN_MESSAGE_MAP(CDirstatDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, &( CDirstatDoc::OnUpdateEditCopy ) )
 	ON_COMMAND(ID_EDIT_COPY, &( CDirstatDoc::OnEditCopy ) )
 	ON_UPDATE_COMMAND_UI( ID_FILE_OPEN, &CDirstatDoc::OnUpdateFileOpen )
+	ON_UPDATE_COMMAND_UI( ID_FILE_NEW, &CDirstatDoc::OnUpdateFileOpenLight )
 END_MESSAGE_MAP( )
 
 void CDirstatDoc::OnUpdateFileOpen( CCmdUI *pCmdUI ) {
+	if ( m_rootItem == nullptr ) {
+		return pCmdUI->Enable( TRUE );
+		}
+	return pCmdUI->Enable( FALSE );
+	}
+
+void CDirstatDoc::OnUpdateFileOpenLight( CCmdUI *pCmdUI ) {
 	if ( m_rootItem == nullptr ) {
 		return pCmdUI->Enable( TRUE );
 		}

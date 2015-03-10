@@ -26,13 +26,13 @@ class CDirstatDoc;
 
 
 struct child_info final {
-	child_info( ) : m_name_pool( ), m_childCount { 0u } { }
+	child_info( ) : m_name_pool( ), m_childCount { 0u }, m_children { nullptr } { }
 	child_info( const child_info& in ) = delete;
 	child_info& operator=( const child_info& in ) = delete;
-
-	                               Children_String_Heap_Manager m_name_pool;
-	_Field_range_( 0, 4294967295 ) std::uint32_t                m_childCount;
-
+	
+	_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
+	_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
+	                               Children_String_Heap_Manager     m_name_pool;
 	};
 
 
@@ -108,7 +108,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 
 		//const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length 
-		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, /*m_childCount { 0u },*/ m_child_info( nullptr ) {
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_child_info( nullptr ) {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
@@ -117,17 +117,6 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
 
 		virtual ~CTreeListItem( ) = default;
-
-
-
-
-
-
-
-
-
-
-
 
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
@@ -149,10 +138,6 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
 		 inline const HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
-
-
-
-
 
 		FILETIME FILETIME_recurse( ) const;
 
@@ -190,7 +175,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		//_Ret_maybenull_
 		//CItemBranch* children_ptr( ) const;
 		
-		_Pre_satisfies_( this->m_children._Myptr == nullptr ) 
+		_Pre_satisfies_( this->m_child_info._Myptr == nullptr ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 
 
@@ -202,7 +187,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		_Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;
 
-		_Pre_satisfies_( this->m_children._Myptr == nullptr )
+		_Pre_satisfies_( this->m_child_info._Myptr == nullptr )
 			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
 
 
@@ -244,7 +229,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		void childNotNull( _In_ CTreeListItem* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const {
-			return ( m_children != NULL );
+			return ( m_child_info != NULL );
 			}
 		
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
@@ -268,19 +253,20 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 	public:
 	//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
+		                               attribs                          m_attr;
+									   //'CTreeListItem' : '7' bytes padding added after data member 'CTreeListItem::m_attr'
+		                               std::unique_ptr<child_info>      m_child_info;
 		                         const CTreeListItem*                   m_parent;
-		//                             Children_String_Heap_Manager     m_name_pool;
 		                       mutable std::unique_ptr<VISIBLEINFO>     m_vi = nullptr; // Data needed to display the item.
 		                       mutable SRECT                            m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
-		                               attribs                          m_attr;
-		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
+		
+
+									   //4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
-	  //_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
 		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size;                // OwnSize
 		                               FILETIME                         m_lastChange;          // Last modification time OF SUBTREE
-		_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
-		                               std::unique_ptr<child_info>      m_child_info;
+
 	};
 
 
@@ -459,8 +445,8 @@ struct children_heap_block_allocation final {
 		//there are VERY active discussions in the C++ CWG (core working group) to develop some standardized version of array data members of runtime-bound.
 	};
 
-_At_( return, _Writable_bytes_( bytes_allocated ) )
-_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated );
+//_At_( return, _Writable_bytes_( bytes_allocated ) )
+//_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated );
 
 
 

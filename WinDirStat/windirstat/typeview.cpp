@@ -317,7 +317,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	m_exts_count = ext_data_size;
 	m_exts.reset( new CListItem[ ext_data_size ] );
 	
-	std::uint64_t total_name_length = 1;
+	std::wstring::size_type total_name_length = 1u;
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		total_name_length += ( extData->at( i ).ext.length( ) + 1 );
 		}
@@ -574,7 +574,7 @@ void CTypeView::SetSelection( ) {
 	if ( Document != NULL ) {
 		const auto item = Document->m_selectedItem;
 		//if ( item != NULL && item->m_type == IT_FILE ) {
-		if ( ( item != NULL ) && ( item->m_children == nullptr ) ) {
+		if ( ( item != NULL ) && ( item->m_child_info == nullptr ) ) {
 			PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
 			//ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
 			if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {

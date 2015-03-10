@@ -58,7 +58,7 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-	_Pre_satisfies_( item.m_children._Myptr == nullptr )
+	_Pre_satisfies_( item.m_child_info._Myptr == nullptr )
 	void OpenItem ( _In_     const CTreeListItem& item                                                  );
 	void SetSelection ( _In_ const CTreeListItem& item );
 
@@ -118,6 +118,7 @@ public:
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
 		afx_msg void OnUpdateFileOpen( CCmdUI *pCmdUI );
+		afx_msg void OnUpdateFileOpenLight( CCmdUI *pCmdUI );
 	};
 
 // BUGBUG: TODO: EVIL GLOBAL! The document is needed in many places.
