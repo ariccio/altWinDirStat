@@ -310,12 +310,12 @@ namespace {
 		TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
 	#endif
 
-		ThisCItem->m_child_info = std::make_unique<child_info>( );
-		ThisCItem->m_child_info->m_children.reset( new CTreeListItem[ total_count ] );
+		ThisCItem->m_child_info = std::make_unique<child_info>( total_size_alloc, total_count );
+		//ThisCItem->m_child_info->m_children.reset( new CTreeListItem[ total_count ] );
 
 		//ThisCItem->m_name_pool.reset( total_size_alloc );
 		
-		ThisCItem->m_child_info->m_name_pool.reset( total_size_alloc );
+		//ThisCItem->m_child_info->m_name_pool.reset( total_size_alloc );
 
 		//ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
 		ASSERT( ThisCItem->m_child_info->m_name_pool.m_buffer_filled == 0 );

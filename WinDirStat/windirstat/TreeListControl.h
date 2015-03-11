@@ -25,15 +25,6 @@ class CImageList;
 class CDirstatDoc;
 
 
-struct child_info final {
-	child_info( ) : m_name_pool( ), m_childCount { 0u }, m_children { nullptr } { }
-	child_info( const child_info& in ) = delete;
-	child_info& operator=( const child_info& in ) = delete;
-	
-	_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
-	_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
-	                               Children_String_Heap_Manager     m_name_pool;
-	};
 
 
 struct attribs final {
@@ -52,17 +43,15 @@ struct attribs final {
 
 
 struct VISIBLEINFO final {
-	VISIBLEINFO( ) : indent( 0 ), isExpanded { false }, ntfs_compression_ratio { 0.0 } { }
+	__forceinline VISIBLEINFO( ) : indent( 0 ), isExpanded { false }, ntfs_compression_ratio { 0.0 } { }
+	__forceinline ~VISIBLEINFO( ) = default;
 
-	SRECT  rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
-	SRECT  rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
-	// cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded.
-	// In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
-	std::vector<CTreeListItem *>           cache_sortedChildren;
-	_Field_range_( 0, 32767 ) std::int16_t indent;  // 0 for the root item, 1 for its children, and so on.
-		                      bool         isExpanded : 1; // Whether item is expanded.
-							  double       ntfs_compression_ratio;
-
+	                          SRECT                        rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
+	                          SRECT                        rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
+	                          std::vector<CTreeListItem *> cache_sortedChildren; // cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded. // In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
+	_Field_range_( 0, 32767 ) std::int16_t                 indent;  // 0 for the root item, 1 for its children, and so on.
+		                      bool                         isExpanded : 1; // Whether item is expanded.
+							  double                       ntfs_compression_ratio;
 	};
 
 // `/d1reportSingleClassLayoutCItemBranch`
@@ -73,17 +62,23 @@ class CTreeListItem final : public COwnerDrawnListItem {
 	
 
 		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
+		
 		virtual INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
+
+
+		//ItemTextColor __should__ be private!
+		virtual COLORREF ItemTextColor( ) const override final {
+			return Concrete_ItemTextColor( );
+			}
 
 		inline INT     concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
 		const bool     set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const ) const;
 
 		const COLORREF Concrete_ItemTextColor( ) const;
 
-		//ItemTextColor __should__ be private!
-		virtual COLORREF ItemTextColor( ) const override final {
-			return Concrete_ItemTextColor( );
-			}
+		CTreeListItem( CTreeListItem& in ) = delete;
+		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
+
 
 		
 	public:
@@ -113,8 +108,6 @@ class CTreeListItem final : public COwnerDrawnListItem {
 			m_attr.m_done = done;
 			}
 
-		CTreeListItem( CTreeListItem& in ) = delete;
-		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
 
 		virtual ~CTreeListItem( ) = default;
 
