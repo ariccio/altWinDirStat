@@ -370,6 +370,7 @@ namespace {
 					}
 				}
 			}
+		ASSERT( ThisCItem->m_child_info != nullptr );
 		ThisCItem->m_child_info->m_childCount = total_so_far;
 		ASSERT( ThisCItem->m_child_info->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 		//ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
@@ -446,6 +447,8 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			const auto new_name_length = aFile.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
 
+			ASSERT( ThisCItem->m_child_info != nullptr );
+
 			PWSTR new_name_ptr = nullptr;
 			//ThisCItem->m_name_pool.copy_name_str_into_buffer
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
@@ -469,6 +472,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			ASSERT( new_name_length < UINT16_MAX );
 			PWSTR new_name_ptr = nullptr;
 			
+			ASSERT( ThisCItem->m_child_info != nullptr );
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, aFile.name );
 			const HRESULT copy_res = ThisCItem->m_child_info->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), aFile.name );
 
@@ -477,6 +481,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 				displayWindowsMsgBoxWithMessage( aFile.name.c_str( ) );
 				}
 			else {
+				ASSERT( ThisCItem->m_child_info != nullptr );
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                            IT_FILE
 				::new ( &( ThisCItem->m_child_info->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
@@ -487,6 +492,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 		//++( ThisCItem->m_childCount );
 		++total_so_far;
 		}
+	ASSERT( ThisCItem->m_child_info != nullptr );
 	ThisCItem->m_child_info->m_childCount = total_so_far;
 	return sizesToWorkOn_;
 	}

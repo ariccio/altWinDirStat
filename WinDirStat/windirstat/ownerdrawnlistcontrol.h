@@ -114,7 +114,18 @@ public:
 
 private:
 	//defined at the BOTTOM of this file!
-	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc ) const;
+	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+		auto textColor = GetSysColor( COLOR_WINDOWTEXT );
+		if ( ( state bitand ODS_SELECTED ) != 0 ) {
+			if ( list_has_focus || list_is_show_selection_always ) {
+				ASSERT( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list_has_focus || list_is_show_selection_always ) );
+			
+				DrawHighlightSelectBackground( rcLabel, rc, pdc, textColor, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+				return textColor;
+				}
+			}
+		return item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+		}
 
 
 public:
@@ -159,7 +170,44 @@ public:
 		}
 	
 	//defined at bottom of THIS file.
-	void         DrawSelection                ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc,       _In_ RECT rc, _In_ const UINT state                       ) const;
+	void         DrawSelection( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+		if ( !list_is_full_row_selection ) {
+			return;
+			}
+		if ( ( !list_has_focus ) && ( !list_is_show_selection_always ) ) {
+			return;
+			}
+		if ( ( state bitand ODS_SELECTED ) == 0 ) {
+			return;
+			}
+
+		VERIFY( ::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) ) );
+	/*
+	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+	{
+		ENSURE_VALID(this);
+		ENSURE(m_hDC != NULL);
+		ENSURE(lpRect);
+
+		::SetBkColor(m_hDC, clr);
+		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+	}
+	*/
+		ASSERT( pdc.m_hDC != NULL );
+
+
+		//If [SetBkColor] fails, the return value is CLR_INVALID.
+		const auto set_bk_color_res_1 = ::SetBkColor( pdc.m_hDC, list_highlight_color );
+		ASSERT( set_bk_color_res_1 != CLR_INVALID );
+	#ifndef DEBUG
+		UNREFERENCED_PARAMETER( set_bk_color_res_1 );
+	#endif
+
+		//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+
+		//pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
+		}
 
 
 	COLORREF     default_item_text_color      ( ) const {
@@ -206,10 +254,88 @@ protected:
 		}
 
 	//defined at bottom of THIS file.
-	void         DrawLabel                    ( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const;
+	void         DrawLabel( _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent, _In_ CFont* const list_font, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+		/*
+		  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
+		*/
+		RECT rcRest = rc;
+
+		// Increase indentation according to tree-level
+		fixup_align_for_indent( indent, rcRest );
+
+		/*
+	_AFXWIN_INLINE CFont* CWnd::GetFont() const
+		{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
+			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
+		*/
+
+		//TODO: performance issue in the line below due to CHandleMap::FromHandle
+		CSelectObject sofont( pdc, *( list_font ) );
+	
+		//subtract 6 from rcRest.right, add 6 to rcRest.left
+		VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
+
+		RECT rcLabel = rcRest;
+		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+
+		AdjustLabelForMargin( rcRest, rcLabel );
+
+		CSetBkMode bk( pdc, TRANSPARENT );
+		//auto textColor = GetSysColor( COLOR_WINDOWTEXT );
+
+
+		const auto textColor = draw_if_selected_return_text_color( state, rcLabel, rc, pdc, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+
+		//COLORREF draw_if_selected_return_text_color( width, state, list, rcLabel, rc, pdc )
+		//if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
+		//	DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
+		//	}
+		//else {
+		//	textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+		//	}
+
+		// Set text color for device context
+		CSetTextColor stc( pdc, textColor );
+
+		if ( width == NULL ) {
+			pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+			}
+
+		//subtract one from left, add one to right
+		VERIFY( ::InflateRect( &rcLabel, 1, 1 ) );
+
+		*focusLeft = rcLabel.left;
+
+		if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list_has_focus && ( width == NULL ) && ( !( list_is_full_row_selection ) ) ) {
+			pdc.DrawFocusRect( &rcLabel );
+			rcLabel.left = rc.left;
+			rc = rcLabel;
+			return;
+			}
+
+
+		rcLabel.left = rc.left;
+		rc = rcLabel;
+		if ( width != NULL ) {
+			*width = ( rcLabel.right - rcLabel.left ) + 5; // +5 because GENERAL_INDENT?
+			return;
+			}
+		}
 	
 	//defined at bottom of THIS file.
-	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const;
+	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ CDC& pdc, _Inout_ COLORREF& textColor, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+		// Color for the text in a highlighted item (usually white)
+		textColor = list_highlight_text_color;
+
+		RECT selection = rcLabel;
+		// Depending on "FullRowSelection" style
+		if ( list_is_full_row_selection ) {
+			selection.right = rc.right;
+			}
+		// Fill the selection rectangle background (usually dark blue)
+		pdc.FillSolidRect( &selection, list_highlight_color );
+
+		}
 
 
 	void         AdjustLabelForMargin         ( _In_ const RECT& rcRest, _Inout_ RECT& rcLabel ) const {
@@ -943,7 +1069,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 public:
 	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CDC& dcmem, _In_ const RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
-		item->DrawSelection( this, dcmem, rcDraw, pdis->itemState );
+		item->DrawSelection( dcmem, rcDraw, pdis->itemState, HasFocus( ), IsShowSelectionAlways( ), GetHighlightColor( ), m_showFullRowSelection );
 
 		RECT rcText = rcDraw;
 		VERIFY( ::InflateRect( &rcText, -( TEXT_X_MARGIN ), -( 0 ) ) );
@@ -1498,143 +1624,143 @@ private:
 		}
 	};
 
-//need to explicitly ask for inlining else compiler bitches about ODR
-inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _Inout_ COLORREF& textColor ) const {
-	// Color for the text in a highlighted item (usually white)
-	textColor = list->GetHighlightTextColor( );
+////need to explicitly ask for inlining else compiler bitches about ODR
+//inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ CDC& pdc, _Inout_ COLORREF& textColor, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+//	// Color for the text in a highlighted item (usually white)
+//	textColor = list_highlight_text_color;
+//
+//	RECT selection = rcLabel;
+//	// Depending on "FullRowSelection" style
+//	if ( list_is_full_row_selection ) {
+//		selection.right = rc.right;
+//		}
+//	// Fill the selection rectangle background (usually dark blue)
+//	pdc.FillSolidRect( &selection, list_highlight_color );
+//	}
 
-	RECT selection = rcLabel;
-	// Depending on "FullRowSelection" style
-	if ( list->m_showFullRowSelection ) {
-		selection.right = rc.right;
-		}
-	// Fill the selection rectangle background (usually dark blue)
-	pdc.FillSolidRect( &selection, list->GetHighlightColor( ) );
-	
-	}
-
-inline COLORREF COwnerDrawnListItem::draw_if_selected_return_text_color( _In_ const UINT state, _In_ const COwnerDrawnListCtrl* const list, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc ) const {
-	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
-	if ( ( state bitand ODS_SELECTED ) != 0 ) {
-		if ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) {
-			ASSERT( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) );
-			DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
-			return textColor;
-			}
-		}
-	return item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
-	}
-
-
-//need to explicitly ask for inlining else compiler bitches about ODR
-inline void COwnerDrawnListItem::DrawLabel( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent ) const {
-	/*
-	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
-	*/
-	RECT rcRest = rc;
-
-	// Increase indentation according to tree-level
-	fixup_align_for_indent( indent, rcRest );
-
-	/*
-_AFXWIN_INLINE CFont* CWnd::GetFont() const
-	{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
-		(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
-	*/
-
-	//TODO: performance issue in the line below due to CHandleMap::FromHandle
-	CSelectObject sofont( pdc, *( list->GetFont( ) ) );
-	
-	//subtract 6 from rcRest.right, add 6 to rcRest.left
-	VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
-
-	RECT rcLabel = rcRest;
-	pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
-
-	AdjustLabelForMargin( rcRest, rcLabel );
-
-	CSetBkMode bk( pdc, TRANSPARENT );
-	//auto textColor = GetSysColor( COLOR_WINDOWTEXT );
-
-	const auto textColor = draw_if_selected_return_text_color( state, list, rcLabel, rc, pdc );
-
-	//COLORREF draw_if_selected_return_text_color( width, state, list, rcLabel, rc, pdc )
-	//if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
-	//	DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
-	//	}
-	//else {
-	//	textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
-	//	}
-
-	// Set text color for device context
-	CSetTextColor stc( pdc, textColor );
-
-	if ( width == NULL ) {
-		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
-		}
-
-	//subtract one from left, add one to right
-	VERIFY( ::InflateRect( &rcLabel, 1, 1 ) );
-
-	*focusLeft = rcLabel.left;
-
-	if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list->HasFocus( ) && ( width == NULL ) && ( !( list->m_showFullRowSelection ) ) ) {
-		pdc.DrawFocusRect( &rcLabel );
-		rcLabel.left = rc.left;
-		rc = rcLabel;
-		return;
-		}
+//inline COLORREF COwnerDrawnListItem::draw_if_selected_return_text_color( _In_ const UINT state, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ CDC& pdc, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+//	auto textColor = GetSysColor( COLOR_WINDOWTEXT );
+//	if ( ( state bitand ODS_SELECTED ) != 0 ) {
+//		if ( list_has_focus || list_is_show_selection_always ) {
+//			ASSERT( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list_has_focus || list_is_show_selection_always ) );
+//			
+//			DrawHighlightSelectBackground( rcLabel, rc, pdc, textColor, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+//			return textColor;
+//			}
+//		}
+//	return item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+//	}
 
 
-	rcLabel.left = rc.left;
-	rc = rcLabel;
-	if ( width != NULL ) {
-		*width = ( rcLabel.right - rcLabel.left ) + 5; // +5 because GENERAL_INDENT?
-		return;
-		}
-	}
+////need to explicitly ask for inlining else compiler bitches about ODR
+//inline void COwnerDrawnListItem::DrawLabel( _In_ CDC& pdc, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent,  _In_ CFont* const list_font, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+//	/*
+//	  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
+//	*/
+//	RECT rcRest = rc;
+//
+//	// Increase indentation according to tree-level
+//	fixup_align_for_indent( indent, rcRest );
+//
+//	/*
+//_AFXWIN_INLINE CFont* CWnd::GetFont() const
+//	{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
+//		(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
+//	*/
+//
+//	//TODO: performance issue in the line below due to CHandleMap::FromHandle
+//	CSelectObject sofont( pdc, *( list_font ) );
+//	
+//	//subtract 6 from rcRest.right, add 6 to rcRest.left
+//	VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
+//
+//	RECT rcLabel = rcRest;
+//	pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+//
+//	AdjustLabelForMargin( rcRest, rcLabel );
+//
+//	CSetBkMode bk( pdc, TRANSPARENT );
+//	//auto textColor = GetSysColor( COLOR_WINDOWTEXT );
+//
+//
+//	const auto textColor = draw_if_selected_return_text_color( state, rcLabel, rc, pdc, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+//
+//	//COLORREF draw_if_selected_return_text_color( width, state, list, rcLabel, rc, pdc )
+//	//if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
+//	//	DrawHighlightSelectBackground( rcLabel, rc, list, pdc, textColor );
+//	//	}
+//	//else {
+//	//	textColor = item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+//	//	}
+//
+//	// Set text color for device context
+//	CSetTextColor stc( pdc, textColor );
+//
+//	if ( width == NULL ) {
+//		pdc.DrawTextW( m_name, static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+//		}
+//
+//	//subtract one from left, add one to right
+//	VERIFY( ::InflateRect( &rcLabel, 1, 1 ) );
+//
+//	*focusLeft = rcLabel.left;
+//
+//	if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list_has_focus && ( width == NULL ) && ( !( list_is_full_row_selection ) ) ) {
+//		pdc.DrawFocusRect( &rcLabel );
+//		rcLabel.left = rc.left;
+//		rc = rcLabel;
+//		return;
+//		}
+//
+//
+//	rcLabel.left = rc.left;
+//	rc = rcLabel;
+//	if ( width != NULL ) {
+//		*width = ( rcLabel.right - rcLabel.left ) + 5; // +5 because GENERAL_INDENT?
+//		return;
+//		}
+//	}
 
-//need to explicitly ask for inlining else compiler bitches about ODR
-inline void COwnerDrawnListItem::DrawSelection( _In_ const COwnerDrawnListCtrl* const list, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state ) const {
-	ASSERT( list != NULL );
-	if ( !list->m_showFullRowSelection ) {
-		return;
-		}
-	if ( ( !list->HasFocus( ) ) && ( !list->IsShowSelectionAlways( ) ) ) {
-		return;
-		}
-	if ( ( state bitand ODS_SELECTED ) == 0 ) {
-		return;
-		}
-
-	VERIFY( ::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) ) );
-/*
-void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-{
-	ENSURE_VALID(this);
-	ENSURE(m_hDC != NULL);
-	ENSURE(lpRect);
-
-	::SetBkColor(m_hDC, clr);
-	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-}
-*/
-	ASSERT( pdc.m_hDC != NULL );
-
-
-	//If [SetBkColor] fails, the return value is CLR_INVALID.
-	const auto set_bk_color_res_1 = ::SetBkColor( pdc.m_hDC, list->GetHighlightColor( ) );
-	ASSERT( set_bk_color_res_1 != CLR_INVALID );
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( set_bk_color_res_1 );
-#endif
-
-	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
-
-	//pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
-
-	}
+////need to explicitly ask for inlining else compiler bitches about ODR
+//inline void COwnerDrawnListItem::DrawSelection( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+//	if ( !list_is_full_row_selection ) {
+//		return;
+//		}
+//	if ( ( !list_has_focus ) && ( !list_is_show_selection_always ) ) {
+//		return;
+//		}
+//	if ( ( state bitand ODS_SELECTED ) == 0 ) {
+//		return;
+//		}
+//
+//	VERIFY( ::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) ) );
+///*
+//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+//{
+//	ENSURE_VALID(this);
+//	ENSURE(m_hDC != NULL);
+//	ENSURE(lpRect);
+//
+//	::SetBkColor(m_hDC, clr);
+//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+//}
+//*/
+//	ASSERT( pdc.m_hDC != NULL );
+//
+//
+//	//If [SetBkColor] fails, the return value is CLR_INVALID.
+//	const auto set_bk_color_res_1 = ::SetBkColor( pdc.m_hDC, list_highlight_color );
+//	ASSERT( set_bk_color_res_1 != CLR_INVALID );
+//#ifndef DEBUG
+//	UNREFERENCED_PARAMETER( set_bk_color_res_1 );
+//#endif
+//
+//	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+//	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+//
+//	//pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
+//
+//	}
 
 	AFX_COMDAT const CRuntimeClass COwnerDrawnListCtrl::classCOwnerDrawnListCtrl =
 	{

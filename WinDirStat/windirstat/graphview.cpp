@@ -169,6 +169,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 	}
 
 //only called from one place
+_Pre_satisfies_( item.m_child_info._Myptr != NULL )
 inline void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 	ASSERT( item.m_child_info != nullptr );
 	//ASSERT( item.m_childCount == item.m_child_info->m_childCount );

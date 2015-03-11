@@ -60,7 +60,7 @@ namespace {
 	//	const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
 	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 	//	}
-	_Success_( return != NULL ) _Ret_maybenull_ _Pre_satisfies_( item->m_child_info._Myptr != NULL )
+	_Success_( return != NULL ) _Ret_maybenull_ _Pre_satisfies_( root_item->m_child_info._Myptr != NULL )
 	CTreeListItem* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
 		ASSERT( root_item->m_child_info != nullptr );
@@ -86,7 +86,19 @@ namespace {
 
 		const auto root_item = parent_ptr;
 		//CItemBranch* child = nullptr;
+		ASSERT( root_item->m_child_info != nullptr );
+		if ( root_item->m_child_info == nullptr ) {
+			displayWindowsMsgBoxWithMessage( L"select_and_show_experimental_algorithm, root_item->m_child_info is NULL! This should never happen! (terminating)" );
+			std::terminate( );
+			
+			//so /analyze understands.
+			abort( );
+			return;
+			}
 
+
+		//The expression '_Param_(1)->m_child_info._Myptr!=0' is not true at this call. //But it IS!
+#pragma warning(suppress: 28020)
 		CTreeListItem* child = find_second_level_item_in_root_item( root_item, path, steps_from_target );
 
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
@@ -243,7 +255,15 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	static_cast<const CTreeListControl* const>( list )->DrawNode( this, pdc, rcNode );//pass subitem to drawNode?
 	RECT rcLabel = rc_const;
 	rcLabel.left = rcNode.right;
-	DrawLabel( list, pdc, rcLabel, state, width, focusLeft, false );
+	CFont* const list_font = list->GetFont( );
+	const bool list_has_focus = list->HasFocus( );
+	const bool list_is_show_selection_always = list->IsShowSelectionAlways( );
+	const COLORREF list_highlight_text_color = list->GetHighlightTextColor( );
+	const COLORREF list_highlight_color = list->GetHighlightColor( );
+	const bool list_is_full_row_selection = list->m_showFullRowSelection;
+	//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
+
+	DrawLabel( pdc, rcLabel, state, width, focusLeft, false, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 	if ( width != NULL ) {
 		*width = ( rcLabel.right - rcLabel.left );
 		set_plusminus_and_title_rects( rcLabel, rc_const );

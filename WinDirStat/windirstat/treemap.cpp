@@ -924,7 +924,6 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 
 	const DOUBLE width = KDS_gen_width( horizontalRows, parent );
 
-
 	size_t nextChild = 0;
 	ASSERT( parent->m_child_info != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );

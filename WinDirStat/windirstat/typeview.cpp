@@ -47,7 +47,15 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 		ASSERT( list == m_list );
 		UNREFERENCED_PARAMETER( list );
 		//ASSERT( width != NULL );
-		DrawLabel( m_list, pdc, rc, state, width, focusLeft, true );
+		CFont* const list_font = list->GetFont( );
+		const bool list_has_focus = list->HasFocus( );
+		const bool list_is_show_selection_always = list->IsShowSelectionAlways( );
+		const COLORREF list_highlight_text_color = list->GetHighlightTextColor( );
+		const COLORREF list_highlight_color = list->GetHighlightColor( );
+		const bool list_is_full_row_selection = list->m_showFullRowSelection;
+		//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
+
+		DrawLabel( pdc, rc, state, width, focusLeft, true, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 		return true;
 		}
 	else if ( subitem == column::COL_COLOR ) {
@@ -69,7 +77,7 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 		return;
 		}
 
-	DrawSelection( m_list, pdc, rc, state );
+	DrawSelection( pdc, rc, state, m_list->HasFocus( ), m_list->IsShowSelectionAlways( ), m_list->GetHighlightColor( ), m_list->m_showFullRowSelection );
 	VERIFY( ::InflateRect( &rc, -( 2 ), -( 3 ) ) );
 
 	if ( ( rc.right <= rc.left ) || ( rc.bottom <= rc.top ) ) {

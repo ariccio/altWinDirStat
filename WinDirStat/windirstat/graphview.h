@@ -280,7 +280,7 @@ protected:
 public:
 
 protected:
-	
+	_Pre_satisfies_( item.m_child_info._Myptr != NULL )
 	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
 
 	//only called from one place, unconditionally.
