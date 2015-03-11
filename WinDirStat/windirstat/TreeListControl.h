@@ -69,7 +69,7 @@ struct VISIBLEINFO final {
 // CTreeListItem. An item in the CTreeListControl. (CItem is derived from CTreeListItem.)
 // In order to save memory, once the item is actually inserted in the List, we allocate the VISIBLEINFO structure (m_vi).
 // m_vi is freed as soon as the item is removed from the List.
-class CTreeListItem final : public COwnerDrawnListItem {
+class CTreeListItem final : public COwnerDrawnListItem<CTreeListItem> {
 	
 
 		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;

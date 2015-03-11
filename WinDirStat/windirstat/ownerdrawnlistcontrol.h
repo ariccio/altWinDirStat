@@ -21,7 +21,7 @@
 #include "ScopeGuard.h"
 #include "macros_that_scare_small_children.h"
 
-class COwnerDrawnListItem;
+//class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
 
 namespace CColorSpace {
@@ -63,18 +63,20 @@ namespace {
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for COwnerDrawnListItem. Look for a message that says I'm restoring it!" )
 
-template<class derived_class>
-class COwnerDrawnListItemImpl {
-public:
-	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
-		return static_cast<derived_class*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
-		}
-	};
+//template<class derived_class>
+//class COwnerDrawnListItemImpl {
+//public:
+//	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
+//	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+//		return static_cast<derived_class*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
+//		}
+//	};
 
+template<class derived_class>
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl. Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
-class COwnerDrawnListItem {
+class COwnerDrawnListItem_ {
+	using COwnerDrawnListItem = COwnerDrawnListItem_;
 	virtual INT          Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
 	virtual COLORREF     ItemTextColor( ) const = 0;
 
@@ -95,7 +97,7 @@ public:
 		}
 
 	bool     DrawSubitem_               ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
-		return DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
+		return static_cast<derived_class*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
 		}
 
 
@@ -353,6 +355,10 @@ protected:
 	                                        //C4820: 'COwnerDrawnListItem' : '6' bytes padding added after data member 'COwnerDrawnListItem::m_name_length'
 	                                        std::uint16_t  m_name_length;
 	};
+
+
+template<class derived_class>
+using COwnerDrawnListItem = COwnerDrawnListItem_<derived_class>;
 
 #pragma message( "Restoring data alignment.... " )
 #pragma pack(pop)
