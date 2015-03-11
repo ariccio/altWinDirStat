@@ -595,7 +595,9 @@ namespace {
 		return width;
 		}
 
+	_Pre_satisfies_( parent->m_child_info._Myptr != NULL )
 	bool zero_size_parent( _Inout_ std::vector<double>& rows, _Inout_ std::vector<size_t>& childrenPerRow, _Inout_ std::vector<double>& childWidth, _In_ const CTreeListItem* const parent, _In_ const std::uint64_t parentSize ) {
+		ASSERT( parent->m_child_info != nullptr );
 		if ( parentSize == 0 ) {
 			rows.emplace_back( 1.0 );
 			//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
@@ -880,7 +882,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 		}
 
 	//ASSERT( ( !( item->m_childCount > 0 ) ) == ( !( item->m_child_info->m_childCount > 0 ) ) );
-
+	ASSERT( item->m_child_info != nullptr );
 	if ( !( item->m_child_info->m_childCount > 0 ) ) {
 		return;
 		}

@@ -337,6 +337,9 @@ namespace {
 			const auto new_name_length = dir.name.length( );
 			ASSERT( new_name_length < UINT16_MAX );
 
+
+			ASSERT( ThisCItem->m_child_info != nullptr );
+
 			PWSTR new_name_ptr = nullptr;
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
 			const HRESULT copy_res = ThisCItem->m_child_info->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );

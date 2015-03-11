@@ -60,7 +60,7 @@ namespace {
 	//	const auto item2 = * ( reinterpret_cast< const CTreeListItem* const* >( p2 ) );
 	//	return item1->CompareS( item2, CTreeListItem::GetTreeListControl( )->m_sorting );
 	//	}
-	_Success_( return != NULL ) _Ret_maybenull_
+	_Success_( return != NULL ) _Ret_maybenull_ _Pre_satisfies_( item->m_child_info._Myptr != NULL )
 	CTreeListItem* find_second_level_item_in_root_item( _In_ const CTreeListItem* const root_item, _In_ const std::vector<const CTreeListItem*>& path, _In_ const size_t steps_from_target ) {
 		//CItemBranch* find_second_level_item_in_root_item( const CTreeListItem* const root_item, std::vector<CTreeListItem*>& path )
 		ASSERT( root_item->m_child_info != nullptr );
@@ -1408,7 +1408,7 @@ void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
 
 void CTreeListControl::PrepareDefaultMenu( _In_ const CTreeListItem* const item, _Out_ CMenu* const menu ) const {
 	//if ( item->m_type == IT_FILE ) {
-	if ( item->m_child_info->m_children == nullptr ) {
+	if ( item->m_child_info == nullptr ) {
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove "Expand/Collapse" item
 		VERIFY( menu->DeleteMenu( 0, MF_BYPOSITION ) );	// Remove separator
 		}
@@ -1696,11 +1696,12 @@ bool CTreeListControl::SelectedItemCanToggle( ) const {
 		return false;
 		}
 	const auto item = GetItem( i );
-	if ( item != NULL ) {
+	ASSERT( item != NULL );
+	if ( ( item != NULL ) && ( item->m_child_info != nullptr ) ) {
 		//ASSERT( ( item->m_childCount > 0 ) == ( item->m_child_info->m_childCount > 0 ) );
 		return ( item->m_child_info->m_childCount > 0 );
 		}
-	ASSERT( item != NULL );
+	
 	return false;
 	}
 
@@ -1747,7 +1748,7 @@ void CTreeListControl::OnItemDoubleClick ( _In_ _In_range_( 0, INT_MAX ) const i
 	const auto item = static_cast< const CTreeListItem* >( GetItem( i ) );
 	if ( item != NULL ) {
 		//if ( item->m_type == IT_FILE ) {
-		if ( item->m_child_info->m_children == nullptr ) {
+		if ( item->m_child_info == nullptr ) {
 			TRACE( _T( "User double-clicked %s in TreeListControl! Opening Item!\r\n" ), item->GetPath( ).c_str( ) );
 			ASSERT( m_pDocument == GetDocument( ) );
 			ASSERT( m_pDocument != NULL );
@@ -1856,7 +1857,7 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 		ExpandItemAndScroll( i );
 		CWnd::SetRedraw( TRUE );
 		}
-	else if ( item->m_child_info->m_childCount > 0 ) {
+	else if ( item->m_child_info != nullptr ) {
 
 		const auto sortedItemAtZero = item->GetSortedChild( 0 );
 		if ( sortedItemAtZero != NULL ){
