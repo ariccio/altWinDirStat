@@ -102,7 +102,7 @@ public:
 											 size_t                                  m_exts_count;
 				_Field_size_( m_exts_count ) std::unique_ptr<CListItem[]>            m_exts;
 	                                         CTypeView*                        const m_typeView;
-											 Children_String_Heap_Manager            m_name_pool;
+											 std::unique_ptr<Children_String_Heap_Manager>            m_name_pool;
 
 	_Ret_notnull_ CListItem* GetListItem( _In_ const INT i ) const;
 

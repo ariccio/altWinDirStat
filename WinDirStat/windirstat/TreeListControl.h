@@ -103,13 +103,13 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 
 		//const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length 
-		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_child_info( nullptr ) {
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_child_info( ) {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
 
 
-		virtual ~CTreeListItem( ) = default;
+		virtual ~CTreeListItem( ) final = default;
 
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
 		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
@@ -168,7 +168,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		//_Ret_maybenull_
 		//CItemBranch* children_ptr( ) const;
 		
-		_Pre_satisfies_( this->m_child_info._Myptr == nullptr ) 
+		_Pre_satisfies_( this->m_child_info.m_child_info_ptr == nullptr ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 
 
@@ -180,7 +180,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		_Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;
 
-		_Pre_satisfies_( this->m_child_info._Myptr == nullptr )
+		_Pre_satisfies_( this->m_child_info.m_child_info_ptr == nullptr )
 			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
 
 
@@ -222,7 +222,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		void childNotNull( _In_ CTreeListItem* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const {
-			return ( m_child_info != NULL );
+			return ( m_child_info.m_child_info_ptr != NULL );
 			}
 		
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
@@ -241,14 +241,20 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		RECT GetTitleRect( ) const;
 
-		RECT TmiGetRectangle(                              ) const;
+		
+		//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+		RECT TmiGetRectangle( ) const {
+			return BuildRECT( m_rect );
+			}
+
+
 		void TmiSetRectangle( _In_ const RECT& rc          ) const;
 
 	public:
 	//data members - DON'T FUCK WITH LAYOUT! It's tweaked for good memory layout!
 		                               attribs                          m_attr;
 									   //'CTreeListItem' : '7' bytes padding added after data member 'CTreeListItem::m_attr'
-		                               std::unique_ptr<child_info>      m_child_info;
+		                               child_info_block_manager         m_child_info;
 		                         const CTreeListItem*                   m_parent;
 		                       mutable std::unique_ptr<VISIBLEINFO>     m_vi = nullptr; // Data needed to display the item.
 		                       mutable SRECT                            m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
@@ -293,7 +299,13 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 #pragma warning( suppress: 4263 )
 		        BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
 
-				void SysColorChanged       ( );
+
+				//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+				void SysColorChanged( ) {
+					InitializeColors( );
+					InitializeNodeBitmaps( );
+					}
+
 				bool SelectedItemCanToggle ( ) const;
 				void Sort                  ( );
 				void ToggleSelectedItem    ( );
@@ -418,26 +430,26 @@ INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In
 //See also: "MEM54-CPP. Provide placement new with properly-aligned pointers to sufficient storage capacity"
 //           https://www.securecoding.cert.org/confluence/display/cplusplus/MEM54-CPP.+Provide+placement+new+with+properly-aligned+pointers+to+sufficient+storage+capacity
 //It'll have to use a struct that'll look something like this:
-struct children_heap_block_allocation final {
-	children_heap_block_allocation( ) : m_childCount { 0u } { }
-	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
-	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;
-
-	~children_heap_block_allocation( ) {
-		for ( size_t i = 0u; i < m_childCount; ++i ) {
-			m_children[ i ].~CTreeListItem( );
-			}
-		}
-
-	_Field_range_( 0, 4294967295 )
-		std::uint32_t                m_childCount;
-		Children_String_Heap_Manager m_name_pool;
-		//maybe we could also store the NON-NTFS-compressed folder size here?
-
-#pragma warning( suppress: 4200 )//yes, this is Microsoft-specific
-		CTreeListItem                m_children[ ];//unsized array is a MICROSOFT-SPECIFIC extension to C++ that emulates C's Flexible Array Member.
-		//there are VERY active discussions in the C++ CWG (core working group) to develop some standardized version of array data members of runtime-bound.
-	};
+//struct children_heap_block_allocation final {
+//	children_heap_block_allocation( ) : m_childCount { 0u } { }
+//	children_heap_block_allocation( const children_heap_block_allocation& in ) = delete;
+//	children_heap_block_allocation& operator=( const children_heap_block_allocation& in ) = delete;
+//
+//	~children_heap_block_allocation( ) {
+//		for ( size_t i = 0u; i < m_childCount; ++i ) {
+//			m_children[ i ].~CTreeListItem( );
+//			}
+//		}
+//
+//	_Field_range_( 0, 4294967295 )
+//		std::uint32_t                m_childCount;
+//		Children_String_Heap_Manager_Impl m_name_pool;
+//		//maybe we could also store the NON-NTFS-compressed folder size here?
+//
+//#pragma warning( suppress: 4200 )//yes, this is Microsoft-specific
+//		CTreeListItem                m_children[ ];//unsized array is a MICROSOFT-SPECIFIC extension to C++ that emulates C's Flexible Array Member.
+//		//there are VERY active discussions in the C++ CWG (core working group) to develop some standardized version of array data members of runtime-bound.
+//	};
 
 //_At_( return, _Writable_bytes_( bytes_allocated ) )
 //_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated );

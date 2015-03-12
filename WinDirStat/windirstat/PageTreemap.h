@@ -43,7 +43,12 @@ protected:
 	virtual void OnOK           (                           ) override final;
 
 
-	void OnSomethingChanged( );
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+	void OnSomethingChanged( ) {
+		VERIFY( CWnd::UpdateData( ) );
+		VERIFY( CWnd::UpdateData( false ) );
+		SetModified( );
+		}
 
 	void ValuesAltered( _In_ const bool altered = true );
 

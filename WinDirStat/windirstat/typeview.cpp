@@ -23,6 +23,7 @@
 //#include "item.h"
 #include "typeview.h"
 
+#include "ChildrenHeapManager.h"
 
 #include "treemap.h"
 #include "dirstatdoc.h"
@@ -330,7 +331,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		total_name_length += ( extData->at( i ).ext.length( ) + 1 );
 		}
 
-	m_name_pool.reset( total_name_length );
+	m_name_pool.reset( new Children_String_Heap_Manager( total_name_length ) );
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
@@ -339,7 +340,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 		PWSTR new_name_ptr = nullptr;
 		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );
-		const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext );
+		const HRESULT copy_res = m_name_pool->m_buffer_impl->copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext );
 
 		if ( !SUCCEEDED( copy_res ) ) {
 			displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CExtensionListControl::SetExtensionData)(aborting!)" );
@@ -582,7 +583,7 @@ void CTypeView::SetSelection( ) {
 	if ( Document != NULL ) {
 		const auto item = Document->m_selectedItem;
 		//if ( item != NULL && item->m_type == IT_FILE ) {
-		if ( ( item != NULL ) && ( item->m_child_info == nullptr ) ) {
+		if ( ( item != NULL ) && ( item->m_child_info.m_child_info_ptr == nullptr ) ) {
 			PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
 			//ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
 			if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {

@@ -146,6 +146,7 @@ public:
 
 	INT CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
 		if ( sorting.column1 == column::COL_NAME ) {
+#pragma warning( suppress: 4711 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
 			const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
 		
 			if ( sort_result != 0 ) {
@@ -250,6 +251,7 @@ protected:
 		}
 
 	INT          default_compare              ( _In_ const COwnerDrawnListItem* const baseOther ) const {
+#pragma warning( suppress: 4200 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
 		return signum( wcscmp( m_name, baseOther->m_name ) );
 		}
 
@@ -432,8 +434,10 @@ namespace {
 			}
 		}
 
+
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	void iterate_over_columns_and_populate_column_fields_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ] ) {
+	inline void iterate_over_columns_and_populate_column_fields_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ] ) {
 		static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			//iterate over columns, properly populate fields.
@@ -446,8 +450,10 @@ namespace {
 	template<size_t count>
 	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl );
 
+
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _Inout_updates_( thisLoopSize ) RECT( &rects )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
+	inline void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _Inout_updates_( thisLoopSize ) RECT( &rects )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
 		//Not vectorized: Loop contains loop-carried data dependences that prevent vectorization. Different iterations of the loop interfere with each other such that vectorizing the loop would produce wrong answers, and the auto-vectorizer cannot prove to itself that there are no such data dependences.
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			VERIFY( ::OffsetRect( &( rects[ i ] ), -( rcItem_left ), -( rcItem_top ) ) );
@@ -516,8 +522,10 @@ namespace {
 			}
 		}
 
+
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
+	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
 		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
 		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this_ctrl, thisHeaderCtrl );
 		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );

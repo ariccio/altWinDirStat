@@ -274,7 +274,7 @@ void CDirstatDoc::DeleteContents( ) {
 	m_selectedItem = { NULL };
 	m_timeTextWritten = false;
 	m_rootItem.reset( );
-	m_name_pool.reset( 0u );
+	m_name_pool.reset( nullptr );
 	}
 
 BOOL CDirstatDoc::OnNewDocument( ) {
@@ -305,11 +305,11 @@ void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 	m_rootItem.reset( );
 
 	//TODO: BUGBUG: for some reason, we need +2u here! ASSERT fails if we don't!
-	m_name_pool.reset( ( new_name_length + 2u ) );
+	m_name_pool.reset( new Children_String_Heap_Manager( new_name_length + 2u ) );
 
 	PWSTR new_name_ptr = nullptr;
 
-	const HRESULT copy_res = m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), root_folder );
+	const HRESULT copy_res = m_name_pool->m_buffer_impl->copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), root_folder );
 
 	if ( !SUCCEEDED( copy_res ) ) {
 		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
@@ -481,12 +481,12 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	}
 
 //_Pre_satisfies_( item.m_type == IT_FILE )
-_Pre_satisfies_( item.m_child_info._Myptr == nullptr )
+_Pre_satisfies_( item.m_child_info.m_child_info_ptr == nullptr )
 void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 	WTL::CWaitCursor wc;
 	std::wstring path;
 	//if ( item.m_type == IT_FILE ) {
-	if ( item.m_child_info == nullptr ) {
+	if ( item.m_child_info.m_child_info_ptr == nullptr ) {
 		path = item.GetPath( ).c_str( );
 		}
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );

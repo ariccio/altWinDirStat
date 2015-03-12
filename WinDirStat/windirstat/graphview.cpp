@@ -96,7 +96,7 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CTreeListI
 		}
 
 	//if ( item.m_type == IT_FILE ) {
-	if ( item.m_child_info == nullptr ) {
+	if ( item.m_child_info.m_child_info_ptr == nullptr ) {
 		const auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
 		const auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
@@ -169,12 +169,12 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 	}
 
 //only called from one place
-_Pre_satisfies_( item.m_child_info._Myptr != NULL )
+_Pre_satisfies_( item.m_child_info.m_child_info_ptr != NULL )
 inline void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
-	ASSERT( item.m_child_info != nullptr );
+	ASSERT( item.m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( item.m_childCount == item.m_child_info->m_childCount );
-	const auto childCount = item.m_child_info->m_childCount;
-	const auto item_m_children = item.m_child_info->m_children.get( );
+	const auto childCount = item.m_child_info.m_child_info_ptr->m_childCount;
+	const auto item_m_children = item.m_child_info.m_child_info_ptr->m_children.get( );
 
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < childCount; ++i ) {

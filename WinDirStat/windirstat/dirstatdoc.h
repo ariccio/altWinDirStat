@@ -58,7 +58,7 @@ public:
 	bool Work                              ( ); // return: true if done.
 	bool OnWorkFinished                    ( );
 	
-	_Pre_satisfies_( item.m_child_info._Myptr == nullptr )
+	_Pre_satisfies_( item.m_child_info.m_child_info_ptr == nullptr )
 	void OpenItem ( _In_     const CTreeListItem& item                                                  );
 	void SetSelection ( _In_ const CTreeListItem& item );
 
@@ -95,7 +95,7 @@ public:
 	CTreeListItem const*                        m_selectedItem;         // Currently selected item, or NULL
 	//CItemBranch const*                        m_workingItem;          // Current item we are working on. For progress indication
 	//C4820: 'CDirstatDoc' : '6' bytes padding added after data member 'CDirstatDoc::m_iterations' (dirstatdoc.cpp)
-	Children_String_Heap_Manager              m_name_pool;
+	std::unique_ptr<Children_String_Heap_Manager>              m_name_pool;
 
 protected:	
 	std::vector<SExtensionRecord>             m_extensionRecords;

@@ -8,29 +8,71 @@
 
 #pragma message( "Including `" __FILE__ "`..." )
 
+#pragma pack(push, 1)
+#pragma message( "Whoa there! I'm changing the natural data alignment for (all of) ChildrenHeapManager.h - Look for a message that says I'm restoring it!" )
+
+
+
 //See N4188
-struct Children_String_Heap_Manager final {
-	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;
-	Children_String_Heap_Manager( const Children_String_Heap_Manager& in ) = delete;
+//If a class contains an unsized array, it cannot be used as the base class for another class. In addition, a class containing an unsized array cannot be used to declare any member except the last member of another class. A class containing an unsized array cannot have a direct or indirect virtual base class.
+//The sizeof operator, when applied to a class containing an unsized array, returns the amount of storage required for all members except the unsized array. Implementors of classes that contain unsized arrays should provide alternate methods for obtaining the correct size of the class.
+//You cannot declare arrays of objects that have unsized array components. Also, performing pointer arithmetic on pointers to such objects generates an error message.
+//newer, more efficient allocation strategy will use a struct with the child count, child name heap manager, and an UNSIZED ARRAY as the children array.
+//See also: "MEM54-CPP. Provide placement new with properly-aligned pointers to sufficient storage capacity"
+//           https://www.securecoding.cert.org/confluence/display/cplusplus/MEM54-CPP.+Provide+placement+new+with+properly-aligned+pointers+to+sufficient+storage+capacity
+struct Children_String_Heap_Manager_Impl final {
+	Children_String_Heap_Manager_Impl& operator=( const Children_String_Heap_Manager_Impl& in ) = delete;
+	Children_String_Heap_Manager_Impl( const Children_String_Heap_Manager_Impl& in ) = delete;
 
 	//TODO: inline these?
-	__forceinline Children_String_Heap_Manager( ) : m_buffer_size { 0u }, m_buffer_filled { 0u }, m_string_buffer { nullptr } { }
-	__forceinline Children_String_Heap_Manager( _In_ const rsize_t number_of_characters_needed ) : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 ), m_string_buffer( new wchar_t[ number_of_characters_needed ] ) { }
+	__forceinline Children_String_Heap_Manager_Impl( ) : m_buffer_size { 0u }, m_buffer_filled { 0u }/*, m_string_buffer { nullptr }*/ { }
+	__forceinline Children_String_Heap_Manager_Impl( _In_ const rsize_t number_of_characters_needed ) : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 )/*, m_string_buffer( new wchar_t[ number_of_characters_needed ] )*/ { }
 
-	__forceinline void reset( const rsize_t number_of_characters_needed ) {
-		m_buffer_filled = 0u;
-		m_string_buffer.reset( new wchar_t[ number_of_characters_needed ] );
-		m_buffer_size = number_of_characters_needed;
-		}
+	//__forceinline void reset( const rsize_t number_of_characters_needed ) {
+	//	m_buffer_filled = 0u;
+	//	//m_string_buffer.reset( new wchar_t[ number_of_characters_needed ] );
+	//	m_buffer_size = number_of_characters_needed;
+	//	}
 
 	_Success_( SUCCEEDED( return ) )
 	const HRESULT copy_name_str_into_buffer( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
-	size_t m_buffer_size;
+	const size_t m_buffer_size;
 	size_t m_buffer_filled;
-	_Field_size_part_( m_buffer_size, m_buffer_filled ) std::unique_ptr<wchar_t[ ]> m_string_buffer;
+#pragma warning( suppress: 4200 )//yes, this is Microsoft-specific
+	_Field_size_part_( m_buffer_size, m_buffer_filled ) wchar_t m_string_buffer[ ];
 
 	};
+
+
+#ifdef new
+#pragma push_macro("new")
+#define WDS_CHILDREN_HEAP_MANAGER_PUSHED_MACRO_NEW
+#undef new
+#endif
+
+
+class Children_String_Heap_Manager final {
+	Children_String_Heap_Manager& operator=( const Children_String_Heap_Manager& in ) = delete;
+	Children_String_Heap_Manager( const Children_String_Heap_Manager& in ) = delete;
+
+	//std::unique_ptr<wchar_t[ ]> buffer_ptr;
+	
+public:
+	Children_String_Heap_Manager( _In_ const rsize_t number_of_characters_needed ) /* : buffer_ptr { new wchar_t[ number_of_characters_needed ] }*/ {
+		const rsize_t size_of_base_struct = sizeof( Children_String_Heap_Manager_Impl );
+		const rsize_t size_total_needed = ( size_of_base_struct + ( sizeof( wchar_t ) * number_of_characters_needed ) );
+		m_buffer_impl = reinterpret_cast<Children_String_Heap_Manager_Impl*>( malloc( size_total_needed ) );
+		new ( m_buffer_impl ) Children_String_Heap_Manager_Impl( number_of_characters_needed );
+		}
+	~Children_String_Heap_Manager( ) {
+		free( m_buffer_impl );
+		m_buffer_impl = nullptr;
+		}
+
+	Children_String_Heap_Manager_Impl* m_buffer_impl;
+	};
+
 
 class CTreeListItem;
 
@@ -38,16 +80,46 @@ struct child_info final {
 
 	child_info( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count );
 	
+	~child_info( );
+
 	//please always pass a size for m_name_pool. you should know this before construction, that's the point of child_info
 	child_info( ) = delete;
 
 	child_info( const child_info& in ) = delete;
 	child_info& operator=( const child_info& in ) = delete;
 	
-	_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]> m_children;
-	_Field_range_( 0, 4294967295 ) std::uint32_t                    m_childCount;
-	                               Children_String_Heap_Manager     m_name_pool;
+	_Field_size_( m_childCount )   std::unique_ptr<CTreeListItem[]>      m_children;
+	_Field_range_( 0, 4294967295 ) std::uint32_t                         m_childCount;
+	                               Children_String_Heap_Manager_Impl     m_name_pool;
 	};
+
+struct child_info_block_manager final {
+	child_info* m_child_info_ptr;
+	child_info_block_manager( ) : m_child_info_ptr( nullptr ) { }
+	child_info_block_manager( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) {
+		const rsize_t size_of_a_single_struct_in_bytes = sizeof( child_info );
+		const size_t total_size_needed = ( size_of_a_single_struct_in_bytes + ( number_of_characters_needed * sizeof( wchar_t ) ) );
+		void* const memory_block = malloc( total_size_needed );
+		m_child_info_ptr = new ( memory_block ) child_info( number_of_characters_needed, child_count );
+		}
+	~child_info_block_manager( ) {
+		if ( m_child_info_ptr != nullptr ) {
+			m_child_info_ptr->~child_info( );
+			free( m_child_info_ptr );
+			m_child_info_ptr = nullptr;
+			}
+		}
+	};
+
+
+#ifdef WDS_CHILDREN_HEAP_MANAGER_PUSHED_MACRO_NEW
+#pragma pop_macro("new")
+#undef WDS_CHILDREN_HEAP_MANAGER_PUSHED_MACRO_NEW
+#endif
+
+
+#pragma message( "Restoring data alignment.... " )
+#pragma pack(pop)
 
 
 #else

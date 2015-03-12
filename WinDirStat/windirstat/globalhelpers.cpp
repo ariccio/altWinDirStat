@@ -226,7 +226,8 @@ namespace {
 		return false;
 		}
 
-	_Success_( SUCCEEDED( return ) ) HRESULT file_time_to_system_time_err( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+	_Success_( SUCCEEDED( return ) ) inline HRESULT file_time_to_system_time_err( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( psz_formatted_datetime, strSize, chars_written );
 		ASSERT( SUCCEEDED( err_res ) );
 		if ( !SUCCEEDED( err_res ) ) {
@@ -285,6 +286,28 @@ namespace {
 		std::terminate( );
 		}
 
+	//maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+	_Success_( SUCCEEDED( return ) ) inline HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+		rsize_t chars_remaining = 0;
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, NULL, &chars_remaining, 0, L"%.1f", d );
+		ASSERT( SUCCEEDED( fmt_res ) );
+		if ( SUCCEEDED( fmt_res ) ) {
+			chars_written = ( strSize - chars_remaining );
+			ASSERT( wcslen( psz_formatted_double ) == chars_written );
+			return fmt_res;
+			}
+		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
+		if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+			chars_written = strSize;
+			return fmt_res;
+			}
+		chars_written = 0;
+		return fmt_res;
+		}
+
+
 	_Success_( SUCCEEDED( return ) ) inline HRESULT CStyle_FormatLongLongHuman_0( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 		ASSERT( strSize > 2 );
 		if ( strSize > 2 ) {
@@ -322,7 +345,7 @@ namespace {
 		const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = wds_fmt::CStyle_FormatDouble( KB + B / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		const HRESULT res = CStyle_FormatDouble( KB + B / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
 		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
 			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -358,7 +381,7 @@ namespace {
 		const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = wds_fmt::CStyle_FormatDouble( MB + KB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		const HRESULT res = CStyle_FormatDouble( MB + KB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
 		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
 			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -392,7 +415,7 @@ namespace {
 		const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = wds_fmt::CStyle_FormatDouble( GB + MB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		const HRESULT res = CStyle_FormatDouble( GB + MB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
 		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
 			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -426,7 +449,7 @@ namespace {
 		const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
-		const HRESULT res = wds_fmt::CStyle_FormatDouble( TB + GB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
+		const HRESULT res = CStyle_FormatDouble( TB + GB / BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
 		ASSERT( SUCCEEDED( res ) );
 		if ( !SUCCEEDED( res ) ) {
 			WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -493,6 +516,28 @@ namespace {
 		
 		convert_number_to_string_failed( bufSize, number, strsafe_printf_res );
 		}
+
+	inline void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
+		const INT h = ( first - 255 ) / 2;
+		first = 255;
+		second += h;
+		third += h;
+
+		if ( second > 255 ) {
+			const auto h2 = second - 255;
+			second = 255;
+			third += h2;
+			}
+		else if ( third > 255 ) {
+			const auto h3 = third - 255;
+			third = 255;
+			second += h3;
+			}
+		ASSERT( second <= 255 );
+		ASSERT( third <= 255 );
+		}
+
+
 
 
 }
@@ -629,26 +674,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatLongLongHuman( _I
 		return CStyle_FormatLongLongHuman_B( psz_formatted_LONGLONG_HUMAN, strSize, chars_written, B );
 		}
 	return CStyle_FormatLongLongHuman_0( psz_formatted_LONGLONG_HUMAN, strSize, chars_written );
-	}
-
-//maximum representable integral component of a double SEEMS to be 15 characters long, so we need at least 17
-_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
-	rsize_t chars_remaining = 0;
-	const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, NULL, &chars_remaining, 0, L"%.1f", d );
-	ASSERT( SUCCEEDED( fmt_res ) );
-	if ( SUCCEEDED( fmt_res ) ) {
-		chars_written = ( strSize - chars_remaining );
-		ASSERT( wcslen( psz_formatted_double ) == chars_written );
-		return fmt_res;
-		}
-	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
-	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfExW" );
-	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-		chars_written = strSize;
-		return fmt_res;
-		}
-	chars_written = 0;
-	return fmt_res;
 	}
 
 //TODO: mark to only return STRSAFE_E_INSUFFICIENT_BUFFER, E_FAIL, or S_OK.
@@ -1150,25 +1175,6 @@ std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, const bool humanF
 
 
 
-void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
-	const INT h = ( first - 255 ) / 2;
-	first = 255;
-	second += h;
-	third += h;
-
-	if ( second > 255 ) {
-		const auto h2 = second - 255;
-		second = 255;
-		third += h2;
-		}
-	else if ( third > 255 ) {
-		const auto h3 = third - 255;
-		third = 255;
-		second += h3;
-		}
-	ASSERT( second <= 255 );
-	ASSERT( third <= 255 );
-	}
 
 void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
 	ASSERT( red + green + blue <= 3 * COLOR_MAX_VALUE );

@@ -595,15 +595,15 @@ namespace {
 		return width;
 		}
 
-	_Pre_satisfies_( parent->m_child_info._Myptr != NULL )
+	_Pre_satisfies_( parent->m_child_info.m_child_info_ptr != NULL )
 	bool zero_size_parent( _Inout_ std::vector<double>& rows, _Inout_ std::vector<size_t>& childrenPerRow, _Inout_ std::vector<double>& childWidth, _In_ const CTreeListItem* const parent, _In_ const std::uint64_t parentSize ) {
-		ASSERT( parent->m_child_info != nullptr );
+		ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 		if ( parentSize == 0 ) {
 			rows.emplace_back( 1.0 );
 			//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
-			childrenPerRow.emplace_back( static_cast<size_t>( parent->m_child_info->m_childCount ) );
-			for ( size_t i = 0; i < parent->m_child_info->m_childCount; i++ ) {
-				childWidth.at( i ) = 1.0 / parent->m_child_info->m_childCount;
+			childrenPerRow.emplace_back( static_cast<size_t>( parent->m_child_info.m_child_info_ptr->m_childCount ) );
+			for ( size_t i = 0; i < parent->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
+				childWidth.at( i ) = 1.0 / parent->m_child_info.m_child_info_ptr->m_childCount;
 				}
 			return true;
 			}
@@ -644,9 +644,9 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 		return;
 		}
 
-	if ( item->m_child_info == nullptr ) {
+	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		//item doesn't have children, nothing to check
-		ASSERT( item->m_child_info == nullptr );
+		ASSERT( item->m_child_info.m_child_info_ptr == nullptr );
 		//ASSERT( item->m_childCount == 0 );
 		return;
 		}
@@ -654,7 +654,7 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 	WDS_validateRectangle_DEBUG( item, item->TmiGetRectangle( ) );
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
-	for ( size_t i = 0; i < item->m_child_info->m_childCount; i++ ) {
+	for ( size_t i = 0; i < item->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
 		const auto child = static_cast< CTreeListItem* >( item_vector_of_children.at( i ) );
 		WDS_validateRectangle_DEBUG( child, item->TmiGetRectangle( ) );
 		RecurseCheckTree( child );
@@ -771,21 +771,21 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 
 	const auto gridWidth = m_options.grid ? 1 : 0;
 	
-	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || ( item->m_child_info == nullptr ) ) {
+	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || ( item->m_child_info.m_child_info_ptr == nullptr ) ) {
 		return const_cast<CTreeListItem*>( item );
 		}
 	ASSERT( item->size_recurse( ) > 0 );
 
 	//ASSERT( item->m_childCount > 0 );
 	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
-	const auto countOfChildren = item->m_child_info->m_childCount;
+	const auto countOfChildren = item->m_child_info.m_child_info_ptr->m_childCount;
 
 	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
 	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
 		const auto child = static_cast< CTreeListItem* >( item_vector_of_children.at( i ) );
-		ASSERT( item->m_child_info != nullptr );
-		ASSERT( item->m_child_info->m_children != nullptr );
+		ASSERT( item->m_child_info.m_child_info_ptr != nullptr );
+		ASSERT( item->m_child_info.m_child_info_ptr->m_children != nullptr );
 		ASSERT( child != NULL );
 		const RECT child_rect = child->TmiGetRectangle( );
 		if ( ::PtInRect( &child_rect, point ) ) {
@@ -836,7 +836,7 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 
 void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
-	if ( item->m_child_info == nullptr ) {
+	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		//this should be fast, as we have 0 children.
 		//ASSERT( item->m_childCount == 0 );
 		if ( item->size_recurse( ) == 0 ) {
@@ -876,14 +876,14 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 		//surface[ 3 ] = 0.00;
 		}
 
-	if ( item->m_child_info == nullptr ) {
+	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		RenderLeaf( offscreen_buffer, item, surface );
 		return;
 		}
 
 	//ASSERT( ( !( item->m_childCount > 0 ) ) == ( !( item->m_child_info->m_childCount > 0 ) ) );
-	ASSERT( item->m_child_info != nullptr );
-	if ( !( item->m_child_info->m_childCount > 0 ) ) {
+	ASSERT( item->m_child_info.m_child_info_ptr != nullptr );
+	if ( !( item->m_child_info.m_child_info_ptr->m_childCount > 0 ) ) {
 		return;
 		}
 	DrawChildren( offscreen_buffer, item, surface, height );
@@ -904,8 +904,8 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	/*
 	  return: whether the rows are horizontal.
 	*/
-	ASSERT( parent->m_child_info != nullptr );
-	ASSERT( parent->m_child_info->m_children != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr->m_children != nullptr );
 
 	//ASSERT( parent->m_childCount > 0 );
 
@@ -925,9 +925,9 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	const DOUBLE width = KDS_gen_width( horizontalRows, parent );
 
 	size_t nextChild = 0;
-	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
-	while ( nextChild < parent->m_child_info->m_childCount ) {
+	while ( nextChild < parent->m_child_info.m_child_info_ptr->m_childCount ) {
 		size_t childrenUsed;
 		rows.emplace_back( KDS_CalcNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
 		childrenPerRow.emplace_back( childrenUsed );
@@ -991,10 +991,10 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 	std::vector<size_t> childrenPerRow;   // childrenPerRow[i] = # of children in rows[i]
 	std::vector<double> childWidth;         // Widths of the children (fraction of row width).
 
-	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
-	childWidth.resize( static_cast<size_t>( parent->m_child_info->m_childCount ) );
+	childWidth.resize( static_cast<size_t>( parent->m_child_info.m_child_info_ptr->m_childCount ) );
 	const bool horizontalRows = KDS_PlaceChildren( parent, childWidth, rows, childrenPerRow );
 
 	const int width = horizontalRows ? rc.Width( ) : rc.Height( );
@@ -1034,20 +1034,20 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 	double rowHeight = 0;
 
 
-	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
-	std::vector<std::uint64_t> parentSizes( parent->m_child_info->m_childCount, UINT64_MAX );
+	std::vector<std::uint64_t> parentSizes( parent->m_child_info.m_child_info_ptr->m_childCount, UINT64_MAX );
 
 	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
 
 
-	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
 
-	ASSERT( nextChild < parent->m_child_info->m_childCount );//the following loop NEEDS to iterate at least once
-	for ( i = nextChild; i < parent->m_child_info->m_childCount; i++ ) {
+	ASSERT( nextChild < parent->m_child_info.m_child_info_ptr->m_childCount );//the following loop NEEDS to iterate at least once
+	for ( i = nextChild; i < parent->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
 
 		const std::uint64_t childSize = static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( );
 		parentSizes.at( i ) = childSize;
@@ -1082,12 +1082,12 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 	ASSERT( i > nextChild );
 
 	// Now i-1 is the last child used and rowHeight is the height of the row.
-	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
 	// We add the rest of the children, if their size is 0.
 //#pragma warning(suppress: 6011)//not null here!
-	while ( ( i < parent->m_child_info->m_childCount ) && ( static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
+	while ( ( i < parent->m_child_info.m_child_info_ptr->m_childCount ) && ( static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
 		i++;
 		}
 
@@ -1212,11 +1212,11 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "head: %llu\r\n" ), head );
 #endif
-	ASSERT( parent->m_child_info != nullptr );
+	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
 
-	while ( head < parent->m_child_info->m_childCount ) {
+	while ( head < parent->m_child_info.m_child_info_ptr->m_childCount ) {
 		ASSERT( remaining.Width( ) > 0 );
 		ASSERT( remaining.Height( ) > 0 );
 
@@ -1246,12 +1246,12 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 		std::uint64_t sumOfSizesOfChildrenInRow = 0;
 
 
-		ASSERT( parent->m_child_info != nullptr );
+		ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 		//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
 
 		// This condition will hold at least once.
-		while ( rowEnd < parent->m_child_info->m_childCount ) {
+		while ( rowEnd < parent->m_child_info.m_child_info_ptr->m_childCount ) {
 			// We check a virtual row made up of child(rowBegin)...child(rowEnd) here.
 
 			// Minimum size of child in virtual row
@@ -1262,9 +1262,9 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 #endif
 			const auto rmin = sizes.at( rowEnd );
 			if ( rmin == 0 ) {
-				ASSERT( parent->m_child_info != nullptr );
+				ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 				//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
-				rowEnd = parent->m_child_info->m_childCount;
+				rowEnd = parent->m_child_info.m_child_info_ptr->m_childCount;
 #ifdef GRAPH_LAYOUT_DEBUG
 				TRACE( _T( "Hit row end! Parent item: `%s`\r\n" ), parent->m_name.c_str( ) );
 #endif
@@ -1316,10 +1316,10 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 		head += ( rowEnd - rowBegin );
 
 		if ( remaining.Width( ) <= 0 || remaining.Height( ) <= 0 ) {
-			ASSERT( parent->m_child_info != nullptr );
+			ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 			//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
-			if ( head < parent->m_child_info->m_childCount ) {
+			if ( head < parent->m_child_info.m_child_info_ptr->m_childCount ) {
 				static_cast< CTreeListItem* >( parent_vector_of_children.at( head ) )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
 			break;
@@ -1348,11 +1348,11 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem*
 		}
 	rc.NormalizeRect( );
 	COLORREF colorOfItem;
-	if ( item->m_child_info == nullptr ) {
+	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
 		}
 	else {
-		ASSERT( item->m_child_info == nullptr );
+		ASSERT( item->m_child_info.m_child_info_ptr == nullptr );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
 	RenderRectangle( offscreen_buffer, rc, surface, colorOfItem );

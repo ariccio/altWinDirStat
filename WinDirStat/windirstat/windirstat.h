@@ -35,8 +35,20 @@ public:
 	virtual BOOL InitInstance                  ( ) override final;
 	virtual INT  ExitInstance                  ( ) override final;
 
-	void PeriodicalUpdateRamUsage              (                                           );
-	void UpdateRamUsage                        (                                           );
+
+
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+	void PeriodicalUpdateRamUsage( ) {
+		if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
+			UpdateRamUsage( );
+			m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
+			}
+		}
+
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+	void UpdateRamUsage( ) {
+		CWinThread::OnIdle( 0 );
+		}
 	
 	_Success_( SUCCEEDED( return ) )
 	HRESULT GetCurrentProcessMemoryInfo        ( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize );

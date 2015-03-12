@@ -109,11 +109,11 @@ void CPageTreemap::OnOK( ) {
 	CPropertyPage::OnOK( );
 	}
 
-void CPageTreemap::OnSomethingChanged( ) {
-	VERIFY( CWnd::UpdateData( ) );
-	VERIFY( CWnd::UpdateData( false ) );
-	SetModified( );
-	}
+//void CPageTreemap::OnSomethingChanged( ) {
+//	VERIFY( CWnd::UpdateData( ) );
+//	VERIFY( CWnd::UpdateData( false ) );
+//	SetModified( );
+//	}
 
 void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
 	m_altered = ( altered ? TRUE : FALSE );

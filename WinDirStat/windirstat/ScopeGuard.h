@@ -70,6 +70,7 @@ class ScopeGuard final {
 			//		L"\r\n\t\tfunction:                        `%S`,"
 			//		L"\r\n\t\tline:                            `%i`\r\n", file_name, func_name, line_number );
 	#endif
+#pragma warning( suppress: 4711 )//C4711: function 'void __cdecl <lambda_[...]>::operator()(void)const __ptr64' selected for automatic inline expansion
 			function_to_call_on_scope_exit( );
 			}
 		}

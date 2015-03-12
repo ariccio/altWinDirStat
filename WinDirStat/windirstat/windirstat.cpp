@@ -255,16 +255,16 @@ CDirstatApp::~CDirstatApp( ) {
 	m_pDocTemplate = { NULL };
 	}
 
-void CDirstatApp::UpdateRamUsage( ) {
-	CWinThread::OnIdle( 0 );
-	}
+//void CDirstatApp::UpdateRamUsage( ) {
+//	CWinThread::OnIdle( 0 );
+//	}
 
-void CDirstatApp::PeriodicalUpdateRamUsage( ) {
-	if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
-		UpdateRamUsage( );
-		m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
-		}
-	}
+//void CDirstatApp::PeriodicalUpdateRamUsage( ) {
+//	if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
+//		UpdateRamUsage( );
+//		m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
+//		}
+//	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
 _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) {
