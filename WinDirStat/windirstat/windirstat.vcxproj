@@ -767,6 +767,7 @@
     <ClInclude Include="PageTreemap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ScopeGuard.h" />
+    <ClInclude Include="signum.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TreeListControl.h" />
     <ClInclude Include="treemap.h" />

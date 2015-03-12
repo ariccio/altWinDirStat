@@ -13,6 +13,7 @@
 
 #include "globalhelpers.h"
 #include "ScopeGuard.h"
+#include "signum.h"
 
 #pragma warning(3:4514) //'function': unreferenced inline function has been removed
 

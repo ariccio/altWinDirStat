@@ -31,6 +31,7 @@
 #include "windirstat.h"
 #include "options.h"
 #include "globalhelpers.h"
+#include "signum.h"
 
 
 #pragma warning(suppress:4355)

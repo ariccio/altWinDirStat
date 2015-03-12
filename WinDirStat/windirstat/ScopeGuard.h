@@ -44,7 +44,7 @@ class ScopeGuard final {
 #endif
 
 	public:
-	ScopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) : function_to_call_on_scope_exit{ std::move( f ) }, active_{ true }
+	__forceinline ScopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) : function_to_call_on_scope_exit{ std::move( f ) }, active_{ true }
 #ifdef DEBUG
 		,
 		file_name{ file_name_in },
@@ -59,8 +59,9 @@ class ScopeGuard final {
 #endif
 		}
 
-	//intentionally asked to NOT inline, to reduce code duplication.
-	__declspec(noinline)
+	////intentionally asked to NOT inline, to reduce code duplication.
+	//__declspec(noinline)
+	__forceinline
 	~ScopeGuard( ) {
 		if ( active_ ) {
 	#ifdef DEBUG
@@ -76,7 +77,7 @@ class ScopeGuard final {
 		}
 
 	//intentionally ASKING for inlining.
-	inline void dismiss( ) {
+	__forceinline void dismiss( ) {
 		ASSERT( active_ == true );
 		active_ = false;
 		}
@@ -86,8 +87,8 @@ class ScopeGuard final {
 	ScopeGuard( const ScopeGuard& ) = delete;
 	ScopeGuard& operator=( const ScopeGuard& ) = delete;
 
-	//intentionally asked to NOT inline, to reduce code duplication.
-	__declspec(noinline)
+	////intentionally asked to NOT inline, to reduce code duplication.
+	__forceinline
 	ScopeGuard( ScopeGuard&& rhs ) : function_to_call_on_scope_exit( std::move( rhs.function_to_call_on_scope_exit ) ), active_( rhs.active_ ) {
 		rhs.dismiss( );
 		}
@@ -97,7 +98,7 @@ class ScopeGuard final {
 
 //intentionally ASKING for inlining.
 template <class Fun>
-inline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
+__forceinline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
 	return ScopeGuard<Fun>( std::move( f ), file_name_in, func_name_in, line_number_in );
 	}
 

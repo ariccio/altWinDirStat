@@ -28,6 +28,7 @@
 
 #include "directory_enumeration.h" //for get_uncompressed_size
 
+#include "signum.h"
 
 namespace {
 

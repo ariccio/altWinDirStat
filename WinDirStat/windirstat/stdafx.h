@@ -316,6 +316,7 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 
 #pragma warning(3:4711)
 
+#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #else
 #error ass

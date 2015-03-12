@@ -13,7 +13,7 @@
 #pragma message( "Including `" __FILE__ "`..." )
 
 #include "globalhelpers.h"
-
+#include "signum.h"
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
 class CXySlider final : public CStatic {

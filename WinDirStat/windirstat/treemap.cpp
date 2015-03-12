@@ -609,6 +609,27 @@ namespace {
 			}
 		return false;
 		}
+
+	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+	inline void AddRidge_( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) {
+		const auto width = ( rc.right - rc.left );
+		const auto height = ( rc.bottom - rc.top );
+	
+		ASSERT( width > 0 && height > 0 );
+
+		const DOUBLE h4 = 4 * h;
+
+		const DOUBLE wf   = h4 / width;
+		surface[ 2 ] += wf * ( rc.right + rc.left );
+		surface[ 0 ] -= wf;
+
+		const DOUBLE hf   = h4 / height;
+		surface[ 3 ] += hf * ( rc.bottom + rc.top );
+		surface[ 1 ] -= hf;
+		}
+
+
+
 	}
 
 CTreemap::CTreemap( ) {
@@ -810,7 +831,7 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT rc, _In_ const C
 
 	DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 
-	AddRidge( rc, surface, m_options.height * m_options.scaleFactor );
+	AddRidge_( rc, surface, m_options.height * m_options.scaleFactor );
 
 	RenderRectangle( pdc, rc, surface, color );
 	if ( m_options.grid ) {
@@ -828,7 +849,7 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 	surface[ 3 ] = psurface[ 3 ];
 
 	if ( !asroot ) {
-		AddRidge( rc, surface, height );
+		AddRidge_( rc, surface, height );
 		WDS_validateRectangle_DEBUG( item, rc );
 		UNREFERENCED_PARAMETER( item );
 		}
@@ -1694,22 +1715,22 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 	}
 #endif
 
-void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
-	const auto width = ( rc.right - rc.left );
-	const auto height = ( rc.bottom - rc.top );
-	
-	ASSERT( width > 0 && height > 0 );
-
-	const DOUBLE h4 = 4 * h;
-
-	const DOUBLE wf   = h4 / width;
-	surface[ 2 ] += wf * ( rc.right + rc.left );
-	surface[ 0 ] -= wf;
-
-	const DOUBLE hf   = h4 / height;
-	surface[ 3 ] += hf * ( rc.bottom + rc.top );
-	surface[ 1 ] -= hf;
-	}
+//void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+//	const auto width = ( rc.right - rc.left );
+//	const auto height = ( rc.bottom - rc.top );
+//	
+//	ASSERT( width > 0 && height > 0 );
+//
+//	const DOUBLE h4 = 4 * h;
+//
+//	const DOUBLE wf   = h4 / width;
+//	surface[ 2 ] += wf * ( rc.right + rc.left );
+//	surface[ 0 ] -= wf;
+//
+//	const DOUBLE hf   = h4 / height;
+//	surface[ 3 ] += hf * ( rc.bottom + rc.top );
+//	surface[ 1 ] -= hf;
+//	}
 
 #ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.

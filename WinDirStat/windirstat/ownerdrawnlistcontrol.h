@@ -20,6 +20,7 @@
 #include "windirstat.h"
 #include "ScopeGuard.h"
 #include "macros_that_scare_small_children.h"
+#include "signum.h"
 
 class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;

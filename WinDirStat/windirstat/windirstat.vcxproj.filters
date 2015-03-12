@@ -161,6 +161,9 @@
     <ClInclude Include="macros_that_scare_small_children.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="signum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap1.bmp">
