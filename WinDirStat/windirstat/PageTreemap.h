@@ -1,6 +1,6 @@
 // pagetreemap.h	- Declaration of CDemoControl and CPageTreemap
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 
 #pragma once
@@ -10,11 +10,11 @@
 #ifndef WDS_PAGETREEMAP_H
 #define WDS_PAGETREEMAP_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 
 #include "colorbutton.h"
-#include "xyslider.h"
+#include "xyslider.h" //for CXySlider, else we'd have to use PIMPL, which I hate.
 #include "globalhelpers.h"
 
 //

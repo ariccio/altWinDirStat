@@ -1,3 +1,5 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+
 #include "stdafx.h"
 
 #pragma once
@@ -5,7 +7,7 @@
 #ifndef WDS_SIGNUM_H_INCLUDED
 #define WDS_SIGNUM_H_INCLUDED
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 //signum gets it's own file so that I can ask for inlining, while avoiding:
 //  (a): warning (C4711, (function selected for automatic inlining))

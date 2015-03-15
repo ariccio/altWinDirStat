@@ -1,6 +1,6 @@
 // TreeListControl.cpp	- Implementation of CTreeListItem and CTreeListControl
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 #ifndef WDS_TREELISTCONTROL_CPP
 #define WDS_TREELISTCONTROL_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
 //#include "ownerdrawnlistcontrol.h"
@@ -27,6 +27,8 @@
 #include "dirstatdoc.h"
 
 #include "directory_enumeration.h" //for get_uncompressed_size
+
+#include "stringformatting.h"
 
 #include "signum.h"
 
@@ -192,10 +194,13 @@ namespace {
 		const CTreeListControl* const ctrl;
 		};
 
+	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
+		const auto size1 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p1 ) ) )->size_recurse( );
+		const auto size2 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p2 ) ) )->size_recurse( );
+		return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
+		}
 
 	}
-
-
 
 
 const bool CTreeListItem::set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const  ) const {
@@ -324,7 +329,7 @@ INT CTreeListItem::GetSortAttributes( ) const {
 
 
 DOUBLE CTreeListItem::GetFraction( ) const {
-	const auto myParent = GetParentItem( );
+	const auto myParent = m_parent;
 	if ( myParent == NULL ) {
 		return static_cast<DOUBLE>( 1.0 );//root item? must be whole!
 		}
@@ -967,7 +972,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
 	}
 
 void CTreeListItem::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const {
-	auto myParent = GetParentItem( );
+	auto myParent = m_parent;
 	if ( myParent != NULL ) {
 		myParent->UpwardGetPathWithoutBackslash( pathBuf );
 		}
@@ -1098,22 +1103,22 @@ void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* 
 	SelectItem( index );
 	}
 
-INT CTreeListControl::find_item_then_show_first_try_failed( _In_ const CTreeListItem* const thisPath, const int i ) {
-	TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), thisPath->m_name, i );
+INT CTreeListControl::find_item_then_show_first_try_failed( _In_ const CTreeListItem* const path, _In_ const int i ) {
+	TRACE( _T( "Searching %s ( this path element ) for next path element...not found! Expanding %I64d...\r\n" ), path->m_name, i );
 	ExpandItemNoScroll( i );
 		
 	//we expect to find the item on the second try.
-	const INT index = FindListItem( thisPath );
+	const INT index = FindListItem( path );
 	TRACE( _T( "Set index to %i\r\n" ), index );
 	ASSERT( index != -1 );
 	return index;
 	}
 
-void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const thisPath, const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_item_in_path ) {
+void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const path, _In_ const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_in_path ) {
 	//auto index = FindTreeItem( thisPath );
-	auto index = FindListItem( thisPath );
+	auto index = FindListItem( path );
 	if ( index == -1 ) {
-		index = find_item_then_show_first_try_failed( thisPath, i );
+		index = find_item_then_show_first_try_failed( path, i );
 		if ( index == -1 ) {
 			TRACE( _T( "Logic error! Item not found!\r\n" ) );
 			displayWindowsMsgBoxWithMessage( L"Logic error! Item not found!" );
@@ -1123,16 +1128,16 @@ void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const this
 		}
 	else {
 		//if we've found the item, then we should close anything that we opened in the process?
-		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), thisPath->m_name, std::int64_t( i ), index );
-		index = collapse_parent_plus_one_through_index( thisPath, index, parent );
+		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), path->m_name, std::int64_t( i ), index );
+		index = collapse_parent_plus_one_through_index( path, index, parent );
 		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
 		}
-	ASSERT( target_item_in_path != NULL );
+	ASSERT( target_in_path != NULL );
 	parent = index;
 	ASSERT( index != -1 );
-	//if target_item_in_path is found, then we expand (the item?), adjust the name column width, and scroll to it.
+	//if target_in_path is found, then we expand (the item?), adjust the name column width, and scroll to it.
 	if ( index != -1 ) {
-		expand_item_then_scroll_to_it( target_item_in_path, index, showWholePath );
+		expand_item_then_scroll_to_it( target_in_path, index, showWholePath );
 		}
 	}
 
@@ -1635,7 +1640,7 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 	//SetRedraw( TRUE );
 	}
 
-int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i ) {
+int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, _Inout_ bool& selectNode, _In_ _In_range_( 0, INT_MAX ) const int& i ) {
 	int todelete = 0;
 	const auto itemCount = CListCtrl::GetItemCount( );
 	const auto count_to_start_at = ( i + 1 );
@@ -2001,11 +2006,6 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item )
 	VERIFY( CListCtrl::EnsureVisible( i, false ) );
 	}
 
-INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
-	const auto size1 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p1 ) ) )->size_recurse( );
-	const auto size2 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p2 ) ) )->size_recurse( );
-	return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
-	}
 
 //_At_( return, _Writable_bytes_( bytes_allocated ) )
 //_Ret_notnull_ children_heap_block_allocation* allocate_enough_memory_for_children_block( _In_ const std::uint32_t number_of_children, _Out_ size_t& bytes_allocated ) {

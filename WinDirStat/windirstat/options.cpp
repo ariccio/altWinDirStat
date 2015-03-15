@@ -1,6 +1,6 @@
 // options.cpp	- Implementation of CPersistence, COptions and CRegistryUser
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 
 #pragma once
@@ -10,7 +10,7 @@
 #ifndef WDS_OPTIONS_CPP
 #define WDS_OPTIONS_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "options.h"
 
@@ -26,44 +26,44 @@ namespace registry_strings {
 	
 	
 	
-	_Null_terminated_ const wchar_t entrySplitterPosS[ ] = { _T( "%s-splitterPos" ) };
-	_Null_terminated_ const wchar_t entryColumnOrderS[ ] = { _T( "%s-columnOrder" ) };
-	_Null_terminated_ const wchar_t entryDialogRectangleS[ ] = { _T( "%s-rectangle" ) };
-	_Null_terminated_ const wchar_t entrySelectDrivesDrives[ ] = { _T( "selectDrivesDrives" ) };
-	_Null_terminated_ const wchar_t sectionOptions[ ] = { _T( "options" ) };
-	_Null_terminated_ const wchar_t entryListGrid[ ] = { _T( "treelistGrid" ) }; // for compatibility with 1.0.1, this entry is named treelistGrid.
-	_Null_terminated_ const wchar_t entryListStripes[ ] = { _T( "listStripes" ) };
-	_Null_terminated_ const wchar_t entryListFullRowSelection[ ] = { _T( "listFullRowSelection" ) };
-	_Null_terminated_ const wchar_t entryTreelistColorCount[ ] = { _T( "treelistColorCount" ) };
-	_Null_terminated_ const wchar_t entryTreelistColorN[ ] = { _T( "treelistColor%d" ) };
-	_Null_terminated_ const wchar_t entryHumanFormat[ ] = { _T( "humanFormat" ) };
-	_Null_terminated_ const wchar_t entryShowTimeSpent[ ] = { _T( "showTimeSpent" ) };
-	_Null_terminated_ const wchar_t entryTreemapHighlightColor[ ] = { _T( "treemapHighlightColor" ) };
-	_Null_terminated_ const wchar_t entryTreemapStyle[ ] = { _T( "treemapStyle" ) };
-	_Null_terminated_ const wchar_t entryTreemapGrid[ ] = { _T( "treemapGrid" ) };
-	_Null_terminated_ const wchar_t entryTreemapGridColor[ ] = { _T( "treemapGridColor" ) };
-	_Null_terminated_ const wchar_t entryBrightness[ ] = { _T( "brightness" ) };
-	_Null_terminated_ const wchar_t entryHeightFactor[ ] = { _T( "heightFactor" ) };
-	_Null_terminated_ const wchar_t entryScaleFactor[ ] = { _T( "scaleFactor" ) };
-	_Null_terminated_ const wchar_t entryAmbientLight[ ] = { _T( "ambientLight" ) };
-	_Null_terminated_ const wchar_t entryLightSourceX[ ] = { _T( "lightSourceX" ) };
-	_Null_terminated_ const wchar_t entryLightSourceY[ ] = { _T( "lightSourceY" ) };
-	_Null_terminated_ const wchar_t entryFollowMountPoints[ ] = { _T( "followMountPoints" ) };
-	_Null_terminated_ const wchar_t entryFollowJunctionPoints[ ] = { _T( "followJunctionPoints" ) };
-	_Null_terminated_ const wchar_t entryEnabled[ ] = { _T( "enabled" ) };
-	_Null_terminated_ const wchar_t entryTitle[ ] = { _T( "title" ) };
-	_Null_terminated_ const wchar_t entryWorksForDrives[ ] = { _T( "worksForDrives" ) };
-	_Null_terminated_ const wchar_t entryWorksForDirectories[ ] = { _T( "worksForDirectories" ) };
-	_Null_terminated_ const wchar_t entryWorksForFilesFolder[ ] = { _T( "worksForFilesFolder" ) };
-	_Null_terminated_ const wchar_t entryWorksForFiles[ ] = { _T( "worksForFiles" ) };
-	_Null_terminated_ const wchar_t entryWorksForUncPaths[ ] = { _T( "worksForUncPaths" ) };
-	_Null_terminated_ const wchar_t entryCommandLine[ ] = { _T( "commandLine" ) };
+	_Null_terminated_ const wchar_t entrySplitterPosS[ ]              = { _T( "%s-splitterPos" ) };
+	_Null_terminated_ const wchar_t entryColumnOrderS[ ]              = { _T( "%s-columnOrder" ) };
+	_Null_terminated_ const wchar_t entryDialogRectangleS[ ]          = { _T( "%s-rectangle" ) };
+	_Null_terminated_ const wchar_t entrySelectDrivesDrives[ ]        = { _T( "selectDrivesDrives" ) };
+	_Null_terminated_ const wchar_t sectionOptions[ ]                 = { _T( "options" ) };
+	_Null_terminated_ const wchar_t entryListGrid[ ]                  = { _T( "treelistGrid" ) }; // for compatibility with 1.0.1, this entry is named treelistGrid.
+	_Null_terminated_ const wchar_t entryListStripes[ ]               = { _T( "listStripes" ) };
+	_Null_terminated_ const wchar_t entryListFullRowSelection[ ]      = { _T( "listFullRowSelection" ) };
+	_Null_terminated_ const wchar_t entryTreelistColorCount[ ]        = { _T( "treelistColorCount" ) };
+	_Null_terminated_ const wchar_t entryTreelistColorN[ ]            = { _T( "treelistColor%d" ) };
+	_Null_terminated_ const wchar_t entryHumanFormat[ ]               = { _T( "humanFormat" ) };
+	_Null_terminated_ const wchar_t entryShowTimeSpent[ ]             = { _T( "showTimeSpent" ) };
+	_Null_terminated_ const wchar_t entryTreemapHighlightColor[ ]     = { _T( "treemapHighlightColor" ) };
+	_Null_terminated_ const wchar_t entryTreemapStyle[ ]              = { _T( "treemapStyle" ) };
+	_Null_terminated_ const wchar_t entryTreemapGrid[ ]               = { _T( "treemapGrid" ) };
+	_Null_terminated_ const wchar_t entryTreemapGridColor[ ]          = { _T( "treemapGridColor" ) };
+	_Null_terminated_ const wchar_t entryBrightness[ ]                = { _T( "brightness" ) };
+	_Null_terminated_ const wchar_t entryHeightFactor[ ]              = { _T( "heightFactor" ) };
+	_Null_terminated_ const wchar_t entryScaleFactor[ ]               = { _T( "scaleFactor" ) };
+	_Null_terminated_ const wchar_t entryAmbientLight[ ]              = { _T( "ambientLight" ) };
+	_Null_terminated_ const wchar_t entryLightSourceX[ ]              = { _T( "lightSourceX" ) };
+	_Null_terminated_ const wchar_t entryLightSourceY[ ]              = { _T( "lightSourceY" ) };
+	_Null_terminated_ const wchar_t entryFollowMountPoints[ ]         = { _T( "followMountPoints" ) };
+	_Null_terminated_ const wchar_t entryFollowJunctionPoints[ ]      = { _T( "followJunctionPoints" ) };
+	_Null_terminated_ const wchar_t entryEnabled[ ]                   = { _T( "enabled" ) };
+	_Null_terminated_ const wchar_t entryTitle[ ]                     = { _T( "title" ) };
+	_Null_terminated_ const wchar_t entryWorksForDrives[ ]            = { _T( "worksForDrives" ) };
+	_Null_terminated_ const wchar_t entryWorksForDirectories[ ]       = { _T( "worksForDirectories" ) };
+	_Null_terminated_ const wchar_t entryWorksForFilesFolder[ ]       = { _T( "worksForFilesFolder" ) };
+	_Null_terminated_ const wchar_t entryWorksForFiles[ ]             = { _T( "worksForFiles" ) };
+	_Null_terminated_ const wchar_t entryWorksForUncPaths[ ]          = { _T( "worksForUncPaths" ) };
+	_Null_terminated_ const wchar_t entryCommandLine[ ]               = { _T( "commandLine" ) };
 	_Null_terminated_ const wchar_t entryRecurseIntoSubdirectories[ ] = { _T( "recurseIntoSubdirectories" ) };
-	_Null_terminated_ const wchar_t entryAskForConfirmation[ ] = { _T( "askForConfirmation" ) };
-	_Null_terminated_ const wchar_t entryShowConsoleWindow[ ] = { _T( "showConsoleWindow" ) };
-	_Null_terminated_ const wchar_t entryWaitForCompletion[ ] = { _T( "waitForCompletion" ) };
-	_Null_terminated_ const wchar_t entryRefreshPolicy[ ] = { _T( "refreshPolicy" ) };
-	_Null_terminated_ const wchar_t entryMainWindowPlacement[ ] = { _T( "mainWindowPlacement" ) };
+	_Null_terminated_ const wchar_t entryAskForConfirmation[ ]        = { _T( "askForConfirmation" ) };
+	_Null_terminated_ const wchar_t entryShowConsoleWindow[ ]         = { _T( "showConsoleWindow" ) };
+	_Null_terminated_ const wchar_t entryWaitForCompletion[ ]         = { _T( "waitForCompletion" ) };
+	_Null_terminated_ const wchar_t entryRefreshPolicy[ ]             = { _T( "refreshPolicy" ) };
+	_Null_terminated_ const wchar_t entryMainWindowPlacement[ ]       = { _T( "mainWindowPlacement" ) };
 	
 	}
 
@@ -307,46 +307,13 @@ INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	return n;
 	}
 
-void CPersistence::GetConfigPosition( _Inout_ WTL::CPoint& pt ) {
+void CPersistence::GetConfigPosition( _Inout_ POINT& pt ) {
 	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x ) );
 	pt.y = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt.y ) );
 
-	CRect rc { pt, WTL::CSize( 100, 100 ) };
+	CRect rc { WTL::CPoint( pt ), WTL::CSize( 100, 100 ) };
 	SanifyRect( rc );
 	pt = rc.TopLeft( );
-	}
-
-//TODO: is this even used??
-void CPersistence::GetSelectDrivesDrives( _Inout_ std::vector<std::wstring>& drives ) {
-	drives.clear( );
-	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesDrives, _T( "" ) );
-	rsize_t i = 0;
-	while ( i < s.length( ) ) {
-		std::wstring drive;
-		while ( i < s.length( ) && s[ i ] != _T( '|' ) ) {
-			drive += s[ i ];
-			i++;
-			}
-		if ( i < s.length( ) ) {
-			i++;
-			}
-		drives.emplace_back( std::move( drive ) );
-		}
-	}
-
-void CPersistence::SetSelectDrivesDrives( _In_ const std::vector<std::wstring>& drives ) {
-	std::wstring s;
-	const auto sizeDrives = drives.size( );
-	
-	//each drive is PROBABLY going to be more than one character in length, but we can reserve something anyways!
-	s.reserve( sizeDrives );
-	for ( size_t i = 0; i < sizeDrives; i++ ) {
-		if ( i > 0 ) {
-			s += _T( "|" );
-			}
-		s += drives.at( i );
-		}
-	SetProfileString( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesDrives, s.c_str( ) );
 	}
 
 void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
@@ -510,8 +477,6 @@ void COptions::SetListStripes( _In_ const bool show ) {
 		}
 	}
 
-
-
 void COptions::SetListFullRowSelection( _In_ const bool show ) {
 	if ( m_listFullRowSelection != show ) {
 		m_listFullRowSelection = show;
@@ -557,25 +522,17 @@ void COptions::SaveToRegistry( ) {
 
 	CRegistryUser::SetProfileInt( registry_strings::sectionOptions, registry_strings::entryTreelistColorCount, static_cast<const INT>( m_treelistColorCount ) );
 	for ( INT i = 0; i < static_cast<INT>( TREELISTCOLORCOUNT ); i++ ) {
-		//CString entry;
-		//entry.Format( entryTreelistColorN, i );
 		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
-		//ASSERT( dyn_fmt_str.compare( entry ) == 0 );
 		CRegistryUser::SetProfileInt( registry_strings::sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( m_treelistColor[ i ] ) );
 		}
 	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryHumanFormat, m_humanFormat );
 
-	//CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, m_showTimeSpent );
 	CRegistryUser::SetProfileInt( registry_strings::sectionOptions, registry_strings::entryTreemapHighlightColor, static_cast<const INT>( m_treemapHighlightColor ) );
 
 	SaveTreemapOptions( );
 
 	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryFollowMountPoints, m_followMountPoints );
 	CRegistryUser::SetProfileBool( registry_strings::sectionOptions, registry_strings::entryFollowJunctionPoints, m_followJunctionPoints );
-	// We must distinguish between 'empty' and 'default'. 'Default' will read "", 'Empty' will read "$", Others will read "$text.."
-	//const PCTSTR stringPrefix = _T( "$" );
-
-	//CString s;
 	}
 
 void COptions::LoadFromRegistry( ) {
@@ -590,15 +547,11 @@ void COptions::LoadFromRegistry( ) {
 	m_treelistColorCount = static_cast<rsize_t>( temp );
 	ASSERT( ( m_treelistColorCount >= 1 ) && ( m_treelistColorCount <= TREELISTCOLORCOUNT ) );
 	for ( INT i = 0; i < TREELISTCOLORCOUNT; i++ ) {
-		//CString entry;
-		//entry.Format( entryTreelistColorN, i );
-		//TODO, uses heap!
 		std::wstring dyn_fmt_str( std::wstring( L"treelistColor" + std::to_wstring( i ) ) );
 		m_treelistColor[ i ] = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, dyn_fmt_str.c_str( ), static_cast<const INT>( treelistColorDefault[ i ] ) );
 		}
 	m_humanFormat = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryHumanFormat, true );
 
-	//m_showTimeSpent = CRegistryUser::GetProfileBool( registry_strings::sectionOptions, registry_strings::entryShowTimeSpent, false );
 	m_treemapHighlightColor = CRegistryUser::GetProfileInt_( registry_strings::sectionOptions, registry_strings::entryTreemapHighlightColor, RGB( 255, 255, 255 ) );
 
 	ReadTreemapOptions( );

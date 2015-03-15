@@ -1,6 +1,6 @@
 // pagegeneral.h	- Declaration of CPageGeneral
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -10,7 +10,7 @@
 #ifndef WDS_PAGEGENERAL_H
 #define WDS_PAGEGENERAL_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 
 class COptionsPropertySheet;
@@ -43,7 +43,6 @@ protected:
 		DDX_Check   ( pDX, IDC_SHOWGRID,          m_listGrid                );
 		DDX_Check   ( pDX, IDC_SHOWSTRIPES,       m_listStripes             );
 		DDX_Check   ( pDX, IDC_FULLROWSELECTION,  m_listFullRowSelection    );
-		//DDX_Check   ( pDX, IDC_SHOWTIMESPENT,     m_showTimeSpent           );
 		}
 
 	virtual BOOL OnInitDialog   (                    ) override final;
@@ -55,8 +54,6 @@ protected:
 	BOOL      m_listGrid;
 	BOOL      m_listStripes;
 	BOOL      m_listFullRowSelection;
-	//C4820: 'CPageGeneral' : '4' bytes padding added after data member 'CPageGeneral::m_showTimeSpent'
-	//BOOL      m_showTimeSpent;
 
 	CButton   m_ctlFollowMountPoints;
 	CButton   m_ctlFollowJunctionPoints;

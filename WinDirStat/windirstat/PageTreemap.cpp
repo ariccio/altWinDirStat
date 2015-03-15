@@ -1,6 +1,6 @@
 // PageTreemap.cpp		- Implementation of CDemoControl and CPageTreemap
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 #ifndef WDS_PAGETREEMAP_CPP
 #define WDS_PAGETREEMAP_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "pagetreemap.h"
 #include "options.h"
@@ -18,7 +18,6 @@
 //#include "windirstat.h"
 
 namespace {
-
 	const int CPageTreemap_maxHeight = 200;
 	}
 
@@ -28,38 +27,34 @@ IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	CWnd::DoDataExchange( pDX );
 
-	//DDX_Control( pDX, IDC_PREVIEW,             m_preview );
-	DDX_Control( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
-	DDX_Control( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
-	DDX_Control( pDX, IDC_BRIGHTNESS,            m_brightness );
-	DDX_Control( pDX, IDC_CUSHIONSHADING,        m_cushionShading );
-	DDX_Control( pDX, IDC_HEIGHT,                m_height );
-	DDX_Control( pDX, IDC_SCALEFACTOR,           m_scaleFactor );
-	DDX_Control( pDX, IDC_LIGHTSOURCE,           m_lightSource );
-	DDX_Control( pDX, IDC_RESET,                 m_resetButton );
+	DDX_Control ( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
+	DDX_Control ( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
+	DDX_Control ( pDX, IDC_BRIGHTNESS,            m_brightness );
+	DDX_Control ( pDX, IDC_CUSHIONSHADING,        m_cushionShading );
+	DDX_Control ( pDX, IDC_HEIGHT,                m_height );
+	DDX_Control ( pDX, IDC_SCALEFACTOR,           m_scaleFactor );
+	DDX_Control ( pDX, IDC_LIGHTSOURCE,           m_lightSource );
+	DDX_Control ( pDX, IDC_RESET,                 m_resetButton );
 
 	if ( !pDX->m_bSaveAndValidate ) {
 		UpdateOptions( false );
 		UpdateStatics( );
-		//m_preview.SetOptions( &m_options );
 		}
 
-	DDX_Radio(  pDX, IDC_KDIRSTAT, ( int & ) m_style );
-	//DDX_Check(  pDX, IDC_TREEMAPGRID, ( int & ) m_grid );
+	DDX_Radio   ( pDX, IDC_KDIRSTAT, ( int & ) m_style );
+	DDX_Text    ( pDX, IDC_STATICBRIGHTNESS,     m_sBrightness,     str_size );
+	DDX_Slider  ( pDX, IDC_BRIGHTNESS,           m_nBrightness );
 
-	DDX_Text(   pDX, IDC_STATICBRIGHTNESS,     m_sBrightness, str_size );
-	DDX_Slider( pDX, IDC_BRIGHTNESS,           m_nBrightness );
+	DDX_Text    ( pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading, str_size );
+	DDX_Slider  ( pDX, IDC_CUSHIONSHADING,       m_nCushionShading );
 
-	DDX_Text(   pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading, str_size );
-	DDX_Slider( pDX, IDC_CUSHIONSHADING,       m_nCushionShading );
+	DDX_Text    ( pDX, IDC_STATICHEIGHT,         m_sHeight,         str_size );
+	DDX_Slider  ( pDX, IDC_HEIGHT,               m_nHeight );
 
-	DDX_Text(   pDX, IDC_STATICHEIGHT,         m_sHeight, str_size );
-	DDX_Slider( pDX, IDC_HEIGHT,               m_nHeight );
+	DDX_Text    ( pDX, IDC_STATICSCALEFACTOR,    m_sScaleFactor,    str_size );
+	DDX_Slider  ( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
 
-	DDX_Text(   pDX, IDC_STATICSCALEFACTOR,    m_sScaleFactor, str_size );
-	DDX_Slider( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
-
-	DDX_XySlider( pDX, IDC_LIGHTSOURCE, m_ptLightSource );
+	DDX_XySlider( pDX, IDC_LIGHTSOURCE,          m_ptLightSource );
 
 
 	if ( pDX->m_bSaveAndValidate ) {
@@ -109,15 +104,8 @@ void CPageTreemap::OnOK( ) {
 	CPropertyPage::OnOK( );
 	}
 
-//void CPageTreemap::OnSomethingChanged( ) {
-//	VERIFY( CWnd::UpdateData( ) );
-//	VERIFY( CWnd::UpdateData( false ) );
-//	SetModified( );
-//	}
-
 void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
 	m_altered = ( altered ? TRUE : FALSE );
-	//auto s = MAKEINTRESOURCEW( m_altered ? IDS_RESETTO_DEFAULTS : IDS_BACKTO_USERSETTINGS );
 	m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
 	}
 
@@ -125,21 +113,22 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
 	if ( save ) {
 		m_options.SetBrightnessPercent( 100 - m_nBrightness );
+		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
 		m_options.SetAmbientLightPercent( m_nCushionShading );
 		m_options.SetHeightPercent( CPageTreemap_maxHeight - m_nHeight );
-		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
+		
 		m_options.SetLightSourcePoint( m_ptLightSource );
-		m_options.style = ( m_style == 0 ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle );
-		m_options.grid = ( m_grid == FALSE ? false : true );
+		m_options.style     = ( ( m_style == 0 ) ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle );
+		m_options.grid      = ( ( m_grid == FALSE ) ? false : true );
 		m_options.gridColor = m_gridColor.m_preview.m_color;
 		}
 	else {
-		m_nBrightness     = 100 - m_options.GetBrightnessPercent( );
+		m_nBrightness     = ( 100 - m_options.GetBrightnessPercent( ) );
+		m_nScaleFactor    = ( 100 - m_options.GetScaleFactorPercent( ) );
 		m_nCushionShading = m_options.GetAmbientLightPercent( );
 		m_nHeight         = CPageTreemap_maxHeight - m_options.GetHeightPercent( );
-		m_nScaleFactor    = 100 - m_options.GetScaleFactorPercent( );
 		m_ptLightSource   = m_options.GetLightSourcePoint( );
-		m_style           = ( m_options.style == Treemap_STYLE::KDirStatStyle ? 0 : 1 );
+		m_style           = ( ( m_options.style == Treemap_STYLE::KDirStatStyle ) ? 0 : 1 );
 		m_grid            = ( m_options.grid ? TRUE : FALSE );
 		m_gridColor.m_preview.SetColor( m_options.gridColor );
 		}

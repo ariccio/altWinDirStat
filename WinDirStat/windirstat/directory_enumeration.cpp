@@ -1,10 +1,12 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+
 #include "stdafx.h"
 
 #pragma once 
 #ifndef WDS_DIRECTORY_ENUMERATION_CPP
 #define WDS_DIRECTORY_ENUMERATION_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "directory_enumeration.h"
 #include "dirstatdoc.h"
@@ -17,11 +19,6 @@
 #define WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
 #undef new
 #endif
-
-//struct FILEINFO;
-
-//forward declaration
-//void FindFilesLoop ( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path );
 
 namespace {
 	struct FILEINFO final {
@@ -263,31 +260,7 @@ namespace {
 		}
 
 
-
-	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
-		std::vector<FILEINFO> vecFiles;
-		std::vector<DIRINFO>  vecDirs;
-
-		vecFiles.reserve( 50 );//pseudo-arbitrary number
-
-		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
-
-		//std::sort( vecFiles.begin( ), vecFiles.end( ) );
-
-		const auto fileCount = vecFiles.size( );
-		const auto dirCount  = vecDirs.size( );
-	
-		const auto total_count = ( fileCount + dirCount );
-
-
-		if ( total_count == 0 ) {
-			return std::make_pair( std::vector<std::pair<CTreeListItem*, std::wstring>>( ), std::vector<std::pair<CTreeListItem*, std::wstring>>( ) );
-			}
-
-
-		//ASSERT( ThisCItem->m_childCount == 0 );
-
-
+	std::wstring::size_type WDS_DECLSPEC_NOTHROW sum_string_length( _In_ const std::vector<FILEINFO>& vecFiles, _In_ const std::vector<DIRINFO>& vecDirs ) {
 		//TODO: BUGBUG: need +1 here, else ASSERT( ( m_buffer_filled + new_name_length ) < m_buffer_size ) fails!
 		std::wstring::size_type total_length = 1u;
 		for ( const auto& aFile : vecFiles ) {
@@ -302,35 +275,17 @@ namespace {
 			//for the null terminator
 			++total_length;
 			}
+		return total_length;
+		}
 
-		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
-		const std::wstring::size_type total_size_alloc = ( total_length );
-
-	#ifdef WDS_STRING_ALLOC_DEBUGGING
-		TRACE( _T( "total length of strings (plus null-terminators) of all files found: %I64u, total size of needed allocation: %I64u\r\n" ), total_length, total_size_alloc );
-	#endif
-		ThisCItem->m_child_info.~child_info_block_manager( );
-		new ( &( ThisCItem->m_child_info ) ) child_info_block_manager( total_size_alloc, total_count );
-		//ThisCItem->m_child_info = std::make_unique<child_info>( total_size_alloc, total_count );
-		//ThisCItem->m_child_info->m_children.reset( new CTreeListItem[ total_count ] );
-
-		//ThisCItem->m_name_pool.reset( total_size_alloc );
-		
-		//ThisCItem->m_child_info->m_name_pool.reset( total_size_alloc );
-
-		//ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
-		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == 0 );
-
-		//ASSERT( path.back( ) != _T( '\\' ) );
-		//sizesToWorkOn_ CANNOT BE CONST!!
-		auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
+	std::vector<std::pair<CTreeListItem*, std::wstring>> launch_directory_workers( _In_ CTreeListItem* const ThisCItem, _In_ const CDirstatApp* app, _In_ const rsize_t dirCount, _In_ const rsize_t vecFiles_size, _In_ const std::vector<DIRINFO>& vecDirs ) {
 		std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
 		dirsToWorkOn.reserve( dirCount );
 		const auto thisOptions = GetOptions( );
 
 		//ASSERT( static_cast< size_t >( ThisCItem->m_childCount ) == vecFiles.size( ) );
 
-		std::uint32_t total_so_far = static_cast<std::uint32_t>( vecFiles.size( ) );
+		std::uint32_t total_so_far = static_cast<std::uint32_t>( vecFiles_size );
 
 		//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 		for ( const auto& dir : vecDirs ) {
@@ -354,9 +309,6 @@ namespace {
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				const auto newitem = new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
-				//detect overflows. highly unlikely.
-				//ASSERT( ThisCItem->m_childCount < 4294967290 );
-
 				//++( ThisCItem->m_childCount );
 				++total_so_far;
 				//ThisCItem->m_children_vector.emplace_back( newitem );
@@ -373,12 +325,58 @@ namespace {
 			}
 		ASSERT( ThisCItem->m_child_info.m_child_info_ptr != nullptr );
 		ThisCItem->m_child_info.m_child_info_ptr->m_childCount = total_so_far;
+		return dirsToWorkOn;
+		}
+
+
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+		std::vector<FILEINFO> vecFiles;
+		std::vector<DIRINFO>  vecDirs;
+
+		vecFiles.reserve( 50 );//pseudo-arbitrary number
+
+		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
+
+		//std::sort( vecFiles.begin( ), vecFiles.end( ) );
+
+		const auto fileCount = vecFiles.size( );
+		const auto dirCount  = vecDirs.size( );
+	
+		const auto total_count = ( fileCount + dirCount );
+
+
+		if ( total_count == 0 ) {
+			return std::make_pair( std::vector<std::pair<CTreeListItem*, std::wstring>>( ), std::vector<std::pair<CTreeListItem*, std::wstring>>( ) );
+			}
+
+		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
+		const std::wstring::size_type total_size_alloc = sum_string_length( vecFiles, vecDirs );
+
+		ThisCItem->m_child_info.~child_info_block_manager( );
+		new ( &( ThisCItem->m_child_info ) ) child_info_block_manager( total_size_alloc, total_count );
+		//ThisCItem->m_child_info = std::make_unique<child_info>( total_size_alloc, total_count );
+		//ThisCItem->m_child_info->m_children.reset( new CTreeListItem[ total_count ] );
+
+		//ThisCItem->m_name_pool.reset( total_size_alloc );
+		
+		//ThisCItem->m_child_info->m_name_pool.reset( total_size_alloc );
+
+		//ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
+		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == 0 );
+
+		//ASSERT( path.back( ) != _T( '\\' ) );
+		//sizesToWorkOn_ CANNOT BE CONST!!
+		auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
+		auto dirsToWorkOn = launch_directory_workers( ThisCItem, app, dirCount, fileCount, vecDirs );
+
+
 		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 		//ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 		//ThisCItem->m_children_vector.shrink_to_fit( );
 		return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
 		}
-_Success_( return < UINT64_ERROR )
+
+	_Success_( return < UINT64_ERROR )
 	const std::uint64_t get_uncompressed_file_size( const std::wstring path ) {
 		const HANDLE file_handle = CreateFileW( path.c_str( ), ( FILE_READ_ATTRIBUTES bitor FILE_READ_EA ), ( FILE_SHARE_READ bitor FILE_SHARE_WRITE ), NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 		if ( file_handle == INVALID_HANDLE_VALUE ) {
@@ -408,7 +406,7 @@ _Success_( return < UINT64_ERROR )
 			ASSERT( large_integer.QuadPart >= 0 );
 			return static_cast< const std::uint64_t >( large_integer.QuadPart );
 			}
-	#ifdef DEBUG
+#ifdef DEBUG
 		//If [GetFileAttributes] succeeds, the return value contains the attributes of the specified file or directory. If [GetFileAttributes] fails, the return value is INVALID_FILE_ATTRIBUTES. To get extended error information, call GetLastError.
 		const DWORD attrib = GetFileAttributesW( path.c_str( ) );
 		ASSERT( attrib != INVALID_FILE_ATTRIBUTES );
@@ -421,7 +419,7 @@ _Success_( return < UINT64_ERROR )
 			return UINT64_ERROR;
 			}
 		TRACE( _T( "get_uncompressed_file_size (%s) failed!! What really doesn't make sense, is that we failed to get attributes for that file.\r\n" ), path.c_str( ) );
-	#endif
+#endif
 
 		//TODO: trace error message
 		return UINT64_ERROR;
@@ -662,37 +660,6 @@ WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( const CTree
 #undef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
 #endif
 
-//FILEINFO::FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ] ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ) {
-//#ifdef DEBUG
-//	if ( length > 34359738368 ) {
-//		_CrtDbgBreak( );
-//		}
-//#endif
-//	}
-
-
-//FILEINFO& FILEINFO::operator=( FILEINFO&& in ) {
-//	length = std::move( in.length );
-//	lastWriteTime = std::move( in.lastWriteTime );
-//	attributes = std::move( in.attributes );
-//	name = std::move( in.name );
-//	return ( *this );
-//	}
-
-//FILEINFO::FILEINFO( FILEINFO&& in ) {
-//	length = std::move( in.length );
-//	lastWriteTime = std::move( in.lastWriteTime );
-//	attributes = std::move( in.attributes );
-//	name = std::move( in.name );
-//	}
-
-//void FILEINFO::reset( ) {
-//	length = 0;
-//	lastWriteTime.dwLowDateTime  = 0;
-//	lastWriteTime.dwHighDateTime = 0;
-//	attributes = INVALID_FILE_ATTRIBUTES;
-//	name.clear( );
-//	}
 
 //Yes, this is used!
 SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) {
@@ -701,18 +668,6 @@ SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) {
 	bytes = std::move( in.bytes );
 	color = std::move( in.color );
 	}
-
-
-//DIRINFO::DIRINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_z_ wchar_t( &cFileName )[ MAX_PATH ], _In_ std::wstring path_ ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( cFileName ), path( std::move( path_ ) ) { }
-
-
-//DIRINFO::DIRINFO( DIRINFO&& in ) {
-//	length = std::move( in.length );
-//	lastWriteTime = std::move( in.lastWriteTime );
-//	attributes = std::move( in.attributes );
-//	name = std::move( in.name );
-//	path = std::move( in.path );
-//	}
 
 
 #else

@@ -2,21 +2,25 @@
 // or project specific include files that are used frequently,
 // but are changed infrequently
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 #pragma once
 
 
 #ifndef STDAFX_INCLUDED
+
+#pragma message( "defining `STDAFX_INCLUDED`..." )
+
 #define STDAFX_INCLUDED
 
-#pragma message( "Including `" __FILE__ "`..." )
 
-
+#pragma message( "defining `_HAS_EXCEPTIONS 0`..." )
 
 #define _HAS_EXCEPTIONS 0
 
-
 #ifndef VC_EXTRALEAN
+
+#pragma message( "defining `VC_EXTRALEAN`..." )
+
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 #endif
 
@@ -27,14 +31,23 @@
 //#endif
 
 #ifndef UNICODE
+
+#pragma message( "defining `UNICODE`..." )
+
 #define UNICODE
 #endif
 
 #ifndef _UNICODE
+
+#pragma message( "defining `_UNICODE`..." )
+
 #define _UNICODE
 #endif
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows NT 4 or later.
+
+#pragma message( "defining `_WIN32_WINNT`..." )
+
 #define _WIN32_WINNT 0x0602	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
 #else
 static_assert( _WIN32_WINNT >= 0x0600, "" );
@@ -43,24 +56,51 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif						
 
 #ifndef _WIN32_WINDOWS
+
+#pragma message( "defining `_WIN32_WINDOWS`..." )
+
 #define _WIN32_WINDOWS 0x0602
 #endif
 
 #ifndef _WIN32_IE			// Allow use of features specific to IE 4.0 or later.
+
+#pragma message( "defining `_WIN32_IE`..." )
+
 #define _WIN32_IE 0x0800	// Change this to the appropriate value to target IE 5.0 or later.
 #endif
 
+#ifndef _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
+
+#pragma message( "defining `_ATL_CSTRING_EXPLICIT_CONSTRUCTORS`..." )
+
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
+#endif
+
+
+#ifndef _AFX_ALL_WARNINGS
+
+#pragma message( "defining `_AFX_ALL_WARNINGS`..." )
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
+#endif
+
+
+#ifndef _ATL_ALL_WARNINGS
+
+#pragma message( "defining `_ATL_ALL_WARNINGS`..." )
+
 #define _ATL_ALL_WARNINGS
 
-//From helpmap.h
-//#define IDH_Treemap 1003
+#endif
 
-#ifndef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 
+
+
+#ifndef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES
+
+#pragma message( "defining `_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES`..." )
+
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 
 #else
@@ -68,7 +108,14 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif
 
 
+#ifndef _ATL_ENABLE_PTM_WARNING
+
+#pragma message( "defining `_ATL_ENABLE_PTM_WARNING`..." )
+
 #define _ATL_ENABLE_PTM_WARNING
+
+#endif
+
 
 //Things that I will eventually get rid of/add to program, but can't safely do so as of yet.
 
@@ -79,7 +126,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 //#define COLOR_DEBUGGING
 //#define SIMD_ACCESS_DEBUGGING
 //#define WDS_STRING_ALLOC_DEBUGGING
-#define DISPLAY_FINAL_CITEMBRANCH_SIZE
+//#define DISPLAY_FINAL_CITEMBRANCH_SIZE
 //#define WDS_OWNERDRAWNLISTITEM_DESTRUCTOR_DEBUG
 //#define WDS_SCOPE_GUARD_DEBUGGING
 //#define WDS_TYPEVIEW_TREEMAP_MEMORY_USAGE_DEBUGGING
@@ -163,16 +210,31 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 // Add support for ATL/WTL
 //#define _WTL_FORWARD_DECLARE_CSTRING
-#define _WTL_NO_AUTOMATIC_NAMESPACE
-//_ATL_NO_AUTOMATIC_NAMESPACE
+
+#ifndef _WTL_NO_AUTOMATIC_NAMESPACE
+
+#pragma message( "defining `_WTL_NO_AUTOMATIC_NAMESPACE`..." )
+
+#define _WTL_NO_AUTOMATIC_NAMESPACE //_ATL_NO_AUTOMATIC_NAMESPACE
+
+#endif
 
 #include <atlbase.h>        // base ATL classes
 
 #ifdef _AFX
+
 #ifndef _WTL_NO_CSTRING
+
+#pragma message( "defining `_WTL_NO_CSTRING`..." )
+
 #define _WTL_NO_CSTRING 1
+
 #endif // _WTL_NO_CSTRING
+
+#pragma message( "defining `_CSTRING_NS`..." )
+
 #define _CSTRING_NS
+
 #endif // _AFX
 
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
@@ -204,10 +266,8 @@ extern WTL::CAppModule _Module;
 #include <unordered_map>
 #include <numeric>
 #include <cstdint>
-//#include <stdexcept>
 #include <type_traits>
 #include <utility>
-//#include <atomic>
 #include <tuple>
 //#include <iterator>
 //#include <PathCch.h>
@@ -225,11 +285,6 @@ extern WTL::CAppModule _Module;
 #include <cvt/wstring>		//for wstring_convert
 
 #include <windowsx.h>
-
-//#ifdef _DEBUG
-////#define _CRTDBG_MAP_ALLOC
-//#endif
-
 #include <stdlib.h>
 
 
@@ -240,14 +295,10 @@ extern WTL::CAppModule _Module;
 #include <psapi.h>			// PROCESS_MEMORY_INFO
 #include <processthreadsapi.h>// SetProcessMitigationPolicy 
 
-
-//#include <lmcons.h>		// UNLEN
 #include <float.h>			// DBL_MAX
-
 
 #include <strsafe.h>
 //#include <intsafe.h>
-
 
 #include <iso646.h>
 #include <wctype.h>
@@ -266,33 +317,24 @@ extern WTL::CAppModule _Module;
 #endif
 
 
-#ifndef countof
-#define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
-#else
-#error already defiend!
-#endif
+//#ifndef countof
+//#define countof(arr) (sizeof(arr)/sizeof((arr)[0]))
+//#else
+//#error already defiend!
+//#endif
 
-#define pi2 1.5707963267948966192
+//#define pi2 1.5707963267948966192
 #define RAM_USAGE_UPDATE_INTERVAL 100
 #define TREELISTCOLORCOUNT size_t( 8 )
 
 #define PALETTE_BRIGHTNESS DOUBLE( 0.6 )
 //#define INDICATORS_NUMBER size_t( 2 )
 
+//#define ITEM_ROW_HEIGHT 20
+//static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 
-//#define COLORFLAG_LIGHTER DWORD( 0x02000000 )
-//#define COLORFLAG_MASK    DWORD( 0x03000000 )
+//#define _N_ID_EXTENSION_LIST_CONTROL UINT( 4711 )
 
-
-
-#define ITEM_ROW_HEIGHT 20
-static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
-
-//static UINT _N_ID_EXTENSION_LIST_CONTROL = 4711;
-#define _N_ID_EXTENSION_LIST_CONTROL UINT( 4711 )
-
-//const UINT CXySlider::XY_SETPOS = WM_USER + 100;
-//const UINT CXySlider::XY_GETPOS = WM_USER + 101;
 #define XY_SETPOS UINT( WM_USER + 100 )
 #define XY_GETPOS UINT( WM_USER + 101 )
 
@@ -307,12 +349,17 @@ static_assert( ITEM_ROW_HEIGHT > -1, "Rows need to be a positive size!" );
 ////#pragma warning(3:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 //#endif
 
-//some generic structures!
-//#include "datastructures.h"
-
 //WDS headers (infrequently modified)
 #include "Resource.h"
 
+
+#ifndef WDS_FILE_INCLUDE_MESSAGE
+
+#pragma message( "defining `WDS_FILE_INCLUDE_MESSAGE`..." )
+
+#define WDS_FILE_INCLUDE_MESSAGE __pragma( message( "Including `" __FILE__ "`..." ) )
+
+#endif
 
 #pragma warning(3:4711)
 

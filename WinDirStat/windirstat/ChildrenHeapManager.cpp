@@ -1,3 +1,5 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+
 #include "stdafx.h"
 
 #pragma once
@@ -6,10 +8,11 @@
 #define WDS_CHILDREN_HEAP_MANAGER_CPP_INCLUDED
 
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include  "ChildrenHeapManager.h"
-#include "globalhelpers.h"
+//#include "globalhelpers.h"
+#include "stringformatting.h"
 #include "TreeListControl.h"
 #include "macros_that_scare_small_children.h"
 

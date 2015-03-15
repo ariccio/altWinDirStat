@@ -1,6 +1,6 @@
 // typeview.h	- Declaration of CExtensionListControl and CTypeView
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 
 #pragma once
@@ -10,12 +10,13 @@
 #ifndef WDS_TYPEVIEW_H
 #define WDS_TYPEVIEW_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "ChildrenHeapManager.h"
 //#include "dirstatdoc.h"	// SExtensionRecord
 #include "macros_that_scare_small_children.h"
 #include "datastructures.h"
+#include "ownerdrawnlistcontrol.h"
 
 
 class CTypeView;
@@ -128,6 +129,7 @@ protected:
 
 public:
 	virtual ~CTypeView( ) final = default;
+	void SysColorChanged( );
 
 	CTypeView& operator=( const CTypeView& in ) = delete;
 	CTypeView( const CTypeView& in ) = delete;
@@ -135,7 +137,7 @@ public:
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
 	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
 
-										  void SysColorChanged( );
+
 
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
 		return CView::PreCreateWindow( cs );
@@ -163,14 +165,11 @@ protected:
 		CView::OnDraw( pDC );
 		}
 
-	void SetSelection            (                                                    );
-
+	void SetSelection( );
 	void OnUpdate0( );
 	void OnUpdateHINT_LISTSTYLECHANGED( );
 	void OnUpdateHINT_TREEMAPSTYLECHANGED( );
-	//void OnSetRedraw( HWND hwnd, BOOL fRedraw );
 
-	
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct);
@@ -182,11 +181,6 @@ protected:
 		return CView::OnEraseBkgnd( pDC );
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd );
-public:
-	#ifdef _DEBUG
-		virtual void AssertValid() const;
-		virtual void Dump(CDumpContext& dc) const;
-	#endif
 	};
 
 

@@ -1,10 +1,12 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+
 #include "stdafx.h"
 #include "ScopeGuard.h"
 
 #ifndef WDS_SCOPEGUARD_CPP_INCLUDED
 #define WDS_SCOPEGUARD_CPP_INCLUDED
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 //intentionally NOT defined as part of ScopeGuard, to reduce code duplication. //Also, produces cleaner `TRACE` output.
 #ifdef DEBUG

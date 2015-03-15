@@ -81,6 +81,9 @@
     <ClCompile Include="mountpoints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stringformatting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h">
@@ -164,6 +167,12 @@
     <ClInclude Include="signum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LOGICAL_FOCUS_enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stringformatting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap1.bmp">
@@ -190,7 +199,6 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="..\changelog.txt" />
-    <Text Include="..\README.txt" />
     <Text Include="..\testplan.txt" />
     <Text Include="..\TODO.txt" />
   </ItemGroup>
@@ -201,11 +209,7 @@
     <None Include="res\windirstat.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
     <None Include="packages.config" />
-    <None Include="ClassDiagram3.cd" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\windirstat.manifest">

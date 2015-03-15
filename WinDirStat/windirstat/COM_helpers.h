@@ -1,3 +1,4 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 #include "stdafx.h"
 
 #pragma once
@@ -5,24 +6,13 @@
 #ifndef WDS_COM_HELPERS_H_INCLUDED
 #define WDS_COM_HELPERS_H_INCLUDED
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 
 //several are from the "Show Shell Common File Dialog" sample
 
-
-
-// Controls
-// It is OK for CONTROL_RADIOBUTTON2 to have the same ID as CONTROL_RADIOBUTTONLIST, 
-// because it is a child control under CONTROL_RADIOBUTTONLIST.
-//#define CONTROL_GROUP           2000
-//#define CONTROL_RADIOBUTTONLIST 2
-//#define CONTROL_RADIOBUTTON1    1
-//#define CONTROL_RADIOBUTTON2    2
-
 namespace {
 	const COMDLG_FILTERSPEC c_rgSaveTypes[ ] = { { L"All folders", L"*" } };
-
 	}
 
 
@@ -46,10 +36,7 @@ namespace {
 class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDialogControlEvents {
 	public:
 
-	// 
 	// IUnknown methods
-	// 
-
 	IFACEMETHODIMP QueryInterface( _In_ REFIID riid, _COM_Outptr_ void** ppv ) {
 		static const QITAB qit[ ] =
 			{
@@ -75,11 +62,7 @@ class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDial
 		return cRef;
 		}
 
-	// 
 	// IFileDialogEvents methods
-	//
-
-
 	//TODO: I think the MSDN sample might've done something wrong with all the S_OKs
 	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) {
 		return E_NOTIMPL;
@@ -106,13 +89,7 @@ class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDial
 		return E_NOTIMPL;
 		}
 
-	// 
 	// IFileDialogControlEvents methods
-	// 
-
-	//Keeping OnItemSelected in the implementation file means that we don't need to include ScopeGuard.h in the header.
-	//IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* pfdc, DWORD dwIDCtl, DWORD dwIDItem );
-
 	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* /*pfdc*/, DWORD /*dwIDCtl*/, DWORD /*dwIDItem*/ ) {
 		return E_NOTIMPL;
 		}

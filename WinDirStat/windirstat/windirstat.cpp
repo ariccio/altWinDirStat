@@ -1,6 +1,6 @@
 // windirstat.cpp	- Implementation of CDirstatApp and some globals
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 #ifndef WDS_WINDIRSTAT_CPP
 #define WDS_WINDIRSTAT_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 
 #include "macros_that_scare_small_children.h"
@@ -22,6 +22,8 @@
 #include "globalhelpers.h"
 #include "ScopeGuard.h"
 #include "COM_helpers.h"
+
+#include "stringformatting.h"
 
 
 CMainFrame* GetMainFrame( ) {

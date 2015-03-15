@@ -1,6 +1,6 @@
 // options.h		- Declaration of CRegistryUser, COptions and CPersistence
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -10,7 +10,7 @@
 #ifndef WDS_OPTIONS_H
 #define WDS_OPTIONS_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 
 #include "globalhelpers.h"
@@ -67,7 +67,6 @@ namespace CRegistryUser {
 	bool         GetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool defaultValue    );
 	void         SetProfileInt     ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  value           );
 	void         SetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool value           );
-	//void         CheckRange        ( _Inout_      INT&   value,   _In_   const INT    min,   _In_   const INT  max             );
 	};
 
 
@@ -78,17 +77,12 @@ public:
 	
 	static void  SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const RECT rc                                         );
 	static void  SetMainWindowPlacement   ( _In_    const WINDOWPLACEMENT& wp                                                               );
-	static void  SetSelectDrivesDrives    ( _In_    const std::vector<std::wstring>& drives                                                              );
-	
-	
-	
 	static void  SetSplitterPos           ( _In_z_  const PCTSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
-	static void  GetConfigPosition        ( _Inout_ WTL::CPoint& pt                                                                              );
+	static void  GetConfigPosition        ( _Inout_ POINT& pt                                                                              );
 	static void  GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Out_ RECT& rc                                            );
-	static void  GetSplitterPos           ( _In_z_ const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
-	static void  GetMainWindowPlacement   ( _Out_ WINDOWPLACEMENT& wp                                                                     );
-	static void  GetSelectDrivesDrives    ( _Inout_ std::vector<std::wstring>& drives                                                                    );
+	static void  GetSplitterPos           ( _In_z_  const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
+	static void  GetMainWindowPlacement   ( _Out_   WINDOWPLACEMENT& wp                                                                     );
 	static INT   GetConfigPage            ( _In_    const INT max                                                                           );
 	
 	
@@ -99,10 +93,6 @@ public:
 	static bool  GetShowDeleteWarning( ) {
 		return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowDeleteWarning, true );
 		}
-
-
-	//static RADIO GetSelectDrivesRadio     (                                                                                                 );
-
 
 	static void  SetSelectDrivesRadio( _In_    const INT radio ) {
 		CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesRadio, radio );
@@ -143,9 +133,6 @@ public:
 		return CRegistryUser::GetProfileBool( registry_strings::sectionPersistence, registry_strings::entryShowTreemap, true );
 		}
 
-
-	//static DWORD CStyle_GetSelectDrivesFolder( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) _Post_readable_size_( return ) PWSTR psz_text, _In_ const DWORD strSize );
-
 	static std::wstring GetSelectDrivesFolder( ) {
 		return CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, _T( "" ) );
 		}
@@ -166,7 +153,6 @@ public:
 		GetArray( helpers::MakeColumnOrderEntry( name ), arr, arrSize );
 		}
 	
-	
 	static void GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
 		GetArray( helpers::MakeColumnWidthsEntry( name ), arr, arrSize );
 		}
@@ -176,7 +162,7 @@ private:
 	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
 	
 	_Success_( SUCCEEDED( return ) )
-	static const HRESULT GetRect                ( _In_ const std::wstring entry, _Out_ RECT& rc                  );
+	static const HRESULT GetRect          ( _In_ const std::wstring entry, _Out_ RECT& rc                  );
 
 
 	static void    SetRect                ( _In_z_ const PCTSTR entry, _In_ const RECT rc               );
@@ -208,8 +194,6 @@ struct COptions final {
 	                                       bool              m_listFullRowSelection = true;
 	                                       bool              m_followMountPoints    = false;
 	                                       bool              m_followJunctionPoints = false;
-										   //C4820: 'COptions' : '1' bytes padding added after data member 'COptions::m_showTimeSpent'
-	                                     //bool              m_showTimeSpent        = false;
 
 	_Field_size_( TREELISTCOLORCOUNT )     COLORREF          m_treelistColor[ TREELISTCOLORCOUNT ];
 	_Field_range_( 1, TREELISTCOLORCOUNT ) rsize_t           m_treelistColorCount;

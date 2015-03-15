@@ -1,6 +1,6 @@
 // graphview.cpp: Implementation of CGraphView
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,14 +9,42 @@
 #ifndef WDS_GRAPHVIEW_CPP
 #define WDS_GRAPHVIEW_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
+//TODO: too many headers?
 #include "graphview.h"
 #include "macros_that_scare_small_children.h"
 #include "ScopeGuard.h"
 #include "mainframe.h"
 #include "windirstat.h"
 #include "dirstatview.h"
+#include "options.h"
+#include "mainframe.h"
+#include "dirstatdoc.h"
+
+namespace {
+
+	//TweakSizeOfRectangleForHightlight is called once, unconditionally.
+	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient, _In_ const bool grid ) {
+		if ( grid ) {
+			rc.right++;
+			rc.bottom++;
+			}
+		if ( rcClient.left < rc.left ) {
+			rc.left--;
+			}
+		if ( rcClient.top < rc.top ) {
+			rc.top--;
+			}
+		if ( rc.right < rcClient.right ) {
+			rc.right++;
+			}
+		if ( rc.bottom < rcClient.bottom ) {
+			rc.bottom++;
+			}
+		}
+
+	}
 
 	/*
 BEGIN_MESSAGE_MAP( CGraphView, CView )
@@ -280,6 +308,37 @@ void CGraphView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
 		}
 	}
 
+void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
+	if ( !( STATIC_DOWNCAST( CDirstatDoc, m_pDocument ) )->IsRootDone( ) ) {
+		CGraphView::Inactivate( );
+		}
+
+	switch ( lHint ) {
+			case UpdateAllViews_ENUM::HINT_NEWROOT:
+				CGraphView::EmptyView( );
+				return CView::OnUpdate( pSender, lHint, pHint );
+
+			case 0:
+			case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
+			case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
+			case UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED:
+			case UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED:
+				return CView::OnUpdate( pSender, lHint, pHint );
+
+
+			case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
+				VERIFY( CWnd::RedrawWindow( ) );
+				return;
+
+			case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
+				CGraphView::Inactivate( );
+				return CView::OnUpdate( pSender, lHint, pHint );
+
+			default:
+				return;
+		}
+	}
+
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -318,6 +377,18 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	return;
 	}
 
+void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
+	const auto logicalFocus = m_frameptr->m_logicalFocus;
+	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
+		DrawSelection( pdc );
+		}
+	if ( logicalFocus == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
+		DrawHighlightExtension( pdc );
+		}
+	m_appptr->PeriodicalUpdateRamUsage( );
+	}
+
+
 void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -343,6 +414,86 @@ void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	VERIFY( sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 	}
 
+void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
+	WTL::CWaitCursor wc;
+
+	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
+	CSelectObject sopen( pdc, pen );
+	CSelectStockObject sobrush( pdc, NULL_BRUSH );
+	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
+	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	if ( Document == NULL ) {
+		ASSERT( Document != NULL );
+		return;
+		}
+	const auto rItem = Document->m_rootItem.get( );
+	if ( rItem != NULL ) {
+		RecurseHighlightExtension( pdc, ( *rItem ), Document->m_highlightExtension );
+		}
+
+	}
+
+
+void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const {
+	/*
+		The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
+		A pen and the null brush must be selected.
+		*/
+
+	auto rc = rc_;
+
+	ASSERT( ( rc.right - rc.left ) >= 0 );
+	ASSERT( ( rc.bottom - rc.top ) >= 0 );
+
+	//TODO: BUGBUG: why 7?
+	if ( ( ( rc.right - rc.left ) >= 7 ) && ( ( rc.bottom - rc.top ) >= 7 ) ) {
+
+		VERIFY( pdc.Rectangle( &rc ) );		// w = 7
+
+		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
+		//rc.DeflateRect( 1, 1 );
+
+
+		VERIFY( pdc.Rectangle( &rc ) );		// w = 5
+
+
+
+		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
+		//rc.DeflateRect( 1, 1 );
+
+
+		VERIFY( pdc.Rectangle( &rc ) );		// w = 3
+		}
+	else {
+		const auto Options = GetOptions( );
+		return pdc.FillSolidRect( &rc, Options->m_treemapHighlightColor );
+		}
+	}
+
+
+void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
+	WTL::CPoint point;
+	VERIFY( ::GetCursorPos( &point ) );
+	CWnd::ScreenToClient( &point );
+
+	RECT rc;
+	/*
+_AFXWIN_INLINE void CWnd::GetClientRect(LPRECT lpRect) const
+	{ ASSERT(::IsWindow(m_hWnd)); ::GetClientRect(m_hWnd, lpRect); }
+	*/
+	ASSERT( ::IsWindow( m_hWnd ) );
+
+	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
+	VERIFY( ::GetClientRect( m_hWnd, &rc ) );
+
+	if ( !PtInRect( &rc, point ) ) {
+		TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
+		m_frameptr->SetSelectionMessageText( );
+		VERIFY( CWnd::KillTimer( m_timer ) );
+		m_timer = 0;
+		}
+	}
+
 
 #ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
@@ -366,25 +517,7 @@ void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR 
 	}
 #endif
 
-//TweakSizeOfRectangleForHightlight is called once, unconditionally.
-inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient, _In_ const bool grid ) {
-	if ( grid ) {
-		rc.right++;
-		rc.bottom++;
-		}
-	if ( rcClient.left < rc.left ) {
-		rc.left--;
-		}
-	if ( rcClient.top < rc.top ) {
-		rc.top--;
-		}
-	if ( rc.right < rcClient.right ) {
-		rc.right++;
-		}
-	if ( rc.bottom < rcClient.bottom ) {
-		rc.bottom++;
-		}
-	}
+
 
 #else
 

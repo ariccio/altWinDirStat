@@ -299,7 +299,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /d1reportSingleClassLayoutCTreeListItem</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -538,7 +538,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /d1reportSingleClassLayoutCTreeListItem</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -559,10 +559,11 @@
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
       <OmitFramePointers>false</OmitFramePointers>
-      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerOutput>NoListing</AssemblerOutput>
       <ExceptionHandling>false</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <CreateHotpatchableImage>false</CreateHotpatchableImage>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -741,6 +742,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Intel_Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="stringformatting.cpp" />
     <ClCompile Include="TreeListControl.cpp" />
     <ClCompile Include="treemap.cpp" />
     <ClCompile Include="typeview.cpp" />
@@ -757,6 +759,7 @@
     <ClInclude Include="dirstatview.h" />
     <ClInclude Include="globalhelpers.h" />
     <ClInclude Include="graphview.h" />
+    <ClInclude Include="LOGICAL_FOCUS_enum.h" />
     <ClInclude Include="macros_that_scare_small_children.h" />
     <ClInclude Include="mainframe.h" />
     <ClInclude Include="mountpoints.h" />
@@ -769,6 +772,7 @@
     <ClInclude Include="ScopeGuard.h" />
     <ClInclude Include="signum.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stringformatting.h" />
     <ClInclude Include="TreeListControl.h" />
     <ClInclude Include="treemap.h" />
     <ClInclude Include="typeview.h" />
@@ -787,15 +791,10 @@
   <ItemGroup>
     <Text Include="res\license.txt" />
     <Text Include="..\changelog.txt" />
-    <Text Include="..\README.txt" />
     <Text Include="..\testplan.txt" />
     <Text Include="..\TODO.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
-    <None Include="ClassDiagram3.cd" />
     <None Include="packages.config" />
     <None Include="res\text1.bin" />
     <None Include="res\windirstat.rc2" />

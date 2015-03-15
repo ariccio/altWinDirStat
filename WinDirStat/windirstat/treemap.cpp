@@ -1,6 +1,6 @@
 // treemap.cpp	- Implementation of CColorSpace, CTreemap and CTreemapPreview
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -10,22 +10,13 @@
 #ifndef WDS_TREEMAP_CPP
 #define WDS_TREEMAP_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "treemap.h"
 #include "globalhelpers.h"
 #include "TreeListControl.h"
 #include "datastructures.h"
-
-
-//encourage inter-procedural optimization (and class-hierarchy analysis!)
-//#include "ownerdrawnlistcontrol.h"
-//#include "TreeListControl.h"
-//#include "typeview.h"
-
-
 #include "dirstatdoc.h"
-
 #include "graphview.h"//temporary!
 
 
@@ -1714,23 +1705,6 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 		}
 	}
 #endif
-
-//void CTreemap::AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
-//	const auto width = ( rc.right - rc.left );
-//	const auto height = ( rc.bottom - rc.top );
-//	
-//	ASSERT( width > 0 && height > 0 );
-//
-//	const DOUBLE h4 = 4 * h;
-//
-//	const DOUBLE wf   = h4 / width;
-//	surface[ 2 ] += wf * ( rc.right + rc.left );
-//	surface[ 0 ] -= wf;
-//
-//	const DOUBLE hf   = h4 / height;
-//	surface[ 3 ] += hf * ( rc.bottom + rc.top );
-//	surface[ 1 ] -= hf;
-//	}
 
 #ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.

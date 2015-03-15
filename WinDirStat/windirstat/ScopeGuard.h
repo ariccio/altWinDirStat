@@ -1,3 +1,5 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+
 #pragma once
 
 
@@ -6,7 +8,7 @@
 #ifndef WDS_SCOPEGUARD_H_INCLUDED
 #define WDS_SCOPEGUARD_H_INCLUDED
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number );
 
@@ -20,7 +22,6 @@ void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_
 
 //based on Andrei Alexandrescu's "Systematic Error Handling in C++"
 // To initialize, use something like: auto g1 = scopeGuard( [ ]{ fclose( fd ); unlink( name ); }, __FILE__, __FUNCSIG__, __LINE__ );
-// To dismiss
 template <class Fun>
 class ScopeGuard final {
 	Fun function_to_call_on_scope_exit;
@@ -59,17 +60,11 @@ class ScopeGuard final {
 #endif
 		}
 
-	////intentionally asked to NOT inline, to reduce code duplication.
-	//__declspec(noinline)
 	__forceinline
 	~ScopeGuard( ) {
 		if ( active_ ) {
 	#ifdef DEBUG
 			trace_out( file_name, func_name, line_number );
-			//TRACE( L"Scope guard triggered!"
-			//		L"\r\n\t\tScope guard initialized in file: `%S`,"
-			//		L"\r\n\t\tfunction:                        `%S`,"
-			//		L"\r\n\t\tline:                            `%i`\r\n", file_name, func_name, line_number );
 	#endif
 #pragma warning( suppress: 4711 )//C4711: function 'void __cdecl <lambda_[...]>::operator()(void)const __ptr64' selected for automatic inline expansion
 			function_to_call_on_scope_exit( );
@@ -87,7 +82,6 @@ class ScopeGuard final {
 	ScopeGuard( const ScopeGuard& ) = delete;
 	ScopeGuard& operator=( const ScopeGuard& ) = delete;
 
-	////intentionally asked to NOT inline, to reduce code duplication.
 	__forceinline
 	ScopeGuard( ScopeGuard&& rhs ) : function_to_call_on_scope_exit( std::move( rhs.function_to_call_on_scope_exit ) ), active_( rhs.active_ ) {
 		rhs.dismiss( );
@@ -99,6 +93,12 @@ class ScopeGuard final {
 //intentionally ASKING for inlining.
 template <class Fun>
 __forceinline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
+	static_assert( std::is_move_constructible<Fun>::value, "It's important that `Fun` be move-constructable, as ScopeGuard has a move constructor" );
+	
+#if !_HAS_EXCEPTIONS
+	static_assert( std::is_nothrow_move_constructible<Fun>::value, "It's important that `Fun` be move-constructable WITHOUT throwing exceptions, as ScopeGuard has a move constructor, and I have exceptions disabled." );
+#endif
+
 	return ScopeGuard<Fun>( std::move( f ), file_name_in, func_name_in, line_number_in );
 	}
 

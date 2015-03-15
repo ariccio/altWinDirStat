@@ -1,6 +1,6 @@
 // PageGeneral.cpp	- Implementation of CPageGeneral
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 #ifndef WDS_PAGEGENERAL_CPP
 #define WDS_PAGEGENERAL_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "pagegeneral.h"
 #include "options.h"
@@ -47,7 +47,6 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	m_listFullRowSelection = Options->m_listFullRowSelection;
 	m_followMountPoints    = Options->m_followMountPoints;
 	m_followJunctionPoints = Options->m_followJunctionPoints;
-	//m_showTimeSpent        = Options->m_showTimeSpent;
 	
 	m_followMountPoints = false;	                 // Otherwise we would see pacman only.
 	m_ctlFollowMountPoints.ShowWindow( SW_HIDE );    // Ignorance is bliss.
@@ -67,7 +66,6 @@ void CPageGeneral::OnOK( ) {
 	//Compare with TRUE to prevent int->bool coercion
 	Options->m_followMountPoints    = ( ( m_followMountPoints    == TRUE ) ? true : false );
 	Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
-	//Options->m_showTimeSpent        = ( ( m_showTimeSpent        == TRUE ) ? true : false );
 	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ), m_appptr );
 	Options->SetListGrid            ( ( ( m_listGrid             == TRUE ) ? true : false ) );
 	Options->SetListStripes         ( ( ( m_listStripes          == TRUE ) ? true : false ) );

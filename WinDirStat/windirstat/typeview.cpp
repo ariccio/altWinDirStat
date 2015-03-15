@@ -1,6 +1,6 @@
 // typeview.cpp		- Implementation of CExtensionListControl and CTypeView
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 
 #pragma once
@@ -12,7 +12,7 @@
 #define WDS_TYPEVIEW_CPP
 
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "mainframe.h"
 #include "datastructures.h"
@@ -32,7 +32,14 @@
 #include "options.h"
 #include "globalhelpers.h"
 #include "signum.h"
+#include "LOGICAL_FOCUS_enum.h"
 
+#include "stringformatting.h"
+
+
+namespace {
+	const UINT _N_ID_EXTENSION_LIST_CONTROL = 4711u;
+	}
 
 #pragma warning(suppress:4355)
 CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
@@ -594,17 +601,6 @@ void CTypeView::SetSelection( ) {
 		}
 	ASSERT( Document != NULL );
 	}
-
-#ifdef _DEBUG
-void CTypeView::AssertValid( ) const {
-	CView::AssertValid();
-	}
-
-void CTypeView::Dump( CDumpContext& dc ) const {
-	TRACE( _T( "CTypeView::Dump\r\n" ) );
-	CView::Dump( dc );
-	}
-#endif //_DEBUG
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
 	//ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );

@@ -1,4 +1,4 @@
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -7,7 +7,7 @@
 #ifndef WDS_NT_KERNEL_SUPPORT_H
 #define WDS_NT_KERNEL_SUPPORT_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "globalhelpers.h"
 

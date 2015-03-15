@@ -1,3 +1,5 @@
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+
 #pragma once
 
 #include "stdafx.h"
@@ -6,7 +8,7 @@
 #define WDS_CHILDREN_HEAP_MANAGER_H_INCLUDED
 
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for (all of) ChildrenHeapManager.h - Look for a message that says I'm restoring it!" )

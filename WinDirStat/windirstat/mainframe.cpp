@@ -1,6 +1,6 @@
 // mainframe.cpp	- Implementation of CMySplitterWnd, CPacmanControl and CMainFrame
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 #ifndef WDS_MAINFRAME_CPP
 #define WDS_MAINFRAME_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "graphview.h"
 #include "dirstatview.h"
@@ -32,6 +32,8 @@
 
 #include "globalhelpers.h"
 #include "ScopeGuard.h"
+
+#include "stringformatting.h"
 
 namespace {
 	// This must be synchronized with the IDR_MAINFRAME menu
@@ -336,6 +338,15 @@ _Ret_maybenull_
 CMainFrame* CMainFrame::GetTheFrame( ) {
 	return _theFrame;
 	}
+
+#pragma warning( push )
+#pragma warning( disable: 4355 )
+
+CMainFrame::CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( LOGICAL_FOCUS::LF_NONE ), m_appptr( nullptr ), m_wndDeadFocus( this ) {// Created by MFC only
+	_theFrame = this;
+	}
+#pragma warning( pop )
+
 
 
 INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {

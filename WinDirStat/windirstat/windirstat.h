@@ -1,6 +1,6 @@
 // windirstat.h	- Main header for the windirstat application
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 #ifndef WDS_WINDIRSTAT_H
 #define WDS_WINDIRSTAT_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "mountpoints.h"//CMountPoints : m_mountPoints, else we'd have to use PIMPL
 
@@ -35,8 +35,6 @@ public:
 	virtual BOOL InitInstance                  ( ) override final;
 	virtual INT  ExitInstance                  ( ) override final;
 
-
-
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	void PeriodicalUpdateRamUsage( ) {
 		if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
@@ -57,10 +55,8 @@ public:
 protected:
 	_Success_( return == true )
 	bool UpdateMemoryInfo                      (                                                                    );
-
 	_Success_( return != clrDefault )
 	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which );
-
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override final;		// This was, where scanning was done.
 
 public:
@@ -69,7 +65,6 @@ public:
 protected:
 
 	CSingleDocTemplate*       m_pDocTemplate;                   // MFC voodoo.
-	
 	SIZE_T                    m_workingSet;					    // Current working set (RAM usage)
 	unsigned long long        m_lastPeriodicalRamUsageUpdate;	// Tick count
 	

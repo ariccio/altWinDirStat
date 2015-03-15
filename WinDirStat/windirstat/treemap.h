@@ -1,6 +1,6 @@
 // treemap.h	- Declaration of CColorSpace, CTreemap and CTreemapPreview
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,30 +9,13 @@
 #ifndef WDS_TREEMAP_H_INCLUDED
 #define WDS_TREEMAP_H_INCLUDED
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "globalhelpers.h"
 
 class CTreeListItem;
 class CGraphView;
 class CDirstatDoc;
-
-//#define DBL_MAX_100 1.79769e+306
-//struct setPixStruct {
-//	setPixStruct( int in_x, int in_y, COLORREF in_color ) : ix( std::move( in_x ) ), iy( std::move( in_y ) ), color( std::move( in_color ) ) { }
-//	int ix;
-//	int iy;
-//	COLORREF color;
-//	static_assert( sizeof( std::int_fast32_t ) == sizeof( DWORD ), "whoops! need a different color size!" );
-//	};
-//
-//#ifdef GRAPH_LAYOUT_DEBUG
-//struct pixBitsSet {
-//	
-//	};
-//#endif
-
-
 
 void trace_typeview_used_stack( );
 void trace_typeview_used_heap( );
@@ -91,7 +74,7 @@ public:
 	void compensateForGrid         ( _Inout_    RECT&             rc,    _In_       CDC&               pdc ) const;
 
 	void DrawTreemap               ( _In_ CDC& offscreen_buffer, _Inout_    RECT& rc, _In_ const CTreeListItem* const root,  _In_ const Treemap_Options& options );
-	//void DrawTreemapDoubleBuffered ( _In_ CDC& pdc, _In_ const RECT& rc, _In_       CTreeListItem* const root,  _In_opt_ const Treemap_Options* const options = NULL );
+
 	void DrawColorPreview          ( _In_ CDC& pdc, _In_ const RECT rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL );
 
 	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem* FindItemByPoint( _In_ const CTreeListItem* const root, _In_ const POINT point, _In_opt_ CDirstatDoc* test_doc ) const;
@@ -128,8 +111,6 @@ protected:
 	//if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
 	void SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const;
 
-	//void AddRidge( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
-	
 	bool IsCushionShading( ) const;
 
 private:

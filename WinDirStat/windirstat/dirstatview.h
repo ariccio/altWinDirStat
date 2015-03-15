@@ -1,6 +1,6 @@
 // dirstatview.h	- Declaration of CMyTreeListControl and CDirstatView
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 
 #pragma once
@@ -10,22 +10,17 @@
 #ifndef WDS_DIRSTATVIEW_H
 #define WDS_DIRSTATVIEW_H
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 
-//encourage inter-procedural optimization (and class-hierarchy analysis!)
-#include "TreeListControl.h"
-
-
-#include "datastructures.h"
-
-#include "dirstatdoc.h"
+#include "TreeListControl.h" //for CTreeListControl m_treeListControl, else we'd need to use PIMPL. I HATE PIMPL.
 
 class CDirstatView;
 class CDirstatDoc;
 
 namespace {
-	const UINT _nIdTreeListControl = 4711;
+	const UINT _nIdTreeListControl = 4711u;
+	const UINT ITEM_ROW_HEIGHT = 20u;
 	}
 
 
@@ -36,6 +31,9 @@ inline void trace_SelectionCha( );
 
 // CDirstatView. The upper left view, which consists of the TreeList.
 class CDirstatView final : public CView {
+public:
+	CTreeListControl m_treeListControl;	// The tree list
+
 protected:
 	CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT, GetDocument( ) ) {// Created by MFC only
 		m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
@@ -45,6 +43,7 @@ protected:
 	DECLARE_DYNCREATE( CDirstatView )
 
 public:
+
 	virtual ~CDirstatView( ) final = default;
 
 	CDirstatView& operator=( const CDirstatView& in ) = delete;
@@ -52,7 +51,6 @@ public:
 	void SysColorChanged( ) {
 		m_treeListControl.SysColorChanged( );
 		}
-	CTreeListControl m_treeListControl;	// The tree list
 
 protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
@@ -77,9 +75,9 @@ protected:
 	//(CDirstatDoc*)AfxDynamicDownCast(((CRuntimeClass*)(&CDirstatDoc::classCDirstatDoc)), m_pDocument)
 	
 	*/
-	_Must_inspect_result_ CDirstatDoc* GetDocument( ) {
-		return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-		}
+
+	//Keeping GetDocument in the implementation file means that we don't need to anything about CDirstatDoc in the header.
+	_Must_inspect_result_ CDirstatDoc* GetDocument( );
 
 	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final {
 		switch ( lHint )
@@ -107,53 +105,15 @@ protected:
 			}
 		}
 
-	void OnUpdateHINT_NEWROOT( ) {
-		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-		ASSERT( Document != NULL );//The document is NULL??!? WTF
-		if ( Document == NULL ) {
-			return;
-			}
-		const auto newRootItem = Document->m_rootItem.get( );
-		if ( newRootItem != NULL ) {
-			m_treeListControl.SetRootItem( newRootItem );
-			VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
-			return;
-			}
-		//m_treeListControl.SetRootItem( newRootItem );
-		//VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
-		}
-	void OnUpdateHINT_SELECTIONCHANGED( ) {
-		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-		ASSERT( Document != NULL );//The document is NULL??!? WTF
-		if ( Document == NULL ) {
-			TRACE( _T( "Document is NULL, CDirstatView::OnUpdateHINT_SELECTIONCHANGED can't do jack shit.\r\n" ) );
-			return;
-			}
-		trace_SelectionCha( );
-		
-		const auto Selection = Document->m_selectedItem;
-		ASSERT( Selection != NULL );
-		if ( Selection == NULL ) {
-			TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
-			return;
-			}
-		m_treeListControl.SelectAndShowItem( Selection, false );
-		}
-	void OnUpdateHINT_SHOWNEWSELECTION( ) {
-		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-		ASSERT( Document != NULL );//The document is NULL??!? WTF
-		if ( Document == NULL ) {
-			return;
-			}
-		const auto Selection = Document->m_selectedItem;
-		ASSERT( Selection != NULL );
-		if ( Selection == NULL ) {
-			TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
-			return;
-			}
-		TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
-		m_treeListControl.SelectAndShowItem( Selection, true );
-		}
+	//Keeping OnUpdateHINT_NEWROOT in the implementation file means that we don't need to anything about CDirstatDoc in the header.
+	void OnUpdateHINT_NEWROOT( );
+
+	//Keeping OnUpdateHINT_SELECTIONCHANGED in the implementation file means that we don't need to anything about CDirstatDoc in the header.
+	void OnUpdateHINT_SELECTIONCHANGED( );
+
+	//Keeping OnUpdateHINT_SHOWNEWSELECTION in the implementation file means that we don't need to anything about CDirstatDoc in the header.
+	void OnUpdateHINT_SHOWNEWSELECTION( );
+
 	void OnUpdateHINT_LISTSTYLECHANGED( ) {
 		
 		trace_ListStyleCha( );
@@ -162,8 +122,7 @@ protected:
 		m_treeListControl.ShowStripes( Options->m_listStripes );
 		m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
-	//void OnUpdateHINT_SOMEWORKDONE( );
-	
+
 	void SetTreeListControlOptions( ) {
 		const auto Options = GetOptions( );
 		m_treeListControl.ShowGrid            ( Options->m_listGrid             );
@@ -196,8 +155,6 @@ protected:
 		m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL, _T( "Size" ),                   LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL );
 		m_treeListControl.InsertColumn( column::COL_ITEMS,        _T( "Items" ),                  LVCFMT_RIGHT,  55, column::COL_ITEMS );
 		m_treeListControl.InsertColumn( column::COL_NTCOMPRESS,   _T( "NTFS compression ratio" ), LVCFMT_RIGHT, 100, column::COL_NTCOMPRESS );
-	  //m_treeListControl.InsertColumn( column::COL_FILES,        _T( "Files" ),                  LVCFMT_RIGHT,  55, column::COL_FILES );
-	  //m_treeListControl.InsertColumn( column::COL_SUBDIRS,      _T( "Subdirs" ),                LVCFMT_RIGHT,  55, column::COL_SUBDIRS );
 		m_treeListControl.InsertColumn( column::COL_LASTCHANGE,   _T( "Last Change" ),            LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
 		m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,   _T( "Attributes" ),             LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
 
@@ -219,39 +176,10 @@ protected:
 		UNREFERENCED_PARAMETER( pOldWnd );
 		m_treeListControl.SetFocus( );
 		}
-	afx_msg void OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
-		const auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
-		//( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );//WTF
-		ASSERT( pResult != NULL );
-		if ( pResult != NULL ) {
-			*pResult = 0;
-			}
-		if ( ( pNMLV->uChanged & LVIF_STATE ) == 0 ) {
-			return;
-			}
-		if ( pNMLV->iItem == -1 ) {
-			ASSERT( false ); // mal gucken //'watch times'?
-			return;
-			}
-		// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
-		const bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-		const auto item = static_cast< CTreeListItem * >( m_treeListControl.GetItem( pNMLV->iItem ) );
-		ASSERT( item != NULL );//We got a NULL item??!? WTF
-		if ( item == NULL ) {
-			return;
-			}
-		if ( selected ) {
-			const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
-			ASSERT( Document != NULL );
-			if ( Document == NULL ) {
-				TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
-				return;
-				}
-			Document->SetSelection( *item );
-			ASSERT( Document == m_pDocument );
-			return m_pDocument->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_SELECTIONCHANGED );
-			}
-		}
+
+	//Keeping OnLvnItemchanged in the implementation file means that we don't need to anything about CDirstatDoc in the header.
+	afx_msg void OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult );
+
 	afx_msg void OnUpdatePopupToggle( _In_ CCmdUI* pCmdUI ) {
 		pCmdUI->Enable( m_treeListControl.SelectedItemCanToggle( ) );
 		}

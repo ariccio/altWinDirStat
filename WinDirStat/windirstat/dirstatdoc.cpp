@@ -1,6 +1,6 @@
 // dirstatdoc.cpp: Implementation of CDirstatDoc
 //
-// see `file_header_text.txt` for licensing & contact info.
+// see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
 #pragma once
 
@@ -9,19 +9,22 @@
 #ifndef WDS_DIRSTAT_DOC_CPP
 #define WDS_DIRSTAT_DOC_CPP
 
-#pragma message( "Including `" __FILE__ "`..." )
+WDS_FILE_INCLUDE_MESSAGE
 
 #include "dirstatdoc.h"
 #include "datastructures.h"
 
 //encourage inter-procedural optimization (and class-hierarchy analysis!)
-#include "ownerdrawnlistcontrol.h"
+//#include "ownerdrawnlistcontrol.h"
 //#include "TreeListControl.h"
 #include "typeview.h"
 
 #include "dirstatview.h"
+
 #include "globalhelpers.h"
-#include "windirstat.h"
+
+#include "windirstat.h" //for m_appptr; this header ALSO `#include "mountpoints.h"`s, to prevent the need for PIMPL in CDirstatApp.
+
 #include "mainframe.h"
 
 #include "directory_enumeration.h"
