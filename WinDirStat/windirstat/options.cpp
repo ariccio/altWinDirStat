@@ -432,8 +432,7 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
 //TODO: return by value?
 _Success_( SUCCEEDED( return ) )
 const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT& rc ) {
-	//TODO: BUGBUG: `const auto s` here resolves type of s as `wchar_t*`
-	const std::wstring s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) ).c_str( );
+	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) );
 	RECT tmp;
 	const auto r = swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	static_assert( SUCCEEDED( S_OK ), "Bad success return value!" );
