@@ -5,6 +5,8 @@ An unofficial modification of WinDirStat. Tremendous performance improvements.
 
 This repository is used to be an ugly, hacky, bundle of crap - but now it's just a bundle of crap. 
 
+**I've been working on Notepad++ lately, so development has slowed down :(**
+
 A quick guide to the structure of this repository:
 
 * Reference Code

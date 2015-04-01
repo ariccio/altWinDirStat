@@ -18,11 +18,8 @@ WDS_FILE_INCLUDE_MESSAGE
 class CDirstatView;
 class CDirstatDoc;
 
-namespace {
-	const UINT _nIdTreeListControl = 4711u;
-	const UINT ITEM_ROW_HEIGHT = 20u;
-	}
-
+extern const UINT _WDS_nIdTreeListControl;
+extern const UINT ITEM_ROW_HEIGHT;
 
 inline void trace_OnEraseBkgnd( );
 inline void trace_LoadingPerst( );
@@ -147,7 +144,7 @@ protected:
 			return -1;
 			}
 		const RECT rect = { 0, 0, 0, 0 };
-		VERIFY( m_treeListControl.CreateEx( 0, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl ) );
+		VERIFY( m_treeListControl.CreateEx( 0, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _WDS_nIdTreeListControl ) );
 		m_treeListControl.AddExtendedStyle( LVS_EX_HEADERDRAGDROP );
 		SetTreeListControlOptions( );
 		m_treeListControl.InsertColumn( column::COL_NAME,         _T( "Name" ),                   LVCFMT_LEFT,  200, column::COL_NAME );

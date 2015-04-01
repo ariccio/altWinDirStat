@@ -32,7 +32,8 @@ CMainFrame* GetMainFrame( ) {
 	}
 
 CDirstatApp* GetApp( ) {
-	return static_cast< CDirstatApp* >( AfxGetApp( ) );
+	//return static_cast< CDirstatApp* >( AfxGetApp( ) );
+	return STATIC_DOWNCAST( CDirstatApp, AfxGetApp( ) );
 	}
 
 

@@ -11,6 +11,9 @@
 
 WDS_FILE_INCLUDE_MESSAGE
 
+const UINT _WDS_nIdTreeListControl = 4711u;
+const UINT ITEM_ROW_HEIGHT = 20u;
+
 //
 #include "dirstatview.h"
 #include "dirstatdoc.h"
@@ -43,7 +46,7 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_WM_ERASEBKGND()
 	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
-	ON_NOTIFY(LVN_ITEMCHANGED, _nIdTreeListControl, &( CDirstatView::OnLvnItemchanged ) )
+	ON_NOTIFY(LVN_ITEMCHANGED, _WDS_nIdTreeListControl, &( CDirstatView::OnLvnItemchanged ) )
 	ON_UPDATE_COMMAND_UI(ID_POPUP_TOGGLE, &( CDirstatView::OnUpdatePopupToggle ) )
 	ON_COMMAND(ID_POPUP_TOGGLE, &( CDirstatView::OnPopupToggle ) )
 END_MESSAGE_MAP()
