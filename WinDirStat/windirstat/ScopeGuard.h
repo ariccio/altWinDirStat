@@ -10,7 +10,7 @@
 
 WDS_FILE_INCLUDE_MESSAGE
 
-void trace_out( _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number );
+void trace_out( _In_z_ PCSTR const func_expr, _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number );
 
 #ifdef new
 #pragma push_macro("new")
@@ -39,21 +39,24 @@ class ScopeGuard final {
 #endif
 
 #ifdef DEBUG
+	_Field_z_ PCSTR const func_expr;
 	_Field_z_ PCSTR const file_name;
 	_Field_z_ PCSTR const func_name;
 	_Field_range_( 0, INT_MAX ) const int line_number;
 #endif
 
 	public:
-	__forceinline ScopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) : function_to_call_on_scope_exit{ std::move( f ) }, active_{ true }
+	__forceinline ScopeGuard( Fun f, _In_z_ PCSTR const func_expr_in, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) : function_to_call_on_scope_exit{ std::move( f ) }, active_{ true }
 #ifdef DEBUG
 		,
+		func_expr{ func_expr_in },
 		file_name{ file_name_in },
 		func_name{ func_name_in },
 		line_number{ line_number_in }
 #endif
 		{
 #ifndef DEBUG
+		UNREFERENCED_PARAMETER( func_expr_in );
 		UNREFERENCED_PARAMETER( file_name_in );
 		UNREFERENCED_PARAMETER( func_name_in );
 		UNREFERENCED_PARAMETER( line_number_in );
@@ -64,7 +67,7 @@ class ScopeGuard final {
 	~ScopeGuard( ) {
 		if ( active_ ) {
 	#ifdef DEBUG
-			trace_out( file_name, func_name, line_number );
+			trace_out( func_expr, file_name, func_name, line_number );
 	#endif
 #pragma warning( suppress: 4711 )//C4711: function 'void __cdecl <lambda_[...]>::operator()(void)const __ptr64' selected for automatic inline expansion
 			function_to_call_on_scope_exit( );
@@ -92,14 +95,14 @@ class ScopeGuard final {
 
 //intentionally ASKING for inlining.
 template <class Fun>
-__forceinline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
+__forceinline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const func_expr_in, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
 	static_assert( std::is_move_constructible<Fun>::value, "It's important that `Fun` be move-constructable, as ScopeGuard has a move constructor" );
 	
 #if !_HAS_EXCEPTIONS
 	static_assert( std::is_nothrow_move_constructible<Fun>::value, "It's important that `Fun` be move-constructable WITHOUT throwing exceptions, as ScopeGuard has a move constructor, and I have exceptions disabled." );
 #endif
 
-	return ScopeGuard<Fun>( std::move( f ), file_name_in, func_name_in, line_number_in );
+	return ScopeGuard<Fun>( std::move( f ), func_expr_in, file_name_in, func_name_in, line_number_in );
 	}
 
 #ifdef WDS_SCOPEGUARD_PUSHED_MACRO_NEW

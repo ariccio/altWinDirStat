@@ -14,7 +14,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #endif
 
 #ifndef WDS_SCOPEGUARD_INSTANCE
-#define WDS_SCOPEGUARD_INSTANCE( func ) scopeGuard( (func), __FILE__, __FUNCSIG__, __LINE__ )
+#define WDS_SCOPEGUARD_INSTANCE( func ) scopeGuard( (func), ( #func ), __FILE__, __FUNCSIG__, __LINE__ )
 #else
 #error already defined!!
 #endif
