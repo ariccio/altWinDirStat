@@ -101,25 +101,25 @@ namespace {
 	}
 
 
-std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
+std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 void DoSomeWork ( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse = false );
 
 
 WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
-	ASSERT( path.back( ) == L'*' );
+	//ASSERT( path.back( ) == L'*' );
 	WIN32_FIND_DATA fData;
 	HANDLE fDataHand = NULL;
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
 	//FILETIME t;
-	FILEINFO fi;
+	//FILEINFO fi;
 	//zeroFILEINFO( fi );
 	//memset_zero_struct( fi );
-	fi.reset( );
+	//fi.reset( );
 	BOOL findNextFileRes = TRUE;
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
-		auto scmpVal  = wcscmp( fData.cFileName, L".." );
-		auto scmpVal2 = wcscmp( fData.cFileName, L"." );
+		const auto scmpVal  = wcscmp( fData.cFileName, L".." );
+		const auto scmpVal2 = wcscmp( fData.cFileName, L"." );
 		if ( ( scmpVal == 0 ) || ( scmpVal2 == 0 ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
 			findNextFileRes = FindNextFileW( fDataHand, &fData );
 			continue;//No point in operating on ourselves!
@@ -153,8 +153,134 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 
 namespace {
 
+	//Copied & pasted from ariccio/UIforETW/development-branch
 
-	
+	//Compiler didn't eliminate code for std::wstring
+	//Seems to generate better code when passed a PCWSTR for path.
+	void dieUnexpectedErrorPathFileExists( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
+		OutputDebugStringA( "UIforETW: Encountered an unexpected error after calling PathFileExists!\r\n" );
+		OutputDebugStringA( "\tPath that we were checking: \r\n\t" );
+		OutputDebugStringW( path );
+		OutputDebugStringA( "\r\n" );
+		displayWindowsMsgBoxWithError( lastErr );
+		std::terminate( );
+		}
+
+
+	//Compiler didn't eliminate code for std::wstring
+	//Seems to generate better code when passed a PCWSTR for path.
+	void dieUnexpectedErrorGetFileAttributes( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
+		OutputDebugStringA( "WDS: Encountered an unexpected error after calling GetFileAttributes!\r\n" );
+		OutputDebugStringA( "\tPath that we were checking: \r\n\t" );
+		OutputDebugStringW( path );
+		OutputDebugStringA( "\r\n" );
+		displayWindowsMsgBoxWithError( lastErr );
+		std::terminate( );
+		}
+
+	//Compiler generates much better code when path is passed by reference.
+	bool enhancedFileExists( _In_ const std::wstring& path ) {
+		//[PathFileExists returns] TRUE if the file exists; otherwise, FALSE.
+		//Call GetLastError for extended error information.
+		const BOOL fileExists = PathFileExistsW( path.c_str( ) );
+		if ( fileExists == TRUE ) {
+			return true;
+			}
+
+		const DWORD lastErr = GetLastError( );
+		if ( lastErr == ERROR_FILE_NOT_FOUND ) {
+			return false;
+			}
+
+		if ( lastErr == ERROR_PATH_NOT_FOUND ) {
+			return false;
+			}
+
+		dieUnexpectedErrorPathFileExists( path.c_str( ), lastErr );
+		//doesn't exist?
+		return false;
+	}
+
+	bool enhancedExistCheckGetFileAttributes( _In_ const std::wstring path ) {
+		//If the [GetFileAttributes] fails, the return value is INVALID_FILE_ATTRIBUTES.
+		//To get extended error information, call GetLastError.
+		//Checking file existence is actually a hard problem.
+		//See
+		//    http://blogs.msdn.com/b/oldnewthing/archive/2007/10/23/5612082.aspx
+		//    http://mfctips.com/2012/03/26/best-way-to-check-if-file-or-directory-exists/
+		//    http://mfctips.com/2013/01/10/getfileattributes-lies/
+
+		const DWORD longPathAttributes = GetFileAttributesW( path.c_str( ) );
+
+		if ( longPathAttributes != INVALID_FILE_ATTRIBUTES ) {
+			return true;
+			}
+
+		const DWORD lastErr = GetLastError( );
+		if ( lastErr == ERROR_FILE_NOT_FOUND ) {
+			return false;
+			}
+
+		if ( lastErr == ERROR_PATH_NOT_FOUND ) {
+			return false;
+			}
+
+		dieUnexpectedErrorGetFileAttributes( path.c_str( ), lastErr );
+		//doesn't exist?
+		return false;
+		}
+
+	bool isValidPathToFSObject( _In_ std::wstring path ) {
+		//PathFileExists expects a path thats no longer than MAX_PATH
+		if ( path.size( ) < MAX_PATH ) {
+			return enhancedFileExists( path );
+			}
+
+		//TODO: what if network path?
+		//should we check if just starts with L"\\\\"?
+		if ( path.compare( 0, 4, L"\\\\?\\" ) != 0 ) {
+			path = ( L"\\\\?\\" + path );
+			}
+
+		const std::wstring& longPath = path;
+		return enhancedExistCheckGetFileAttributes( longPath );
+		}
+
+	//end copied & pasted
+
+
+	PCWSTR const NTFS_SPECIAL_FILES[] = { L"$MFT",
+		L"$MFTMirr",
+		L"$LogFile",
+		L"$Volume",
+		L"$AttrDef",
+		L"$Bitmap",
+		L"$Boot",
+		L"$BadClus",
+		L"$Secure",
+		L"$UpCase",
+		L"$Extend"
+	};
+
+	void handle_NTFS_special_files( const std::wstring& path, _In_ const CDirstatApp* const app, _Inout_ std::vector<FILEINFO>* const files, _Inout_ std::vector<DIRINFO>* directories ) {
+		const bool is_mount_point = app->m_mountPoints.IsMountPoint( path );
+		if ( !is_mount_point ) {
+			TRACE( _T( "Path: `%s` is NOT a mount point, so it can't have NTFS special files in it's first level child directory!\r\n" ), path.c_str( ) );
+			return;
+			}
+
+		//path + _T( "\\*.*" )
+
+		for ( size_t i = 0u; i < _countof( NTFS_SPECIAL_FILES ); ++i ) {
+			std::wstring path_to_special_file( path );
+			path_to_special_file.append( L"\\*.*" );
+			path_to_special_file.append( NTFS_SPECIAL_FILES[ i ] );
+			if ( !isValidPathToFSObject( path_to_special_file ) ) {
+				continue;
+				}
+			FindFilesLoop( *files, *directories, path_to_special_file );
+			}
+		}
 	
 
 	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
@@ -278,7 +404,7 @@ namespace {
 		return total_length;
 		}
 
-	std::vector<std::pair<CTreeListItem*, std::wstring>> launch_directory_workers( _In_ CTreeListItem* const ThisCItem, _In_ const CDirstatApp* app, _In_ const rsize_t dirCount, _In_ const rsize_t vecFiles_size, _In_ const std::vector<DIRINFO>& vecDirs ) {
+	std::vector<std::pair<CTreeListItem*, std::wstring>> launch_directory_workers( _Inout_ CTreeListItem* const ThisCItem, _In_ const CDirstatApp* const app, _In_ const rsize_t dirCount, _In_ const rsize_t vecFiles_size, _In_ const std::vector<DIRINFO>& vecDirs ) {
 		std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
 		dirsToWorkOn.reserve( dirCount );
 		const auto thisOptions = GetOptions( );
@@ -329,11 +455,15 @@ namespace {
 		}
 
 
-	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app ) {
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* const app ) {
 		std::vector<FILEINFO> vecFiles;
 		std::vector<DIRINFO>  vecDirs;
 
 		vecFiles.reserve( 50 );//pseudo-arbitrary number
+
+		if ( ThisCItem->m_parent != NULL ) {
+			handle_NTFS_special_files( path, app, &vecFiles, &vecDirs );
+			}
 
 		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
 
@@ -432,7 +562,7 @@ namespace {
 
 
 
-WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _In_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CTreeListItem*, std::wstring>> sizesToWorkOn_;
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
 	sizesToWorkOn_.reserve( vecFiles.size( ) );
@@ -517,7 +647,7 @@ _Pre_satisfies_( this->m_parent == NULL ) void CTreeListItem::AddChildren( _In_ 
 		}
 	}
 
-WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	//ASSERT( ThisCItem->m_childCount == 0 );
