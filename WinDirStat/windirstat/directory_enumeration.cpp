@@ -258,27 +258,27 @@ namespace {
 		L"$Boot",
 		L"$BadClus",
 		L"$Secure",
-		L"$UpCase",
+		L"$Upcase",
 		L"$Extend"
 	};
 
-	void handle_NTFS_special_files( const std::wstring& path, _In_ const CDirstatApp* const app, _Inout_ std::vector<FILEINFO>* const files, _Inout_ std::vector<DIRINFO>* directories ) {
-		const bool is_mount_point = app->m_mountPoints.IsMountPoint( path );
-		if ( !is_mount_point ) {
-			TRACE( _T( "Path: `%s` is NOT a mount point, so it can't have NTFS special files in it's first level child directory!\r\n" ), path.c_str( ) );
-			return;
-			}
+	void handle_NTFS_special_files( const std::wstring& path/*, _In_ const CDirstatApp* const app*/, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
+		//const bool is_mount_point = app->m_mountPoints.IsMountPoint( path );
+		//if ( !is_mount_point ) {
+		//	TRACE( _T( "Path: `%s` is NOT a mount point, so it can't have NTFS special files in it's first level child directory!\r\n" ), path.c_str( ) );
+		//	return;
+		//	}
 
 		//path + _T( "\\*.*" )
 
 		for ( size_t i = 0u; i < _countof( NTFS_SPECIAL_FILES ); ++i ) {
 			std::wstring path_to_special_file( path );
-			path_to_special_file.append( L"\\*.*" );
+			path_to_special_file.append( L"\\" );
 			path_to_special_file.append( NTFS_SPECIAL_FILES[ i ] );
 			if ( !isValidPathToFSObject( path_to_special_file ) ) {
-				continue;
+				//continue;
 				}
-			FindFilesLoop( *files, *directories, path_to_special_file );
+			FindFilesLoop( files, directories, path_to_special_file );
 			}
 		}
 	
@@ -461,8 +461,8 @@ namespace {
 
 		vecFiles.reserve( 50 );//pseudo-arbitrary number
 
-		if ( ThisCItem->m_parent != NULL ) {
-			handle_NTFS_special_files( path, app, &vecFiles, &vecDirs );
+		if ( ThisCItem->m_parent == NULL ) {
+			handle_NTFS_special_files( path/*, app*/, vecFiles, vecDirs );
 			}
 
 		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
