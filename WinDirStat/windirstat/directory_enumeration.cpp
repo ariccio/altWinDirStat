@@ -12,6 +12,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
 #include "TreeListControl.h"
+#include <WinIoCtl.h>
 
 
 #ifdef new
@@ -51,6 +52,13 @@ namespace {
 		#endif
 			}
 
+		FILEINFO( _In_ std::uint64_t length_, _In_ FILETIME lastWriteTime_, _In_ DWORD attributes_, _In_ std::wstring cFileName ) : length { std::move( length_ ) }, lastWriteTime( std::move( lastWriteTime_ ) ), attributes { std::move( attributes_ ) }, name( std::move( cFileName ) ) {
+	#ifdef DEBUG
+			if ( length > 34359738368 ) {
+				_CrtDbgBreak( );
+				}
+		#endif
+			}
 
 
 		void reset( ) {
@@ -249,7 +257,8 @@ namespace {
 	//end copied & pasted
 
 
-	PCWSTR const NTFS_SPECIAL_FILES[] = { L"$MFT",
+	PCWSTR const NTFS_SPECIAL_FILES[] = {
+		/*L"$MFT",*/ //Will query manually with: FSCTL_GET_NTFS_VOLUME_DATA
 		L"$MFTMirr",
 		L"$LogFile",
 		L"$Volume",
@@ -270,6 +279,54 @@ namespace {
 		//	}
 
 		//path + _T( "\\*.*" )
+		//
+		std::wstring raw_dir_path( path );
+		ASSERT( path.length( ) > 5 );
+		if ( path.length( ) > 5 ) {
+			ASSERT( path.compare( 0, 4, L"\\\\?\\", 4 ) == 0 );
+			raw_dir_path = std::wstring( path.cbegin( ) + 4, path.cbegin( ) + 6 );
+			TRACE( L"raw_dir_path: `%s`\r\n", raw_dir_path.c_str( ) );
+			}
+
+		ASSERT( raw_dir_path.length( ) > 0 );
+
+		if ( raw_dir_path.back( ) == L'\\' ) {
+			raw_dir_path.pop_back( );
+			}
+
+		ASSERT( raw_dir_path.length( ) > 0 );
+		ASSERT( raw_dir_path.back( ) == L':' );
+
+		raw_dir_path = ( L"\\\\.\\" + raw_dir_path );
+
+		HANDLE root_volume_handle = CreateFileW( raw_dir_path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
+		if ( root_volume_handle == INVALID_HANDLE_VALUE ) {
+			const DWORD last_err = ::GetLastError( );
+			TRACE( L"Failed to open \"file\" `%s`\r\n", raw_dir_path.c_str( ) );
+			displayWindowsMsgBoxWithError( last_err );
+			}
+		else {
+			//const rsize_t size_of_base_struct = sizeof( NTFS_VOLUME_DATA_BUFFER );
+			NTFS_VOLUME_DATA_BUFFER data_buf = { 0 };
+
+			DWORD bytes_returned = 0u;
+
+			const BOOL data_res = DeviceIoControl( root_volume_handle, FSCTL_GET_NTFS_VOLUME_DATA, NULL, 0u, &data_buf, sizeof( NTFS_VOLUME_DATA_BUFFER ), &bytes_returned, NULL );
+			if ( data_res == 0 ) {
+				const DWORD last_err = ::GetLastError( );
+				TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA failed! Error: %lu\r\n" ), last_err );
+				}
+			else {
+			TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA succeeded!\r\n" ) );
+			files.emplace_back( FILEINFO {  static_cast<std::uint64_t>( data_buf.MftValidDataLength.QuadPart ), 
+											FILETIME{ 0 }, //fData.ftLastWriteTime, - GetFileTime/GetFileInformationByHandle
+											static_cast<DWORD>( FILE_ATTRIBUTE_HIDDEN bitor FILE_ATTRIBUTE_SYSTEM bitor FILE_ATTRIBUTE_READONLY ),//fData.dwFileAttributes,
+											L"$MFT"
+										 }
+							  );
+
+				}
+			}
 
 		for ( size_t i = 0u; i < _countof( NTFS_SPECIAL_FILES ); ++i ) {
 			std::wstring path_to_special_file( path );
