@@ -1791,7 +1791,11 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	//static_assert( COL_NAME__ == 0,       "GetSubItemWidth used to accept an INT as the second parameter. The value of zero, I believe, should be COL_NAME" );
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
 
-	ASSERT( maxwidth == ( CListCtrl::GetStringWidth( item->m_name ) + 10 ) );
+#ifdef DEBUG
+	//Hmm. I hate MFC.
+	const auto stringWidth = CListCtrl::GetStringWidth( item->m_name ) + 10;
+	ASSERT( ( maxwidth == stringWidth ) || ( maxwidth == ( stringWidth - 1 ) ) || ( maxwidth == ( stringWidth + 1 ) ) );
+#endif
 
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		TRACE( _T( "item `%s` has a child count of ZERO! Not expanding! \r\n" ), item->m_name );

@@ -271,15 +271,7 @@ namespace {
 		L"$Extend"
 	};
 
-	void handle_NTFS_special_files( const std::wstring& path/*, _In_ const CDirstatApp* const app*/, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
-		//const bool is_mount_point = app->m_mountPoints.IsMountPoint( path );
-		//if ( !is_mount_point ) {
-		//	TRACE( _T( "Path: `%s` is NOT a mount point, so it can't have NTFS special files in it's first level child directory!\r\n" ), path.c_str( ) );
-		//	return;
-		//	}
-
-		//path + _T( "\\*.*" )
-		//
+	void handle_NTFS_special_files( const std::wstring& path, _In_ const CDirstatApp* const app, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
 		std::wstring raw_dir_path( path );
 		ASSERT( path.length( ) > 5 );
 		if ( path.length( ) > 5 ) {
@@ -287,6 +279,16 @@ namespace {
 			raw_dir_path = std::wstring( path.cbegin( ) + 4, path.cbegin( ) + 6 );
 			TRACE( L"raw_dir_path: `%s`\r\n", raw_dir_path.c_str( ) );
 			}
+
+
+		const bool is_mount_point = app->m_mountPoints.IsVolume( raw_dir_path + L"\\" );
+		if ( !is_mount_point ) {
+			TRACE( _T( "Path: `%s` is NOT a mount point, so it can't have NTFS special files in it's first level child directory!\r\n" ), raw_dir_path.c_str( ) );
+			return;
+			}
+
+		//path + _T( "\\*.*" )
+		//
 
 		ASSERT( raw_dir_path.length( ) > 0 );
 
@@ -519,7 +521,7 @@ namespace {
 		vecFiles.reserve( 50 );//pseudo-arbitrary number
 
 		if ( ThisCItem->m_parent == NULL ) {
-			handle_NTFS_special_files( path/*, app*/, vecFiles, vecDirs );
+			handle_NTFS_special_files( path, app, vecFiles, vecDirs );
 			}
 
 		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );

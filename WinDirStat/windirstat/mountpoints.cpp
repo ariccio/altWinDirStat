@@ -9,7 +9,7 @@
 #define WDS_MOUNTPOINTS_CPP_INCLUDED
 
 #include "mountpoints.h"
-//#include "globalhelpers.h"
+#include "globalhelpers.h"
 
 WDS_FILE_INCLUDE_MESSAGE
 
@@ -22,6 +22,26 @@ namespace {
 		return FindVolumeClose( hFindVolume );
 		}
 	}
+
+const bool CMountPoints::IsVolume( _In_ const std::wstring& path ) const {
+	if ( ( path.length( ) < 2 ) || ( path[ 1 ] != L':' ) || ( path.length( ) > 3 ) ) {
+		// Don't know how to make out mount points on UNC paths ###
+		return false;
+		}
+	ASSERT( ( path.at( 1 )  == L':' ) );
+
+	const auto pathAtZero = towlower( path[ 0 ] );
+	const auto weirdAss_a = _T( 'a' );
+	const auto indexItem  = pathAtZero - weirdAss_a;
+	//return IsVolumeMountPoint( indexItem, path );
+	ASSERT( indexItem < M_DRIVE_ARRAY_SIZE );
+	if ( indexItem >= M_DRIVE_ARRAY_SIZE ) {
+		return false;
+		}
+
+	return true;
+	}
+
 
 
 const bool CMountPoints::IsMountPoint( _In_ const std::wstring& path ) const {
@@ -119,6 +139,21 @@ void CMountPoints::GetAllMountPoints( ) {
 	const HANDLE hvol = FindFirstVolumeW( volume, volumeTCHARsize );
 	if ( hvol == INVALID_HANDLE_VALUE ) {
 		TRACE( _T( "No volumes found.\r\n" ) );
+#ifdef DEBUG
+		const DWORD lastErr = ::GetLastError( );
+		TRACE( _T( "FindFirstVolumeW failed, error: `%lu`.\r\n" ), lastErr, volume );
+
+		const rsize_t err_buf_size = 1024u;
+		wchar_t err_buff[ err_buf_size ] = { 0 };
+		rsize_t chars_written_unused = 0u;
+		const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
+		if ( SUCCEEDED( err_fmt_res ) ) {
+			TRACE( L"FindFirstVolumeW error message: %s\r\n", err_buff );
+			}
+		else {
+			TRACE( L"Failed to format the FindFirstVolumeW error message!\r\n" );
+			}
+#endif
 		return;
 		}
 
@@ -129,7 +164,19 @@ void CMountPoints::GetAllMountPoints( ) {
 		const BOOL b = GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
 		if ( !b ) {
 #ifdef DEBUG
-			TRACE( _T( "File system (%s) is not ready.\r\n" ), volume );
+			const DWORD lastErr = ::GetLastError( );
+			TRACE( _T( "GetVolumeInformationW failed, error: `%lu`. File system (%s) is not ready?\r\n" ), lastErr, volume );
+
+			const rsize_t err_buf_size = 1024u;
+			wchar_t err_buff[ err_buf_size ] = { 0 };
+			rsize_t chars_written_unused = 0u;
+			const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
+			if ( SUCCEEDED( err_fmt_res ) ) {
+				TRACE( L"GetVolumeInformationW error message: %s\r\n", err_buff );
+				}
+			else {
+				TRACE( L"Failed to format the GetVolumeInformationW error message!\r\n" );
+				}
 #endif
 			//m_volume[ volume ] = std::vector<SPointVolume>( );
 			continue;
@@ -147,7 +194,20 @@ void CMountPoints::GetAllMountPoints( ) {
 		const HANDLE h = FindFirstVolumeMountPointW( volume, point, volumeTCHARsize );
 		if ( h == INVALID_HANDLE_VALUE ) {
 #ifdef DEBUG
-			TRACE( _T( "No volume mnt pts on (%s).\r\n" ), volume );
+			const DWORD lastErr = ::GetLastError( );
+			TRACE( _T( "FindFirstVolumeMountPointW failed, error: `%lu`. No volume mnt pts on (%s)?\r\n" ), lastErr, volume );
+
+			const rsize_t err_buf_size = 1024u;
+			wchar_t err_buff[ err_buf_size ] = { 0 };
+			rsize_t chars_written_unused = 0u;
+			const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
+			if ( SUCCEEDED( err_fmt_res ) ) {
+				TRACE( L"FindFirstVolumeMountPointW error message: %s\r\n", err_buff );
+				}
+			else {
+				TRACE( L"Failed to format the FindFirstVolumeMountPointW error message!\r\n" );
+				}
+
 #endif
 			//m_volume[ volume ] = std::vector<SPointVolume>( );
 			continue;
@@ -163,7 +223,20 @@ void CMountPoints::GetAllMountPoints( ) {
 			BOOL b2 = GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
 			if ( !b2 ) {
 #ifdef DEBUG
-				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), uniquePath.c_str( ) );
+				const DWORD lastErr = ::GetLastError( );
+				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed, error: `%lu`.\r\n" ), uniquePath.c_str( ), lastErr );
+
+				const rsize_t err_buf_size = 1024u;
+				wchar_t err_buff[ err_buf_size ] = { 0 };
+				rsize_t chars_written_unused = 0u;
+				const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
+				if ( SUCCEEDED( err_fmt_res ) ) {
+					TRACE( L"GetVolumeNameForVolumeMountPoint error message: %s\r\n", err_buff );
+					}
+				else {
+					TRACE( L"Failed to format the GetVolumeNameForVolumeMountPoint error message!\r\n" );
+					}
+
 #endif
 				continue;
 				}
@@ -190,6 +263,14 @@ void CMountPoints::GetAllMountPoints( ) {
 		
 		m_volume[ volume ] = std::move( pointer_volume_array );
 		}
+	const DWORD lastErr = ::GetLastError( );
+	ASSERT( lastErr == ERROR_NO_MORE_FILES );
+
+	if ( lastErr != ERROR_NO_MORE_FILES ) {
+
+		}
+
+
 	const auto FindVolumeCloseRes = FindVolumeCloseHandle( hvol );
 	if ( !( FindVolumeCloseRes ) ) {
 		//displayWindowsMsgBoxWithMessage( L"Failed to close a handle in CMountPoints::GetAllMountPoints. Something is wrong!" );
