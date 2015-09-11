@@ -165,51 +165,68 @@ namespace {
 
 	//Compiler didn't eliminate code for std::wstring
 	//Seems to generate better code when passed a PCWSTR for path.
-	void dieUnexpectedErrorPathFileExists( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
+	void unexpectedErrorPathFileExists( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
 		OutputDebugStringA( "UIforETW: Encountered an unexpected error after calling PathFileExists!\r\n" );
 		OutputDebugStringA( "\tPath that we were checking: \r\n\t" );
 		OutputDebugStringW( path );
 		OutputDebugStringA( "\r\n" );
 		displayWindowsMsgBoxWithError( lastErr );
-		std::terminate( );
+		//std::terminate( );
 		}
 
 
 	//Compiler didn't eliminate code for std::wstring
 	//Seems to generate better code when passed a PCWSTR for path.
-	void dieUnexpectedErrorGetFileAttributes( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
+	void unexpectedErrorGetFileAttributes( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
 		OutputDebugStringA( "WDS: Encountered an unexpected error after calling GetFileAttributes!\r\n" );
 		OutputDebugStringA( "\tPath that we were checking: \r\n\t" );
 		OutputDebugStringW( path );
 		OutputDebugStringA( "\r\n" );
 		displayWindowsMsgBoxWithError( lastErr );
-		std::terminate( );
+		//std::terminate( );
 		}
 
 	//Compiler generates much better code when path is passed by reference.
-	bool enhancedFileExists( _In_ const std::wstring& path ) {
+	HRESULT enhancedFileExists( _In_ const std::wstring& path, _Out_ bool* const exists ) {
+		ASSERT( path.length( ) <= MAX_PATH );
+
 		//[PathFileExists returns] TRUE if the file exists; otherwise, FALSE.
 		//Call GetLastError for extended error information.
 		const BOOL fileExists = PathFileExistsW( path.c_str( ) );
 		if ( fileExists == TRUE ) {
-			return true;
+			( *exists ) = true;
+			static_assert( SUCCEEDED( S_OK ), "" );
+			return S_OK;
 			}
 
 		const DWORD lastErr = GetLastError( );
 		if ( lastErr == ERROR_FILE_NOT_FOUND ) {
-			return false;
+			( *exists ) = false;
+			return S_OK;
 			}
 
 		if ( lastErr == ERROR_PATH_NOT_FOUND ) {
-			return false;
+			( *exists ) = false;
+			return S_OK;
 			}
 
-		dieUnexpectedErrorPathFileExists( path.c_str( ), lastErr );
+
+		if ( lastErr == ERROR_ACCESS_DENIED ) {
+			return E_ACCESSDENIED;
+			}
+
+		if ( lastErr == ERROR_INVALID_PARAMETER ) {
+			TRACE( "Sometimes, PathFileExistsW, when queried with a special NTFS metafile, can fail with ERROR_INVALID_PARAMETER. It's kinda weird, but not a bug in WDS.\r\nIn this case, the path was: `%s`\r\n", path.c_str( ) );
+			( *exists ) = false;
+			return S_OK;
+			}
+
+		unexpectedErrorPathFileExists( path.c_str( ), lastErr );
 		//doesn't exist?
-		return false;
+		return E_FAIL;
 	}
 
-	bool enhancedExistCheckGetFileAttributes( _In_ const std::wstring path ) {
+	HRESULT enhancedExistCheckGetFileAttributes( _In_ const std::wstring path, _Out_ bool* const exists ) {
 		//If the [GetFileAttributes] fails, the return value is INVALID_FILE_ATTRIBUTES.
 		//To get extended error information, call GetLastError.
 		//Checking file existence is actually a hard problem.
@@ -221,27 +238,49 @@ namespace {
 		const DWORD longPathAttributes = GetFileAttributesW( path.c_str( ) );
 
 		if ( longPathAttributes != INVALID_FILE_ATTRIBUTES ) {
-			return true;
+			( *exists ) = true;
+			static_assert( SUCCEEDED( S_OK ), "" );
+			return S_OK;
 			}
 
 		const DWORD lastErr = GetLastError( );
 		if ( lastErr == ERROR_FILE_NOT_FOUND ) {
-			return false;
+			( *exists ) = false;
+			return S_OK;
 			}
 
 		if ( lastErr == ERROR_PATH_NOT_FOUND ) {
-			return false;
+			( *exists ) = false;
+			return S_OK;
 			}
 
-		dieUnexpectedErrorGetFileAttributes( path.c_str( ), lastErr );
+		if ( lastErr == ERROR_ACCESS_DENIED ) {
+			return E_ACCESSDENIED;
+			}
+
+		if ( lastErr == ERROR_INVALID_PARAMETER ) {
+			TRACE( "Sometimes, GetFileAttributes, when queried with a special NTFS metafile, can fail with ERROR_INVALID_PARAMETER. It's kinda weird, but not a bug in WDS.\r\nIn this case, the path was: `%s`\r\n", path.c_str( ) );
+			( *exists ) = false;
+			return S_OK;
+			}
+
+		unexpectedErrorGetFileAttributes( path.c_str( ), lastErr );
 		//doesn't exist?
-		return false;
+		return E_FAIL;
 		}
 
 	bool isValidPathToFSObject( _In_ std::wstring path ) {
+		HRESULT exist_res_no_access = S_OK;
 		//PathFileExists expects a path thats no longer than MAX_PATH
 		if ( path.size( ) < MAX_PATH ) {
-			return enhancedFileExists( path );
+			bool exists = false;
+			const HRESULT exist_res = enhancedFileExists( path, &exists );
+			if ( SUCCEEDED( exist_res ) ) {
+				return exists;
+				}
+			if ( exist_res == E_ACCESSDENIED ) {
+				exist_res_no_access = exist_res;
+				}
 			}
 
 		//TODO: what if network path?
@@ -251,7 +290,15 @@ namespace {
 			}
 
 		const std::wstring& longPath = path;
-		return enhancedExistCheckGetFileAttributes( longPath );
+		bool attrib_exist = false;
+		const HRESULT attrib_res = enhancedExistCheckGetFileAttributes( longPath, &attrib_exist );
+		if ( SUCCEEDED( attrib_res ) ) {
+			return attrib_exist;
+			}
+		if ( attrib_res == E_ACCESSDENIED ) {
+			TRACE( L"Failed to get file attributes, because access was denied.\r\n\tThe path was: `%s` ...Need admin permissions?\r\n", longPath.c_str( ) );
+			}
+		return false;
 		}
 
 	//end copied & pasted
@@ -317,6 +364,7 @@ namespace {
 			if ( data_res == 0 ) {
 				const DWORD last_err = ::GetLastError( );
 				TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA failed! Error: %lu\r\n" ), last_err );
+				( void ) last_err;//temp suppress unused variable
 				}
 			else {
 			TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA succeeded!\r\n" ) );
