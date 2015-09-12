@@ -111,7 +111,7 @@ namespace {
 
 std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path );
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-void DoSomeWork ( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse = false );
+bool DoSomeWork ( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse = false );
 
 
 WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
@@ -494,9 +494,9 @@ namespace {
 		}
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	WDS_DECLSPEC_NOTHROW std::vector<std::future<void>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+	WDS_DECLSPEC_NOTHROW std::vector<std::future<bool>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
-		std::vector<std::future<void>> workers;
+		std::vector<std::future<bool>> workers;
 		workers.reserve( dirsToWorkOnCount );
 		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 			ASSERT( dirs_to_work_on[ i ].second.length( ) > 1 );
@@ -792,7 +792,7 @@ _Pre_satisfies_( this->m_parent == NULL ) void CTreeListItem::AddChildren( _In_ 
 		}
 	}
 
-WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	//ASSERT( ThisCItem->m_childCount == 0 );
@@ -811,7 +811,7 @@ WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCIt
 
 	const auto qpc_1 = help_QueryPerformanceCounter( );
 	
-	DoSomeWork( std::move( ThisCItem ), std::move( path ), app, &sizes_to_work_on, std::move( isRootRecurse ) );
+	const bool should_we_elevate = DoSomeWork( std::move( ThisCItem ), std::move( path ), app, &sizes_to_work_on, std::move( isRootRecurse ) );
 	
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
@@ -851,12 +851,12 @@ WDS_DECLSPEC_NOTHROW DOUBLE DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCIt
 	//NOTE TO SELF, TODO: BUGBUG: OutputDebugString calls RtlUnicodeStringToAnsiString
 	OutputDebugStringW( debug_buf_2 );
 
-	return timing_2;
+	return std::make_pair( timing_2, should_we_elevate );
 	//wait for sync?
 	}
 
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
+WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
 	//This is temporary.
 	UNREFERENCED_PARAMETER( isRootRecurse );
 
@@ -888,7 +888,7 @@ WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 		ASSERT( itemsToWorkOn.second.size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
 		ThisCItem->m_size = 0;
-		return;
+		return should_we_elevate;
 		}
 
 	//std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
@@ -913,11 +913,25 @@ WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 		}
 
 	for ( auto& worker : workers ) {
+		
+		//purposefully ignore the bool-return-value.
+		//it *should* only ever be true for the root directory, which is done syncronously.
+#ifdef DEBUG
+		const bool verify_bool_is_false =
+#else
+		(void)
+#endif
+		
 		worker.get( );
+
+#ifdef DEBUG
+		ASSERT( verify_bool_is_false == false );
+#endif
+
 		}
 
 	ThisCItem->m_attr.m_done = true;
-	return;
+	return should_we_elevate;
 	}
 
 _Success_( return < UINT64_ERROR )

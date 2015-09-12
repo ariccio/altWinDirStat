@@ -513,7 +513,7 @@ void trace_mouse_left( ) {
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) {
-	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), x, y, path );
+	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld) - hovering over: `%s`\r\n" ), x, y, path );
 	}
 #endif
 
