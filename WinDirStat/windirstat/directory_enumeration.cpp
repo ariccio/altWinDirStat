@@ -318,7 +318,61 @@ namespace {
 		L"$Extend"
 	};
 
-	void handle_NTFS_special_files( const std::wstring& path, _In_ const CDirstatApp* const app, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
+
+	//returning false means that we were denied CreateFileW access to the volume
+	HRESULT get_NTFS_volume_data( const std::wstring& raw_dir_path, _Inout_ std::vector<FILEINFO>& files, _Out_ DWORD* const result_code ) {
+		const HANDLE root_volume_handle = CreateFileW( raw_dir_path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
+		if ( root_volume_handle == INVALID_HANDLE_VALUE ) {
+			const DWORD last_err = ::GetLastError( );
+			TRACE( L"Failed to open \"file\" `%s`, Error: %lu\r\n", raw_dir_path.c_str( ), last_err );
+			(*result_code) = last_err;
+			return E_FAIL;
+			}
+		
+		//const rsize_t size_of_base_struct = sizeof( NTFS_VOLUME_DATA_BUFFER );
+		NTFS_VOLUME_DATA_BUFFER data_buf = { 0 };
+
+		DWORD bytes_returned = 0u;
+
+		const BOOL data_res = DeviceIoControl( root_volume_handle, FSCTL_GET_NTFS_VOLUME_DATA, NULL, 0u, &data_buf, sizeof( NTFS_VOLUME_DATA_BUFFER ), &bytes_returned, NULL );
+		if ( data_res == 0 ) {
+			const DWORD last_err = ::GetLastError( );
+			TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA failed! Error: %lu\r\n" ), last_err );
+			close_handle( root_volume_handle );
+			(*result_code) = last_err;
+
+			
+			return E_FAIL;
+			}
+
+		TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA succeeded!\r\n" ) );
+		files.emplace_back( FILEINFO {  static_cast<std::uint64_t>( data_buf.MftValidDataLength.QuadPart ), 
+										FILETIME{ 0 }, //fData.ftLastWriteTime, - GetFileTime/GetFileInformationByHandle
+										static_cast<DWORD>( FILE_ATTRIBUTE_HIDDEN bitor FILE_ATTRIBUTE_SYSTEM bitor FILE_ATTRIBUTE_READONLY ),//fData.dwFileAttributes,
+										L"$MFT"
+										}
+							);
+
+		close_handle( root_volume_handle );
+		
+		(*result_code) = NO_ERROR;
+		return S_OK;
+		}
+
+	void query_special_files( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
+		for ( size_t i = 0u; i < _countof( NTFS_SPECIAL_FILES ); ++i ) {
+			std::wstring path_to_special_file( path );
+			path_to_special_file.append( L"\\" );
+			path_to_special_file.append( NTFS_SPECIAL_FILES[ i ] );
+			if ( !isValidPathToFSObject( path_to_special_file ) ) {
+				TRACE( L"`%s` isn't a valid path to a filesystem object!\r\n" );
+				//continue;
+				}
+			FindFilesLoop( files, directories, path_to_special_file );
+			}
+		}
+
+	std::wstring fixup_path_to_MFT( _In_ const std::wstring& path ) {
 		std::wstring raw_dir_path( path );
 		ASSERT( path.length( ) > 5 );
 		if ( path.length( ) > 5 ) {
@@ -326,12 +380,20 @@ namespace {
 			raw_dir_path = std::wstring( path.cbegin( ) + 4, path.cbegin( ) + 6 );
 			TRACE( L"raw_dir_path: `%s`\r\n", raw_dir_path.c_str( ) );
 			}
+		return raw_dir_path;
+		}
+
+	
+	//return indicates whether we should ask user to elevate
+	bool handle_NTFS_special_files( _In_ const std::wstring& path, _In_ const CDirstatApp* const app, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
+		std::wstring raw_dir_path( fixup_path_to_MFT( path ) );
 
 
 		const bool is_mount_point = app->m_mountPoints.IsVolume( raw_dir_path + L"\\" );
+		ASSERT( is_mount_point == app->m_mountPoints.IsVolume( raw_dir_path ) );
 		if ( !is_mount_point ) {
-			TRACE( _T( "Path: `%s` is NOT a mount point, so it can't have NTFS special files in it's first level child directory!\r\n" ), raw_dir_path.c_str( ) );
-			return;
+			TRACE( _T( "Path: `%s` is NOT a volume, so it can't have NTFS special files in it's first level child directory!\r\n" ), raw_dir_path.c_str( ) );
+			return false;
 			}
 
 		//path + _T( "\\*.*" )
@@ -348,45 +410,18 @@ namespace {
 
 		raw_dir_path = ( L"\\\\.\\" + raw_dir_path );
 
-		HANDLE root_volume_handle = CreateFileW( raw_dir_path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
-		if ( root_volume_handle == INVALID_HANDLE_VALUE ) {
-			const DWORD last_err = ::GetLastError( );
-			TRACE( L"Failed to open \"file\" `%s`\r\n", raw_dir_path.c_str( ) );
-			displayWindowsMsgBoxWithError( last_err );
-			}
-		else {
-			//const rsize_t size_of_base_struct = sizeof( NTFS_VOLUME_DATA_BUFFER );
-			NTFS_VOLUME_DATA_BUFFER data_buf = { 0 };
 
-			DWORD bytes_returned = 0u;
+		DWORD result_code = 0;
+		const HRESULT query_volume_data = get_NTFS_volume_data( raw_dir_path, files, &result_code );
 
-			const BOOL data_res = DeviceIoControl( root_volume_handle, FSCTL_GET_NTFS_VOLUME_DATA, NULL, 0u, &data_buf, sizeof( NTFS_VOLUME_DATA_BUFFER ), &bytes_returned, NULL );
-			if ( data_res == 0 ) {
-				const DWORD last_err = ::GetLastError( );
-				TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA failed! Error: %lu\r\n" ), last_err );
-				( void ) last_err;//temp suppress unused variable
-				}
-			else {
-			TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA succeeded!\r\n" ) );
-			files.emplace_back( FILEINFO {  static_cast<std::uint64_t>( data_buf.MftValidDataLength.QuadPart ), 
-											FILETIME{ 0 }, //fData.ftLastWriteTime, - GetFileTime/GetFileInformationByHandle
-											static_cast<DWORD>( FILE_ATTRIBUTE_HIDDEN bitor FILE_ATTRIBUTE_SYSTEM bitor FILE_ATTRIBUTE_READONLY ),//fData.dwFileAttributes,
-											L"$MFT"
-										 }
-							  );
-
-				}
+		//if we got ERROR_ACCESS_DENIED, assume that the problem will be fixed by elevating.
+		if ( FAILED( query_volume_data ) && ( result_code == ERROR_ACCESS_DENIED ) ) {
+			return true;
 			}
 
-		for ( size_t i = 0u; i < _countof( NTFS_SPECIAL_FILES ); ++i ) {
-			std::wstring path_to_special_file( path );
-			path_to_special_file.append( L"\\" );
-			path_to_special_file.append( NTFS_SPECIAL_FILES[ i ] );
-			if ( !isValidPathToFSObject( path_to_special_file ) ) {
-				//continue;
-				}
-			FindFilesLoop( files, directories, path_to_special_file );
-			}
+		query_special_files( path, files, directories );
+
+		return false;
 		}
 	
 
@@ -562,15 +597,18 @@ namespace {
 		}
 
 
-	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>> readJobNotDoneWork( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* const app ) {
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>>, bool> readJobNotDoneWork( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* const app ) {
 		std::vector<FILEINFO> vecFiles;
 		std::vector<DIRINFO>  vecDirs;
 
 		vecFiles.reserve( 50 );//pseudo-arbitrary number
 
+		bool should_we_elevate_temp = false;
 		if ( ThisCItem->m_parent == NULL ) {
-			handle_NTFS_special_files( path, app, vecFiles, vecDirs );
+			should_we_elevate_temp = handle_NTFS_special_files( path, app, vecFiles, vecDirs );
 			}
+
+		const bool should_we_elevate = should_we_elevate_temp;
 
 		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
 
@@ -583,7 +621,7 @@ namespace {
 
 
 		if ( total_count == 0 ) {
-			return std::make_pair( std::vector<std::pair<CTreeListItem*, std::wstring>>( ), std::vector<std::pair<CTreeListItem*, std::wstring>>( ) );
+			return std::make_pair( std::make_pair( std::vector<std::pair<CTreeListItem*, std::wstring>>( ), std::vector<std::pair<CTreeListItem*, std::wstring>>( ) ), should_we_elevate );
 			}
 
 		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
@@ -610,7 +648,7 @@ namespace {
 		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 		//ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 		//ThisCItem->m_children_vector.shrink_to_fit( );
-		return std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) );
+		return std::make_pair( std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) ), should_we_elevate );
 		}
 
 	_Success_( return < UINT64_ERROR )
@@ -829,8 +867,12 @@ WDS_DECLSPEC_NOTHROW void DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
 		path = fixedPath;
 		}
-	auto itemsToWorkOn = readJobNotDoneWork( ThisCItem, std::move( path ), app );
 
+	auto kookyPair = readJobNotDoneWork( ThisCItem, std::move( path ), app );
+
+	auto itemsToWorkOn = kookyPair.first;
+
+	const bool should_we_elevate = kookyPair.second;
 	//if ( ThisCItem->m_child_info == nullptr ) {
 	//	ASSERT( ThisCItem->m_childCount == 0 );
 	//	}
