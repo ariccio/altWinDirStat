@@ -161,145 +161,9 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 
 namespace {
 
-	//Copied & pasted from ariccio/UIforETW/development-branch
-
-	//Compiler didn't eliminate code for std::wstring
-	//Seems to generate better code when passed a PCWSTR for path.
-	void unexpectedErrorPathFileExists( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
-		OutputDebugStringA( "UIforETW: Encountered an unexpected error after calling PathFileExists!\r\n" );
-		OutputDebugStringA( "\tPath that we were checking: \r\n\t" );
-		OutputDebugStringW( path );
-		OutputDebugStringA( "\r\n" );
-		displayWindowsMsgBoxWithError( lastErr );
-		//std::terminate( );
-		}
 
 
-	//Compiler didn't eliminate code for std::wstring
-	//Seems to generate better code when passed a PCWSTR for path.
-	void unexpectedErrorGetFileAttributes( _In_z_ PCWSTR const path, _In_ const DWORD lastErr ) {
-		OutputDebugStringA( "WDS: Encountered an unexpected error after calling GetFileAttributes!\r\n" );
-		OutputDebugStringA( "\tPath that we were checking: \r\n\t" );
-		OutputDebugStringW( path );
-		OutputDebugStringA( "\r\n" );
-		displayWindowsMsgBoxWithError( lastErr );
-		//std::terminate( );
-		}
 
-	//Compiler generates much better code when path is passed by reference.
-	HRESULT enhancedFileExists( _In_ const std::wstring& path, _Out_ bool* const exists ) {
-		ASSERT( path.length( ) <= MAX_PATH );
-
-		//[PathFileExists returns] TRUE if the file exists; otherwise, FALSE.
-		//Call GetLastError for extended error information.
-		const BOOL fileExists = PathFileExistsW( path.c_str( ) );
-		if ( fileExists == TRUE ) {
-			( *exists ) = true;
-			static_assert( SUCCEEDED( S_OK ), "" );
-			return S_OK;
-			}
-
-		const DWORD lastErr = GetLastError( );
-		if ( lastErr == ERROR_FILE_NOT_FOUND ) {
-			( *exists ) = false;
-			return S_OK;
-			}
-
-		if ( lastErr == ERROR_PATH_NOT_FOUND ) {
-			( *exists ) = false;
-			return S_OK;
-			}
-
-
-		if ( lastErr == ERROR_ACCESS_DENIED ) {
-			return E_ACCESSDENIED;
-			}
-
-		if ( lastErr == ERROR_INVALID_PARAMETER ) {
-			TRACE( "Sometimes, PathFileExistsW, when queried with a special NTFS metafile, can fail with ERROR_INVALID_PARAMETER. It's kinda weird, but not a bug in WDS.\r\nIn this case, the path was: `%s`\r\n", path.c_str( ) );
-			( *exists ) = false;
-			return S_OK;
-			}
-
-		unexpectedErrorPathFileExists( path.c_str( ), lastErr );
-		//doesn't exist?
-		return E_FAIL;
-	}
-
-	HRESULT enhancedExistCheckGetFileAttributes( _In_ const std::wstring path, _Out_ bool* const exists ) {
-		//If the [GetFileAttributes] fails, the return value is INVALID_FILE_ATTRIBUTES.
-		//To get extended error information, call GetLastError.
-		//Checking file existence is actually a hard problem.
-		//See
-		//    http://blogs.msdn.com/b/oldnewthing/archive/2007/10/23/5612082.aspx
-		//    http://mfctips.com/2012/03/26/best-way-to-check-if-file-or-directory-exists/
-		//    http://mfctips.com/2013/01/10/getfileattributes-lies/
-
-		const DWORD longPathAttributes = GetFileAttributesW( path.c_str( ) );
-
-		if ( longPathAttributes != INVALID_FILE_ATTRIBUTES ) {
-			( *exists ) = true;
-			static_assert( SUCCEEDED( S_OK ), "" );
-			return S_OK;
-			}
-
-		const DWORD lastErr = GetLastError( );
-		if ( lastErr == ERROR_FILE_NOT_FOUND ) {
-			( *exists ) = false;
-			return S_OK;
-			}
-
-		if ( lastErr == ERROR_PATH_NOT_FOUND ) {
-			( *exists ) = false;
-			return S_OK;
-			}
-
-		if ( lastErr == ERROR_ACCESS_DENIED ) {
-			return E_ACCESSDENIED;
-			}
-
-		if ( lastErr == ERROR_INVALID_PARAMETER ) {
-			TRACE( "Sometimes, GetFileAttributes, when queried with a special NTFS metafile, can fail with ERROR_INVALID_PARAMETER. It's kinda weird, but not a bug in WDS.\r\nIn this case, the path was: `%s`\r\n", path.c_str( ) );
-			( *exists ) = false;
-			return S_OK;
-			}
-
-		unexpectedErrorGetFileAttributes( path.c_str( ), lastErr );
-		//doesn't exist?
-		return E_FAIL;
-		}
-
-	bool isValidPathToFSObject( _In_ std::wstring path ) {
-		HRESULT exist_res_no_access = S_OK;
-		//PathFileExists expects a path thats no longer than MAX_PATH
-		if ( path.size( ) < MAX_PATH ) {
-			bool exists = false;
-			const HRESULT exist_res = enhancedFileExists( path, &exists );
-			if ( SUCCEEDED( exist_res ) ) {
-				return exists;
-				}
-			if ( exist_res == E_ACCESSDENIED ) {
-				exist_res_no_access = exist_res;
-				}
-			}
-
-		//TODO: what if network path?
-		//should we check if just starts with L"\\\\"?
-		if ( path.compare( 0, 4, L"\\\\?\\" ) != 0 ) {
-			path = ( L"\\\\?\\" + path );
-			}
-
-		const std::wstring& longPath = path;
-		bool attrib_exist = false;
-		const HRESULT attrib_res = enhancedExistCheckGetFileAttributes( longPath, &attrib_exist );
-		if ( SUCCEEDED( attrib_res ) ) {
-			return attrib_exist;
-			}
-		if ( attrib_res == E_ACCESSDENIED ) {
-			TRACE( L"Failed to get file attributes, because access was denied.\r\n\tThe path was: `%s` ...Need admin permissions?\r\n", longPath.c_str( ) );
-			}
-		return false;
-		}
 
 	//end copied & pasted
 
@@ -320,7 +184,7 @@ namespace {
 
 
 	//returning false means that we were denied CreateFileW access to the volume
-	HRESULT get_NTFS_volume_data( const std::wstring& raw_dir_path, _Inout_ std::vector<FILEINFO>& files, _Out_ DWORD* const result_code ) {
+	HRESULT get_NTFS_volume_data( const std::wstring& raw_dir_path, _Inout_ std::vector<FILEINFO>& files, _Always_( _Out_ ) DWORD* const result_code ) {
 		const HANDLE root_volume_handle = CreateFileW( raw_dir_path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
 		if ( root_volume_handle == INVALID_HANDLE_VALUE ) {
 			const DWORD last_err = ::GetLastError( );
@@ -359,15 +223,173 @@ namespace {
 		return S_OK;
 		}
 
+	__forceinline WDS_DECLSPEC_NOTHROW void GetCompressedFileSize_failure_handler( const std::wstring& path, const ULARGE_INTEGER ret, const DWORD last_err ) {
+#ifdef DEBUG
+		const rsize_t error_message_buffer_size = 128;
+		_Null_terminated_ wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
+		rsize_t chars_written = 0;
+		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_message_buffer, error_message_buffer_size, chars_written, last_err );
+		if ( ret.HighPart != NULL ) {
+			if ( last_err != NO_ERROR ) {
+				if ( SUCCEEDED( fmt_res ) ) {
+					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
+					return;
+					}
+				TRACE( _T( "Error! Filepath: %s, Filepath length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+				return;
+				}
+			if ( SUCCEEDED( fmt_res ) ) {
+				TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
+				return;
+				}
+			TRACE( _T( "WTF ERROR! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+			return;
+			}
+		if ( last_err != NO_ERROR ) {
+			if ( SUCCEEDED( fmt_res ) ) {
+				TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
+				return;
+				}
+			TRACE( _T( "Error! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+			return;
+			}
+#endif
+		return;
+		}
+
+
+	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
+	__forceinline WDS_DECLSPEC_NOTHROW std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
+		ULARGE_INTEGER ret;
+		ret.QuadPart = 0;//zero initializing this is critical!
+		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
+		const DWORD last_err = GetLastError( );
+		if ( ret.QuadPart == INVALID_FILE_SIZE ) {
+			if ( ret.HighPart != NULL ) {
+				GetCompressedFileSize_failure_handler( path, ret, last_err );
+				if ( last_err != NO_ERROR ) {
+					return UINT64_ERROR;// IN case of an error return size from CFileFind object
+					}
+				return UINT64_ERROR;
+				}
+			else {
+				if ( last_err != NO_ERROR ) {
+					GetCompressedFileSize_failure_handler( path, ret, last_err );
+					return UINT64_ERROR;
+					}
+				return ret.QuadPart;
+				}
+			}
+		return ret.QuadPart;
+		}
+
+	void query_special_file_fallback( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) { 
+		TRACE( L"Trying fallback method (GetCompressedFileSize) for \"file\" `%s`\r\n", path.c_str( ) );
+		const std::uint64_t file_size = GetCompressedFileSize_filename( path );
+		if ( file_size == UINT64_ERROR ) {
+			const DWORD last_err = ::GetLastError( );
+			TRACE( L"Fallback method for \"file\" `%s` failed!, Error: %lu\r\n", path.c_str( ), last_err );
+			
+			const rsize_t err_buff_size = 512u;
+			wchar_t err_buff[ err_buff_size ] = { 0 };
+			rsize_t unused_chars_written;
+			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
+			if ( SUCCEEDED( fmt_res ) ) {
+				OutputDebugStringW( L"WinDirStat: " );
+				OutputDebugStringW( err_buff );
+				OutputDebugStringW( L"\r\n" );
+				TRACE( L"%s\r\n", err_buff );
+				}
+			else {
+				TRACE( L"Failed to format error message for error encountered when trying to open `%s`\r\n", path.c_str( ) );
+				}
+			return;
+			}
+
+
+
+		files.emplace_back( FILEINFO {  static_cast<std::uint64_t>( file_size ), 
+										FILETIME{ 0 }, //fData.ftLastWriteTime, - GetFileTime/GetFileInformationByHandle
+										static_cast<DWORD>( FILE_ATTRIBUTE_HIDDEN bitor FILE_ATTRIBUTE_SYSTEM bitor FILE_ATTRIBUTE_READONLY ),//fData.dwFileAttributes,
+										special_file_name
+										}
+							);
+
+		}
+
+	void query_single_special_file_failed_to_open( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) {
+			const DWORD last_err = ::GetLastError( );
+			TRACE( L"Failed to open \"file\" `%s`, Error: %lu\r\n", path.c_str( ), last_err );
+			
+			const rsize_t err_buff_size = 512u;
+			wchar_t err_buff[ err_buff_size ] = { 0 };
+			rsize_t unused_chars_written;
+			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
+			if ( SUCCEEDED( fmt_res ) ) {
+				OutputDebugStringW( L"WinDirStat: " );
+				OutputDebugStringW( err_buff );
+				OutputDebugStringW( L"\r\n" );
+				TRACE( L"%s\r\n", err_buff );
+				}
+			else {
+				TRACE( L"Failed to format error message for error encountered when trying to open `%s`\r\n", path.c_str( ) );
+				}
+			return query_special_file_fallback( path, files, special_file_name );
+		}
+
+	void query_single_special_file( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) {
+		const HANDLE special_file_handle = CreateFileW( path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
+		if ( special_file_handle == INVALID_HANDLE_VALUE ) {
+			return query_single_special_file_failed_to_open( path, files, special_file_name );
+			}
+
+
+		const rsize_t file_full_dir_info_size_with_name = ( sizeof( FILE_FULL_DIR_INFO ) + ( sizeof( std::declval<FILE_FULL_DIR_INFO>( ).FileName[ 0 ] ) * MAX_PATH ) );
+		
+		
+		
+		//DO NOT ACCESS DIRECTLY!
+		char file_full_dir_info_buffer[ file_full_dir_info_size_with_name ] = { 0 };
+
+
+		FILE_FULL_DIR_INFO* const file_info = reinterpret_cast< FILE_FULL_DIR_INFO* >( &( file_full_dir_info_buffer[ 0 ] ) );
+
+		static_assert( __alignof( decltype(  *file_info ) ) == __alignof( FILE_FULL_DIR_INFO ) == __alignof( file_full_dir_info_buffer ), "bad casting/alignment!" );
+
+		const BOOL file_info_success = ::GetFileInformationByHandleEx( special_file_handle, FileFullDirectoryInfo, file_info, file_full_dir_info_size_with_name );
+		
+		if ( file_info_success == 0 ) {
+			const DWORD last_err = ::GetLastError( );
+			TRACE( L"Failed to get file information by handle for \"file\": `%s`, Error: %lu\r\n", path.c_str( ), last_err );
+			
+			const rsize_t err_buff_size = 512u;
+			wchar_t err_buff[ err_buff_size ] = { 0 };
+			rsize_t unused_chars_written;
+			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
+			if ( SUCCEEDED( fmt_res ) ) {
+				OutputDebugStringW( L"WinDirStat: " );
+				OutputDebugStringW( err_buff );
+				OutputDebugStringW( L"\r\n" );
+				TRACE( L"%s\r\n", err_buff );
+				}
+			else {
+				TRACE( L"Failed to format error message for error encountered when trying to get information for `%s`\r\n", path.c_str( ) );
+				}
+			return;
+			}
+
+		(void)files;//temporarily suppress warning
+
+		close_handle( special_file_handle );
+		}
+
 	void query_special_files( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
 		for ( size_t i = 0u; i < _countof( NTFS_SPECIAL_FILES ); ++i ) {
 			std::wstring path_to_special_file( path );
 			path_to_special_file.append( L"\\" );
 			path_to_special_file.append( NTFS_SPECIAL_FILES[ i ] );
-			if ( !isValidPathToFSObject( path_to_special_file ) ) {
-				TRACE( L"`%s` isn't a valid path to a filesystem object!\r\n" );
-				//continue;
-				}
+			TRACE( L"Trying to query special file `%s`...\r\n", path_to_special_file.c_str( ) );
+			query_single_special_file( path_to_special_file, files, NTFS_SPECIAL_FILES[ i ] );
 			FindFilesLoop( files, directories, path_to_special_file );
 			}
 		}
@@ -419,64 +441,12 @@ namespace {
 			return true;
 			}
 
-		query_special_files( path, files, directories );
+		query_special_files( raw_dir_path, files, directories );
 
 		return false;
 		}
 	
 
-	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
-	__forceinline WDS_DECLSPEC_NOTHROW std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
-		ULARGE_INTEGER ret;
-		ret.QuadPart = 0;//zero initializing this is critical!
-		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
-		const auto last_err = GetLastError( );
-#ifdef DEBUG
-		const rsize_t error_message_buffer_size = 128;
-		_Null_terminated_ wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
-		rsize_t chars_written = 0;
-		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_message_buffer, error_message_buffer_size, chars_written, last_err );
-#endif
-		if ( ret.QuadPart == INVALID_FILE_SIZE ) {
-			if ( ret.HighPart != NULL ) {
-				if ( last_err != NO_ERROR ) {
-#ifdef DEBUG
-					if ( SUCCEEDED( fmt_res ) ) {
-						TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
-						}
-					else {
-						TRACE( _T( "Error! Filepath: %s, Filepath length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
-						}
-#endif
-					return UINT64_ERROR;// IN case of an error return size from CFileFind object
-					}
-#ifdef DEBUG
-				if ( SUCCEEDED( fmt_res ) ) {
-					TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
-					}
-				else {
-					TRACE( _T( "WTF ERROR! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
-					}
-#endif
-				return UINT64_ERROR;
-				}
-			else {
-				if ( last_err != NO_ERROR ) {
-#ifdef DEBUG
-					if ( SUCCEEDED( fmt_res ) ) {
-						TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
-						}
-					else {
-						TRACE( _T( "Error! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
-						}
-#endif
-					return UINT64_ERROR;
-					}
-				return ret.QuadPart;
-				}
-			}
-		return ret.QuadPart;
-		}
 
 
 	WDS_DECLSPEC_NOTHROW void compose_compressed_file_size_and_fixup_child( CTreeListItem* const child, const std::wstring path ) {
