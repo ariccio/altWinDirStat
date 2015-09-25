@@ -253,6 +253,10 @@ namespace {
 			TRACE( _T( "Error! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
 			return;
 			}
+#else
+		UNREFERENCED_PARAMETER( path );
+		UNREFERENCED_PARAMETER( ret );
+		UNREFERENCED_PARAMETER( last_err );
 #endif
 		return;
 		}
