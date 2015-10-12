@@ -237,7 +237,7 @@ E.g.:
 ||This is the indentation/boxes. Drawing all other columns is trivial.
 
 */
-bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
 	const RECT& rc_const = rc;
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
@@ -258,7 +258,7 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 
 	RECT rcNode = rc_const;
 	//tree_list_control->DrawNode( this, pdc, rcNode, rcPlusMinus );//pass subitem to drawNode?
-	static_cast<const CTreeListControl* const>( list )->DrawNode( this, pdc, rcNode );//pass subitem to drawNode?
+	static_cast<const CTreeListControl* const>( list )->DrawNode( this, hDC, rcNode );//pass subitem to drawNode?
 	RECT rcLabel = rc_const;
 	rcLabel.left = rcNode.right;
 	CFont* const list_font = list->GetFont( );
@@ -269,7 +269,7 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	const bool list_is_full_row_selection = list->m_showFullRowSelection;
 	//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
 
-	DrawLabel( pdc, rcLabel, state, width, focusLeft, false, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+	DrawLabel( hDC, rcLabel, state, width, focusLeft, false, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 	if ( width != NULL ) {
 		*width = ( rcLabel.right - rcLabel.left );
 		set_plusminus_and_title_rects( rcLabel, rc_const );
@@ -1325,7 +1325,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 END_MESSAGE_MAP()
 
 _Pre_satisfies_( item->m_vi._Myptr != nullptr ) _Success_( return )
-const bool CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _In_ CDC& dcmem, _In_ const UINT ysrc ) const {
+const bool CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ HDC hDC, _In_ const RECT& rcRest, _In_ HDC hDCmem, _In_ const UINT ysrc ) const {
 	bool didBitBlt = false;
 	auto ancestor = item;
 	//Not vectorized: 1304, loop includes assignments of different sizes
@@ -1340,14 +1340,13 @@ const bool CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const 
 			continue;
 			}
 		if ( ancestor->HasSiblings( ) ) {
-			ASSERT_VALID( &dcmem );
 			//god, I hate code like this.
-			VERIFY( pdc.BitBlt(
+			VERIFY( ::BitBlt(	hDC,
 								( static_cast<int>( rcRest.left ) + indent * static_cast<int>( INDENT_WIDTH ) ),
 								static_cast<int>( rcRest.top ),
 								static_cast<int>( NODE_WIDTH ),
 								static_cast<int>( NODE_HEIGHT ),
-								&dcmem,
+								hDCmem,
 								( NODE_WIDTH * static_cast<int>( ENUM_NODE::NODE_LINE ) ),
 								static_cast<int>( ysrc ),
 								SRCCOPY
@@ -1518,20 +1517,24 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return static_cast<int>( ENUM_NODE::NODE_END );
 	}
 
-RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc, _Inout_ RECT& rcRest ) const {
+RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, _In_ HDC hDC, _Inout_ RECT& rc, _Inout_ RECT& rcRest ) const {
 	//bool didBitBlt = false;
 	RECT rcPlusMinus;
 	rcRest.left += 3;
-	CDC dcmem;
-	VERIFY( dcmem.CreateCompatibleDC( &pdc ) );
-	CSelectObject sonodes( dcmem, ( IsItemStripeColor( item ) ? m_bmNodes1 : m_bmNodes0 ) );
+	HDC hMemoryDeviceContext = ::CreateCompatibleDC( hDC );
+	if ( hMemoryDeviceContext == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+
+	
+	CSelectObject sonodes( hMemoryDeviceContext, ( IsItemStripeColor( item ) ? m_bmNodes1.m_hObject : m_bmNodes0.m_hObject ) );
 	const auto ysrc = ( NODE_HEIGHT / 2 ) - ( m_rowHeight / 2 );
-	const bool didBitBlt = DrawNodeNullWidth( item, pdc, rcRest, dcmem, ysrc );
+	const bool didBitBlt = DrawNodeNullWidth( item, hDC, rcRest, hMemoryDeviceContext, ysrc );
 	rcRest.left += ( item->GetIndent( ) - 1 ) * INDENT_WIDTH;
 	const auto node = EnumNode( item );
-	ASSERT_VALID( &dcmem );
 	if ( !didBitBlt ) {//Else we'd double BitBlt?
-		VERIFY( pdc.BitBlt( static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), &dcmem, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY ) );
+		VERIFY( ::BitBlt( hDC, static_cast<int>( rcRest.left ), static_cast<int>( rcRest.top ), static_cast<int>( NODE_WIDTH ), static_cast<int>( NODE_HEIGHT ), hMemoryDeviceContext, ( NODE_WIDTH * node ), static_cast<int>( ysrc ), SRCCOPY ) );
 		}
 	rcPlusMinus.left    = rcRest.left      + HOTNODE_X;
 	rcPlusMinus.right   = rcPlusMinus.left + HOTNODE_CX;
@@ -1539,18 +1542,23 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 	rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
 			
 	rcRest.left += NODE_WIDTH;
-	//VERIFY( dcmem.DeleteDC( ) );
+	const BOOL deleted = ::DeleteDC( hMemoryDeviceContext );
+	if ( deleted == 0 ) {
+		std::terminate( );
+		abort( );
+		}
+
 	rc.right = rcRest.left;
 	return rcPlusMinus;
 	}
 
-RECT CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ CDC& pdc, _Inout_ RECT& rc ) const {
+RECT CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ HDC hDC, _Inout_ RECT& rc ) const {
 	//ASSERT_VALID( pdc );
 	RECT rcRest = rc;
 	
 	rcRest.left += GENERAL_INDENT;
 	if ( item->GetIndent( ) > 0 ) {
-		return DrawNode_Indented( item, pdc, rc, rcRest );
+		return DrawNode_Indented( item, hDC, rc, rcRest );
 		}
 	RECT rcPlusMinus;
 	rcPlusMinus.bottom = 0;
@@ -1792,7 +1800,7 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	auto maxwidth = GetSubItemWidth( item, column::COL_NAME );
 
 #ifdef DEBUG
-	//Hmm. I hate MFC.
+	//Hmm. The LVM_GETSTRINGWIDTH is very poorly documented, doesn't tell us the actual width.
 	const auto stringWidth = CListCtrl::GetStringWidth( item->m_name ) + 10;
 	ASSERT( ( maxwidth == stringWidth ) || ( maxwidth == ( stringWidth - 1 ) ) || ( maxwidth == ( stringWidth + 1 ) ) );
 #endif

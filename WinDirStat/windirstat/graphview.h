@@ -192,7 +192,7 @@ protected:
 			}
 		CDC offscreen_buffer;
 		VERIFY( offscreen_buffer.CreateCompatibleDC( &pScreen_Device_Context ) );
-		CSelectObject sobmp( offscreen_buffer, m_dimmed );
+		CSelectObject sobmp( offscreen_buffer.m_hDC, m_dimmed.m_hObject );
 		VERIFY( pScreen_Device_Context.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 		if ( ( rc.right - rc.left ) > m_dimmedSize.cx ) {
@@ -236,7 +236,7 @@ protected:
 			DoDraw( Screen_Device_Context, offscreen_buffer, rc );
 			}
 
-		CSelectObject sobmp2( offscreen_buffer, m_bitmap );
+		CSelectObject sobmp2( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
 		VERIFY( Screen_Device_Context.BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 		DrawHighlights( Screen_Device_Context );

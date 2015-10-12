@@ -59,7 +59,7 @@ struct VISIBLEINFO final {
 // m_vi is freed as soon as the item is removed from the List.
 class CTreeListItem final : public COwnerDrawnListItem {
 	
-		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
+		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
 		
 		virtual INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
@@ -328,9 +328,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item,     _In_ _In_range_( 0, INT32_MAX ) const int i );
 				
 		_Pre_satisfies_( item->m_vi._Myptr != nullptr ) _Success_( return )
-				const bool DrawNodeNullWidth                   ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _In_    CDC& dcmem, _In_ const UINT ysrc ) const;
-				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const;
-				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc            ) const;
+				const bool DrawNodeNullWidth                   ( _In_     const CTreeListItem* const item, _In_ HDC hDC,  _In_ const RECT& rcRest, _In_    HDC hDCmem, _In_ const UINT ysrc ) const;
+				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const;
+				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc            ) const;
 
 		_Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
 				int  collapse_parent_plus_one_through_index    ( _In_     const CTreeListItem*       thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent );

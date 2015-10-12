@@ -312,7 +312,7 @@ namespace {
 
 	void shrink_for_grid( _In_ CDC& pdc, _Inout_ RECT& rc ) {
 		CPen pen { PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) };
-		CSelectObject sopen { pdc, pen };
+		CSelectObject sopen { pdc.m_hDC, pen.m_hObject };
 		        pdc.MoveTo( rc.right - 1, rc.top );
 		VERIFY( pdc.LineTo( rc.right - 1, rc.bottom ) );
 		        pdc.MoveTo( rc.left,      rc.bottom - 1 );
@@ -814,7 +814,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 	return const_cast<CTreeListItem*>( item );
 	}
 
-void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
+void CTreemap::DrawColorPreview( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
 	// Draws a sample rectangle in the given style (for color legend)
 	if ( options != NULL ) {
 		SetOptions( *options );
@@ -824,12 +824,13 @@ void CTreemap::DrawColorPreview( _In_ CDC& pdc, _In_ const RECT rc, _In_ const C
 
 	AddRidge_( rc, surface, m_options.height * m_options.scaleFactor );
 
-	RenderRectangle( pdc, rc, surface, color );
+	RenderRectangle( hDC, rc, surface, color );
 	if ( m_options.grid ) {
 		CPen pen { PS_SOLID, 1, m_options.gridColor };
-		CSelectObject sopen{ pdc, pen };
-		CSelectStockObject sobrush { pdc, NULL_BRUSH };
-		VERIFY( pdc.Rectangle( &rc ) );
+		CSelectObject sopen{ hDC, pen.m_hObject };
+		CSelectStockObject sobrush { hDC, NULL_BRUSH };
+		//VERIFY( pdc.Rectangle( &rc ) );
+		VERIFY( ::Rectangle( hDC, rc.left, rc.top, rc.right, rc.bottom ) );
 		}
 	}
 
@@ -1371,7 +1372,7 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem*
 	WDS_validateRectangle_DEBUG( item, rc );
 	}
 
-void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	if ( ( color bitand COLORFLAG_MASK ) == 0 ) {
 		ASSERT( color != 0 );
@@ -1402,7 +1403,7 @@ void CTreemap::RenderRectangle( _In_ CDC& offscreen_buffer, _In_ const RECT& rc,
 	DrawSolidRect( offscreen_buffer, rc, color, brightness );
 	}
 
-void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const RECT& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawSolidRect( _In_ HDC hDC, _In_ const RECT& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	INT red   = GetRValue( col );
 	INT green = GetGValue( col );
 	INT blue  = GetBValue( col );
@@ -1415,7 +1416,21 @@ void CTreemap::DrawSolidRect( _In_ CDC& pdc, _In_ const RECT& rc, _In_ const COL
 
 	NormalizeColor( red, green, blue );
 
-	pdc.FillSolidRect( &rc, RGB( red, green, blue ) );
+
+	/*
+	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+	{
+		ENSURE_VALID(this);
+		ENSURE(m_hDC != NULL);
+		ENSURE(lpRect);
+
+		::SetBkColor(m_hDC, clr);
+		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+	}
+	*/
+	::SetBkColor( hDC, RGB( red, green, blue ) );
+	::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL );
+	//pdc.FillSolidRect( &rc, RGB( red, green, blue ) );
 	}
 
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
@@ -1424,7 +1439,7 @@ static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct 
 
 
 
-void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawCushion( _In_ HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	ASSERT( rc.bottom >= 0 );
 	ASSERT( rc.top >= 0 );
 	ASSERT( rc.right >= 0 );
@@ -1523,7 +1538,7 @@ void CTreemap::DrawCushion( _In_ CDC& offscreen_buffer, _In_ const RECT& rc, _In
 
 	}
 
-void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
+void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
 	ASSERT( vecSize != 0 );
 	
 	const rsize_t stack_buffer_array_size = 1024;
@@ -1585,7 +1600,7 @@ void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, 
 	SetPixels( offscreen_buffer, pixles, rc.top, rc.left, rc.bottom, rc.right, ( rc.right - rc.left ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
 	}
 
-void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ CDC& offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
+void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
 	ASSERT( vecSize != 0 );
 
 	std::unique_ptr<DOUBLE[ ]> nx_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
@@ -1650,14 +1665,24 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 	}
 
 
-void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const {
+void CTreemap::SetPixels( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const {
 	//row = iy * rc.Width( );
 	//stride = ix;
 	//index = row + stride;
 	UNREFERENCED_PARAMETER( maxIndex );
 
-	CDC tempDCmem;
-	VERIFY( tempDCmem.CreateCompatibleDC( &offscreen_buffer ) );
+	//CDC tempDCmem;
+	/*
+	_AFXWIN_INLINE BOOL CDC::CreateCompatibleDC(CDC* pDC)
+		{ return Attach(::CreateCompatibleDC(pDC->GetSafeHdc())); }
+	*/
+	HDC hTempDeviceContextMemory = ::CreateCompatibleDC( offscreen_buffer );
+	if ( hTempDeviceContextMemory == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+
+	//VERIFY( tempDCmem.CreateCompatibleDC( &offscreen_buffer ) );
 	CBitmap bmp;
 	
 
@@ -1674,17 +1699,40 @@ void CTreemap::SetPixels( _In_ CDC& offscreen_buffer, _In_reads_( maxIndex ) _Pr
 	if ( !res ) {
 		displayWindowsMsgBoxWithMessage( L"bmp.CreateBitmap failed!!! AHHH!!!!" );
 		std::terminate( );
+		abort( );
 		}
-	tempDCmem.SelectObject( &bmp );
+
+	/*
+	CGdiObject* PASCAL CDC::SelectGdiObject(HDC hDC, HGDIOBJ h)
+	{
+		return CGdiObject::FromHandle(::SelectObject(hDC, h));
+	}
+	_AFXWIN_INLINE CBitmap* CDC::SelectObject(CBitmap* pBitmap)
+		{ ASSERT(m_hDC != NULL); return (CBitmap*) SelectGdiObject(m_hDC, pBitmap->GetSafeHandle()); }
+	*/
+	//tempDCmem.SelectObject( &bmp );
+	::SelectObject( hTempDeviceContextMemory, bmp.m_hObject );
 	if ( ( rcWidth == 0 ) || ( rcHeight == 0 ) ) {
+		::DeleteDC( hTempDeviceContextMemory );
 		return;
 		}
-	const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
+
+	/*
+	_AFXWIN_INLINE BOOL CDC::TransparentBlt(int xDest, int yDest, int nDestWidth, 
+	   int nDestHeight, CDC* pSrcDC, int xSrc, int ySrc, int nSrcWidth, 
+	   int nSrcHeight, UINT crTransparent)
+	   { ASSERT(m_hDC != NULL); return ::TransparentBlt(m_hDC, xDest, yDest, 
+		  nDestWidth, nDestHeight, pSrcDC->GetSafeHdc(), xSrc, ySrc, nSrcWidth, 
+		  nSrcHeight, crTransparent); }
+	*/
+	const auto success = ::TransparentBlt( offscreen_buffer, xStart, yStart, rcWidth, rcHeight, hTempDeviceContextMemory, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
+	//const auto success = offscreen_buffer.TransparentBlt( xStart, yStart, rcWidth, rcHeight, &tempDCmem, 0, 0, rcWidth, rcHeight, RGB( 255, 255, 255 ) );
 	ASSERT( success != FALSE );
 	if ( success == FALSE ) {
 		displayWindowsMsgBoxWithMessage( L"offscreen_buffer.TransparentBlt failed!!! AHHH!!!!" );
 		std::terminate( );
 		}
+	::DeleteDC( hTempDeviceContextMemory );
 	}
 
 

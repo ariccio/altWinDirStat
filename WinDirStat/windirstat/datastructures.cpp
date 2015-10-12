@@ -11,74 +11,108 @@
 
 
 
-CSelectObject::CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject ) : m_pdc{ &pdc } {
-	//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
-	m_pOldObject = pdc.SelectObject( &pObject );
-	/*
-_AFXWIN_INLINE CGdiObject* CDC::SelectObject(CGdiObject* pObject)
-{ ASSERT(m_hDC != NULL); return SelectGdiObject(m_hDC, pObject->GetSafeHandle()); }
-		
-CGdiObject* PASCAL CDC::SelectGdiObject(HDC hDC, HGDIOBJ h)
-{
-return CGdiObject::FromHandle(::SelectObject(hDC, h));
-}
-
-CGdiObject* PASCAL CGdiObject::FromHandle(HGDIOBJ h)
-{
-CHandleMap* pMap = afxMapHGDIOBJ(TRUE); //create map if not exist
-ASSERT(pMap != NULL);
-CGdiObject* pObject = (CGdiObject*)pMap->FromHandle(h);
-ASSERT(pObject == NULL || pObject->m_hObject == h);
-return pObject;
-}
-	*/
-
-	ASSERT( m_pOldObject != NULL );
+CSelectObject::CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) : m_hDC{ hDC } {
+	m_pOldObject = ::SelectObject( m_hDC, hObject );
+	if ( m_pOldObject == NULL ) {
+		std::terminate( );
+		}
+	if ( m_pOldObject == HGDI_ERROR ) {
+		std::terminate( );
+		}
 	}
 
 CSelectObject::~CSelectObject( ) {
-	const auto retval = m_pdc->SelectObject( m_pOldObject );
-#ifdef DEBUG
-	ASSERT( retval != NULL );
-#else
-	UNREFERENCED_PARAMETER( retval );
-#endif
+	const HGDIOBJ retval = ::SelectObject( m_hDC, m_pOldObject );
+	if ( retval == NULL ) {
+		std::terminate( );
+		}
+	if ( retval == HGDI_ERROR ) {
+		std::terminate( );
+		}
 	}
 
 
-CSelectStockObject::CSelectStockObject( _In_ CDC& pdc, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_pdc { &pdc } {
+CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_hDC { hDC } {
 	//"Return Value: A pointer to the CGdiObject object that was replaced if the function is successful. The actual object pointed to is a CPen, CBrush, or CFont object. If the call is unsuccessful, the return value is NULL."
-	m_pOldObject = pdc.SelectStockObject( nIndex );
+	/*
+	CGdiObject* CDC::SelectStockObject(int nIndex)
+	{
+		ASSERT(m_hDC != NULL);
+
+		HGDIOBJ hObject = ::GetStockObject(nIndex);
+		HGDIOBJ hOldObj = NULL;
+
+		ASSERT(hObject != NULL);
+		if (m_hDC != m_hAttribDC)
+			hOldObj = ::SelectObject(m_hDC, hObject);
+		if (m_hAttribDC != NULL)
+			hOldObj = ::SelectObject(m_hAttribDC, hObject);
+		return CGdiObject::FromHandle(hOldObj);
+	}
+
+	
+	*/
+	if ( m_hDC == NULL ) {
+		std::terminate( );
+		}
+	HGDIOBJ hStockObj = ::GetStockObject( nIndex );
+	if ( hStockObj == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+	m_pOldObject = ::SelectObject( m_hDC, hStockObj );
+
+	//m_pOldObject = pdc.SelectStockObject( nIndex );
 	ASSERT( m_pOldObject != NULL );
 	}
 
 CSelectStockObject::~CSelectStockObject( ) {
 	//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
-	const auto retval = m_pdc->SelectObject( m_pOldObject );
-#ifdef DEBUG
-	ASSERT( retval != NULL );
-#else
-	UNREFERENCED_PARAMETER( retval );
-#endif
+	const auto retval = ::SelectObject( m_hDC, m_pOldObject );
+	if ( retval == NULL ) {
+		std::terminate( );
+		}
+	if ( retval == HGDI_ERROR ) {
+		std::terminate( );
+		}
 	}
 
 _Pre_satisfies_( ( mode == OPAQUE) || ( mode == TRANSPARENT ) )
-CSetBkMode::CSetBkMode( _In_ CDC& pdc, _In_ const INT mode ) : m_pdc { &pdc } {
-	m_oldMode = pdc.SetBkMode( mode );
+CSetBkMode::CSetBkMode( _In_ HDC hDC, _In_ const INT mode ) : m_hDC { hDC } {
+	if ( hDC == NULL ) {
+		std::terminate( );
+		}
+	m_oldMode = ::SetBkMode( m_hDC, mode );
+	//m_oldMode = pdc.SetBkMode( mode );
 	}
 
 CSetBkMode::~CSetBkMode( ) {
-	m_pdc->SetBkMode( m_oldMode );
+	if ( m_hDC == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+	::SetBkMode( m_hDC, m_oldMode );
+	//m_pdc->SetBkMode( m_oldMode );
 	}
 
-CSetTextColor::CSetTextColor( _In_ CDC& pdc, _In_ const COLORREF color ) : m_pdc { &pdc } {
+CSetTextColor::CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color ) : m_hDC { hDC } {
+	if ( hDC == NULL ) {
+		std::terminate( );
+		}
 	//ASSERT_VALID( pdc );
-	m_oldColor = pdc.SetTextColor( color );
+	//m_oldColor = pdc.SetTextColor( color );
+	m_oldColor = ::SetTextColor( hDC, color );
+	ASSERT( m_oldColor != CLR_INVALID );
 	}
 
 
 CSetTextColor::~CSetTextColor( ) {
-	m_pdc->SetTextColor( m_oldColor );
+	if ( m_hDC == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+	::SetTextColor( m_hDC, m_oldColor );
+	//m_pdc->SetTextColor( m_oldColor );
 	}
 
 
