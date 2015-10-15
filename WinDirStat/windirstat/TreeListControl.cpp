@@ -1051,7 +1051,13 @@ IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 _Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
 int CTreeListControl::collapse_parent_plus_one_through_index( _In_ const CTreeListItem* thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent ) {
 	for ( int k = ( parent + 1 ); k < index; k++ ) {
+		const auto item_at_k = GetItem( k );
+		if ( item_at_k == NULL ) {
+			abort( );
+			}
+		TRACE( _T( "Might collapse item %i (`%s`)\r\n" ), k, item_at_k->m_name );
 		if ( !CollapseItem( k ) ) {
+			TRACE( _T( "Failed to collapse item at `k`: %i (`%s`)\r\n" ), k, item_at_k->m_name );
 			break;
 			}
 		//We need to move UP the hierarchy, so we need to collapse items we're moving UP FROM
@@ -1097,7 +1103,7 @@ void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* 
 		adjustColumnSize( item_at_index );
 		}
 	if ( showWholePath ) {
-		TRACE( _T( "Ensuring item is visible by scrolling to it...\r\n" ) );
+		TRACE( _T( "Ensuring item (%i, `%s`) is visible by scrolling to it...\r\n" ), index, item_at_index->m_name );
 		VERIFY( CListCtrl::EnsureVisible( 0, false ) );
 		}
 	SelectItem( index );
@@ -1116,8 +1122,12 @@ INT CTreeListControl::find_item_then_show_first_try_failed( _In_ const CTreeList
 
 void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const path, _In_ const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_in_path ) {
 	//auto index = FindTreeItem( thisPath );
+	TRACE( _T( "looking for item named `%s` in `%s`..." ), target_in_path->m_name, path->m_name );
 	auto index = FindListItem( path );
 	if ( index == -1 ) {
+#ifdef DEBUG
+		OutputDebugString( _T( "\r\n" ) );
+#endif
 		index = find_item_then_show_first_try_failed( path, i );
 		if ( index == -1 ) {
 			TRACE( _T( "Logic error! Item not found!\r\n" ) );
@@ -1127,10 +1137,14 @@ void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const path
 			}
 		}
 	else {
+#ifdef DEBUG
+		OutputDebugString( _T( "found!\r\n" ) );
+#endif
 		//if we've found the item, then we should close anything that we opened in the process?
-		TRACE( _T( "Searching %s for next path element...found! path.at( %I64d ), index: %i\r\n" ), path->m_name, std::int64_t( i ), index );
+		TRACE( _T( "\t\tposition in list view: %I64d, index: %i\r\n" ), std::int64_t( i ), index );
+		TRACE( _T( "Collapsing items [%i, %i). Item count: %i\r\n" ), ( parent + 1 ), index, CListCtrl::GetItemCount( ) );
 		index = collapse_parent_plus_one_through_index( path, index, parent );
-		TRACE( _T( "Collapsing items [%i, %i), new index %i. Item count: %i\r\n" ), ( parent + 1 ), index, index, GetItemCount( ) );
+		TRACE( _T( "NEW item count %i\r\n" ), CListCtrl::GetItemCount( ) );
 		}
 	ASSERT( target_in_path != NULL );
 	parent = index;
@@ -1274,7 +1288,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 
 
 	//This function is VERY finicky. Be careful.
-	CWnd::SetRedraw( FALSE );
+	//CWnd::SetRedraw( FALSE );
 	const auto path = buildVectorOfPaths( item );
 
 #ifdef DEBUG
@@ -1296,7 +1310,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 		ASSERT( static_cast<std::uint64_t>( i ) < INT_MAX );
 		find_item_then_show( thisPath, static_cast< int >( i ), parent, showWholePath, path.at( 0 ) );
 		}
-	CWnd::SetRedraw( TRUE );
+	//CWnd::SetRedraw( TRUE );
 	}
 
 void CTreeListControl::InitializeNodeBitmaps( ) const {
@@ -1426,7 +1440,12 @@ void CTreeListControl::OnContextMenu( CWnd* /*pWnd*/, CPoint pt ) {
 	}
 
 void CTreeListControl::SelectItem( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
-	TRACE( _T( "Selecting item: %i\r\n" ), i );
+	TRACE( _T( "Selecting item: %i. %i items total.\r\n" ), i, CListCtrl::GetItemCount( ) );
+#ifdef DEBUG
+	const auto item_count = CListCtrl::GetItemCount( ) ;
+	ASSERT( i < item_count );
+	ASSERT( item_count >= 0 );
+#endif
 	VERIFY( CListCtrl::SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ) );
 	VERIFY( CListCtrl::EnsureVisible( i, false ) );
 	}
@@ -1466,8 +1485,11 @@ BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle,
 
 _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
-	ASSERT( i < CListCtrl::GetItemCount( ) );
+	ASSERT( i >= 0 );
+#ifdef DEBUG
 	const auto itemCount = CListCtrl::GetItemCount( );
+	ASSERT( i < itemCount );
+#endif
 	if ( i < itemCount ) {
 		return reinterpret_cast< CTreeListItem* >( CListCtrl::GetItemData( i ) );
 		}
@@ -1479,9 +1501,9 @@ void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
 	if ( root == NULL ) {
 		return;
 		}
-	CWnd::SetRedraw( FALSE );
+	//CWnd::SetRedraw( FALSE );
 	InsertItem( root, 0 );
-	CWnd::SetRedraw( TRUE );
+	//CWnd::SetRedraw( TRUE );
 
 	//ExpandItem( static_cast<int>( 0 ), true );//otherwise ambiguous call - is it a NULL pointer?
 	ExpandItemAndScroll( 0 );//otherwise ambiguous call - is it a NULL pointer?
@@ -1661,11 +1683,12 @@ int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, 
 				}
 			}
 		if ( CListCtrl::GetItemState( k, LVIS_SELECTED ) == LVIS_SELECTED ) {
+			TRACE( _T( "Item #%i is selected, setting selectNode from ( %s ) to true.\r\n" ), k, (selectNode ? _T( "true" ) : _T( "false" ) ) );
 			selectNode = true;
 			}
 		todelete++;
 		}
-	TRACE( _T( "Need to delete %i items from %s\r\n" ), todelete, item->m_name );
+	TRACE( _T( "Need to delete %i items (of %i items) from %s\r\n" ), todelete, itemCount, item->m_name );
 	return todelete;
 	}
 
@@ -1680,9 +1703,9 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		TRACE( _T( "ERROR: Collapsing item %i: %s...it's not expanded!\r\n" ), i, item->m_name );
 		return false;
 		}
-	TRACE( _T( "Collapsing item %i: %s\r\n" ), i, item->m_name );
+	TRACE( _T( "Collapsing item %i: %s, item count prior to collapsing: %i\r\n" ), i, item->m_name, CListCtrl::GetItemCount( ) );
 	//WTL::CWaitCursor wc;
-	CWnd::SetRedraw( FALSE );
+	//CWnd::SetRedraw( FALSE );
 	
 	bool selectNode = false;
 	const auto item_number_to_delete = ( i + 1 );
@@ -1694,10 +1717,10 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		ASSERT( local_var != NULL );
 		if ( local_var != NULL ) {
 			ASSERT( item_number_to_delete == FindListItem( local_var ) );
-			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, local_var->m_name );
+			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), ( m + 1 ), todelete, local_var->m_name );
 			}
 		else {
-			TRACE( _T( "deleting item %i (%i/%i), %s\r\n" ), ( item_number_to_delete ), m, todelete, L"ERROR: NULL POINTER!" );
+			std::terminate( );
 			}
 		ASSERT( local_var->GetIndent( ) > item->GetIndent( ) );
 #endif
@@ -1708,19 +1731,18 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		SelectItem( i );
 		}
 
-	CWnd::SetRedraw( TRUE );
+	//CWnd::SetRedraw( TRUE );
 	const auto item_count = CListCtrl::GetItemCount( );
-#ifdef DEBUG
-	const auto local_var = GetItem( i );
-	TRACE( _T( "Redrawing items %i (`%s`) to %i....\r\n" ), i, ( ( local_var != NULL ) ? local_var->m_name : L"" ), ( item_count ) );
-
-#endif
+	TRACE( _T( "POST-collapse item count %i\r\n" ), item_count );
 	VERIFY( CListCtrl::RedrawItems( i, item_count ) );
 	//VERIFY( RedrawItems( i, item_count + 1 ) );
 	//VERIFY( RedrawItems( 0, item_count + 1 ) );
 	TRACE( _T( "Collapsing item succeeded!\r\n" ) );
 	//GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
 	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
+	ASSERT( item_count == CListCtrl::GetItemCount( ) );
+	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+	CListCtrl::RedrawWindow( );
 	return true;
 	}
 
@@ -1891,9 +1913,9 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 
 	if ( !item->IsExpanded( ) ) {
 		//ExpandItem( i, true );
-		CWnd::SetRedraw( FALSE );
+		//CWnd::SetRedraw( FALSE );
 		ExpandItemAndScroll( i );
-		CWnd::SetRedraw( TRUE );
+		//CWnd::SetRedraw( TRUE );
 		}
 	else if ( item->m_child_info.m_child_info_ptr != nullptr ) {
 

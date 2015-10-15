@@ -915,7 +915,7 @@ public:
 		fi.flags  = LVFI_PARAM;
 		fi.lParam = reinterpret_cast<LPARAM>( item );
 
-		const auto i = static_cast<INT>( FindItem( &fi ) );
+		const auto i = static_cast<INT>( CListCtrl::FindItem( &fi ) );
 
 		return i;
 		}

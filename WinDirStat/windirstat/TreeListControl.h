@@ -292,7 +292,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				anItem->SetVisible( false );
 				anItem->m_vi.reset( );
 				}
-			VERIFY( CListCtrl::DeleteItem( i ) );
+			if ( !CListCtrl::DeleteItem( i ) ) {
+				std::terminate( );
+				}
 			}
 
 		//calls CWnd::DestroyWindow( )

@@ -471,6 +471,7 @@ void COptions::SetListGrid( _In_ const bool show ) {
 
 void COptions::SetListStripes( _In_ const bool show ) {
 	if ( m_listStripes != show ) {
+		TRACE( _T( "User changed \"show list stripes\" option...\r\n" ) );
 		m_listStripes = show;
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED );
 		}
