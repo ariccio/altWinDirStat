@@ -510,7 +510,6 @@ namespace {
 		static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			//iterate over columns, properly populate fields.
-			ASSERT( order[ i ] == static_cast<INT>( i ) );
 			subitems_temp[ i ] = static_cast<column::ENUM_COL>( order[ i ] );
 			}
 		}
@@ -709,10 +708,6 @@ protected:
 
 		VERIFY( thisHeaderCtrl->GetOrderArray( order_temp, resize_size )) ;
 
-		for ( rsize_t i = 0; i < static_cast<rsize_t>( resize_size - 1 ); ++i ) {
-			ASSERT( static_cast< INT >( i ) == order_temp[ i ] );
-			}
-
 		const rsize_t thisLoopSize = static_cast<rsize_t>( resize_size );
 		if ( is_right_aligned_cache.empty( ) ) {
 			repopulate_right_aligned_cache( is_right_aligned_cache, thisLoopSize, thisHeaderCtrl, this );
@@ -798,7 +793,18 @@ public:
 			std::terminate( );
 			}
 
-		CPersistence::GetColumnOrder( m_persistent_name, col_order_array, itemCount );
+		std::wstring column_order_default;
+
+		for ( size_t i = 0; i < itemCount; i++ ) {
+			column_order_default += std::to_wstring( i );
+			column_order_default += L",";
+			}
+
+		ASSERT( column_order_default.back( ) == L',' );
+		column_order_default.pop_back( );
+		ASSERT( column_order_default.back( ) != L',' );
+		
+		CPersistence::GetColumnOrder( m_persistent_name, col_order_array, itemCount, column_order_default.c_str( ) );
 
 		const auto res2 = CListCtrl::SetColumnOrderArray( static_cast<int>( itemCount ), col_order_array );
 		if ( res2 == 0 ) {
@@ -809,7 +815,18 @@ public:
 		for ( size_t i = 0; i < itemCount; i++ ) {
 			col_order_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
 			}
-		CPersistence::GetColumnWidths( m_persistent_name, col_order_array, itemCount );
+		std::wstring column_widths_default;
+
+		for ( size_t i = 0; i < itemCount; i++ ) {
+			column_widths_default += std::to_wstring( col_order_array[ i ] );
+			column_widths_default += L",";
+			}
+
+		ASSERT( column_widths_default.back( ) == L',' );
+		column_widths_default.pop_back( );
+		ASSERT( column_widths_default.back( ) != L',' );
+
+		CPersistence::GetColumnWidths( m_persistent_name, col_order_array, itemCount, column_widths_default.c_str( ) );
 
 		for ( size_t i = 0; i < itemCount; i++ ) {
 			// To avoid "insane" settings we set the column width to maximal twice the default width.
