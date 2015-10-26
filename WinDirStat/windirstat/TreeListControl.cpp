@@ -1486,8 +1486,8 @@ BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle,
 _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
 	ASSERT( i >= 0 );
-#ifdef DEBUG
 	const auto itemCount = CListCtrl::GetItemCount( );
+#ifdef DEBUG
 	ASSERT( i < itemCount );
 #endif
 	if ( i < itemCount ) {
@@ -1824,8 +1824,8 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 
 #ifdef DEBUG
 	//Hmm. The LVM_GETSTRINGWIDTH is very poorly documented, doesn't tell us the actual width.
-	const auto stringWidth = CListCtrl::GetStringWidth( item->m_name ) + 10;
-	ASSERT( ( maxwidth == stringWidth ) || ( maxwidth == ( stringWidth - 1 ) ) || ( maxwidth == ( stringWidth + 1 ) ) );
+	//const auto stringWidth = CListCtrl::GetStringWidth( item->m_name ) + 10;
+	//ASSERT( ( maxwidth == stringWidth ) || ( maxwidth == ( stringWidth - 1 ) ) || ( maxwidth == ( stringWidth + 1 ) ) );
 #endif
 
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
