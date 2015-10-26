@@ -1548,6 +1548,12 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 		std::terminate( );
 		abort( );
 		}
+	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { 
+		const BOOL deleted = ::DeleteDC( hMemoryDeviceContext );
+		if ( deleted == 0 ) {
+			std::terminate( );
+			}
+		} );
 
 	
 	CSelectObject sonodes( hMemoryDeviceContext, ( IsItemStripeColor( item ) ? m_bmNodes1.m_hObject : m_bmNodes0.m_hObject ) );
@@ -1564,12 +1570,6 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 	rcPlusMinus.bottom  = rcPlusMinus.top  + HOTNODE_CY;
 			
 	rcRest.left += NODE_WIDTH;
-	const BOOL deleted = ::DeleteDC( hMemoryDeviceContext );
-	if ( deleted == 0 ) {
-		std::terminate( );
-		abort( );
-		}
-
 	rc.right = rcRest.left;
 	return rcPlusMinus;
 	}

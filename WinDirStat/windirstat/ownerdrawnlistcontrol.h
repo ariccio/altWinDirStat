@@ -332,7 +332,7 @@ protected:
 		VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
 
 		RECT rcLabel = rcRest;
-		::DrawTextW( hDC, m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP );//DT_CALCRECT modifies rcLabel!!!
+		VERIFY( ::DrawTextW( hDC, m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP ) );//DT_CALCRECT modifies rcLabel!!!
 
 		AdjustLabelForMargin( rcRest, rcLabel );
 
@@ -354,7 +354,7 @@ protected:
 		CSetTextColor stc( hDC, textColor );
 
 		if ( width == NULL ) {
-			::DrawTextW( hDC, m_name, static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP );
+			VERIFY( ::DrawTextW( hDC, m_name, static_cast<int>( m_name_length ), &rcRest, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP ) );
 			}
 
 		//subtract one from left, add one to right
@@ -363,7 +363,7 @@ protected:
 		*focusLeft = rcLabel.left;
 
 		if ( ( ( state bitand ODS_FOCUS ) != 0 ) && list_has_focus && ( width == NULL ) && ( !( list_is_full_row_selection ) ) ) {
-			::DrawFocusRect( hDC, &rcLabel );
+			VERIFY( ::DrawFocusRect( hDC, &rcLabel ) );
 			rcLabel.left = rc.left;
 			rc = rcLabel;
 			return;
@@ -568,7 +568,7 @@ namespace {
 		for ( ; i < thisLoopSize; i++ ) {
 			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
 				
-				::DrawFocusRect( hDC, &rcFocus );
+				VERIFY( ::DrawFocusRect( hDC, &rcFocus ) );
 				//pdc->DrawFocusRect( &rcFocus );
 				rcFocus.left = focusLefts[ i ];
 				}
@@ -1206,7 +1206,7 @@ public:
 
 		if ( subitem == column::COL_NAME ) {
 			//fastpath. No work to be done!
-			::DrawTextW( hDC, item->m_name, static_cast< int >( item->m_name_length ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+			VERIFY( ::DrawTextW( hDC, item->m_name, static_cast< int >( item->m_name_length ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) ) );
 			return;
 			}
 
@@ -1230,7 +1230,7 @@ protected:
 		ASSERT( subitem != column::COL_NAME );
 		const HRESULT res = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text, subitem_text_size, sizeNeeded, chars_written );
 		if ( SUCCEEDED( res ) ) {
-			::DrawTextW( hDC, psz_subitem_formatted_text, static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+			VERIFY( ::DrawTextW( hDC, psz_subitem_formatted_text, static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 			return res;
 			}
 		if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
@@ -1240,7 +1240,7 @@ protected:
 			ASSERT( subitem != column::COL_NAME );
 			const HRESULT res_2 = item->GetText_WriteToStackBuffer( subitem, psz_subitem_formatted_text_2, subitem_text_size_2, sizeNeeded, chars_written_2 );
 			if ( SUCCEEDED( res_2 ) ) {
-				::DrawTextW( hDC, psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+				VERIFY( ::DrawTextW( hDC, psz_subitem_formatted_text_2, static_cast<int>( chars_written_2 ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 				
 				//shut analyze up!
 				sizeNeeded = 0;
@@ -1282,7 +1282,7 @@ private:
 			return;
 			//abort( );
 			}
-		::DrawTextW( hDC, buffer.get( ), static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) );
+		VERIFY( ::DrawTextW( hDC, buffer.get( ), static_cast<int>( chars_written ), &rcText, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX | DT_NOCLIP | static_cast< UINT >( align ) ) );
 		}
 
 protected:
@@ -1355,7 +1355,7 @@ private:
 		*/
 		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-		::DrawTextW( hDC, buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		VERIFY( ::DrawTextW( hDC, buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
@@ -1379,7 +1379,7 @@ private:
 		*/
 		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-		::DrawTextW( hDC, item->m_name, static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		VERIFY( ::DrawTextW( hDC, item->m_name, static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 			
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );
@@ -1416,7 +1416,7 @@ private:
 		*/
 		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
-		::DrawTextW( hDC, psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) );
+		VERIFY( ::DrawTextW( hDC, psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
 		//rc.InflateRect( TEXT_X_MARGIN, 0 );

@@ -267,6 +267,7 @@ void CMountPoints::GetAllMountPoints( ) {
 	ASSERT( lastErr == ERROR_NO_MORE_FILES );
 
 	if ( lastErr != ERROR_NO_MORE_FILES ) {
+		//TODO: WTF?
 
 		}
 
