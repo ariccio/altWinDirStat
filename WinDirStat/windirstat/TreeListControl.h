@@ -47,7 +47,7 @@ struct VISIBLEINFO final {
 
 	                          SRECT                        rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 	                          SRECT                        rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
-	                          std::vector<CTreeListItem *> cache_sortedChildren; // cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded. // In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
+	                          std::vector<const CTreeListItem *> cache_sortedChildren; // cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded. // In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 	_Field_range_( 0, 32767 ) std::int16_t                 indent;  // 0 for the root item, 1 for its children, and so on.
 		                      bool                         isExpanded : 1; // Whether item is expanded.
 							  double                       ntfs_compression_ratio;
@@ -138,7 +138,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
-		std::vector<CTreeListItem*> size_sorted_vector_of_children( ) const;
+		std::vector<const CTreeListItem*> size_sorted_vector_of_children( ) const;
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
@@ -162,7 +162,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
-		CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
+		const CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 
 		_Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;

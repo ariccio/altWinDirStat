@@ -395,8 +395,8 @@ PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const {
 	}
 
 
-std::vector<CTreeListItem*> CTreeListItem::size_sorted_vector_of_children( ) const {
-	std::vector<CTreeListItem*> children;
+std::vector<const CTreeListItem*> CTreeListItem::size_sorted_vector_of_children( ) const {
+	std::vector<const CTreeListItem*> children;
 	if ( m_child_info.m_child_info_ptr == nullptr ) {
 		//ASSERT( m_childCount == 0 );
 		ASSERT( m_child_info.m_child_info_ptr == nullptr );
@@ -466,7 +466,7 @@ std::uint64_t CTreeListItem::size_recurse( ) const {
 //	}
 
 _Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_
-CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
+const CTreeListItem* CTreeListItem::GetSortedChild( _In_ const size_t i ) const {
 	ASSERT( m_vi != nullptr );
 	ASSERT( !( m_vi->cache_sortedChildren.empty( ) ) );
 	if ( m_vi != nullptr ) {
@@ -1780,7 +1780,7 @@ void CTreeListControl::insertItemsAdjustWidths( _In_ const CTreeListItem* const 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( size_t c = 0; c < count; c++ ) {
 		//ASSERT( count == item->m_childCount );
-		const auto child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
+		const CTreeListItem* const child = item->GetSortedChild( c );//m_vi->cache_sortedChildren[i];
 		ASSERT( child != NULL );
 		if ( child != NULL ) {
 			InsertItem( child, i + static_cast<INT_PTR>( 1 ) + static_cast<INT_PTR>( c ) );
@@ -1920,7 +1920,7 @@ void CTreeListControl::handle_VK_RIGHT( _In_ const CTreeListItem* const item, _I
 		}
 	else if ( item->m_child_info.m_child_info_ptr != nullptr ) {
 
-		const auto sortedItemAtZero = item->GetSortedChild( 0 );
+		const CTreeListItem* const sortedItemAtZero = item->GetSortedChild( 0 );
 		if ( sortedItemAtZero != NULL ){
 			SelectItem( sortedItemAtZero );
 			}

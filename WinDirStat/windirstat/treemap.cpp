@@ -209,7 +209,7 @@ namespace {
 		//return fBegin;
 		}
 
-	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
+	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
@@ -244,11 +244,11 @@ namespace {
 		}
 
 	//passing by reference: `cmp    r14, QWORD PTR [r12]` for `if ( ( i + 1 ) < rowEnd )`,
-	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children ) {
+	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
 		if ( ( i + 1 ) >= rowEnd ) {
 			return 0;
 			}
-		const auto childAtIPlusOne = static_cast< CTreeListItem* >( parent_vector_of_children[ i + 1 ] );
+		const auto childAtIPlusOne = static_cast< const CTreeListItem* >( parent_vector_of_children[ i + 1 ] );
 		if ( childAtIPlusOne == NULL ) {
 			return 0;
 			}
@@ -298,7 +298,7 @@ namespace {
 		return widthOfRow;
 		}
 
-	inline const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t rowBegin, _In_ const std::vector<CTreeListItem*>& vector_o_children ) {
+	inline const std::uint64_t max_size_of_children_in_row( _In_ const std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t rowBegin, _In_ const std::vector<const CTreeListItem*>& vector_o_children ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "sizes[ rowBegin ]: %llu\r\n" ), sizes.at( rowBegin ) );
 		TRACE( _T( "maximumSizeOfChildrenInRow: %llu\r\n" ), maximumSizeOfChildrenInRow );
@@ -559,9 +559,9 @@ namespace {
 		}
 
 
-	void i_less_than_children_per_row( _In_ const size_t i, _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _In_ const size_t c ) {
+	void i_less_than_children_per_row( _In_ const size_t i, _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _In_ const size_t c ) {
 		if ( i < childrenPerRow[ row ] ) {
-			const auto childAtC = static_cast< CTreeListItem* >( parent_vector_of_children.at( c ) );
+			const auto childAtC = static_cast< const CTreeListItem* >( parent_vector_of_children.at( c ) );
 			if ( childAtC != NULL ) {
 				childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
@@ -664,10 +664,10 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 		}
 
 	WDS_validateRectangle_DEBUG( item, item->TmiGetRectangle( ) );
-	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
+	const std::vector<const CTreeListItem*> item_vector_of_children = item->size_sorted_vector_of_children( );
 	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
 	for ( size_t i = 0; i < item->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
-		const auto child = static_cast< CTreeListItem* >( item_vector_of_children.at( i ) );
+		const auto child = static_cast< const CTreeListItem* >( item_vector_of_children.at( i ) );
 		WDS_validateRectangle_DEBUG( child, item->TmiGetRectangle( ) );
 		RecurseCheckTree( child );
 		}
@@ -792,10 +792,10 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
 	const auto countOfChildren = item->m_child_info.m_child_info_ptr->m_childCount;
 
-	const auto item_vector_of_children = item->size_sorted_vector_of_children( );
+	const std::vector<const CTreeListItem*> item_vector_of_children = item->size_sorted_vector_of_children( );
 	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
-		const auto child = static_cast< CTreeListItem* >( item_vector_of_children.at( i ) );
+		const auto child = static_cast< const CTreeListItem* >( item_vector_of_children.at( i ) );
 		ASSERT( item->m_child_info.m_child_info_ptr != nullptr );
 		ASSERT( item->m_child_info.m_child_info_ptr->m_children != nullptr );
 		ASSERT( child != NULL );
@@ -949,7 +949,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	return horizontalRows;
 	}
 
-void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const {
+void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( parent );
 #endif
@@ -957,7 +957,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow
 
 	for ( size_t i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
 
-		const auto child = static_cast< CTreeListItem* >( parent_vector_of_children.at( c ) );
+		const auto child = static_cast< const CTreeListItem* >( parent_vector_of_children.at( c ) );
 
 		ASSERT( childWidth[ c ] >= 0 );
 		ASSERT( left > -2 );
@@ -1017,7 +1017,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 	const auto height = static_cast< size_t >( height_scope_holder );
 	size_t c = 0;
 	double top = horizontalRows ? rc.top : rc.left;
-	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
+	const std::vector<const CTreeListItem*> parent_vector_of_children = parent->size_sorted_vector_of_children( );
 	const auto rows_size = rows.size( );
 	for ( size_t row = 0; row < rows_size; row++ ) {
 
@@ -1052,7 +1052,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 
 	std::vector<std::uint64_t> parentSizes( parent->m_child_info.m_child_info_ptr->m_childCount, UINT64_MAX );
 
-	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
+	const std::vector<const CTreeListItem*> parent_vector_of_children = parent->size_sorted_vector_of_children( );
 
 
 	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
@@ -1062,7 +1062,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 	ASSERT( nextChild < parent->m_child_info.m_child_info_ptr->m_childCount );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
 
-		const std::uint64_t childSize = static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( );
+		const std::uint64_t childSize = static_cast< const CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( );
 		parentSizes.at( i ) = childSize;
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
@@ -1100,7 +1100,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 
 	// We add the rest of the children, if their size is 0.
 //#pragma warning(suppress: 6011)//not null here!
-	while ( ( i < parent->m_child_info.m_child_info_ptr->m_childCount ) && ( static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
+	while ( ( i < parent->m_child_info.m_child_info_ptr->m_childCount ) && ( static_cast< const CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
 		i++;
 		}
 
@@ -1112,7 +1112,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 		// Rectangle(1.0 * 1.0) = mySize
 		const double rowSize = mySize * rowHeight;
 		double childSize = DBL_MAX;
-		const auto thisChild = static_cast< CTreeListItem* >( parent_vector_of_children.at( nextChild + i ) );
+		const auto thisChild = static_cast< const CTreeListItem* >( parent_vector_of_children.at( nextChild + i ) );
 		if ( parentSizes.at( nextChild + i ) != UINT64_MAX ) {
 			childSize = ( double ) parentSizes.at( nextChild + i );
 			}
@@ -1137,7 +1137,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 	}
 
 //if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
+void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
 
 	// Build the rectangles of children.
 	RECT rc;
@@ -1145,7 +1145,7 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 	
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {
 		const int begin = ( int ) fBegin;
-		const auto child_at_I = static_cast< CTreeListItem* >( parent_vector_of_children[ i ] );
+		const auto child_at_I = static_cast< const CTreeListItem* >( parent_vector_of_children[ i ] );
 
 		const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
 
@@ -1220,7 +1220,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 	// First child for next row
 	size_t head = 0;
 
-	const auto parent_vector_of_children = parent->size_sorted_vector_of_children( );
+	const std::vector<const CTreeListItem*> parent_vector_of_children = parent->size_sorted_vector_of_children( );
 
 #ifdef GRAPH_LAYOUT_DEBUG
 	TRACE( _T( "head: %llu\r\n" ), head );
@@ -1333,7 +1333,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 			//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
 			if ( head < parent->m_child_info.m_child_info_ptr->m_childCount ) {
-				static_cast< CTreeListItem* >( parent_vector_of_children.at( head ) )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				static_cast< const CTreeListItem* >( parent_vector_of_children.at( head ) )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
 				}
 			break;
 			}
