@@ -404,7 +404,7 @@ protected:
 		// Fill the selection rectangle background (usually dark blue)
 		//pdc.FillSolidRect( &selection, list_highlight_color );
 		::SetBkColor( hDC, list_highlight_color );
-		::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &selection, NULL, 0, NULL );
+		VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &selection, NULL, 0, NULL ) );
 
 		}
 
@@ -686,7 +686,7 @@ protected:
 		*/
 		//dcmem.FillSolidRect( &rect_to_fill_solidly, GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
 		::SetBkColor( dcmem.m_hDC, GetItemBackgroundColor( pdis->itemID ) );
-		::ExtTextOut( dcmem.m_hDC, 0, 0, ETO_OPAQUE, &rect_to_fill_solidly, NULL, 0, NULL );
+		VERIFY( ::ExtTextOut( dcmem.m_hDC, 0, 0, ETO_OPAQUE, &rect_to_fill_solidly, NULL, 0, NULL ) );
 
 		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 

@@ -1429,7 +1429,7 @@ void CTreemap::DrawSolidRect( _In_ HDC hDC, _In_ const RECT& rc, _In_ const COLO
 	}
 	*/
 	::SetBkColor( hDC, RGB( red, green, blue ) );
-	::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL );
+	VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 	//pdc.FillSolidRect( &rc, RGB( red, green, blue ) );
 	}
 
@@ -1682,6 +1682,13 @@ void CTreemap::SetPixels( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre
 		abort( );
 		}
 
+	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] {
+		const BOOL deleted = ::DeleteDC( hTempDeviceContextMemory );
+		if ( deleted == 0 ) {
+			std::terminate( );
+			}
+		} );
+
 	//VERIFY( tempDCmem.CreateCompatibleDC( &offscreen_buffer ) );
 	CBitmap bmp;
 	
@@ -1713,7 +1720,6 @@ void CTreemap::SetPixels( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre
 	//tempDCmem.SelectObject( &bmp );
 	::SelectObject( hTempDeviceContextMemory, bmp.m_hObject );
 	if ( ( rcWidth == 0 ) || ( rcHeight == 0 ) ) {
-		::DeleteDC( hTempDeviceContextMemory );
 		return;
 		}
 
@@ -1732,7 +1738,6 @@ void CTreemap::SetPixels( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre
 		displayWindowsMsgBoxWithMessage( L"offscreen_buffer.TransparentBlt failed!!! AHHH!!!!" );
 		std::terminate( );
 		}
-	::DeleteDC( hTempDeviceContextMemory );
 	}
 
 
