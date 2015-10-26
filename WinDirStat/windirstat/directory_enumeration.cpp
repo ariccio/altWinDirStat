@@ -119,11 +119,6 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 	WIN32_FIND_DATA fData;
 	HANDLE fDataHand = NULL;
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
-	//FILETIME t;
-	//FILEINFO fi;
-	//zeroFILEINFO( fi );
-	//memset_zero_struct( fi );
-	//fi.reset( );
 	BOOL findNextFileRes = TRUE;
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
 		const auto scmpVal  = wcscmp( fData.cFileName, L".." );
@@ -412,6 +407,19 @@ namespace {
 	
 	//return indicates whether we should ask user to elevate
 	bool handle_NTFS_special_files( _In_ const std::wstring& path, _In_ const CDirstatApp* const app, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {
+		if ( path.length( ) > 5 ) {
+			ASSERT( path.compare( 0, 4, L"\\\\?\\", 4 ) == 0 );
+			std::wstring path_temp( path.cbegin( ) + 4, path.cend( ) );
+			path_temp += L"\\";
+			if ( app->m_mountPoints.IsVolume( path_temp ) ) {
+				TRACE( _T( "path: `%s` is a volume\r\n" ), path_temp.c_str( ) );
+				}
+			else {
+				TRACE( _T( "path: `%s` is NOT a volume\r\n" ), path_temp.c_str( ) );
+				return false;
+				}
+			}
+
 		std::wstring raw_dir_path( fixup_path_to_MFT( path ) );
 
 

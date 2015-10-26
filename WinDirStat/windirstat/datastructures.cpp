@@ -111,7 +111,10 @@ CSetTextColor::~CSetTextColor( ) {
 		std::terminate( );
 		abort( );
 		}
-	::SetTextColor( m_hDC, m_oldColor );
+	const COLORREF result = ::SetTextColor( m_hDC, m_oldColor );
+	if ( result == CLR_INVALID ) {
+		std::terminate( );
+		}
 	//m_pdc->SetTextColor( m_oldColor );
 	}
 

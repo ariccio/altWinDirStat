@@ -409,6 +409,9 @@ void CMainFrame::OnClose( ) {
 	CFrameWnd::SaveBarState( CPersistence::GetBarStateSection( ) );
 	CPersistence::SetShowStatusbar( ( m_wndStatusBar.GetStyle( ) bitand WS_VISIBLE ) != 0 );
 
+	const auto Options = GetOptions( );
+	Options->SaveToRegistry( );
+
 #ifdef _DEBUG
 	// avoid memory leaks and show hourglass while deleting the tree
 	//VERIFY( GetDocument( )->OnNewDocument( ) );

@@ -1057,7 +1057,7 @@ int CTreeListControl::collapse_parent_plus_one_through_index( _In_ const CTreeLi
 			}
 		TRACE( _T( "Might collapse item %i (`%s`)\r\n" ), k, item_at_k->m_name );
 		if ( !CollapseItem( k ) ) {
-			TRACE( _T( "Failed to collapse item at `k`: %i (`%s`)\r\n" ), k, item_at_k->m_name );
+			TRACE( _T( "WARNING: Failed to collapse item at `k`: %i (`%s`)\r\n" ), k, item_at_k->m_name );
 			break;
 			}
 		//We need to move UP the hierarchy, so we need to collapse items we're moving UP FROM
@@ -1073,7 +1073,7 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 	static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, int>::value, "we're gonna need to do this!" );
 
 	const auto w = GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
-	ASSERT( w == ( CListCtrl::GetStringWidth( item_at_index->m_name ) + 15 ) );
+
 	const auto colWidth = CListCtrl::GetColumnWidth( static_cast<int>( column::COL_NAME ) );
 	if ( colWidth < w ) {
 		VERIFY( CListCtrl::SetColumnWidth( 0, w + colWidth ) );
@@ -1661,7 +1661,7 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 		}
 	//SetRedraw( FALSE );
 	if ( item_at_i->IsExpanded( ) ) {
-		VERIFY( CollapseItem( i ) );
+		CollapseItem( i );//Ok to ignore return value here.
 		//SetRedraw( TRUE );
 		return;
 		}
@@ -1700,7 +1700,8 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 		return false;
 		}
 	if ( !item->IsExpanded( ) ) {
-		TRACE( _T( "ERROR: Collapsing item %i: %s...it's not expanded!\r\n" ), i, item->m_name );
+		TRACE( _T( "WARNING: Collapsing item %i: %s...it's not expanded!\r\n" ), i, item->m_name );
+		TRACE( _T( "WARNING: The aforemention collapse failure (\"it's not expanded!\") is not cause for concern if you're collapsing a folder (hitting left) from something OTHER than the first item in that folder.\r\n" ) );
 		return false;
 		}
 	TRACE( _T( "Collapsing item %i: %s, item count prior to collapsing: %i\r\n" ), i, item->m_name, CListCtrl::GetItemCount( ) );
@@ -1899,7 +1900,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 void CTreeListControl::handle_VK_LEFT( _In_ const CTreeListItem* const item, _In_ _In_range_( 0, INT32_MAX ) const int i ) {
 	if ( item->IsExpanded( ) ) {
-		VERIFY( CollapseItem( i ) );
+		CollapseItem( i );//Ok to ignore return value here.
 		}
 	else if ( item->m_parent != NULL ) {
 		SelectItem( item->m_parent );
