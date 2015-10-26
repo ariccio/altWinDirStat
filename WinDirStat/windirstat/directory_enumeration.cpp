@@ -174,7 +174,26 @@ namespace {
 		L"$BadClus",
 		L"$Secure",
 		L"$Upcase",
-		L"$Extend"
+		L"$Extend",
+		L"$ObjId",      //Windows 8.1 only? http://blogs.msdn.com/b/ntdebugging/archive/2014/05/08/ntfs-misreports-free-space-part-3.aspx
+		                //fsutil queries "\\.\C:\$Extend\$ObjId:$O:$INDEX_ALLOCATION"
+		L"$Quota",      //fsutil queries "\\.\C:\$Extend\$Quota:$Q:$INDEX_ALLOCATION"
+		L"$Reparse",    //fsutil queries "\\.\C:\$Extend\$Reparse:$R:$INDEX_ALLOCATION"
+		L"$UsnJrnl",    //fsutil queries "\\.\C:\$Extend\$UsnJrnl:$J"
+		L"$RmMetadata", //Also Win 8.1 only?
+		                //fsutil queries "\\.\C:\$Extend\$RmMetadata"
+		L"$Repair",     //Also Win 8.1 only?
+		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$Repair"
+		L"$Txf",        //Also Win 8.1 only?
+		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$Txf"
+		L"$TxfLog"      //Also Win 8.1 only?
+		                //fsutil queries "\??\C:\$Extend\$RmMetadata\$TxfLog"
+		L"$Tops",       //Also Win 8.1 only?
+		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$TxfLog\$Tops"
+		L"$TxfLog.blf", //Also Win 8.1 only?
+		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$TxfLog\$TxfLog.blf"
+
+		//System Volume Information?
 	};
 
 
@@ -377,6 +396,7 @@ namespace {
 			return;
 			}
 
+		//file_info->
 		(void)files;//temporarily suppress warning
 
 		close_handle( special_file_handle );
