@@ -177,21 +177,41 @@ namespace {
 		L"$Extend",
 		L"$ObjId",      //Windows 8.1 only? http://blogs.msdn.com/b/ntdebugging/archive/2014/05/08/ntfs-misreports-free-space-part-3.aspx
 		                //fsutil queries "\\.\C:\$Extend\$ObjId:$O:$INDEX_ALLOCATION"
+		L"$Extend\\$ObjId",
+
 		L"$Quota",      //fsutil queries "\\.\C:\$Extend\$Quota:$Q:$INDEX_ALLOCATION"
+		L"$Extend\\$Quota",
+
 		L"$Reparse",    //fsutil queries "\\.\C:\$Extend\$Reparse:$R:$INDEX_ALLOCATION"
+		L"$Extend\\$Reparse",
+
 		L"$UsnJrnl",    //fsutil queries "\\.\C:\$Extend\$UsnJrnl:$J"
+		L"$Extend\\$UsnJrnl",
+
+
 		L"$RmMetadata", //Also Win 8.1 only?
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata"
+		L"$Extend\\$RmMetadata", 
+
 		L"$Repair",     //Also Win 8.1 only?
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$Repair"
+		L"$Extend\\$RmMetadata\\$Repair",
+
 		L"$Txf",        //Also Win 8.1 only?
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$Txf"
-		L"$TxfLog"      //Also Win 8.1 only?
+		L"$Extend\\$RmMetadata\\$Txf",
+
+		L"$TxfLog",     //Also Win 8.1 only?
 		                //fsutil queries "\??\C:\$Extend\$RmMetadata\$TxfLog"
+		L"$Extend\\$RmMetadata\\$TxfLog",
+
 		L"$Tops",       //Also Win 8.1 only?
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$TxfLog\$Tops"
+		L"$Extend\\$RmMetadata\\$TxfLog\\$Tops",
+
 		L"$TxfLog.blf", //Also Win 8.1 only?
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$TxfLog\$TxfLog.blf"
+		L"$Extend\\$RmMetadata\\$TxfLog\\$TxfLog.blf",
 
 		//System Volume Information?
 	};
@@ -313,18 +333,24 @@ namespace {
 			rsize_t unused_chars_written;
 			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
 			if ( SUCCEEDED( fmt_res ) ) {
-				OutputDebugStringW( L"WinDirStat: " );
+#ifndef DEBUG
+				OutputDebugStringW( L"WinDirStat failed to get compressed file size for file: `" );
+				OutputDebugStringW( path.c_str( ) );
+				OutputDebugStringW( L"`\r\n" );
+				OutputDebugStringW( L"WinDirStat: Error message:" );
 				OutputDebugStringW( err_buff );
 				OutputDebugStringW( L"\r\n" );
-				TRACE( L"%s\r\n", err_buff );
+#else
+				TRACE( L"ERROR: failed to get compressed file size for file: `%s`, message: %s\r\n", path.c_str( ), err_buff );
+#endif
+				return;
 				}
-			else {
-				TRACE( L"Failed to format error message for error encountered when trying to open `%s`\r\n", path.c_str( ) );
-				}
+			TRACE( L"Failed to format error message for error encountered when trying to open `%s`\r\n", path.c_str( ) );
 			return;
 			}
 
 
+		TRACE( L"Fallback method (GetCompressedFileSize) for \"file\" `%s`, succeeded!\r\n\r\n", path.c_str( ) );
 
 		files.emplace_back( FILEINFO {  static_cast<std::uint64_t>( file_size ), 
 										FILETIME{ 0 }, //fData.ftLastWriteTime, - GetFileTime/GetFileInformationByHandle
@@ -344,13 +370,20 @@ namespace {
 			rsize_t unused_chars_written;
 			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
 			if ( SUCCEEDED( fmt_res ) ) {
-				OutputDebugStringW( L"WinDirStat: " );
+#ifndef DEBUG
+				OutputDebugStringW( L"WinDirStat failed to open file `" );
+				OutputDebugStringW( path.c_str( ) );
+				OutputDebugStringW( L"`\r\n" );
+				OutputDebugStringW( L"WinDirStat: Error message:" );
 				OutputDebugStringW( err_buff );
 				OutputDebugStringW( L"\r\n" );
-				TRACE( L"%s\r\n", err_buff );
+#else
+				TRACE( L"ERROR: failed to open file `%s`, message: %s\r\n", path.c_str( ), err_buff );
+#endif
 				}
 			else {
 				TRACE( L"Failed to format error message for error encountered when trying to open `%s`\r\n", path.c_str( ) );
+				std::terminate( );
 				}
 			return query_special_file_fallback( path, files, special_file_name );
 		}
@@ -385,19 +418,30 @@ namespace {
 			rsize_t unused_chars_written;
 			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
 			if ( SUCCEEDED( fmt_res ) ) {
-				OutputDebugStringW( L"WinDirStat: " );
+#ifndef DEBUG
+				OutputDebugStringW( L"WinDirStat: GetFileInformationByHandleEx failed for file `" );
+				OutputDebugStringW( path.c_str( ) );
+				OutputDebugStringW( L"`\r\n" );
+				OutputDebugStringW( L"WinDirStat: Error message:" );
 				OutputDebugStringW( err_buff );
 				OutputDebugStringW( L"\r\n" );
-				TRACE( L"%s\r\n", err_buff );
+#else
+				TRACE( L"ERROR: GetFileInformationByHandleEx failed for file `%s`, message: %s\r\n", path.c_str( ), err_buff );
+#endif
+				return;
 				}
-			else {
-				TRACE( L"Failed to format error message for error encountered when trying to get information for `%s`\r\n", path.c_str( ) );
-				}
+			TRACE( L"Failed to format error message for error encountered when trying to get information for `%s`\r\n", path.c_str( ) );
 			return;
 			}
 
-		//file_info->
-		(void)files;//temporarily suppress warning
+		TRACE( _T( "Successfully got file information for file `%s` via GetFileInformationByHandleEx!\r\n" ), special_file_name );
+		
+		const FILETIME special_file_filetime = { file_info->LastWriteTime.HighPart, file_info->LastWriteTime.LowPart };
+		//special_file_filetime.dwHighDateTime = file_info->LastWriteTime.HighPart;
+		//special_file_filetime.dwLowDateTime = file_info->LastWriteTime.LowPart;
+
+		files.emplace_back( FILEINFO { file_info->EndOfFile.QuadPart, special_file_filetime, file_info->FileAttributes, special_file_name } );
+		//(void)files;//temporarily suppress warning
 
 		close_handle( special_file_handle );
 		}
