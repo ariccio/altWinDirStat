@@ -129,7 +129,7 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 			}
 		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
 			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
-			const auto alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
+			const std::wstring alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
 			directories.emplace_back( DIRINFO { UINT64_ERROR,
 												std::move( fData.ftLastWriteTime ),
 												std::move( fData.dwFileAttributes ),
@@ -155,11 +155,6 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 	}
 
 namespace {
-
-
-
-
-
 	//end copied & pasted
 
 
@@ -226,7 +221,10 @@ namespace {
 			(*result_code) = last_err;
 			return E_FAIL;
 			}
-		
+		auto handle_guard = WDS_SCOPEGUARD_INSTANCE( [ &] {
+			close_handle( root_volume_handle );
+			} );
+
 		//const rsize_t size_of_base_struct = sizeof( NTFS_VOLUME_DATA_BUFFER );
 		NTFS_VOLUME_DATA_BUFFER data_buf = { 0 };
 
@@ -236,10 +234,7 @@ namespace {
 		if ( data_res == 0 ) {
 			const DWORD last_err = ::GetLastError( );
 			TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA failed! Error: %lu\r\n" ), last_err );
-			close_handle( root_volume_handle );
 			(*result_code) = last_err;
-
-			
 			return E_FAIL;
 			}
 
@@ -250,14 +245,11 @@ namespace {
 										L"$MFT"
 										}
 							);
-
-		close_handle( root_volume_handle );
-		
 		(*result_code) = NO_ERROR;
 		return S_OK;
 		}
 
-	__forceinline WDS_DECLSPEC_NOTHROW void GetCompressedFileSize_failure_handler( const std::wstring& path, const ULARGE_INTEGER ret, const DWORD last_err ) {
+	__forceinline WDS_DECLSPEC_NOTHROW void GetCompressedFileSize_failure_logger( const std::wstring& path, const ULARGE_INTEGER ret, const DWORD last_err ) {
 #ifdef DEBUG
 		const rsize_t error_message_buffer_size = 128;
 		_Null_terminated_ wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
@@ -304,19 +296,18 @@ namespace {
 		const DWORD last_err = GetLastError( );
 		if ( ret.QuadPart == INVALID_FILE_SIZE ) {
 			if ( ret.HighPart != NULL ) {
-				GetCompressedFileSize_failure_handler( path, ret, last_err );
+				GetCompressedFileSize_failure_logger( path, ret, last_err );
 				if ( last_err != NO_ERROR ) {
 					return UINT64_ERROR;// IN case of an error return size from CFileFind object
 					}
 				return UINT64_ERROR;
 				}
-			else {
-				if ( last_err != NO_ERROR ) {
-					GetCompressedFileSize_failure_handler( path, ret, last_err );
-					return UINT64_ERROR;
-					}
-				return ret.QuadPart;
+			ASSERT( ret.HighPart == NULL );
+			if ( last_err != NO_ERROR ) {
+				GetCompressedFileSize_failure_logger( path, ret, last_err );
+				return UINT64_ERROR;
 				}
+			return ret.QuadPart;
 			}
 		return ret.QuadPart;
 		}
@@ -361,7 +352,7 @@ namespace {
 
 		}
 
-	void query_single_special_file_failed_to_open( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) {
+	void query_single_special_file_failed_fallback( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) {
 			const DWORD last_err = ::GetLastError( );
 			TRACE( L"Failed to open \"file\" `%s`, Error: %lu\r\n", path.c_str( ), last_err );
 			
@@ -391,13 +382,14 @@ namespace {
 	void query_single_special_file( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) {
 		const HANDLE special_file_handle = CreateFileW( path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
 		if ( special_file_handle == INVALID_HANDLE_VALUE ) {
-			return query_single_special_file_failed_to_open( path, files, special_file_name );
+			return query_single_special_file_failed_fallback( path, files, special_file_name );
 			}
 
+		auto handle_guard = WDS_SCOPEGUARD_INSTANCE( [ &] {
+			close_handle( special_file_handle );
+			} );
 
 		const rsize_t file_full_dir_info_size_with_name = ( sizeof( FILE_FULL_DIR_INFO ) + ( sizeof( std::declval<FILE_FULL_DIR_INFO>( ).FileName[ 0 ] ) * MAX_PATH ) );
-		
-		
 		
 		//DO NOT ACCESS DIRECTLY!
 		char file_full_dir_info_buffer[ file_full_dir_info_size_with_name ] = { 0 };
@@ -435,15 +427,10 @@ namespace {
 			}
 
 		TRACE( _T( "Successfully got file information for file `%s` via GetFileInformationByHandleEx!\r\n" ), special_file_name );
-		
 		const FILETIME special_file_filetime = { file_info->LastWriteTime.HighPart, file_info->LastWriteTime.LowPart };
-		//special_file_filetime.dwHighDateTime = file_info->LastWriteTime.HighPart;
-		//special_file_filetime.dwLowDateTime = file_info->LastWriteTime.LowPart;
+		ASSERT( file_info->EndOfFile.QuadPart >= 0 );
 
-		files.emplace_back( FILEINFO { file_info->EndOfFile.QuadPart, special_file_filetime, file_info->FileAttributes, special_file_name } );
-		//(void)files;//temporarily suppress warning
-
-		close_handle( special_file_handle );
+		files.emplace_back( FILEINFO { static_cast<std::uint64_t>( file_info->EndOfFile.QuadPart ), special_file_filetime, file_info->FileAttributes, special_file_name } );
 		}
 
 	void query_special_files( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories ) {

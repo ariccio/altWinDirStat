@@ -12,6 +12,14 @@
 
 
 CSelectObject::CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) : m_hDC{ hDC } {
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
 	m_pOldObject = ::SelectObject( m_hDC, hObject );
 	if ( m_pOldObject == NULL ) {
 		std::terminate( );
@@ -22,6 +30,14 @@ CSelectObject::CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) :
 	}
 
 CSelectObject::~CSelectObject( ) {
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
 	const HGDIOBJ retval = ::SelectObject( m_hDC, m_pOldObject );
 	if ( retval == NULL ) {
 		std::terminate( );
@@ -55,11 +71,25 @@ CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) c
 	if ( m_hDC == NULL ) {
 		std::terminate( );
 		}
+
+	//GetStockObject function: https://msdn.microsoft.com/en-us/library/dd144925.aspx
+	//If the function succeeds, the return value is a handle to the requested logical object.
+	//If the function fails, the return value is NULL.
+	//It is not necessary (but it is not harmful) to delete stock objects by calling DeleteObject.
 	HGDIOBJ hStockObj = ::GetStockObject( nIndex );
 	if ( hStockObj == NULL ) {
 		std::terminate( );
 		abort( );
 		}
+
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
 	m_pOldObject = ::SelectObject( m_hDC, hStockObj );
 
 	//m_pOldObject = pdc.SelectStockObject( nIndex );
@@ -67,7 +97,14 @@ CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) c
 	}
 
 CSelectStockObject::~CSelectStockObject( ) {
-	//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
 	const auto retval = ::SelectObject( m_hDC, m_pOldObject );
 	if ( retval == NULL ) {
 		std::terminate( );
@@ -82,8 +119,13 @@ CSetBkMode::CSetBkMode( _In_ HDC hDC, _In_ const INT mode ) : m_hDC { hDC } {
 	if ( hDC == NULL ) {
 		std::terminate( );
 		}
+
+	//SetBkMode function: https://msdn.microsoft.com/en-us/library/dd162965.aspx
+	//If the function succeeds, the return value specifies the previous background mode.
+	//If the function fails, the return value is zero.
 	m_oldMode = ::SetBkMode( m_hDC, mode );
 	//m_oldMode = pdc.SetBkMode( mode );
+	ASSERT( m_oldMode != 0 );
 	}
 
 CSetBkMode::~CSetBkMode( ) {
@@ -91,7 +133,11 @@ CSetBkMode::~CSetBkMode( ) {
 		std::terminate( );
 		abort( );
 		}
-	::SetBkMode( m_hDC, m_oldMode );
+	ASSERT( m_oldMode != 0 );
+	//SetBkMode function: https://msdn.microsoft.com/en-us/library/dd162965.aspx
+	//If the function succeeds, the return value specifies the previous background mode.
+	//If the function fails, the return value is zero.
+	VERIFY( ::SetBkMode( m_hDC, m_oldMode ) );
 	//m_pdc->SetBkMode( m_oldMode );
 	}
 
@@ -101,6 +147,10 @@ CSetTextColor::CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color ) : m_hDC 
 		}
 	//ASSERT_VALID( pdc );
 	//m_oldColor = pdc.SetTextColor( color );
+	
+	//SetTextColor function: https://msdn.microsoft.com/en-us/library/dd145093.aspx
+	//If the function succeeds, the return value is a color reference for the previous text color as a COLORREF value.
+	//If the function fails, the return value is CLR_INVALID.
 	m_oldColor = ::SetTextColor( hDC, color );
 	ASSERT( m_oldColor != CLR_INVALID );
 	}
@@ -111,6 +161,9 @@ CSetTextColor::~CSetTextColor( ) {
 		std::terminate( );
 		abort( );
 		}
+	//SetTextColor function: https://msdn.microsoft.com/en-us/library/dd145093.aspx
+	//If the function succeeds, the return value is a color reference for the previous text color as a COLORREF value.
+	//If the function fails, the return value is CLR_INVALID.
 	const COLORREF result = ::SetTextColor( m_hDC, m_oldColor );
 	if ( result == CLR_INVALID ) {
 		std::terminate( );

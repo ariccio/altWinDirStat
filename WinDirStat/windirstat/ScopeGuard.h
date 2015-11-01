@@ -60,18 +60,22 @@ class ScopeGuard final {
 		UNREFERENCED_PARAMETER( file_name_in );
 		UNREFERENCED_PARAMETER( func_name_in );
 		UNREFERENCED_PARAMETER( line_number_in );
+#else
+		ASSERT( line_number >= 0 );
 #endif
 		}
 
 	__forceinline
 	~ScopeGuard( ) {
-		if ( active_ ) {
-	#ifdef DEBUG
-			trace_out( func_expr, file_name, func_name, line_number );
-	#endif
-#pragma warning( suppress: 4711 )//C4711: function 'void __cdecl <lambda_[...]>::operator()(void)const __ptr64' selected for automatic inline expansion
-			function_to_call_on_scope_exit( );
+		if ( !active_ ) {
+			return;
 			}
+#ifdef WDS_SCOPE_GUARD_DEBUGGING
+		trace_out( func_expr, file_name, func_name, line_number );
+#endif
+
+#pragma warning( suppress: 4711 )//C4711: function 'void __cdecl <lambda_[...]>::operator()(void)const __ptr64' selected for automatic inline expansion
+		function_to_call_on_scope_exit( );
 		}
 
 	//intentionally ASKING for inlining.

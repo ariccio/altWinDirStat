@@ -1051,9 +1051,9 @@ IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 _Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
 int CTreeListControl::collapse_parent_plus_one_through_index( _In_ const CTreeListItem* thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent ) {
 	for ( int k = ( parent + 1 ); k < index; k++ ) {
-		const auto item_at_k = GetItem( k );
+		const auto item_at_k = CTreeListControl::GetItem( k );
 		if ( item_at_k == NULL ) {
-			abort( );
+			abort( );//Should never fail, so long as k is less than CListCtrl::GetItemCount( ) 
 			}
 		TRACE( _T( "Might collapse item %i (`%s`)\r\n" ), k, item_at_k->m_name );
 		if ( !CollapseItem( k ) ) {
@@ -1543,12 +1543,22 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 	//bool didBitBlt = false;
 	RECT rcPlusMinus;
 	rcRest.left += 3;
+	//CreateCompatibleDC function: https://msdn.microsoft.com/en-us/library/dd183489.aspx
+	//If the function succeeds, the return value is the handle to a memory DC.
+	//If the function fails, the return value is NULL.
+	
+	//When you no longer need the memory DC, call the DeleteDC function.
+	//We recommend that you call DeleteDC to delete the DC.
+	//However, you can also call DeleteObject with the HDC to delete the DC.
 	HDC hMemoryDeviceContext = ::CreateCompatibleDC( hDC );
 	if ( hMemoryDeviceContext == NULL ) {
 		std::terminate( );
 		abort( );
 		}
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { 
+		//DeleteDC function: https://msdn.microsoft.com/en-us/library/dd183533.aspx
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
 		const BOOL deleted = ::DeleteDC( hMemoryDeviceContext );
 		if ( deleted == 0 ) {
 			std::terminate( );
@@ -1661,7 +1671,11 @@ void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT 
 		}
 	//SetRedraw( FALSE );
 	if ( item_at_i->IsExpanded( ) ) {
-		CollapseItem( i );//Ok to ignore return value here.
+		
+		//Ok to ignore return value here.
+		//Is it: "if you're collapsing a folder (hitting left) from something OTHER than the first item in that folder"?
+		CollapseItem( i );
+		
 		//SetRedraw( TRUE );
 		return;
 		}
