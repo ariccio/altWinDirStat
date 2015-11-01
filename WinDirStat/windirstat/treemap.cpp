@@ -1416,19 +1416,13 @@ void CTreemap::DrawSolidRect( _In_ HDC hDC, _In_ const RECT& rc, _In_ const COLO
 
 	NormalizeColor( red, green, blue );
 
-
-	/*
-	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-	{
-		ENSURE_VALID(this);
-		ENSURE(m_hDC != NULL);
-		ENSURE(lpRect);
-
-		::SetBkColor(m_hDC, clr);
-		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-	}
-	*/
-	::SetBkColor( hDC, RGB( red, green, blue ) );
+	//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+	//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+	//If the function fails, the return value is CLR_INVALID.
+	const COLORREF result = ::SetBkColor( hDC, RGB( red, green, blue ) );
+	if ( result == CLR_INVALID ) {
+		std::terminate( );
+		}
 	VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 	//pdc.FillSolidRect( &rc, RGB( red, green, blue ) );
 	}

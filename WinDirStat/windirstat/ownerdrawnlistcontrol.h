@@ -389,21 +389,16 @@ protected:
 			selection.right = rc.right;
 			}
 
-
-		/*
-		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-		{
-			ENSURE_VALID(this);
-			ENSURE(m_hDC != NULL);
-			ENSURE(lpRect);
-
-			::SetBkColor(m_hDC, clr);
-			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-		}
-		*/
 		// Fill the selection rectangle background (usually dark blue)
 		//pdc.FillSolidRect( &selection, list_highlight_color );
-		::SetBkColor( hDC, list_highlight_color );
+
+		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		//If the function fails, the return value is CLR_INVALID.
+		const COLORREF result = ::SetBkColor( hDC, list_highlight_color );
+		if ( result == CLR_INVALID ) {
+			std::terminate( );
+			}
 		VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &selection, NULL, 0, NULL ) );
 
 		}
@@ -672,20 +667,15 @@ protected:
 		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
 		
 		//ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
-
-		/*
-		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-		{
-			ENSURE_VALID(this);
-			ENSURE(m_hDC != NULL);
-			ENSURE(lpRect);
-
-			::SetBkColor(m_hDC, clr);
-			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-		}
-		*/
 		//dcmem.FillSolidRect( &rect_to_fill_solidly, GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
-		::SetBkColor( dcmem.m_hDC, GetItemBackgroundColor( pdis->itemID ) );
+
+		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		//If the function fails, the return value is CLR_INVALID.
+		const COLORREF set_bk_result = ::SetBkColor( dcmem.m_hDC, GetItemBackgroundColor( pdis->itemID ) );
+		if ( set_bk_result == CLR_INVALID ) {
+			std::terminate( );
+			}
 		VERIFY( ::ExtTextOut( dcmem.m_hDC, 0, 0, ETO_OPAQUE, &rect_to_fill_solidly, NULL, 0, NULL ) );
 
 		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
@@ -834,7 +824,7 @@ public:
 		
 	#pragma push_macro("min")
 	#undef min
-			const auto w = std::min( col_order_array[ i ], maxWidth );
+			const auto w =	( col_order_array[ i ], maxWidth );
 	#pragma pop_macro("min")
 
 			VERIFY( CListCtrl::SetColumnWidth( static_cast<int>( i ), w ) );

@@ -49,25 +49,6 @@ CSelectObject::~CSelectObject( ) {
 
 
 CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_hDC { hDC } {
-	//"Return Value: A pointer to the CGdiObject object that was replaced if the function is successful. The actual object pointed to is a CPen, CBrush, or CFont object. If the call is unsuccessful, the return value is NULL."
-	/*
-	CGdiObject* CDC::SelectStockObject(int nIndex)
-	{
-		ASSERT(m_hDC != NULL);
-
-		HGDIOBJ hObject = ::GetStockObject(nIndex);
-		HGDIOBJ hOldObj = NULL;
-
-		ASSERT(hObject != NULL);
-		if (m_hDC != m_hAttribDC)
-			hOldObj = ::SelectObject(m_hDC, hObject);
-		if (m_hAttribDC != NULL)
-			hOldObj = ::SelectObject(m_hAttribDC, hObject);
-		return CGdiObject::FromHandle(hOldObj);
-	}
-
-	
-	*/
 	if ( m_hDC == NULL ) {
 		std::terminate( );
 		}

@@ -121,8 +121,8 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
 	BOOL findNextFileRes = TRUE;
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
-		const auto scmpVal  = wcscmp( fData.cFileName, L".." );
-		const auto scmpVal2 = wcscmp( fData.cFileName, L"." );
+		const int scmpVal  = wcscmp( fData.cFileName, L".." );
+		const int scmpVal2 = wcscmp( fData.cFileName, L"." );
 		if ( ( scmpVal == 0 ) || ( scmpVal2 == 0 ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
 			findNextFileRes = FindNextFileW( fDataHand, &fData );
 			continue;//No point in operating on ourselves!
@@ -207,10 +207,8 @@ namespace {
 		L"$TxfLog.blf", //Also Win 8.1 only?
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$TxfLog\$TxfLog.blf"
 		L"$Extend\\$RmMetadata\\$TxfLog\\$TxfLog.blf",
-
 		//System Volume Information?
 	};
-
 
 	//returning false means that we were denied CreateFileW access to the volume
 	HRESULT get_NTFS_volume_data( const std::wstring& raw_dir_path, _Inout_ std::vector<FILEINFO>& files, _Always_( _Out_ ) DWORD* const result_code ) {
@@ -255,28 +253,19 @@ namespace {
 		_Null_terminated_ wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
 		rsize_t chars_written = 0;
 		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_message_buffer, error_message_buffer_size, chars_written, last_err );
+		if ( FAILED( fmt_res ) ) {
+			std::terminate( );
+			}
 		if ( ret.HighPart != NULL ) {
 			if ( last_err != NO_ERROR ) {
-				if ( SUCCEEDED( fmt_res ) ) {
-					TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
-					return;
-					}
-				TRACE( _T( "Error! Filepath: %s, Filepath length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+				TRACE( _T( "Error! Filepath: %s, Filepath length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
 				return;
 				}
-			if ( SUCCEEDED( fmt_res ) ) {
-				TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
-				return;
-				}
-			TRACE( _T( "WTF ERROR! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+			TRACE( _T( "WTF ERROR! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
 			return;
 			}
 		if ( last_err != NO_ERROR ) {
-			if ( SUCCEEDED( fmt_res ) ) {
-				TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
-				return;
-				}
-			TRACE( _T( "Error! File path: %s, File path length: %i. Failed to get error message for error code: %u\r\n" ), path.c_str( ), path.length( ), last_err );
+			TRACE( _T( "Error! File path: %s, File path length: %i, GetLastError: %s\r\n" ), path.c_str( ), path.length( ), error_message_buffer );
 			return;
 			}
 #else
@@ -379,6 +368,30 @@ namespace {
 			return query_special_file_fallback( path, files, special_file_name );
 		}
 
+	void get_file_information_by_handle_failure( const std::wstring& path ) {
+		const DWORD last_err = ::GetLastError( );
+		TRACE( L"Failed to get file information by handle for \"file\": `%s`, Error: %lu\r\n", path.c_str( ), last_err );
+		const rsize_t err_buff_size = 512u;
+		wchar_t err_buff[ err_buff_size ] = { 0 };
+		rsize_t unused_chars_written;
+		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
+		if ( SUCCEEDED( fmt_res ) ) {
+#ifndef DEBUG
+			OutputDebugStringW( L"WinDirStat: GetFileInformationByHandleEx failed for file `" );
+			OutputDebugStringW( path.c_str( ) );
+			OutputDebugStringW( L"`\r\n" );
+			OutputDebugStringW( L"WinDirStat: Error message:" );
+			OutputDebugStringW( err_buff );
+			OutputDebugStringW( L"\r\n" );
+#else
+			TRACE( L"ERROR: GetFileInformationByHandleEx failed for file `%s`, message: %s\r\n", path.c_str( ), err_buff );
+#endif
+			return;
+			}
+		TRACE( L"Failed to format error message for error encountered when trying to get information for `%s`\r\n", path.c_str( ) );
+		return;
+		}
+
 	void query_single_special_file( const std::wstring& path, _Inout_ std::vector<FILEINFO>& files, _In_z_ PCWSTR const special_file_name ) {
 		const HANDLE special_file_handle = CreateFileW( path.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0 );
 		if ( special_file_handle == INVALID_HANDLE_VALUE ) {
@@ -402,32 +415,12 @@ namespace {
 		const BOOL file_info_success = ::GetFileInformationByHandleEx( special_file_handle, FileFullDirectoryInfo, file_info, file_full_dir_info_size_with_name );
 		
 		if ( file_info_success == 0 ) {
-			const DWORD last_err = ::GetLastError( );
-			TRACE( L"Failed to get file information by handle for \"file\": `%s`, Error: %lu\r\n", path.c_str( ), last_err );
-			
-			const rsize_t err_buff_size = 512u;
-			wchar_t err_buff[ err_buff_size ] = { 0 };
-			rsize_t unused_chars_written;
-			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
-			if ( SUCCEEDED( fmt_res ) ) {
-#ifndef DEBUG
-				OutputDebugStringW( L"WinDirStat: GetFileInformationByHandleEx failed for file `" );
-				OutputDebugStringW( path.c_str( ) );
-				OutputDebugStringW( L"`\r\n" );
-				OutputDebugStringW( L"WinDirStat: Error message:" );
-				OutputDebugStringW( err_buff );
-				OutputDebugStringW( L"\r\n" );
-#else
-				TRACE( L"ERROR: GetFileInformationByHandleEx failed for file `%s`, message: %s\r\n", path.c_str( ), err_buff );
-#endif
-				return;
-				}
-			TRACE( L"Failed to format error message for error encountered when trying to get information for `%s`\r\n", path.c_str( ) );
+			get_file_information_by_handle_failure( path );
 			return;
 			}
 
 		TRACE( _T( "Successfully got file information for file `%s` via GetFileInformationByHandleEx!\r\n" ), special_file_name );
-		const FILETIME special_file_filetime = { file_info->LastWriteTime.HighPart, file_info->LastWriteTime.LowPart };
+		const FILETIME special_file_filetime = { static_cast<DWORD>( file_info->LastWriteTime.HighPart ), static_cast<DWORD>( file_info->LastWriteTime.LowPart ) };
 		ASSERT( file_info->EndOfFile.QuadPart >= 0 );
 
 		files.emplace_back( FILEINFO { static_cast<std::uint64_t>( file_info->EndOfFile.QuadPart ), special_file_filetime, file_info->FileAttributes, special_file_name } );
