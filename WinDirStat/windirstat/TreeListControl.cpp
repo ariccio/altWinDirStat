@@ -1095,6 +1095,7 @@ void CTreeListControl::expand_item_no_scroll_then_doWhateverJDoes( _In_ const CT
 	}
 
 void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* const pathZero, _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath ) {
+	CWnd::SetRedraw( FALSE );
 	expand_item_no_scroll_then_doWhateverJDoes( pathZero, index );
 	ASSERT( index >= 0 );
 	const auto item_at_index = GetItem( index );
@@ -1107,6 +1108,7 @@ void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* 
 		VERIFY( CListCtrl::EnsureVisible( 0, false ) );
 		}
 	SelectItem( index );
+	CWnd::SetRedraw( TRUE );
 	}
 
 INT CTreeListControl::find_item_then_show_first_try_failed( _In_ const CTreeListItem* const path, _In_ const int i ) {
@@ -1725,6 +1727,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	bool selectNode = false;
 	const auto item_number_to_delete = ( i + 1 );
 	const auto todelete = countItemsToDelete( item, selectNode, i );
+	CWnd::SetRedraw( FALSE );
 	for ( INT m = 0; m < todelete; m++ ) {
 		
 #ifdef DEBUG
@@ -1741,6 +1744,8 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 #endif
 		DeleteItem( item_number_to_delete );
 		}
+	CWnd::SetRedraw( TRUE );
+
 	item->SetExpanded( false );
 	if ( selectNode ) {
 		SelectItem( i );
@@ -1886,8 +1891,10 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 #endif
 
 	item->SortChildren( this );
-
+	
+	CWnd::SetRedraw( FALSE );
 	ExpandItemInsertChildren( item, i, scroll );
+	CWnd::SetRedraw( TRUE );
 
 	item->SetExpanded( true );
 

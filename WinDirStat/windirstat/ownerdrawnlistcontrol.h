@@ -452,6 +452,10 @@ namespace {
 	_Pre_satisfies_( !SUCCEEDED( fmt_res ) )
 	void handle_formatting_error_COwnerDrawnListCtrl_SortItems( _In_ const HRESULT fmt_res ) {
 		displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
+		//TODO:use
+		//WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
+		//WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfW" );
+
 		if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed, STRSAFE_E_END_OF_FILE! This is an error that makes no sense.(aborting)" );
 			std::terminate( );
