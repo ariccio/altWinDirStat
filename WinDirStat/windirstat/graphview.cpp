@@ -163,7 +163,7 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	const auto Options = GetOptions( );
 	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-	CSelectObject sopen( pdc, pen );
+	CSelectObject sopen( pdc, &pen );
 
 	RenderHighlightRectangle( pdc, rc );
 	}
@@ -175,7 +175,7 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { CGraphView::cause_OnIdle_to_be_called_once( ); } );
 
-	CSelectObject sobmp( offscreen_buffer, m_bitmap );
+	CSelectObject sobmp( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
@@ -418,7 +418,7 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 	WTL::CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
-	CSelectObject sopen( pdc, pen );
+	CSelectObject sopen( pdc.m_hDC, pen.m_hObject );
 	CSelectStockObject sobrush( pdc, NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
 	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
@@ -513,7 +513,7 @@ void trace_mouse_left( ) {
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) {
-	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), x, y, path );
+	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld) - hovering over: `%s`\r\n" ), x, y, path );
 	}
 #endif
 

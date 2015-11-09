@@ -47,7 +47,7 @@ struct VISIBLEINFO final {
 
 	                          SRECT                        rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
 	                          SRECT                        rcTitle;         // Coordinates of the label, relative to the upper left corner of the item.
-	                          std::vector<CTreeListItem *> cache_sortedChildren; // cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded. // In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
+	                          std::vector<const CTreeListItem *> cache_sortedChildren; // cache_sortedChildren: This member contains our children (the same set of children as in CItem::m_children) and is initialized as soon as we are expanded. // In contrast to CItem::m_children, this array is always sorted depending on the current user-defined sort column and -order.
 	_Field_range_( 0, 32767 ) std::int16_t                 indent;  // 0 for the root item, 1 for its children, and so on.
 		                      bool                         isExpanded : 1; // Whether item is expanded.
 							  double                       ntfs_compression_ratio;
@@ -59,7 +59,7 @@ struct VISIBLEINFO final {
 // m_vi is freed as soon as the item is removed from the List.
 class CTreeListItem final : public COwnerDrawnListItem {
 	
-		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
+		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
 		
 		virtual INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
 
@@ -138,7 +138,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		DOUBLE  GetFraction                   (                                                                   ) const;
 
-		std::vector<CTreeListItem*> size_sorted_vector_of_children( ) const;
+		std::vector<const CTreeListItem*> size_sorted_vector_of_children( ) const;
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
@@ -162,7 +162,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
 
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
-		CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
+		const CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 
 		_Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;
@@ -292,7 +292,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				anItem->SetVisible( false );
 				anItem->m_vi.reset( );
 				}
-			VERIFY( CListCtrl::DeleteItem( i ) );
+			if ( !CListCtrl::DeleteItem( i ) ) {
+				std::terminate( );
+				}
 			}
 
 		//calls CWnd::DestroyWindow( )
@@ -328,9 +330,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item,     _In_ _In_range_( 0, INT32_MAX ) const int i );
 				
 		_Pre_satisfies_( item->m_vi._Myptr != nullptr ) _Success_( return )
-				const bool DrawNodeNullWidth                   ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _In_ const RECT& rcRest, _In_    CDC& dcmem, _In_ const UINT ysrc ) const;
-				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const;
-				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ CDC& pdc, _Inout_    RECT& rc            ) const;
+				const bool DrawNodeNullWidth                   ( _In_     const CTreeListItem* const item, _In_ HDC hDC,  _In_ const RECT& rcRest, _In_    HDC hDCmem, _In_ const UINT ysrc ) const;
+				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const;
+				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc            ) const;
 
 		_Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
 				int  collapse_parent_plus_one_through_index    ( _In_     const CTreeListItem*       thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent );

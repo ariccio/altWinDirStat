@@ -13,54 +13,54 @@ WDS_FILE_INCLUDE_MESSAGE
 
 class CSelectObject final {
 public:
-	CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject );
+	CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject );
 	~CSelectObject( );
 
 	CSelectObject( const CSelectObject& in ) = delete;
 	CSelectObject& operator=( const CSelectObject& rhs ) = delete;
 protected:
-	CDC* const m_pdc;
-	CGdiObject* m_pOldObject;
+	const HDC m_hDC;
+	HGDIOBJ m_pOldObject;
 	};
 
 class CSelectStockObject final {
 public:
-	CSelectStockObject( _In_ CDC& pdc, _In_ _In_range_( 0, 16 ) const INT nIndex );
+	CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex );
 
 	~CSelectStockObject( );
 
 	CSelectStockObject( const CSelectStockObject& in ) = delete;
 	CSelectStockObject& operator=( const CSelectStockObject& rhs ) = delete;
 protected:
-	CDC* const  m_pdc;
-	CGdiObject* m_pOldObject;
+	const HDC m_hDC;
+	HGDIOBJ m_pOldObject;
 	};
 
 class CSetBkMode final {
 public:
 	_Pre_satisfies_( ( mode == OPAQUE ) || ( mode == TRANSPARENT ) )
-	CSetBkMode( _In_ CDC& pdc, _In_ const INT mode );
+	CSetBkMode( _In_ HDC hDC, _In_ const INT mode );
 	
 	~CSetBkMode( );
 
 	CSetBkMode( const CSetBkMode& in ) = delete;
 	CSetBkMode& operator=( const CSetBkMode& rhs ) = delete;
 protected:
-	CDC* const m_pdc;
+	HDC m_hDC;
 	//C4820: 'CSetBkMode' : '4' bytes padding added after data member 'CSetBkMode::m_oldMode'
 	int  m_oldMode;
 	};
 
 class CSetTextColor final {
 public:
-	CSetTextColor( _In_ CDC& pdc, _In_ const COLORREF color );
+	CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color );
 
 	~CSetTextColor( );
 
 	CSetTextColor( const CSetTextColor& in ) = delete;
 	CSetTextColor& operator=( const CSetTextColor& rhs ) = delete;
 protected:
-	CDC* const m_pdc;
+	const HDC m_hDC;
 	//C4820: 'CSetTextColor' : '4' bytes padding added after data member 'CSetTextColor::m_oldColor'
 	COLORREF m_oldColor;
 	};

@@ -346,7 +346,7 @@ void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writabl
 	}
 
 _Pre_satisfies_( arrSize > 1 )
-void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize ) {
+void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
 	ASSERT( entry.length( ) != 0 );
 	for ( rsize_t i = 0; i < arrSize; ++i ) {
 		arr_[ i ] = 0;
@@ -355,7 +355,7 @@ void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_
 	if ( entry.length( ) == 0 ) {
 		return;
 		}
-	const auto s_temp = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) );
+	const auto s_temp = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), defaultValue );
 	//const DWORD arr_buf_size = MAX_PATH;
 
 	rsize_t current_arr_index = 0;
@@ -471,6 +471,7 @@ void COptions::SetListGrid( _In_ const bool show ) {
 
 void COptions::SetListStripes( _In_ const bool show ) {
 	if ( m_listStripes != show ) {
+		TRACE( _T( "User changed \"show list stripes\" option...\r\n" ) );
 		m_listStripes = show;
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED );
 		}
@@ -637,7 +638,7 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_
 #endif
 		return std::wstring( reg_data_buffer );
 		}
-	TRACE( _T( "C-Style GetProfileString failed!\r\n" ) );
+	TRACE( _T( "C-Style GetProfileString failed! section `%s`, entry: `%s`, defaultValue: `%s`\r\n" ), section, entry, defaultValue );
 	return std::wstring( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
 	}
 

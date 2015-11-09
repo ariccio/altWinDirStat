@@ -43,6 +43,8 @@ public:
 
 	const bool IsMountPoint( _In_ const std::wstring& path ) const;
 
+	const bool IsVolume( _In_ const std::wstring& path ) const;
+
 	
 private:
 	void Clear( );

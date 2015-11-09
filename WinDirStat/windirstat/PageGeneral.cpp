@@ -60,6 +60,7 @@ BOOL CPageGeneral::OnInitDialog( ) {
 	}
 
 void CPageGeneral::OnOK( ) {
+	TRACE( _T( "User clicked OK...\r\n" ) );
 	VERIFY( CWnd::UpdateData( ) );
 	ASSERT( m_appptr != NULL );
 	const auto Options = GetOptions( );

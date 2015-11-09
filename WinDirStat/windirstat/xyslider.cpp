@@ -189,7 +189,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
 
 	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DLIGHT ) );
-	CSelectObject sopen( pdc, pen );
+	CSelectObject sopen( pdc.m_hDC, pen.m_hObject );
 
 	move_to_coord( pdc, rc.left, m_zero.y );
 
@@ -246,7 +246,7 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 
 
 	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
-	CSelectObject sopen( pdc, pen );
+	CSelectObject sopen( pdc.m_hDC, pen.m_hObject );
 
 	move_to_coord( pdc, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ) );
 
@@ -457,7 +457,7 @@ void CXySlider::OnPaint( ) {
 	VERIFY( dcmem.CreateCompatibleDC( &dc ) );
 	CBitmap bm;
 	VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
-	CSelectObject sobm( dcmem, bm );
+	CSelectObject sobm( dcmem.m_hDC, bm.m_hObject );
 
 	PaintBackground( dcmem );
 	// PaintValues(&dcmem); This is too noisy

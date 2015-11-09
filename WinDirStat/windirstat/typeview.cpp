@@ -49,7 +49,7 @@ CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
 
 //CTypeView::~CTypeView( ) { }
 
-bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
 	//ASSERT_VALID( pdc );
 	//Why are we bothering to draw this ourselves?
 	if ( subitem == column::COL_EXTENSION ) {
@@ -64,11 +64,11 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 		const bool list_is_full_row_selection = list->m_showFullRowSelection;
 		//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
 
-		DrawLabel( pdc, rc, state, width, focusLeft, true, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+		DrawLabel( hDC, rc, state, width, focusLeft, true, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 		return true;
 		}
 	else if ( subitem == column::COL_COLOR ) {
-		DrawColor( pdc, rc, state, width );
+		DrawColor( hDC, rc, state, width );
 		return true;
 		}	
 	if ( width == NULL ) {
@@ -80,13 +80,13 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 
 	}
 
-void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
+void CListItem::DrawColor( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
 	if ( width != NULL ) {
 		*width = 40;
 		return;
 		}
 
-	DrawSelection( pdc, rc, state, m_list->HasFocus( ), m_list->IsShowSelectionAlways( ), m_list->GetHighlightColor( ), m_list->m_showFullRowSelection );
+	DrawSelection( hDC, rc, state, m_list->HasFocus( ), m_list->IsShowSelectionAlways( ), m_list->GetHighlightColor( ), m_list->m_showFullRowSelection );
 	VERIFY( ::InflateRect( &rc, -( 2 ), -( 3 ) ) );
 
 	if ( ( rc.right <= rc.left ) || ( rc.bottom <= rc.top ) ) {
@@ -97,7 +97,7 @@ void CListItem::DrawColor( _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _
 #ifdef DEBUG
 	treemap.m_is_typeview = true;
 #endif
-	treemap.DrawColorPreview( pdc, rc, color, &( GetOptions( )->m_treemapOptions ) );
+	treemap.DrawColorPreview( hDC, rc, color, &( GetOptions( )->m_treemapOptions ) );
 	}
 
 _Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )

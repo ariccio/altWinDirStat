@@ -11,74 +11,145 @@
 
 
 
-CSelectObject::CSelectObject( _In_ CDC& pdc, _In_ CGdiObject& pObject ) : m_pdc{ &pdc } {
-	//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
-	m_pOldObject = pdc.SelectObject( &pObject );
-	/*
-_AFXWIN_INLINE CGdiObject* CDC::SelectObject(CGdiObject* pObject)
-{ ASSERT(m_hDC != NULL); return SelectGdiObject(m_hDC, pObject->GetSafeHandle()); }
-		
-CGdiObject* PASCAL CDC::SelectGdiObject(HDC hDC, HGDIOBJ h)
-{
-return CGdiObject::FromHandle(::SelectObject(hDC, h));
-}
-
-CGdiObject* PASCAL CGdiObject::FromHandle(HGDIOBJ h)
-{
-CHandleMap* pMap = afxMapHGDIOBJ(TRUE); //create map if not exist
-ASSERT(pMap != NULL);
-CGdiObject* pObject = (CGdiObject*)pMap->FromHandle(h);
-ASSERT(pObject == NULL || pObject->m_hObject == h);
-return pObject;
-}
-	*/
-
-	ASSERT( m_pOldObject != NULL );
+CSelectObject::CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) : m_hDC{ hDC } {
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
+	m_pOldObject = ::SelectObject( m_hDC, hObject );
+	if ( m_pOldObject == NULL ) {
+		std::terminate( );
+		}
+	if ( m_pOldObject == HGDI_ERROR ) {
+		std::terminate( );
+		}
 	}
 
 CSelectObject::~CSelectObject( ) {
-	const auto retval = m_pdc->SelectObject( m_pOldObject );
-#ifdef DEBUG
-	ASSERT( retval != NULL );
-#else
-	UNREFERENCED_PARAMETER( retval );
-#endif
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
+	const HGDIOBJ retval = ::SelectObject( m_hDC, m_pOldObject );
+	if ( retval == NULL ) {
+		std::terminate( );
+		}
+	if ( retval == HGDI_ERROR ) {
+		std::terminate( );
+		}
 	}
 
 
-CSelectStockObject::CSelectStockObject( _In_ CDC& pdc, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_pdc { &pdc } {
-	//"Return Value: A pointer to the CGdiObject object that was replaced if the function is successful. The actual object pointed to is a CPen, CBrush, or CFont object. If the call is unsuccessful, the return value is NULL."
-	m_pOldObject = pdc.SelectStockObject( nIndex );
+CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_hDC { hDC } {
+	if ( m_hDC == NULL ) {
+		std::terminate( );
+		}
+
+	//GetStockObject function: https://msdn.microsoft.com/en-us/library/dd144925.aspx
+	//If the function succeeds, the return value is a handle to the requested logical object.
+	//If the function fails, the return value is NULL.
+	//It is not necessary (but it is not harmful) to delete stock objects by calling DeleteObject.
+	HGDIOBJ hStockObj = ::GetStockObject( nIndex );
+	if ( hStockObj == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
+	m_pOldObject = ::SelectObject( m_hDC, hStockObj );
+
+	//m_pOldObject = pdc.SelectStockObject( nIndex );
 	ASSERT( m_pOldObject != NULL );
 	}
 
 CSelectStockObject::~CSelectStockObject( ) {
-	//"Return Value: A pointer to the object being replaced. This is a pointer to an object of one of the classes derived from CGdiObject, such as CPen, depending on which version of the function is used. The return value is NULL if there is an error. This function may return a pointer to a temporary object. This temporary object is only valid during the processing of one Windows message. For more information, see CGdiObject::FromHandle."
-	const auto retval = m_pdc->SelectObject( m_pOldObject );
-#ifdef DEBUG
-	ASSERT( retval != NULL );
-#else
-	UNREFERENCED_PARAMETER( retval );
-#endif
+	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
+	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
+	//If the selected object is a region and the function succeeds, the return value is one of the following values.
+		//SIMPLEREGION
+		//COMPLEXREGION
+		//NULLREGION
+	//If an error occurs and the selected object is not a region, the return value is NULL.
+	//Otherwise, it is HGDI_ERROR.
+	const auto retval = ::SelectObject( m_hDC, m_pOldObject );
+	if ( retval == NULL ) {
+		std::terminate( );
+		}
+	if ( retval == HGDI_ERROR ) {
+		std::terminate( );
+		}
 	}
 
 _Pre_satisfies_( ( mode == OPAQUE) || ( mode == TRANSPARENT ) )
-CSetBkMode::CSetBkMode( _In_ CDC& pdc, _In_ const INT mode ) : m_pdc { &pdc } {
-	m_oldMode = pdc.SetBkMode( mode );
+CSetBkMode::CSetBkMode( _In_ HDC hDC, _In_ const INT mode ) : m_hDC { hDC } {
+	if ( hDC == NULL ) {
+		std::terminate( );
+		}
+
+	//SetBkMode function: https://msdn.microsoft.com/en-us/library/dd162965.aspx
+	//If the function succeeds, the return value specifies the previous background mode.
+	//If the function fails, the return value is zero.
+	m_oldMode = ::SetBkMode( m_hDC, mode );
+	//m_oldMode = pdc.SetBkMode( mode );
+	ASSERT( m_oldMode != 0 );
 	}
 
 CSetBkMode::~CSetBkMode( ) {
-	m_pdc->SetBkMode( m_oldMode );
+	if ( m_hDC == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+	ASSERT( m_oldMode != 0 );
+	//SetBkMode function: https://msdn.microsoft.com/en-us/library/dd162965.aspx
+	//If the function succeeds, the return value specifies the previous background mode.
+	//If the function fails, the return value is zero.
+	VERIFY( ::SetBkMode( m_hDC, m_oldMode ) );
+	//m_pdc->SetBkMode( m_oldMode );
 	}
 
-CSetTextColor::CSetTextColor( _In_ CDC& pdc, _In_ const COLORREF color ) : m_pdc { &pdc } {
+CSetTextColor::CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color ) : m_hDC { hDC } {
+	if ( hDC == NULL ) {
+		std::terminate( );
+		}
 	//ASSERT_VALID( pdc );
-	m_oldColor = pdc.SetTextColor( color );
+	//m_oldColor = pdc.SetTextColor( color );
+	
+	//SetTextColor function: https://msdn.microsoft.com/en-us/library/dd145093.aspx
+	//If the function succeeds, the return value is a color reference for the previous text color as a COLORREF value.
+	//If the function fails, the return value is CLR_INVALID.
+	m_oldColor = ::SetTextColor( hDC, color );
+	ASSERT( m_oldColor != CLR_INVALID );
 	}
 
 
 CSetTextColor::~CSetTextColor( ) {
-	m_pdc->SetTextColor( m_oldColor );
+	if ( m_hDC == NULL ) {
+		std::terminate( );
+		abort( );
+		}
+	//SetTextColor function: https://msdn.microsoft.com/en-us/library/dd145093.aspx
+	//If the function succeeds, the return value is a color reference for the previous text color as a COLORREF value.
+	//If the function fails, the return value is CLR_INVALID.
+	const COLORREF result = ::SetTextColor( m_hDC, m_oldColor );
+	if ( result == CLR_INVALID ) {
+		std::terminate( );
+		}
+	//m_pdc->SetTextColor( m_oldColor );
 	}
 
 

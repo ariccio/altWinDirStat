@@ -84,6 +84,7 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
 		return;
 		}
+	TRACE( _T( "Selection changed to: %s\r\n" ), Selection->GetPath( ).c_str( ) );
 	m_treeListControl.SelectAndShowItem( Selection, false );
 	}
 
@@ -102,6 +103,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 		}
 	TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
 	m_treeListControl.SelectAndShowItem( Selection, true );
+	CWnd::RedrawWindow( );
 	}
 
 

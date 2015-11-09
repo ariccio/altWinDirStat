@@ -1,4 +1,6 @@
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+// Funny name of this file is a reference to the Google C++ style guide.
+
 #pragma once
 
 #ifndef MACROS_THAT_SCARE_SMALL_CHILDREN_H_INCLUDED

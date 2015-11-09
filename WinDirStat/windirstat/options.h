@@ -149,17 +149,18 @@ public:
 		SetArray( helpers::MakeColumnOrderEntry( name ), arr, arrSize );
 		}
 
-	static void GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-		GetArray( helpers::MakeColumnOrderEntry( name ), arr, arrSize );
+	static void GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
+		GetArray( helpers::MakeColumnOrderEntry( name ), arr, arrSize, defaultValue );
 		}
 	
-	static void GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
-		GetArray( helpers::MakeColumnWidthsEntry( name ), arr, arrSize );
+	static void GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
+		//TODO: BUGBUG: doesn't check return value of ::RegQueryValueExW (in CRegistryUser::GetProfileString_) - should bubble up?
+		GetArray( helpers::MakeColumnWidthsEntry( name ), arr, arrSize, defaultValue );
 		}
 private:
 	
 	_Pre_satisfies_( arrSize > 1 )
-	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize );
+	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue );
 	
 	_Success_( SUCCEEDED( return ) )
 	static const HRESULT GetRect          ( _In_ const std::wstring entry, _Out_ RECT& rc                  );

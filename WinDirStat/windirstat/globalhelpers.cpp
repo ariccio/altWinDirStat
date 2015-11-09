@@ -672,7 +672,7 @@ void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
 void displayWindowsMsgBoxWithError( const DWORD error ) {
-	const rsize_t err_msg_size = 1024;
+	const rsize_t err_msg_size = 1024u;
 	_Null_terminated_ wchar_t err_msg[ err_msg_size ] = { 0 };
 	rsize_t chars_written = 0;
 
@@ -685,7 +685,7 @@ void displayWindowsMsgBoxWithError( const DWORD error ) {
 		}
 	TRACE( _T( "First attempt to get last error as a formatted message FAILED!\r\n" ) );
 
-	const rsize_t err_msg_size_2 = 4096;
+	const rsize_t err_msg_size_2 = 4096u;
 	_Null_terminated_ wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
 	rsize_t chars_written_2 = 0;
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );

@@ -9,9 +9,8 @@
 WDS_FILE_INCLUDE_MESSAGE
 
 //intentionally NOT defined as part of ScopeGuard, to reduce code duplication. //Also, produces cleaner `TRACE` output.
-#ifdef DEBUG
-void trace_out( _In_z_ PCSTR const func_expr, _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number ) {
 #ifdef WDS_SCOPE_GUARD_DEBUGGING
+void trace_out( _In_z_ PCSTR const func_expr, _In_z_ PCSTR const file_name, _In_z_ PCSTR const func_name, _In_ _In_range_( 0, INT_MAX ) const int line_number ) {
 	TRACE( L"Scope guard triggered!"
 			L"\r\n\t\tScope guard initialized in file: `%S`,"
 			L"\r\n\t\tfunction:                        `%S`,"
@@ -19,12 +18,6 @@ void trace_out( _In_z_ PCSTR const func_expr, _In_z_ PCSTR const file_name, _In_
 			L"\r\n\t\tActual expression:"
 			L"\r\n%S\r\n",
 			file_name, func_name, line_number, func_expr );
-#else
-	UNREFERENCED_PARAMETER( file_name );
-	UNREFERENCED_PARAMETER( func_name );
-	UNREFERENCED_PARAMETER( line_number );
-	UNREFERENCED_PARAMETER( func_expr );
-#endif
 	}
 #endif
 
