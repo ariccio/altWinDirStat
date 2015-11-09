@@ -156,10 +156,18 @@ protected:
 	BOOL                  g_fRedrawEnabled;
 
 	virtual void OnInitialUpdate( ) override final {
+		/*
+		void CView::OnInitialUpdate()
+		{
+			OnUpdate(NULL, 0, NULL);        // initial update
+		}
+		*/
+		//OnUpdate(NULL, 0, NULL) calls CTypeView::OnUpdate
 		CView::OnInitialUpdate( );
 		}
 	virtual void OnUpdate        ( CView* pSender, LPARAM lHint, CObject* pHint ) override final;
 	
+	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
 		ASSERT_VALID( pDC );
 		CView::OnDraw( pDC );

@@ -405,35 +405,9 @@ void CDirstatApp::OnFileOpen( ) {
 	if ( !( path_str.empty( ) ) ) {
 		m_pDocTemplate->OpenDocumentFile( path_str.c_str( ), true );
 		}
-	
-	//CSelectDrivesDlg dlg;
-	//if ( IDOK == dlg.DoModal( ) ) {
-	//	//ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
-	//	const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), dlg.m_folder_name_heap.c_str( ), dlg.m_drives );
-	//	if ( path.find( '|' ) == std::wstring::npos ) {
-	//		m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
-	//		}
-	//	}
 	}
 
 void CDirstatApp::OnFileOpenLight( ) {
-/*
-
-//	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
-//	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
-//	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
-//	bob.SetInitialFolder( m_folder_name_heap.c_str( ) );
-//	auto resDoModal = bob.DoModal( );
-//	if ( resDoModal == IDOK ) {
-//		m_folder_name_heap = bob.GetFolderPath( );
-//		//m_folderName = m_folder_name_heap.c_str( );
-//		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
-//		TRACE( _T( "User chose: %s\r\n" ), m_folder_name_heap.c_str( ) );
-//		}
-//	else {
-//		TRACE( _T( "user hit cancel - no changes necessary.\r\n" ) );
-//		}
-*/
 	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
 	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
@@ -441,22 +415,11 @@ void CDirstatApp::OnFileOpenLight( ) {
 	if ( resDoModal == IDOK ) {
 		PCWSTR const m_folder_name_heap( bob.GetFolderPath( ) );
 		if ( wcslen( m_folder_name_heap ) > 0 ) {
+
+			//Here, calls CSingleDocTemplate::OpenDocumentFile (in docsingl.cpp)
 			m_pDocTemplate->OpenDocumentFile( m_folder_name_heap, TRUE );
 			}
 		}
-	//const auto path_str = test_file_open( );
-	//if ( !( path_str.empty( ) ) ) {
-	//	m_pDocTemplate->OpenDocumentFile( path_str.c_str( ), true );
-	//	}
-	
-	//CSelectDrivesDlg dlg;
-	//if ( IDOK == dlg.DoModal( ) ) {
-	//	//ASSERT( dlg.m_folder_name_heap == dlg.m_folderName.GetString( ) );
-	//	const auto path = EncodeSelection( static_cast<RADIO>( dlg.m_radio ), dlg.m_folder_name_heap.c_str( ), dlg.m_drives );
-	//	if ( path.find( '|' ) == std::wstring::npos ) {
-	//		m_pDocTemplate->OpenDocumentFile( path.c_str( ), true );
-	//		}
-	//	}
 	}
 
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {

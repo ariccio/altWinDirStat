@@ -55,6 +55,16 @@ protected:
 		}
 
 	virtual void OnInitialUpdate( ) override final {
+		/*
+		void CView::OnInitialUpdate()
+		{
+			OnUpdate(NULL, 0, NULL);        // initial update
+		}
+		*/
+
+		//OnUpdate(NULL, 0, NULL) calls CGraphView::OnUpdate
+		//also CDirstatView::OnUpdate?
+
 		CView::OnInitialUpdate( );
 		}
 	virtual void OnDraw( CDC* pDC ) override final {

@@ -1892,9 +1892,12 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 	item->SortChildren( this );
 	
+
+	TRACE( _T( "Setting redraw FALSE\r\n" ) );
 	CWnd::SetRedraw( FALSE );
 	ExpandItemInsertChildren( item, i, scroll );
 	CWnd::SetRedraw( TRUE );
+	TRACE( _T( "Setting redraw TRUE\r\n" ) );
 
 	item->SetExpanded( true );
 
