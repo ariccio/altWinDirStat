@@ -34,7 +34,7 @@ std::pair<DOUBLE, bool>    DoSomeWorkShim                ( _Inout_ CTreeListItem
 
 
 _Success_( return < UINT64_ERROR )
-const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item );
+const std::uint64_t get_uncompressed_file_size( _In_ const CTreeListItem* const item );
 
 #else
 

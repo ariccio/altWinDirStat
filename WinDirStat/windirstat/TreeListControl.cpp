@@ -514,12 +514,25 @@ inline INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const othe
 	if ( other->m_parent == NULL ) {
 		return 2;
 		}
+
 	if ( m_parent == other->m_parent ) {
+#ifdef DEBUG
+		ASSERT( ( m_vi && other->m_vi ) || ( (!m_vi) && (!other->m_vi) ) );
+		if ( m_vi && other->m_vi ) {
+			ASSERT( m_vi->indent == other->m_vi->indent );
+			}
+		else{
+			ASSERT( ( !m_vi ) && ( !other->m_vi ) );
+			}
+#endif
 		const auto thisBranch = static_cast< const CTreeListItem* >( this );//ugly, I know
 		return thisBranch->CompareSibling( other, subitem );
 		}
+
 	const auto my_indent = GetIndent( );
 	const auto other_indent = other->GetIndent( );
+	
+	ASSERT( my_indent != other_indent );
 	if ( my_indent < other_indent ) {
 		return concrete_compare( other->m_parent, subitem );
 		}
@@ -596,38 +609,39 @@ bool CTreeListItem::HasSiblings( ) const {
 	}
 
 void CTreeListItem::SetVisible( _In_ const bool next_state_visible ) const {
-	if ( next_state_visible ) {
-		m_vi.reset( new VISIBLEINFO );
-		m_vi->isExpanded = false;
-		if ( m_parent == NULL ) {
-			m_vi->indent = 0;
-			}
-		else {
-			ASSERT( m_parent != NULL );
-			m_vi->indent = m_parent->GetIndent( ) + 1;
-			if ( m_attr.compressed ) {
-				auto uncompressed_size_temp = get_uncompressed_file_size( this );
-				if ( uncompressed_size_temp == 0 ) {
-					uncompressed_size_temp = m_size;
-					}
-				if ( uncompressed_size_temp == UINT64_ERROR ) {
-					uncompressed_size_temp = m_size;
-					}
-				if ( uncompressed_size_temp != 0 ) {
-					const auto uncompressed_size = uncompressed_size_temp;
-					const auto ratio = ( static_cast< const double >( m_size ) / static_cast< const double >( uncompressed_size ) );
-					m_vi->ntfs_compression_ratio = ratio;
-					}
-				else {
-					m_vi->ntfs_compression_ratio = 1;
-					}
-				}
-			}
+	if ( !next_state_visible ) {
+		ASSERT( m_vi != nullptr );
+		m_vi.reset( );
+		return;
+		}
+	m_vi.reset( new VISIBLEINFO );
+	m_vi->isExpanded = false;
+	if ( m_parent == NULL ) {
+		m_vi->indent = 0;
 		m_vi->isExpanded = false;
 		return;
 		}
-	ASSERT( m_vi != nullptr );
-	m_vi.reset( );
+	ASSERT( m_parent != NULL );
+	m_vi->indent = m_parent->GetIndent( ) + 1;
+	if ( m_attr.compressed ) {
+		auto uncompressed_size_temp = get_uncompressed_file_size( this );
+		if ( uncompressed_size_temp == 0 ) {
+			uncompressed_size_temp = m_size;
+			}
+		if ( uncompressed_size_temp == UINT64_ERROR ) {
+			uncompressed_size_temp = m_size;
+			}
+		if ( uncompressed_size_temp != 0 ) {
+			const auto uncompressed_size = uncompressed_size_temp;
+			const auto ratio = ( static_cast< const double >( m_size ) / static_cast< const double >( uncompressed_size ) );
+			m_vi->ntfs_compression_ratio = ratio;
+			}
+		else {
+			m_vi->ntfs_compression_ratio = 1;
+			}
+		}
+	m_vi->isExpanded = false;
+	return;
 	}
 
 std::wstring CTreeListItem::GetPath( ) const {

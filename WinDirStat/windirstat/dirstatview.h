@@ -67,6 +67,7 @@ protected:
 
 		CView::OnInitialUpdate( );
 		}
+	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
 		ASSERT_VALID( pDC );
 		CView::OnDraw( pDC );

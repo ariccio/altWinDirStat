@@ -199,14 +199,14 @@ public:
 
 
 	INT CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
-		if ( sorting.column1 == column::COL_NAME ) {
-#pragma warning( suppress: 4711 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
-			const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
-		
-			if ( sort_result != 0 ) {
-				return sort_result;
-				}
-			}
+//		if ( sorting.column1 == column::COL_NAME ) {
+//#pragma warning( suppress: 4711 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
+//			const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
+//		
+//			if ( sort_result != 0 ) {
+//				return sort_result;
+//				}
+//			}
 
 		auto r_1 = compare_interface( other, sorting.column1 );
 		if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
