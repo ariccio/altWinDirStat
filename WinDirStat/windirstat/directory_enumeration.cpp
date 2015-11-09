@@ -678,10 +678,17 @@ namespace {
 		}
 
 	_Success_( return < UINT64_ERROR )
-	const std::uint64_t get_uncompressed_file_size( const std::wstring path ) {
+	const std::uint64_t get_uncompressed_file_size( const std::wstring path, const bool inside_assert ) {
 		const HANDLE file_handle = CreateFileW( path.c_str( ), ( FILE_READ_ATTRIBUTES bitor FILE_READ_EA ), ( FILE_SHARE_READ bitor FILE_SHARE_WRITE ), NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 		if ( file_handle == INVALID_HANDLE_VALUE ) {
-		
+			
+			//So that we don't create two log messages inside an assert
+			//assumes that assert is like:
+			//	ASSERT( get_uncompressed_file_size( some_folder_path, true ) == UINT64_ERROR );
+			//...which will fail.
+			if ( inside_assert ) {
+				return UINT64_ERROR;
+				}
 			const rsize_t str_size = 128u;
 			wchar_t str_buff[ str_size ] = { 0 };
 			rsize_t chars_written = 0;
@@ -961,17 +968,24 @@ WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 	}
 
 _Success_( return < UINT64_ERROR )
-WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( const CTreeListItem* const item ) {
+WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( _In_ const CTreeListItem* const item ) {
 	const auto derived_item = static_cast< const CTreeListItem* const >( item );
+
+	if ( derived_item->m_child_info.m_child_info_ptr != nullptr ) {
+		TRACE( _T( "It looks like item `%s` has children, we can skip querying compressed file size.\r\n" ), derived_item->GetPath( ).c_str( ) );
+		const std::wstring path( derived_item->GetPath( ) );
+		ASSERT( get_uncompressed_file_size( path.c_str( ), true ) == UINT64_ERROR );
+		return UINT64_ERROR;
+		}
+
 	std::wstring path_holder( derived_item->GetPath( ) );
 
-	auto strcmp_path = path_holder.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	const auto strcmp_path = path_holder.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
 		path_holder = ( L"\\\\?\\" + path_holder );
 		}
-	
-	return get_uncompressed_file_size( std::move( path_holder ) );
 
+	return get_uncompressed_file_size( std::move( path_holder ), false );
 	}
 
 #ifdef WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW

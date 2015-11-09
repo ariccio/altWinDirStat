@@ -114,7 +114,7 @@ enum class Treemap_STYLE {
 namespace UpdateAllViews_ENUM {
 	// Hints for UpdateAllViews()
 	enum {
-		HINT_NULL,				        // General update
+		HINT_NULL,				        // General update (passed by CView::OnInitialUpdate( ))
 		HINT_NEWROOT,			        // Root item has changed - clear everything.
 		HINT_SELECTIONCHANGED,	        // The selection has changed, EnsureVisible.
 		HINT_SHOWNEWSELECTION,	        // The selection has changed, Show Path
@@ -124,6 +124,7 @@ namespace UpdateAllViews_ENUM {
 		HINT_LISTSTYLECHANGED,	        // Options: List style (grid/stripes) or treelist colors changed
 		HINT_TREEMAPSTYLECHANGED,	    // Options: Treemap style (grid, colors etc.) changed
 		};
+	static_assert( HINT_NULL == 0, "CView::OnInitialUpdate( ) passes 0, should be equal to HINT_NULL" );
 
 	}
 
