@@ -157,9 +157,9 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
 
 		_Pre_satisfies_( this->m_child_info.m_child_info_ptr == nullptr ) 
-		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>* const extensionMap ) const;
 
-		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) const;
+		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>* const extensionMap ) const;
 
 		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
 		const CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
@@ -197,13 +197,15 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		void SetVisible ( _In_ const bool next_state_visible = true ) const;
 
+		
+		//TODO: This should be reversed (i.e. CTreeListControl::SortChildren( _Inout_ CTreeListItem* const item ) )
 		_Pre_satisfies_( this->m_vi._Myptr != nullptr )
 		void SortChildren                       ( _In_ const CTreeListControl* const ctrl );
 
 		_Pre_satisfies_( this->m_parent != NULL )
 		bool  HasSiblings                       (                                           ) const;
 		
-		void childNotNull( _In_ CTreeListItem* const aTreeListChild, const size_t i );
+		void childNotNull( _In_ const CTreeListItem* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const {
 			return ( m_child_info.m_child_info_ptr != NULL );

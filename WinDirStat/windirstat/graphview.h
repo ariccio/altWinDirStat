@@ -13,7 +13,7 @@ WDS_FILE_INCLUDE_MESSAGE
 
 #include "datastructures.h"
 
-//#include "macros_that_scare_small_children.h"
+#include "macros_that_scare_small_children.h"
 //#include "ScopeGuard.h"
 #include "treemap.h"
 //#include "options.h"
@@ -39,8 +39,10 @@ void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR 
 // CGraphView. The treemap window.
 class CGraphView final : public CView {
 public:
+
+	//NOTE TO SELF: cannot init SIZE structs like `= { 0, 0 };` here, as compiler doesn't like using "list" init in NSDMI.
 	//TODO: use plain old SIZE struct
-	SIZE              m_size;				// Current size of view
+	SIZE              m_size = { };				// Current size of view
 	bool              m_recalculationSuspended : 1; // True while the user is resizing the window.	
 	//C4820: 'CGraphView' : '3' bytes padding added after data member 'CGraphView::m_showTreemap'
 	bool              m_showTreemap            : 1; // False, if the user switched off the treemap (by F9).
@@ -48,9 +50,9 @@ public:
 protected:
 	CTreemap          m_treemap;				// Treemap generator
 	CBitmap           m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
-	WTL::CSize        m_dimmedSize;			// Size of bitmap m_dimmed
+	SIZE              m_dimmedSize = { };			// Size of bitmap m_dimmed
 	CBitmap           m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
-	UINT_PTR          m_timer;				// We need a timer to realize when the mouse left our window.
+	UINT_PTR          m_timer = 0u;				// We need a timer to realize when the mouse left our window.
 	CMainFrame* const m_frameptr;
 	CDirstatApp*      m_appptr;
 
@@ -92,8 +94,7 @@ public:
 public:
 	//virtual ~CGraphView();
 
-	CGraphView& operator=( const CGraphView& in ) = delete;
-	CGraphView( const CGraphView& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CGraphView );
 
 	void SuspendRecalculation( _In_ const bool suspend ) {
 		m_recalculationSuspended = suspend;
@@ -104,7 +105,7 @@ public:
 
 	void DrawEmptyView( ) {
 		CClientDC dc( this );
-		DrawEmptyView( dc );
+		DrawEmptyView( &dc );
 		}
 
 protected:
@@ -177,17 +178,17 @@ protected:
 public:
 	
 	//Keeping RenderHighlightRectangle in the implementation file means that we don't need to include options.h in the header.
-	void RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const;
+	void RenderHighlightRectangle( _In_ CDC* const pdc, _In_ RECT rc_ ) const;
 
 protected:
-	void DrawEmptyView( _In_ CDC& pScreen_Device_Context ) {
+	void DrawEmptyView( _In_ CDC* const pScreen_Device_Context ) {
 #ifdef DEBUG
 		trace_empty_view_graphview( );
 #endif
 		const COLORREF gray = RGB( 160, 160, 160 );
 		CGraphView::Inactivate( );
 
-		RECT rc;
+		RECT rc = { 0 };
 
 		ASSERT( ::IsWindow( m_hWnd ) );
 		//::GetClientRect(m_hWnd, lpRect);
@@ -195,40 +196,40 @@ protected:
 		//GetClientRect( &rc );
 
 		if ( m_dimmed.m_hObject == NULL ) {
-			return pScreen_Device_Context.FillSolidRect( &rc, gray );
+			return pScreen_Device_Context->FillSolidRect( &rc, gray );
 			}
 		CDC offscreen_buffer;
-		VERIFY( offscreen_buffer.CreateCompatibleDC( &pScreen_Device_Context ) );
-		CSelectObject sobmp( offscreen_buffer.m_hDC, m_dimmed.m_hObject );
-		VERIFY( pScreen_Device_Context.BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
+		VERIFY( offscreen_buffer.CreateCompatibleDC( pScreen_Device_Context ) );
+		SelectObject_wrapper sobmp( offscreen_buffer.m_hDC, m_dimmed.m_hObject );
+		VERIFY( pScreen_Device_Context->BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 		if ( ( rc.right - rc.left ) > m_dimmedSize.cx ) {
 			RECT r = rc;
 			r.left = r.left + m_dimmedSize.cx;
-			pScreen_Device_Context.FillSolidRect( &r, gray );
+			pScreen_Device_Context->FillSolidRect( &r, gray );
 			}
 
 		if ( ( rc.bottom - rc.top ) > m_dimmedSize.cy ) {
 			RECT r = rc;
 			r.top = r.top + m_dimmedSize.cy;
-			pScreen_Device_Context.FillSolidRect( &r, gray );
+			pScreen_Device_Context->FillSolidRect( &r, gray );
 			}
 		//VERIFY( dcmem.DeleteDC( ) );
 		}
 
 
 	//Keeping DrawHighlightExtension in the implementation file means that we don't need to include options.h in the header.
-	void DrawHighlightExtension( _In_ CDC& pdc ) const;
+	void DrawHighlightExtension( _In_ CDC* const pdc ) const;
 
 
-	void RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightExtension( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
 
-	void DrawSelection( _In_ CDC& pdc ) const;
+	void DrawSelection( _In_ CDC* const pdc ) const;
 	
-	void DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& rc );
+	void DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc );
 	
 	
-	void DrawViewNotEmpty( _In_ CDC& Screen_Device_Context ) {
+	void DrawViewNotEmpty( _In_ CDC* const Screen_Device_Context ) {
 		RECT rc;
 
 		ASSERT( ::IsWindow( m_hWnd ) );
@@ -237,14 +238,14 @@ protected:
 		//GetClientRect( &rc );
 
 		CDC offscreen_buffer;
-		VERIFY( offscreen_buffer.CreateCompatibleDC( &Screen_Device_Context ) );
+		VERIFY( offscreen_buffer.CreateCompatibleDC( Screen_Device_Context ) );
 
 		if ( !CGraphView::IsDrawn( ) ) {
-			DoDraw( Screen_Device_Context, offscreen_buffer, rc );
+			DoDraw( Screen_Device_Context, &offscreen_buffer, &rc );
 			}
 
-		CSelectObject sobmp2( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
-		VERIFY( Screen_Device_Context.BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
+		SelectObject_wrapper sobmp2( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
+		VERIFY( Screen_Device_Context->BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 		DrawHighlights( Screen_Device_Context );
 		//VERIFY( dcmem.DeleteDC( ) );
@@ -254,10 +255,10 @@ public:
 
 protected:
 	_Pre_satisfies_( item.m_child_info.m_child_info_ptr != NULL )
-	void RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightChildren( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
 
 	//Keeping DrawHighlights in the implementation file means that we don't need to include windirstat.h in the header.
-	void DrawHighlights( _In_ CDC& pdc ) const;
+	void DrawHighlights( _In_ CDC* const pdc ) const;
 
 
 	/*

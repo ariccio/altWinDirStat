@@ -11,7 +11,7 @@
 
 
 
-CSelectObject::CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) : m_hDC{ hDC } {
+SelectObject_wrapper::SelectObject_wrapper( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) : m_hDC{ hDC } {
 	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
 	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
 	//If the selected object is a region and the function succeeds, the return value is one of the following values.
@@ -29,7 +29,7 @@ CSelectObject::CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject ) :
 		}
 	}
 
-CSelectObject::~CSelectObject( ) {
+SelectObject_wrapper::~SelectObject_wrapper( ) {
 	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
 	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
 	//If the selected object is a region and the function succeeds, the return value is one of the following values.
@@ -48,7 +48,7 @@ CSelectObject::~CSelectObject( ) {
 	}
 
 
-CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_hDC { hDC } {
+SelectStockObject_wrapper::SelectStockObject_wrapper( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_hDC { hDC } {
 	if ( m_hDC == NULL ) {
 		std::terminate( );
 		}
@@ -77,7 +77,7 @@ CSelectStockObject::CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) c
 	ASSERT( m_pOldObject != NULL );
 	}
 
-CSelectStockObject::~CSelectStockObject( ) {
+SelectStockObject_wrapper::~SelectStockObject_wrapper( ) {
 	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
 	//If the selected object is not a region and the function succeeds, the return value is a handle to the object being replaced.
 	//If the selected object is a region and the function succeeds, the return value is one of the following values.

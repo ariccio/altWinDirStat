@@ -72,4 +72,17 @@ WDS_FILE_INCLUDE_MESSAGE
 #define WDS_INT_BASE 1024
 #define WDS_HALF_BASE WDS_INT_BASE/2
 
+
+#ifndef DISALLOW_COPY_AND_ASSIGN
+//Inspired by chromium's DISALLOW_COPY_AND_ASSIGN:
+
+// A macro to disallow the copy constructor and operator= functions
+// This should be used in the private: declarations for a class
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)          \
+  TypeName(const TypeName&) = delete;               \
+  TypeName& operator=(const TypeName&) = delete
+#else
+#error already defined!
+#endif
+
 #endif

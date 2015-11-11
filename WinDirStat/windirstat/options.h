@@ -35,9 +35,9 @@ namespace registry_strings {
 	}
 
 namespace helpers {
-	std::wstring generalized_make_entry( _In_z_ const PCTSTR name, _In_z_ const PCTSTR entry_fmt_str );
-	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name );
-	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name );
+	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ const PCWSTR entry_fmt_str );
+	std::wstring MakeColumnOrderEntry( _In_z_ const PCWSTR name );
+	std::wstring MakeColumnWidthsEntry( _In_z_ const PCWSTR name );
 	}
 
 #ifdef DEBUG
@@ -49,7 +49,7 @@ namespace {
 	
 	
 	
-	void SetProfileString( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_z_ const PCTSTR value ) {
+	void SetProfileString( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR value ) {
 #ifdef DEBUG
 		trace_prof_string( section, entry, value );
 #endif
@@ -63,10 +63,10 @@ namespace {
 // Can read from and write to the registry.
 namespace CRegistryUser {
 	std::wstring GetProfileString_ ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue  );
-	UINT         GetProfileInt_    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  defaultValue    );
-	bool         GetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool defaultValue    );
-	void         SetProfileInt     ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const INT  value           );
-	void         SetProfileBool    ( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_   const bool value           );
+	UINT         GetProfileInt_    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const INT  defaultValue    );
+	bool         GetProfileBool    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const bool defaultValue    );
+	void         SetProfileInt     ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const INT  value           );
+	void         SetProfileBool    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const bool value           );
 	};
 
 
@@ -75,14 +75,14 @@ class CPersistence final {
 public:
 	
 	
-	static void  SetDialogRectangle       ( _In_z_  const PCTSTR name,        _In_ const RECT rc                                         );
+	static void  SetDialogRectangle       ( _In_z_  const PCWSTR name,        _In_ const RECT rc                                         );
 	static void  SetMainWindowPlacement   ( _In_    const WINDOWPLACEMENT& wp                                                               );
-	static void  SetSplitterPos           ( _In_z_  const PCTSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
+	static void  SetSplitterPos           ( _In_z_  const PCWSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
-	static void  GetConfigPosition        ( _Inout_ POINT& pt                                                                              );
-	static void  GetDialogRectangle       ( _In_z_  const PCTSTR name,        _Out_ RECT& rc                                            );
-	static void  GetSplitterPos           ( _In_z_  const PCTSTR name,         _Inout_ bool& valid,               _Inout_ DOUBLE& userpos   );
-	static void  GetMainWindowPlacement   ( _Out_   WINDOWPLACEMENT& wp                                                                     );
+	static void  GetConfigPosition        ( _Inout_ POINT* const pt                                                                              );
+	static void  GetDialogRectangle       ( _In_z_  const PCWSTR name,        _Out_ RECT* const rc                                            );
+	static void  GetSplitterPos           ( _In_z_  const PCWSTR name,        _Out_ bool* const valid,               _Out_ DOUBLE* const userpos   );
+	static void  GetMainWindowPlacement   ( _Out_   WINDOWPLACEMENT* const wp                                                                     );
 	static INT   GetConfigPage            ( _In_    const INT max                                                                           );
 	
 	
@@ -104,11 +104,11 @@ public:
 		}
 
 
-	static void  SetSelectDrivesFolder( _In_z_  const PCTSTR folder ) {
+	static void  SetSelectDrivesFolder( _In_z_  const PCWSTR folder ) {
 		SetProfileString( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, folder );
 		}
 
-	static void  SetConfigPosition( _In_    const WTL::CPoint pt ) {
+	static void  SetConfigPosition( _In_    const POINT pt ) {
 		CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x );
 		CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt.y );
 		}
@@ -137,37 +137,36 @@ public:
 		return CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entrySelectDrivesFolder, _T( "" ) );
 		}
 
-	static PCTSTR GetBarStateSection( ) {
+	static PCWSTR GetBarStateSection( ) {
 		return registry_strings::sectionBarState;
 		}
 
-	static void SetColumnWidths( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	static void SetColumnWidths( _In_z_  const PCWSTR name, _In_ _In_reads_( arrSize ) const INT* const arr, _In_range_( >, 1 ) const rsize_t arrSize ) {
 		SetArray( helpers::MakeColumnWidthsEntry( name ), arr, arrSize );
 		}
 
-	static void SetColumnOrder( _In_z_  const PCTSTR name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+	static void SetColumnOrder( _In_z_  const PCWSTR name, _In_ _In_reads_( arrSize ) const INT* const arr, _In_range_( >, 1 ) const rsize_t arrSize ) {
 		SetArray( helpers::MakeColumnOrderEntry( name ), arr, arrSize );
 		}
 
-	static void GetColumnOrder( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
+	static void GetColumnOrder( _In_z_ const PCWSTR name, _Out_ _Out_writes_all_( arrSize ) INT* const arr, _In_range_( >, 1 ) const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
 		GetArray( helpers::MakeColumnOrderEntry( name ), arr, arrSize, defaultValue );
 		}
 	
-	static void GetColumnWidths( _In_z_ const PCTSTR name, _Out_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
+	static void GetColumnWidths( _In_z_ const PCWSTR name, _Out_ _Out_writes_all_( arrSize ) INT* const arr, _In_range_( >, 1 ) const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
 		//TODO: BUGBUG: doesn't check return value of ::RegQueryValueExW (in CRegistryUser::GetProfileString_) - should bubble up?
 		GetArray( helpers::MakeColumnWidthsEntry( name ), arr, arrSize, defaultValue );
 		}
 private:
 	
-	_Pre_satisfies_( arrSize > 1 )
-	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue );
+	static void    GetArray               ( _In_ const std::wstring entry, _Out_ _Out_writes_all_( arrSize ) INT* const arr_, _In_range_( >, 1 ) const rsize_t arrSize, _In_z_ const PCWSTR defaultValue );
 	
 	_Success_( SUCCEEDED( return ) )
-	static const HRESULT GetRect          ( _In_ const std::wstring entry, _Out_ RECT& rc                  );
+	static const HRESULT GetRect          ( _In_ const std::wstring entry, _Out_ RECT* const rc                  );
 
 
-	static void    SetRect                ( _In_z_ const PCTSTR entry, _In_ const RECT rc               );
-	static void    SetArray               ( _In_ const std::wstring name, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize );
+	static void    SetRect                ( _In_z_ const PCWSTR entry, _In_ const RECT rc               );
+	static void    SetArray               ( _In_ const std::wstring name, _In_ _In_reads_( arrSize ) const INT* const arr, _In_range_( >, 1 ) const rsize_t arrSize );
 
 	};
 
@@ -178,7 +177,7 @@ _Success_( return != NULL ) COptions *GetOptions();
 struct COptions final {
 	COptions( ) = default;
 
-	void SetHumanFormat              ( _In_ const bool human, CDirstatApp* app_ptr );
+	void SetHumanFormat              ( _In_ const bool human, _In_ CDirstatApp* const app_ptr );
 	void SetListFullRowSelection     ( _In_ const bool show                                         );
 	void SetListGrid                 ( _In_ const bool show                                         );
 	void SetListStripes              ( _In_ const bool show                                         );

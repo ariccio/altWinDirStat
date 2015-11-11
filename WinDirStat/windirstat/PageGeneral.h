@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 //#include "windirstat.h"
+#include "macros_that_scare_small_children.h"
 
 #ifndef WDS_PAGEGENERAL_H
 #define WDS_PAGEGENERAL_H
@@ -13,7 +14,7 @@
 WDS_FILE_INCLUDE_MESSAGE
 
 
-class COptionsPropertySheet;
+class WDSOptionsPropertySheet;
 class CPageGeneral;
 class CDirstatApp;
 
@@ -26,8 +27,7 @@ class CPageGeneral final : public CPropertyPage {
 
 public:
 
-	CPageGeneral& operator=( const CPageGeneral& in ) = delete;
-	CPageGeneral( const CPageGeneral& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CPageGeneral );
 
 	CPageGeneral( CDirstatApp* app ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ),  m_appptr( app ) { }
 
@@ -63,7 +63,7 @@ protected:
 		SetModified( );
 		}
 
-	_Must_inspect_result_ COptionsPropertySheet* GetSheet( );
+	_Must_inspect_result_ WDSOptionsPropertySheet* GetSheet( );
 
 	};
 

@@ -97,14 +97,14 @@ namespace {
 		}
 
 	//if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-	inline void adjust_rect_if_horizontal( _In_ const bool horizontal, _Inout_ RECT& rc, _In_ const int begin, _In_ const int end ) {
+	inline void adjust_rect_if_horizontal( _In_ const bool horizontal, _Inout_ RECT* const rc, _In_ const int begin, _In_ const int end ) {
 		if ( horizontal ) {
-			rc.top = begin;
-			rc.bottom = end;
+			rc->top = begin;
+			rc->bottom = end;
 			return;
 			}
-		rc.left = begin;
-		rc.right = end;
+		rc->left = begin;
+		rc->right = end;
 		}
 	
 	inline const int gen_height_of_new_row( _In_ const bool horizontal, _In_ const RECT remaining ) {
@@ -184,39 +184,34 @@ namespace {
 		}
 
 	//if we pass horizontal by reference, compiler produces [horrible pointer code] for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-	inline void Put_next_row_into_the_rest_of_rectangle( _In_ const bool horizontal, _Inout_ CRect& remaining, _In_ const int widthOfRow ) {
+	inline void Put_next_row_into_the_rest_of_rectangle( _In_ const bool horizontal, _Inout_ CRect* const remaining, _In_ const int widthOfRow ) {
 		if ( horizontal ) {
-			remaining.left += widthOfRow;
+			remaining->left += widthOfRow;
 			return;
 			}
-		remaining.top += widthOfRow;
+		remaining->top += widthOfRow;
 		}
 
 	//passing widthOfRow by value generates much better code!
-	inline const double build_children_rectangle( _In_ const RECT remaining, _Out_ RECT& rc, _In_ const bool horizontal, _In_ const int widthOfRow ) {
-		//double fBegin = DBL_MAX;
+	inline const double build_children_rectangle( _In_ const RECT remaining, _Out_ RECT* const rc, _In_ const bool horizontal, _In_ const int widthOfRow ) {
 		if ( horizontal ) {
-			rc.left  =   remaining.left;
-			rc.right = ( remaining.left + widthOfRow );
+			rc->left  =   remaining.left;
+			rc->right = ( remaining.left + widthOfRow );
 			return remaining.top;
-			//fBegin = remaining.top;
-			//return fBegin;
 			}
-		rc.top    =   remaining.top;
-		rc.bottom = ( remaining.top + widthOfRow );
+		rc->top    =   remaining.top;
+		rc->bottom = ( remaining.top + widthOfRow );
 		return remaining.left;
-		//fBegin = remaining.left;
-		//return fBegin;
 		}
 
-	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _Inout_ int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
+	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _In_ const int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
-				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CTreeListItem* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent_vector_of_children.at( i + 1 )->m_name.c_str( ) );
 				}
 			else {
-				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent_vector_of_children.at( i )->m_name.c_str( ) );
 				}
 #else
 			UNREFERENCED_PARAMETER( i );
@@ -233,35 +228,30 @@ namespace {
 		}
 
 	_Success_( return < UINT64_MAX )
-	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const size_t i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const CTreeListItem* child_at_I ) {
+	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const size_t i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const CTreeListItem* const child_at_I ) {
 		//double fraction_scope_holder = DBL_MAX;
-		if ( sizes.count( i ) == 0 ) {
-			sizes[ i ] = child_at_I->size_recurse( );
+		if ( sizes->count( i ) == 0 ) {
+			(*sizes)[ i ] = child_at_I->size_recurse( );
 			}
-		const double fraction_scope_holder = fixup_frac_scope_holder( sizes[ i ], sumOfSizesOfChildrenInRow );
+		const double fraction_scope_holder = fixup_frac_scope_holder( (*sizes)[ i ], sumOfSizesOfChildrenInRow );
 		ASSERT( fraction_scope_holder != DBL_MAX );
 		return fraction_scope_holder;
 		}
 
 	//passing by reference: `cmp    r14, QWORD PTR [r12]` for `if ( ( i + 1 ) < rowEnd )`,
-	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
+	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
 		if ( ( i + 1 ) >= rowEnd ) {
 			return 0;
 			}
-		const auto childAtIPlusOne = static_cast< const CTreeListItem* >( parent_vector_of_children[ i + 1 ] );
+		const auto childAtIPlusOne = parent_vector_of_children[ i + 1 ];
 		if ( childAtIPlusOne == NULL ) {
 			return 0;
 			}
-		if ( sizes.count( i + 1 ) == 0 ) {
+		if ( sizes->count( i + 1 ) == 0 ) {
 			const auto recurse_size = childAtIPlusOne->size_recurse( );
-			sizes[ i + 1 ] = recurse_size;
-			//childAtIPlusOne_size = sizes[ i + 1 ];
-			//return childAtIPlusOne_size;
+			(*sizes)[ i + 1 ] = recurse_size;
 			return recurse_size;
 			}
-		//std::uint64_t childAtIPlusOne_size = 0;
-		//childAtIPlusOne_size = sizes[ i + 1 ];
-		//ASSERT( childAtIPlusOne_size == childAtIPlusOne->size_recurse( ) );
 		return childAtIPlusOne->size_recurse( );
 		}
 
@@ -281,10 +271,10 @@ namespace {
 		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
 		}
 
-	inline void add_child_rowEnd_to_row( _Inout_ std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t& rowEnd, _Inout_ double& worst, _In_ const double nextWorst ) {
-		sumOfSizesOfChildrenInRow += rmin;
-		rowEnd++;
-		worst = nextWorst;
+	inline void add_child_rowEnd_to_row( _Inout_ std::uint64_t* const sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t* const rowEnd, _Inout_ double* const worst, _In_ const double nextWorst ) {
+		(*sumOfSizesOfChildrenInRow) += rmin;
+		(*rowEnd)++;
+		(*worst) = nextWorst;
 		}
 
 	inline const int gen_width_of_row( _In_ const bool horizontal, _In_ const CRect& remaining, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize ) {
@@ -310,13 +300,13 @@ namespace {
 		return sizes.at( rowBegin );
 		}
 
-	void shrink_for_grid( _In_ CDC& pdc, _Inout_ RECT& rc ) {
+	void shrink_for_grid( _In_ CDC* const pdc, _Inout_ RECT* const rc ) {
 		CPen pen { PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) };
-		CSelectObject sopen { pdc.m_hDC, pen.m_hObject };
-		        pdc.MoveTo( rc.right - 1, rc.top );
-		VERIFY( pdc.LineTo( rc.right - 1, rc.bottom ) );
-		        pdc.MoveTo( rc.left,      rc.bottom - 1 );
-		VERIFY( pdc.LineTo( rc.right,     rc.bottom - 1 ) );
+		SelectObject_wrapper sopen { pdc->m_hDC, pen.m_hObject };
+		        pdc->MoveTo( rc->right - 1, rc->top );
+		VERIFY( pdc->LineTo( rc->right - 1, rc->bottom ) );
+		        pdc->MoveTo( rc->left,      rc->bottom - 1 );
+		VERIFY( pdc->LineTo( rc->right,     rc->bottom - 1 ) );
 		}
 
 	inline const bool zero_size_rect( _In_ const RECT rc ) {
@@ -324,6 +314,10 @@ namespace {
 			return true;
 			}
 		return false;
+		}
+
+	inline const bool zero_size_rect( _In_ const RECT* const rc ) {
+		return zero_size_rect( *rc );
 		}
 
 	inline const bool zero_size_width_or_height_rect( _In_ const RECT rc ) {
@@ -339,6 +333,9 @@ namespace {
 			}
 		ASSERT( !zero_size_rect( rc ) );
 		return false;
+		}
+	inline const bool zero_size_width_or_height_rect( _In_ const RECT* const rc ) {
+		return zero_size_width_or_height_rect( *rc );
 		}
 
 	inline const int gen_bottom( _In_ const double fBottom, _In_ const std::vector<double>& rows, _In_ const bool horizontalRows, _In_ const RECT rc, _In_ const size_t row ) {
@@ -371,7 +368,7 @@ namespace {
 			rcChild.top =  int( top );
 			rcChild.bottom = bottom;
 
-			normalize_RECT( rcChild );
+			normalize_RECT( &rcChild );
 			return rcChild;
 			}
 
@@ -382,12 +379,11 @@ namespace {
 		rcChild.top = int( left );
 		rcChild.bottom = right;
 
-		//rcChild.NormalizeRect( );
-		normalize_RECT( rcChild );
+		normalize_RECT( &rcChild );
 		return rcChild;
 		}
 
-	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -400,7 +396,7 @@ namespace {
 			}
 		}
 
-	inline void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -414,7 +410,7 @@ namespace {
 			}
 		}
 
-	inline void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _Pre_writable_size_( vecSize ) DOUBLE* sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _Pre_writable_size_( vecSize ) DOUBLE* const sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -432,7 +428,7 @@ namespace {
 			}
 		}
 
-	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
+	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* const sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -452,7 +448,7 @@ namespace {
 			}
 		}
 
-	inline void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
+	inline void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
 		const auto brightness_adjusted_forPALETTE_BRIGHTNESS = ( brightness / PALETTE_BRIGHTNESS );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			UNREFERENCED_PARAMETER( vecSize );
@@ -481,7 +477,7 @@ namespace {
 			}
 		}
 
-	inline void clamp_color_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _Pre_writable_size_( vecSize ) _Inout_updates_( vecSize ) DOUBLE* pixel_color_array, _In_ const size_t vecSize ) {
+	inline void clamp_color_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _Pre_writable_size_( vecSize ) _Inout_updates_( vecSize ) DOUBLE* const pixel_color_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -506,7 +502,7 @@ namespace {
 	//Generalized version of fill_R_array, fill_G_array, & fill_B_array.
 	//color_component_constant replaces colR, colG, colB.
 	//pixel_color_component_array replaces pixel_R_array, pixel_G_array, pixel_B_array.
-	inline void fill_color_component_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE color_component_constant, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_color_component_array, _In_ const size_t vecSize ) {
+	inline void fill_color_component_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE color_component_constant, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_color_component_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -519,24 +515,25 @@ namespace {
 			}
 		}
 
-	inline void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* pixel_B_array, _In_ const size_t vecSize ) {
+	inline void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_B_array, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		//split for performance, measured performance improvement due to improved cache locality.
 		
-		//fill_R_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
+		//Fill red pixel array
 		fill_color_component_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colR, pixel_R_array, vecSize );
 		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_R_array, vecSize );
 		
-		//fill_G_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colG, pixel_G_array, vecSize );
+		//Fill green pixel array
 		fill_color_component_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colG, pixel_G_array, vecSize );
 		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_G_array, vecSize );
 		
-		//fill_B_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
+		//Fill blue pixel array
 		fill_color_component_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_double_array, colB, pixel_B_array, vecSize );
 		clamp_color_array( loop_rect_start_outer, loop_rect__end__outer, loop_rect_start_inner, loop_rect__end__inner, inner_stride, offset, pixel_B_array, vecSize );
 		}
 
-	inline void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* pixles, _In_ const size_t vecSize ) {
+	//Pack the 3 arrays of color values (Red, Green, and Blue) into a single array of COLORREFs
+	inline void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* const pixles, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -547,7 +544,6 @@ namespace {
 				//index = row + stride;
 				//const auto index = ( iy * ( loop_rect__end__inner - loop_rect_start_inner ) ) + ix;
 				const size_t index_adjusted = ( index_of_this_row_0_in_array + ix );
-				//pixles.at( indexAdjusted ) = RGB( red, green, blue );
 				pixles[ index_adjusted ] = RGB( 
 														static_cast<INT>( pixel_R_array[ index_adjusted ] ), 
 														static_cast<INT>( pixel_G_array[ index_adjusted ] ), 
@@ -561,9 +557,10 @@ namespace {
 
 	void i_less_than_children_per_row( _In_ const size_t i, _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _In_ const size_t c ) {
 		if ( i < childrenPerRow[ row ] ) {
-			const auto childAtC = static_cast< const CTreeListItem* >( parent_vector_of_children.at( c ) );
+			const auto childAtC = parent_vector_of_children.at( c );
 			if ( childAtC != NULL ) {
-				childAtC->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				RECT rc { -1, -1, -1, -1 };
+				childAtC->TmiSetRectangle( rc );
 				}
 			}
 		}
@@ -587,14 +584,14 @@ namespace {
 		}
 
 	_Pre_satisfies_( parent->m_child_info.m_child_info_ptr != NULL )
-	bool zero_size_parent( _Inout_ std::vector<double>& rows, _Inout_ std::vector<size_t>& childrenPerRow, _Inout_ std::vector<double>& childWidth, _In_ const CTreeListItem* const parent, _In_ const std::uint64_t parentSize ) {
+	bool zero_size_parent( _Inout_ std::vector<double>* const rows, _Inout_ std::vector<size_t>* const childrenPerRow, _Inout_ std::vector<double>* const childWidth, _In_ const CTreeListItem* const parent, _In_ const std::uint64_t parentSize ) {
 		ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 		if ( parentSize == 0 ) {
-			rows.emplace_back( 1.0 );
+			rows->emplace_back( 1.0 );
 			//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
-			childrenPerRow.emplace_back( static_cast<size_t>( parent->m_child_info.m_child_info_ptr->m_childCount ) );
+			childrenPerRow->emplace_back( static_cast<size_t>( parent->m_child_info.m_child_info_ptr->m_childCount ) );
 			for ( size_t i = 0; i < parent->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
-				childWidth.at( i ) = 1.0 / parent->m_child_info.m_child_info_ptr->m_childCount;
+				childWidth->at( i ) = 1.0 / parent->m_child_info.m_child_info_ptr->m_childCount;
 				}
 			return true;
 			}
@@ -610,7 +607,7 @@ namespace {
 
 		const DOUBLE h4 = 4 * h;
 
-		const DOUBLE wf   = h4 / width;
+		const DOUBLE wf = h4 / width;
 		surface[ 2 ] += wf * ( rc.right + rc.left );
 		surface[ 0 ] -= wf;
 
@@ -658,16 +655,13 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		//item doesn't have children, nothing to check
-		ASSERT( item->m_child_info.m_child_info_ptr == nullptr );
-		//ASSERT( item->m_childCount == 0 );
 		return;
 		}
 
 	WDS_validateRectangle_DEBUG( item, item->TmiGetRectangle( ) );
 	const std::vector<const CTreeListItem*> item_vector_of_children = item->size_sorted_vector_of_children( );
-	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
 	for ( size_t i = 0; i < item->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
-		const auto child = static_cast< const CTreeListItem* >( item_vector_of_children.at( i ) );
+		const auto child = item_vector_of_children.at( i );
 		WDS_validateRectangle_DEBUG( child, item->TmiGetRectangle( ) );
 		RecurseCheckTree( child );
 		}
@@ -682,24 +676,24 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 
 #endif
 
-void CTreemap::compensateForGrid( _Inout_ RECT& rc, _In_ CDC& pdc ) const {
+void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ CDC* const pdc ) const {
 	if ( m_options.grid ) {
 		normalize_RECT( rc );
-		pdc.FillSolidRect( &rc, m_options.gridColor );
-		rc.right--;
-		rc.bottom--;
-		ASSERT( !zero_size_rect( rc ) );
+		pdc->FillSolidRect( rc, m_options.gridColor );
+		rc->right--;
+		rc->bottom--;
+		ASSERT( !zero_size_rect( *rc ) );
 		return;
 		}
 	// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
 	shrink_for_grid( pdc, rc );
-	rc.right--;
-	rc.bottom--;
-	ASSERT( !zero_size_rect( rc ) );
+	rc->right--;
+	rc->bottom--;
+	ASSERT( !zero_size_rect( *rc ) );
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ const CTreeListItem* const root, _In_ const Treemap_Options& options ) {
-	ASSERT( ( ( rc.bottom - rc.top ) + ( rc.right - rc.left ) ) > 0 );
+void CTreemap::DrawTreemap( _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc, _In_ const CTreeListItem* const root, _In_ const Treemap_Options& options ) {
+	ASSERT( ( ( rc->bottom - rc->top ) + ( rc->right - rc->left ) ) > 0 );
 	ASSERT( root != NULL );
 	if ( root == NULL ) {//should never happen! Ever!
 		return;
@@ -722,15 +716,13 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ c
 
 	if ( root->size_recurse( ) > 0 ) {
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
-		//rc.NormalizeRect( );
 
-		root->TmiSetRectangle( rc );
+		root->TmiSetRectangle( *rc );
 		RecurseDrawGraph( offscreen_buffer, root, rc, true, surface, m_options.height );
 		WDS_validateRectangle_DEBUG( root, root->TmiGetRectangle( ) );
 		return;
 		}
-	//rc.NormalizeRect( );
-	offscreen_buffer.FillSolidRect( &rc, RGB( 0, 0, 0 ) );
+	offscreen_buffer->FillSolidRect( rc, RGB( 0, 0, 0 ) );
 	WDS_validateRectangle_DEBUG( root, root->TmiGetRectangle( ) );
 	return;
 	}
@@ -738,7 +730,7 @@ void CTreemap::DrawTreemap( _In_ CDC& offscreen_buffer, _Inout_ RECT& rc, _In_ c
 #ifdef DEBUG
 void CTreemap::validateRectangle( _In_ const CTreeListItem* const child, _In_ const RECT rc ) const {
 #ifdef _DEBUG
-	auto rcChild = CRect( child->TmiGetRectangle( ) );
+	RECT rcChild = child->TmiGetRectangle( );
 
 	ASSERT(   rc.bottom < 32767 );
 	ASSERT(   rc.left   < 32767 );
@@ -751,7 +743,7 @@ void CTreemap::validateRectangle( _In_ const CTreeListItem* const child, _In_ co
 	ASSERT(   rcChild.right      >=   rcChild.left );
 	ASSERT(   rcChild.bottom     >=   rcChild.top );
 	ASSERT(   rc.bottom          >=   rc.top );
-	rcChild.NormalizeRect( );
+	normalize_RECT( &rcChild );
 	ASSERT( ( rcChild.right - rcChild.left ) < 32767 );
 	ASSERT( ( rcChild.bottom - rcChild.top ) < 32767 );
 #else
@@ -762,7 +754,7 @@ void CTreemap::validateRectangle( _In_ const CTreeListItem* const child, _In_ co
 	}
 #endif
 
-_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem* CTreemap::FindItemByPoint( _In_ const CTreeListItem* const item, _In_ const POINT point, _In_opt_ CDirstatDoc* test_doc ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeListItem* CTreemap::FindItemByPoint( _In_ const CTreeListItem* const item, _In_ const POINT point, _In_opt_ const CDirstatDoc* const test_doc ) const {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -774,9 +766,9 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 	
 	*/
 	RECT rc = item->TmiGetRectangle( );
-	normalize_RECT( rc );
+	normalize_RECT( &rc );
 
-	if ( ! ::PtInRect( &rc, point ) ) {
+	if (!::PtInRect( &rc, point ) ) {
 		return NULL;
 		}
 
@@ -784,18 +776,16 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 	const auto gridWidth = m_options.grid ? 1 : 0;
 	
 	if ( ( ( rc.right - rc.left ) <= gridWidth ) || ( ( rc.bottom - rc.top ) <= gridWidth ) || ( item->m_child_info.m_child_info_ptr == nullptr ) ) {
-		return const_cast<CTreeListItem*>( item );
+		return item;
 		}
 	ASSERT( item->size_recurse( ) > 0 );
 
-	//ASSERT( item->m_childCount > 0 );
-	//ASSERT( item->m_childCount == item->m_child_info->m_childCount );
 	const auto countOfChildren = item->m_child_info.m_child_info_ptr->m_childCount;
 
 	const std::vector<const CTreeListItem*> item_vector_of_children = item->size_sorted_vector_of_children( );
 	
 	for ( size_t i = 0; i < countOfChildren; i++ ) {
-		const auto child = static_cast< const CTreeListItem* >( item_vector_of_children.at( i ) );
+		const auto child = item_vector_of_children.at( i );
 		ASSERT( item->m_child_info.m_child_info_ptr != nullptr );
 		ASSERT( item->m_child_info.m_child_info_ptr->m_children != nullptr );
 		ASSERT( child != NULL );
@@ -811,7 +801,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem*
 				}
 			}
 		}
-	return const_cast<CTreeListItem*>( item );
+	return item;
 	}
 
 void CTreemap::DrawColorPreview( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
@@ -827,8 +817,8 @@ void CTreemap::DrawColorPreview( _In_ HDC hDC, _In_ const RECT rc, _In_ const CO
 	RenderRectangle( hDC, rc, surface, color );
 	if ( m_options.grid ) {
 		CPen pen { PS_SOLID, 1, m_options.gridColor };
-		CSelectObject sopen{ hDC, pen.m_hObject };
-		CSelectStockObject sobrush { hDC, NULL_BRUSH };
+		SelectObject_wrapper sopen{ hDC, pen.m_hObject };
+		SelectStockObject_wrapper sobrush { hDC, NULL_BRUSH };
 		//VERIFY( pdc.Rectangle( &rc ) );
 		VERIFY( ::Rectangle( hDC, rc.left, rc.top, rc.right, rc.bottom ) );
 		}
@@ -847,7 +837,7 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT& rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
+void CTreemap::RecurseDrawGraph( _In_ CDC* const offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT* const rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		//this should be fast, as we have 0 children.
@@ -860,26 +850,26 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 	TRACE( _T( " RecurseDrawGraph working on rect l: %li, r: %li, t: %li, b: %li, name: `%s`, isroot: %s\r\n" ), rc.left, rc.right, rc.top, rc.bottom, item->m_name.c_str( ), ( asroot ? L"TRUE" : L"FALSE" ) );
 #endif
 
-	WDS_validateRectangle_DEBUG( item, rc );
+	WDS_validateRectangle_DEBUG( item, (*rc) );
 
-	ASSERT( ( rc.right - rc.left ) >= 0 );
-	ASSERT( ( rc.bottom - rc.top ) >= 0 );
+	ASSERT( ( rc->right - rc->left ) >= 0 );
+	ASSERT( ( rc->bottom - rc->top ) >= 0 );
 
 
-	if ( zero_size_width_or_height_rect( rc ) ) {
+	if ( zero_size_width_or_height_rect( *rc ) ) {
 		return;
 		}
 
 	const auto gridWidth = m_options.grid ? 1 : 0;
 
 	//empty directory is a valid possibility!
-	if ( ( ( rc.right - rc.left ) < gridWidth ) || ( ( rc.bottom - rc.top ) < gridWidth ) ) {
+	if ( ( ( rc->right - rc->left ) < gridWidth ) || ( ( rc->bottom - rc->top ) < gridWidth ) ) {
 		return;
 		}
 	DOUBLE surface[ 4 ];
 
 	if ( IsCushionShading_current ) {
-		RecurseDrawGraph_CushionShading( asroot, surface, psurface, rc, height, item );
+		RecurseDrawGraph_CushionShading( asroot, surface, psurface, (*rc), height, item );
 		}
 	else {
 		memset_zero_struct( surface );
@@ -900,10 +890,10 @@ void CTreemap::RecurseDrawGraph( _In_ CDC& offscreen_buffer, _In_ const CTreeLis
 		return;
 		}
 	DrawChildren( offscreen_buffer, item, surface, height );
-	WDS_validateRectangle_DEBUG( item, rc );
+	WDS_validateRectangle_DEBUG( item, (*rc) );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
+void CTreemap::DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
 	if ( m_options.style == Treemap_STYLE::KDirStatStyle ) {
 		KDS_DrawChildren( pdc, parent, surface, height );
 		return;
@@ -913,7 +903,7 @@ void CTreemap::DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const pare
 	}
 
 
-bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout_ std::vector<double>& childWidth, _Inout_ std::vector<double>& rows, _Inout_ std::vector<size_t>& childrenPerRow ) const {
+bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout_ std::vector<double>* const childWidth, _Inout_ std::vector<double>* const rows, _Inout_ std::vector<size_t>* const childrenPerRow ) const {
 	/*
 	  return: whether the rows are horizontal.
 	*/
@@ -941,29 +931,29 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 	while ( nextChild < parent->m_child_info.m_child_info_ptr->m_childCount ) {
-		size_t childrenUsed;
-		rows.emplace_back( KDS_CalcNextRow( parent, nextChild, width, childrenUsed, childWidth, parentSize ) );
-		childrenPerRow.emplace_back( childrenUsed );
+		size_t childrenUsed = 0u;
+		rows->emplace_back( KDS_CalcNextRow( parent, nextChild, width, &childrenUsed, childWidth, parentSize ) );
+		childrenPerRow->emplace_back( childrenUsed );
 		nextChild += childrenUsed;
 		}
 	return horizontalRows;
 	}
 
-void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const {
+void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t* const c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC* const pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( parent );
 #endif
 	double left = horizontalRows ? rc.left : rc.top;
 
-	for ( size_t i = 0; i < childrenPerRow[ row ]; i++, c++ ) {
+	for ( size_t i = 0; i < childrenPerRow[ row ]; i++, ((*c)++) ) {
 
-		const auto child = static_cast< const CTreeListItem* >( parent_vector_of_children.at( c ) );
+		const auto child = parent_vector_of_children.at( *c );
 
-		ASSERT( childWidth[ c ] >= 0 );
+		ASSERT( childWidth[ (*c) ] >= 0 );
 		ASSERT( left > -2 );
-		const double fRight = left + childWidth[ c ] * width;
+		const double fRight = left + childWidth[ (*c) ] * width;
 			
-		const bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ c + 1u ] == 0 );
+		const bool lastChild = ( i == childrenPerRow[ row ] - 1 || childWidth[ (*c) + 1u ] == 0 );
 			
 
 		const CRect rcChild = build_rc_child( left, horizontalRows, bottom, top, lastChild, fRight, rc );
@@ -977,13 +967,13 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow
 #endif
 
 		child->TmiSetRectangle( rcChild );
-		RecurseDrawGraph( pdc, child, rcChild, false, surface, h * m_options.scaleFactor );
+		RecurseDrawGraph( pdc, child, rcChild, false, surface, ( h * m_options.scaleFactor ) );
 
 		if ( lastChild ) {
-			i++, c++;
-			i_less_than_children_per_row( i, childrenPerRow, row, parent_vector_of_children, c );
+			i++, ((*c)++);
+			i_less_than_children_per_row( i, childrenPerRow, row, parent_vector_of_children, (*c) );
 
-			c += childrenPerRow[ row ] - i;
+			(*c) += childrenPerRow[ row ] - i;
 			break;
 			}
 
@@ -991,7 +981,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow
 		}
 	}
 
-void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+void CTreemap::KDS_DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	/*
 	  Original author of WDS learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, (in their opinion).
 	*/
@@ -1008,7 +998,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 
 	//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 	childWidth.resize( static_cast<size_t>( parent->m_child_info.m_child_info_ptr->m_childCount ) );
-	const bool horizontalRows = KDS_PlaceChildren( parent, childWidth, rows, childrenPerRow );
+	const bool horizontalRows = KDS_PlaceChildren( parent, &childWidth, &rows, &childrenPerRow );
 
 	const int width = horizontalRows ? rc.Width( ) : rc.Height( );
 	const int height_scope_holder = horizontalRows ? rc.Height( ) : rc.Width( );
@@ -1024,12 +1014,12 @@ void CTreemap::KDS_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 		const double fBottom = top + rows[ row ] * height;
 		const int bottom = gen_bottom( fBottom, rows, horizontalRows, rc, row );
 
-		KDS_DrawSingleRow( childrenPerRow, row, parent_vector_of_children, c, childWidth, width, horizontalRows, bottom, top, rc, pdc, surface, h, parent );
+		KDS_DrawSingleRow( childrenPerRow, row, parent_vector_of_children, &c, childWidth, width, horizontalRows, bottom, top, rc, pdc, surface, h, parent );
 		top = fBottom;
 		}
 	}
 
-DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth, const std::uint64_t parentSize ) const {
+DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t* const childrenUsed, _Inout_ std::vector<DOUBLE>* const childWidth, const std::uint64_t parentSize ) const {
 	size_t i = 0;
 	static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
@@ -1062,7 +1052,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 	ASSERT( nextChild < parent->m_child_info.m_child_info_ptr->m_childCount );//the following loop NEEDS to iterate at least once
 	for ( i = nextChild; i < parent->m_child_info.m_child_info_ptr->m_childCount; i++ ) {
 
-		const std::uint64_t childSize = static_cast< const CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( );
+		const std::uint64_t childSize = parent_vector_of_children.at( i )->size_recurse( );
 		parentSizes.at( i ) = childSize;
 		if ( childSize == 0 ) {
 			ASSERT( i > nextChild );  // first child has size > 0
@@ -1100,19 +1090,19 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 
 	// We add the rest of the children, if their size is 0.
 //#pragma warning(suppress: 6011)//not null here!
-	while ( ( i < parent->m_child_info.m_child_info_ptr->m_childCount ) && ( static_cast< const CTreeListItem* >( parent_vector_of_children.at( i ) )->size_recurse( ) == 0 ) ) {
+	while ( ( i < parent->m_child_info.m_child_info_ptr->m_childCount ) && ( parent_vector_of_children.at( i )->size_recurse( ) == 0 ) ) {
 		i++;
 		}
 
 
-	childrenUsed = ( i - nextChild );
+	(*childrenUsed) = ( i - nextChild );
 	ASSERT( rowHeight != 0.00 );
 	// Now as we know the rowHeight, we compute the widths of our children.
-	for ( i = 0; i < childrenUsed; i++ ) {
+	for ( i = 0; i < (*childrenUsed); i++ ) {
 		// Rectangle(1.0 * 1.0) = mySize
 		const double rowSize = mySize * rowHeight;
 		double childSize = DBL_MAX;
-		const auto thisChild = static_cast< const CTreeListItem* >( parent_vector_of_children.at( nextChild + i ) );
+		const auto thisChild = parent_vector_of_children.at( nextChild + i );
 		if ( parentSizes.at( nextChild + i ) != UINT64_MAX ) {
 			childSize = ( double ) parentSizes.at( nextChild + i );
 			}
@@ -1128,29 +1118,31 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 
 #ifdef DEBUG
 		const auto val = nextChild + i;
-		ASSERT( val < static_cast<size_t>( childWidth.size( ) ) );
+		ASSERT( val < static_cast<size_t>( childWidth->size( ) ) );
 #endif
 
-		childWidth[ nextChild + i ] = cw;
+		(*childWidth)[ nextChild + i ] = cw;
 		}
 	return rowHeight;
 	}
 
 //if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
+void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC* const pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
 
 	// Build the rectangles of children.
-	RECT rc;
-	double fBegin = build_children_rectangle( remaining, rc, horizontal, widthOfRow );
+	RECT rc = { 0 };
+	double fBegin = build_children_rectangle( remaining, &rc, horizontal, widthOfRow );
 	
 	for ( auto i = rowBegin; i < rowEnd; i++ ) {
+		//( int ) truncation is REQUIRED here!
 		const int begin = ( int ) fBegin;
-		const auto child_at_I = static_cast< const CTreeListItem* >( parent_vector_of_children[ i ] );
+		const auto child_at_I = parent_vector_of_children[ i ];
 
 		const double fraction = child_at_i_fraction( sizes, i, sumOfSizesOfChildrenInRow, child_at_I );
 
 		const double fEnd = gen_fEnd( fBegin, fraction, heightOfNewRow );
-		int end_scope_holder = ( int ) fEnd;
+		//( int ) truncation is REQUIRED here!
+		const int end_scope_holder = ( int ) fEnd;
 
 		const std::uint64_t childAtIPlusOne_size = if_i_plus_one_less_than_rowEnd( rowEnd, i, sizes, parent_vector_of_children );
 
@@ -1158,22 +1150,22 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 
 		const int end = if_last_child_end_scope_holder( i, horizontal, remaining, heightOfNewRow, end_scope_holder, lastChild, parent_vector_of_children );
 
-		adjust_rect_if_horizontal( horizontal, rc, begin, end );
+		adjust_rect_if_horizontal( horizontal, &rc, begin, end );
 
 #ifdef DEBUG
 		assert_children_rect_smaller_than_parent_rect( rc, remaining );
 #endif
 
 		child_at_I->TmiSetRectangle( rc );
-		RecurseDrawGraph( pdc, child_at_I, rc, false, surface, h * scaleFactor );
+		RecurseDrawGraph( pdc, child_at_I, &rc, false, surface, ( h * scaleFactor ) );
 
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
-				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CTreeListItem* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent_vector_of_children.at( i + 1 )->m_name.c_str( ) );
 				}
 			else {
-				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
+				TRACE( _T( "Last child! Parent item: `%s`\r\n" ), parent_vector_of_children.at( i )->m_name.c_str( ) );
 				}
 #endif
 			break;
@@ -1181,10 +1173,10 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 		else {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
-				TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CTreeListItem* >( parent_vector_of_children.at( i + 1 ) )->m_name.c_str( ) );
+				TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent_vector_of_children.at( i + 1 )->m_name.c_str( ) );
 				}
 			else {
-				TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), static_cast< CTreeListItem* >( parent_vector_of_children.at( i ) )->m_name.c_str( ) );
+				TRACE( _T( "NOT Last child! Parent item: `%s`\r\n" ), parent_vector_of_children.at( i )->m_name.c_str( ) );
 				}
 #endif
 			}
@@ -1197,7 +1189,7 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 
 
 // The classical squarification method.
-void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+void CTreemap::SQV_DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -1297,7 +1289,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 				}
 
 			// Here we have decided to add child(rowEnd) to the row.
-			add_child_rowEnd_to_row( sumOfSizesOfChildrenInRow, rmin, rowEnd, worst, nextWorst );
+			add_child_rowEnd_to_row( &sumOfSizesOfChildrenInRow, rmin, &rowEnd, &worst, nextWorst );
 			}
 
 		// Row will be made up of child(rowBegin)...child(rowEnd - 1).
@@ -1315,11 +1307,11 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 
 		
 		// Now put the children into their places
-		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, pdc, surface, m_options.scaleFactor, h, widthOfRow );
+		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, &sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, pdc, surface, m_options.scaleFactor, h, widthOfRow );
 
 
 		// Put the next row into the rest of the rectangle
-		Put_next_row_into_the_rest_of_rectangle( horizontal, remaining, widthOfRow );
+		Put_next_row_into_the_rest_of_rectangle( horizontal, &remaining, widthOfRow );
 
 		remainingSize -= sumOfSizesOfChildrenInRow;
 
@@ -1333,7 +1325,8 @@ void CTreemap::SQV_DrawChildren( _In_ CDC& pdc, _In_ const CTreeListItem* const 
 			//ASSERT( parent->m_childCount == parent->m_child_info->m_childCount );
 
 			if ( head < parent->m_child_info.m_child_info_ptr->m_childCount ) {
-				static_cast< const CTreeListItem* >( parent_vector_of_children.at( head ) )->TmiSetRectangle( CRect( -1, -1, -1, -1 ) );
+				const RECT invalid_rect { -1, -1, -1, -1 };
+				parent_vector_of_children.at( head )->TmiSetRectangle( invalid_rect );
 				}
 			break;
 			}
@@ -1348,9 +1341,9 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
+void CTreemap::RenderLeaf( _In_ CDC* const offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
 	// Leaves space for grid and then calls RenderRectangle()
-	auto rc = CRect( item->TmiGetRectangle( ) );
+	RECT rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
 		rc.top++;
 		rc.left++;
@@ -1359,7 +1352,7 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem*
 			return;
 			}
 		}
-	rc.NormalizeRect( );
+	normalize_RECT( &rc );
 	COLORREF colorOfItem;
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		colorOfItem = GetDocument( )->GetCushionColor( item->CStyle_GetExtensionStrPtr( ) );
@@ -1368,11 +1361,11 @@ void CTreemap::RenderLeaf( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem*
 		ASSERT( item->m_child_info.m_child_info_ptr == nullptr );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
-	RenderRectangle( offscreen_buffer, rc, surface, colorOfItem );
+	RenderRectangle( offscreen_buffer->m_hDC, rc, surface, colorOfItem );
 	WDS_validateRectangle_DEBUG( item, rc );
 	}
 
-void CTreemap::RenderRectangle( _In_ HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ const HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
 	auto brightness = m_options.brightness;
 	if ( ( color bitand COLORFLAG_MASK ) == 0 ) {
 		ASSERT( color != 0 );
@@ -1403,7 +1396,9 @@ void CTreemap::RenderRectangle( _In_ HDC offscreen_buffer, _In_ const RECT& rc, 
 	DrawSolidRect( offscreen_buffer, rc, color, brightness );
 	}
 
-void CTreemap::DrawSolidRect( _In_ HDC hDC, _In_ const RECT& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+void CTreemap::DrawSolidRect( _In_ const HDC hDC, _In_ const RECT& rc, _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+	ASSERT( brightness <= 1 );
+	ASSERT( brightness >= 0 );
 	INT red   = GetRValue( col );
 	INT green = GetGValue( col );
 	INT blue  = GetBValue( col );
@@ -1430,10 +1425,10 @@ void CTreemap::DrawSolidRect( _In_ HDC hDC, _In_ const RECT& rc, _In_ const COLO
 static_assert( sizeof( INT ) == sizeof( std::int_fast32_t ), "setPixStruct bad point type!!" );
 static_assert( sizeof( std::int_fast32_t ) == sizeof( COLORREF ), "setPixStruct bad color type!!" );
 
+void CTreemap::DrawCushion( _In_ const HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
+	ASSERT( brightness <= 1 );
+	ASSERT( brightness >= 0 );
 
-
-
-void CTreemap::DrawCushion( _In_ HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const COLORREF col, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) const {
 	ASSERT( rc.bottom >= 0 );
 	ASSERT( rc.top >= 0 );
 	ASSERT( rc.right >= 0 );
@@ -1533,7 +1528,11 @@ void CTreemap::DrawCushion( _In_ HDC offscreen_buffer, _In_ const RECT& rc, _In_
 	}
 
 void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
-	ASSERT( vecSize != 0 );
+	ASSERT( brightness <= 1 );
+	ASSERT( brightness >= 0 );
+
+	ASSERT( vecSize >= 1 );
+	ASSERT( vecSize <= 1024 );
 	
 	const rsize_t stack_buffer_array_size = 1024;
 	ASSERT( largestIndexWritten < stack_buffer_array_size );
@@ -1594,8 +1593,11 @@ void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, 
 	SetPixels( offscreen_buffer, pixles, rc.top, rc.left, rc.bottom, rc.right, ( rc.right - rc.left ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
 	}
 
-void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
-	ASSERT( vecSize != 0 );
+void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ const HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
+	ASSERT( brightness <= 1 );
+	ASSERT( brightness >= 0 );
+
+	ASSERT( vecSize >= 1024 );
 
 	std::unique_ptr<DOUBLE[ ]> nx_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
 	std::unique_ptr<DOUBLE[ ]> ny_array( std::make_unique<DOUBLE[ ]>( vecSize ) );
@@ -1655,15 +1657,19 @@ void CTreemap::DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _
 			}
 		}
 #endif
+	ASSERT( rc.bottom >= rc.top );
 	SetPixels( offscreen_buffer, pixles.get( ), rc.top, rc.left, rc.bottom, rc.right, ( rc.right - rc.left ), offset, largestIndexWritten, ( rc.bottom - rc.top ) );
 	}
 
 
-void CTreemap::SetPixels( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const {
+void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int& yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd, _In_ _In_range_( >=, 0 ) const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ _In_range_( >=, 0 ) const int rcHeight ) const {
 	//row = iy * rc.Width( );
 	//stride = ix;
 	//index = row + stride;
-	UNREFERENCED_PARAMETER( maxIndex );
+	
+
+	ASSERT( rcHeight >= 0 );
+	ASSERT( rcWidth >= 0 );
 
 	//CDC tempDCmem;
 	/*
@@ -1690,9 +1696,11 @@ void CTreemap::SetPixels( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre
 	const auto index = ( yStart * rcWidth ) + xStart - offset;
 	ASSERT( rcHeight == ( yEnd - yStart ) );
 	ASSERT( rcWidth == ( xEnd - xStart ) );
+	ASSERT( index <= maxIndex );
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( xEnd );
 	UNREFERENCED_PARAMETER( yEnd );
+	UNREFERENCED_PARAMETER( maxIndex );
 #endif
 
 	const auto res = bmp.CreateBitmap( rcWidth, rcHeight, 1, 32, &pixles[ index ] );

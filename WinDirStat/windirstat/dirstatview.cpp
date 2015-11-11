@@ -52,11 +52,11 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 END_MESSAGE_MAP()
 
 _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
-	return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	return static_cast<CDirstatDoc*>( m_pDocument );
 	}
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) {
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {
 		return;
@@ -70,7 +70,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {
 		TRACE( _T( "Document is NULL, CDirstatView::OnUpdateHINT_SELECTIONCHANGED can't do jack shit.\r\n" ) );
@@ -90,7 +90,7 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {
 		return;
@@ -129,7 +129,7 @@ void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
 		return;
 		}
 	if ( selected ) {
-		const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+		const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 		ASSERT( Document != NULL );
 		if ( Document == NULL ) {
 			TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
@@ -140,7 +140,5 @@ void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
 		return m_pDocument->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_SELECTIONCHANGED );
 		}
 	}
-
-#else
 
 #endif

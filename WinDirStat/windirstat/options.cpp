@@ -23,9 +23,6 @@ WDS_FILE_INCLUDE_MESSAGE
 
 
 namespace registry_strings {
-	
-	
-	
 	_Null_terminated_ const wchar_t entrySplitterPosS[ ]              = { _T( "%s-splitterPos" ) };
 	_Null_terminated_ const wchar_t entryColumnOrderS[ ]              = { _T( "%s-columnOrder" ) };
 	_Null_terminated_ const wchar_t entryDialogRectangleS[ ]          = { _T( "%s-rectangle" ) };
@@ -64,11 +61,10 @@ namespace registry_strings {
 	_Null_terminated_ const wchar_t entryWaitForCompletion[ ]         = { _T( "waitForCompletion" ) };
 	_Null_terminated_ const wchar_t entryRefreshPolicy[ ]             = { _T( "refreshPolicy" ) };
 	_Null_terminated_ const wchar_t entryMainWindowPlacement[ ]       = { _T( "mainWindowPlacement" ) };
-	
 	}
 
 namespace helpers {
-	std::wstring generalized_make_entry( _In_z_ const PCTSTR name, _In_z_ const PCTSTR entry_fmt_str ) {
+	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ const PCWSTR entry_fmt_str ) {
 		//TODO: uses heap!
 		const auto chars_needed = ( _scwprintf( entry_fmt_str, name ) + 1 );
 		std::unique_ptr<_Null_terminated_ wchar_t[]> char_buffer_ptr = std::make_unique<wchar_t[ ]>( static_cast<size_t>( chars_needed ) );
@@ -94,7 +90,7 @@ namespace helpers {
 
 		return L"";
 		}
-	std::wstring MakeColumnOrderEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeColumnOrderEntry( _In_z_ const PCWSTR name ) {
 		const auto ws_entry = generalized_make_entry( name, registry_strings::entryColumnOrderS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeColumnOrderEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
@@ -102,7 +98,7 @@ namespace helpers {
 			}
 		return ws_entry;
 		}
-	std::wstring MakeColumnWidthsEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeColumnWidthsEntry( _In_z_ const PCWSTR name ) {
 		const auto ws_entry = generalized_make_entry( name, registry_strings::entryColumnWidthsS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"entryColumnWidthsS failed to format the string! OutputDebugString has the name string. Will return empty string." );
@@ -135,7 +131,7 @@ namespace {
 		RGB( 255, 255,   0 )
 		};
 
-	void SanifyRect( _Inout_ RECT& rc ) {
+	void SanifyRect( _Inout_ RECT* const rc ) {
 		const INT visible = 30;
 		normalize_RECT( rc );
 
@@ -148,23 +144,23 @@ namespace {
 
 		const RECT& rcDesktop = rcDesktop_temp;
 
-		if ( ( rc.right - rc.left ) > ( rcDesktop.right - rcDesktop.left ) ) {
-			rc.right = rc.left + ( rcDesktop.right - rcDesktop.left );
+		if ( ( rc->right - rc->left ) > ( rcDesktop.right - rcDesktop.left ) ) {
+			rc->right = rc->left + ( rcDesktop.right - rcDesktop.left );
 			}
-		if ( ( rc.bottom - rc.top ) > ( rcDesktop.bottom - rcDesktop.top ) ) {
-			rc.bottom = rc.top + ( rcDesktop.bottom - rcDesktop.top );
+		if ( ( rc->bottom - rc->top ) > ( rcDesktop.bottom - rcDesktop.top ) ) {
+			rc->bottom = rc->top + ( rcDesktop.bottom - rcDesktop.top );
 			}
-		if ( rc.left < 0 ) {
-			VERIFY( ::OffsetRect( &rc, -( rc.left ), 0 ) );
+		if ( rc->left < 0 ) {
+			VERIFY( ::OffsetRect( rc, -( rc->left ), 0 ) );
 			}
-		if ( rc.left > rcDesktop.right - visible ) {
-			VERIFY( ::OffsetRect( &rc, -( visible ), 0 ) );
+		if ( rc->left > rcDesktop.right - visible ) {
+			VERIFY( ::OffsetRect( rc, -( visible ), 0 ) );
 			}
-		if ( rc.top < 0 ) {
-			VERIFY( ::OffsetRect( &rc, -( rc.top ), 0 ) );
+		if ( rc->top < 0 ) {
+			VERIFY( ::OffsetRect( rc, -( rc->top ), 0 ) );
 			}
-		if ( rc.top > rcDesktop.bottom - visible ) {
-			VERIFY( ::OffsetRect( &rc, 0, -( visible ) ) );
+		if ( rc->top > rcDesktop.bottom - visible ) {
+			VERIFY( ::OffsetRect( rc, 0, -( visible ) ) );
 			}
 		}
 
@@ -198,23 +194,25 @@ namespace {
 		return fmt_str;
 		}
 
-	void DecodeWindowPlacement( _In_ const std::wstring s, _Inout_ WINDOWPLACEMENT& rwp ) {
+	_Success_( return )
+	bool DecodeWindowPlacement( _In_ const std::wstring s, _Out_ WINDOWPLACEMENT* const rwp ) {
 		TRACE( _T( "Decoding window placement! wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom: %s\r\n" ), s.c_str( ) );
 		
-		auto wp = zero_init_struct<WINDOWPLACEMENT>( );
-
+		WINDOWPLACEMENT wp = { 0 };
 		wp.length = sizeof( wp );
 		
 		const INT r = swscanf_s( s.c_str( ), _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
 		TRACE( _T( "swscanf_s result: %i\r\n" ), r );
 		TRACE( _T( "WINDOWPLACEMENT:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
 		if ( r == 10 ) {
-			rwp = wp;
+			(*rwp) = wp;
+			return true;
 			}
+		return false;
 		}
 
 
-	std::wstring MakeSplitterPosEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeSplitterPosEntry( _In_z_ const PCWSTR name ) {
 		const auto ws_entry = helpers::generalized_make_entry( name, registry_strings::entrySplitterPosS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeSplitterPosEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
@@ -224,7 +222,7 @@ namespace {
 		}
 
 
-	std::wstring MakeDialogRectangleEntry( _In_z_ const PCTSTR name ) {
+	std::wstring MakeDialogRectangleEntry( _In_z_ const PCWSTR name ) {
 		const auto ws_entry = helpers::generalized_make_entry( name, registry_strings::entryDialogRectangleS );
 		if ( ws_entry.empty( ) ) {
 			displayWindowsMsgBoxWithMessage( L"MakeDialogRectangleEntry failed to format the string! OutputDebugString has the name string. Will return empty string." );
@@ -237,7 +235,7 @@ namespace {
 
 class CTreemap;
 
-void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
+void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT* const wp ) {
 	//ASSERT( wp.length == sizeof( wp ) );
 	
 	//const DWORD prof_string_size = MAX_PATH;
@@ -245,11 +243,14 @@ void CPersistence::GetMainWindowPlacement( _Out_ WINDOWPLACEMENT& wp ) {
 
 	//const auto s_2 = CRegistryUser::CStyle_GetProfileString( prof_string, prof_string_size, registry_strings::sectionPersistence, entryMainWindowPlacement, _T( "" ) );
 	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, registry_strings::entryMainWindowPlacement, _T( "" ) );
-	DecodeWindowPlacement( s.c_str( ), wp );
+	if ( !DecodeWindowPlacement( s.c_str( ), wp ) ) {
+		std::terminate( );
+		abort( );//Maybe VS2015 will understand that std::terminate( ) doesn't return.
+		}
 	
-	RECT rect_to_sanify = wp.rcNormalPosition;
-	SanifyRect( rect_to_sanify );
-	wp.rcNormalPosition = rect_to_sanify;
+	RECT rect_to_sanify = wp->rcNormalPosition;
+	SanifyRect( &rect_to_sanify );
+	wp->rcNormalPosition = rect_to_sanify;
 	//SanifyRect( ( CRect & ) wp.rcNormalPosition );
 	}
 
@@ -258,7 +259,7 @@ void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 	SetProfileString( registry_strings::sectionPersistence, registry_strings::entryMainWindowPlacement, s.c_str( ) );
 	}
 
-void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
+void CPersistence::SetSplitterPos( _In_z_ const PCWSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
 	INT pos = 0;
 	if ( valid ) {
 		pos = static_cast<INT>( userpos * 100 );
@@ -269,19 +270,19 @@ void CPersistence::SetSplitterPos( _In_z_ const PCTSTR name, _In_ const bool val
 	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), pos );
 	}
 
-void CPersistence::GetSplitterPos( _In_z_  const PCTSTR name, _Inout_ bool& valid, _Inout_ DOUBLE& userpos ) {
+void CPersistence::GetSplitterPos( _In_z_  const PCWSTR name, _Out_ bool* const valid, _Out_ DOUBLE* const userpos ) {
 	const auto pos = CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
 	if ( pos > 100 ) {
-		valid = false;
-		userpos = 0.5;
+		(*valid) = false;
+		(*userpos) = 0.5;
 		}
 	else {
-		valid = true;
-		userpos = ( static_cast<DOUBLE>( pos ) / static_cast<DOUBLE>( 100 ) );
+		(*valid) = true;
+		(*userpos) = ( static_cast<DOUBLE>( pos ) / static_cast<DOUBLE>( 100 ) );
 		}
 	}
 
-void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc ) {
+void CPersistence::GetDialogRectangle( _In_z_ const PCWSTR name, _Out_ RECT* const rc ) {
 	
 	const HRESULT rectangle_result = GetRect( MakeDialogRectangleEntry( name ), rc );
 	ASSERT( SUCCEEDED( rectangle_result ) );
@@ -290,12 +291,12 @@ void CPersistence::GetDialogRectangle( _In_z_ const PCTSTR name, _Out_ RECT& rc 
 		TRACE( _T( "GetRect( MakeDialogRectangleEntry( %s ), rc ) failed!! THIS ISN'T GOOD!\r\n" ), name );
 		}
 
-	RECT temp = rc;
-	SanifyRect( temp );
-	rc = temp;
+	RECT temp = (*rc);
+	SanifyRect( &temp );
+	(*rc) = temp;
 	}
 
-void CPersistence::SetDialogRectangle( _In_z_ const PCTSTR name, _In_ const RECT rc ) {
+void CPersistence::SetDialogRectangle( _In_z_ const PCWSTR name, _In_ const RECT rc ) {
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
 
@@ -307,16 +308,16 @@ INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
 	return n;
 	}
 
-void CPersistence::GetConfigPosition( _Inout_ POINT& pt ) {
-	pt.x = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt.x ) );
-	pt.y = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt.y ) );
+void CPersistence::GetConfigPosition( _Inout_ POINT* const pt ) {
+	pt->x = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt->x ) );
+	pt->y = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt->y ) );
 
-	CRect rc { WTL::CPoint( pt ), WTL::CSize( 100, 100 ) };
+	CRect rc { WTL::CPoint( *pt ), WTL::CSize( 100, 100 ) };
 	SanifyRect( rc );
-	pt = rc.TopLeft( );
+	(*pt) = rc.TopLeft( );
 	}
 
-void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writable_size_( arrSize ) INT* arr, const rsize_t arrSize ) {
+void CPersistence::SetArray( _In_ const std::wstring entry, _In_ _In_reads_( arrSize ) const INT* const arr, _In_range_( >, 1 ) const rsize_t arrSize ) {
 	ASSERT( entry.length( ) != 0 );
 	
 	//TODO: BUGBUG: do something here other than just returning
@@ -345,8 +346,7 @@ void CPersistence::SetArray( _In_ const std::wstring entry, _Inout_ _Pre_writabl
 	SetProfileString( registry_strings::sectionPersistence, entry.c_str( ), value.c_str( ) );
 	}
 
-_Pre_satisfies_( arrSize > 1 )
-void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_size_( arrSize ) INT* arr_, const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
+void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Out_writes_all_( arrSize ) INT* const arr_, _In_range_( >, 1 ) const rsize_t arrSize, _In_z_ const PCWSTR defaultValue ) {
 	ASSERT( entry.length( ) != 0 );
 	for ( rsize_t i = 0; i < arrSize; ++i ) {
 		arr_[ i ] = 0;
@@ -395,7 +395,7 @@ void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Pre_writable_
 	//	}
 	}
 
-void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
+void CPersistence::SetRect( _In_z_ const PCWSTR entry, _In_ const RECT rc ) {
 	//CString s;
 	//s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
 	//LONG_MAX == 2147483647
@@ -431,14 +431,14 @@ void CPersistence::SetRect( _In_z_ const PCTSTR entry, _In_ const RECT rc ) {
 
 //TODO: return by value?
 _Success_( SUCCEEDED( return ) )
-const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT& rc ) {
+const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT* const rc ) {
 	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) );
 	RECT tmp;
 	const auto r = swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
 	static_assert( SUCCEEDED( S_OK ), "Bad success return value!" );
 	if ( r == 4 ) {
 		TRACE( _T( "swscanf_s succeeded! read in rectangle: %d,%d,%d,%d\r\n" ), tmp.left, tmp.top, tmp.right, tmp.bottom );
-		rc = tmp;
+		(*rc) = tmp;
 		return S_OK;
 		}
 	
@@ -484,7 +484,7 @@ void COptions::SetListFullRowSelection( _In_ const bool show ) {
 		}
 	}
 
-void COptions::SetHumanFormat( _In_ const bool human, CDirstatApp* app_ptr ) {
+void COptions::SetHumanFormat( _In_ const bool human, _In_ CDirstatApp* const app_ptr ) {
 	if ( m_humanFormat != human ) {
 		m_humanFormat = human;
 		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
@@ -615,7 +615,6 @@ void COptions::SaveTreemapOptions( ) {
 	}
 
 std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue ) {
-
 	//const PCWSTR reg_key_str = GetApp( )->m_pszRegistryKey;
 	const HKEY   reg_sec_key = GetApp( )->GetSectionKey( section );
 	_Const_ DWORD dwType = REG_SZ;
@@ -643,7 +642,7 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_
 	}
 
 
-void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT value ) {
+void CRegistryUser::SetProfileInt( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const INT value ) {
 	ASSERT( wcslen( entry ) != 0 );
 	if ( wcslen( entry ) == 0 ) {
 		displayWindowsMsgBoxWithMessage( L"can set a registry key with an empty string!" );
@@ -652,7 +651,7 @@ void CRegistryUser::SetProfileInt( _In_z_ const PCTSTR section, _In_z_ const PCT
 	AfxGetApp( )->WriteProfileInt( section, entry, value );
 	}
 
-UINT CRegistryUser::GetProfileInt_( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const INT defaultValue ) {
+UINT CRegistryUser::GetProfileInt_( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const INT defaultValue ) {
 	ASSERT( wcslen( entry ) != 0 );
 	if ( wcslen( entry ) == 0 ) {
 		displayWindowsMsgBoxWithMessage( L"can Get a registry key with an empty string!(aborting!)" );
@@ -661,12 +660,12 @@ UINT CRegistryUser::GetProfileInt_( _In_z_ const PCTSTR section, _In_z_ const PC
 	return AfxGetApp( )->GetProfileIntW( section, entry, defaultValue );
 	}
 
-void CRegistryUser::SetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool value ) {
+void CRegistryUser::SetProfileBool( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const bool value ) {
 	const BOOL value_to_set = ( ( value ) ? TRUE : FALSE );
 	SetProfileInt( section, entry, value_to_set );
 	}
 
-bool CRegistryUser::GetProfileBool( _In_z_ const PCTSTR section, _In_z_ const PCTSTR entry, _In_ const bool defaultValue ) {
+bool CRegistryUser::GetProfileBool( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const bool defaultValue ) {
 	return GetProfileInt_( section, entry, defaultValue ) != 0;
 	}
 

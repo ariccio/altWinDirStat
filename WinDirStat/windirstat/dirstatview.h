@@ -14,6 +14,7 @@ WDS_FILE_INCLUDE_MESSAGE
 
 
 #include "TreeListControl.h" //for CTreeListControl m_treeListControl, else we'd need to use PIMPL. I HATE PIMPL.
+#include "macros_that_scare_small_children.h"
 
 class CDirstatView;
 class CDirstatDoc;
@@ -35,15 +36,13 @@ protected:
 	CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT, GetDocument( ) ) {// Created by MFC only
 		m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 		}
-	CDirstatView( const CDirstatView& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CDirstatView );
 
 	DECLARE_DYNCREATE( CDirstatView )
 
 public:
 
 	virtual ~CDirstatView( ) final = default;
-
-	CDirstatView& operator=( const CDirstatView& in ) = delete;
 
 	void SysColorChanged( ) {
 		m_treeListControl.SysColorChanged( );
@@ -143,9 +142,14 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
 		CWnd::OnSize( nType, cx, cy );
+		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+		//If the window handle identifies an existing window, the return value is nonzero.
+		//If the window handle does not identify an existing window, the return value is zero.
 		if ( ::IsWindow( m_treeListControl.m_hWnd ) ) {
 			const RECT rc = { 0, 0, cx, cy };
+			//MoveWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633534.aspx
 			//If [MoveWindow] succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero. To get extended error information, call GetLastError.
 			VERIFY( ::MoveWindow( m_treeListControl.m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
 			m_treeListControl.RedrawWindow( );
 			}

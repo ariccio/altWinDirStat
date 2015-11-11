@@ -189,7 +189,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
 
 	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DLIGHT ) );
-	CSelectObject sopen( pdc.m_hDC, pen.m_hObject );
+	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
 
 	move_to_coord( pdc, rc.left, m_zero.y );
 
@@ -205,7 +205,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	//circle.DeflateRect( m_gripperRadius );
 	VERIFY( ::InflateRect( &circle, -( m_gripperRadius.cx ), -( m_gripperRadius.cy ) ) );
 
-	CSelectStockObject sobrush( pdc, NULL_BRUSH );
+	SelectStockObject_wrapper sobrush( pdc, NULL_BRUSH );
 
 	ASSERT( pdc.m_hDC != NULL );
 	//If [Ellipse] succeeds, the return value is nonzero. If [Ellipse] fails, the return value is zero.
@@ -246,7 +246,7 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 
 
 	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
-	CSelectObject sopen( pdc.m_hDC, pen.m_hObject );
+	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
 
 	move_to_coord( pdc, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ) );
 
@@ -457,7 +457,7 @@ void CXySlider::OnPaint( ) {
 	VERIFY( dcmem.CreateCompatibleDC( &dc ) );
 	CBitmap bm;
 	VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
-	CSelectObject sobm( dcmem.m_hDC, bm.m_hObject );
+	SelectObject_wrapper sobm( dcmem.m_hDC, bm.m_hObject );
 
 	PaintBackground( dcmem );
 	// PaintValues(&dcmem); This is too noisy
@@ -509,7 +509,10 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	POINT point;
 	VERIFY( ::GetCursorPos( &point ) );
 	ASSERT( ::IsWindow( m_hWnd ) );
-	//"Return value: If [ScreenToClient] succeeds, the return value is nonzero. If [ScreenToClient] fails, the return value is zero."
+	
+	//ScreenToClient function: https://msdn.microsoft.com/en-us/library/dd162952.aspx
+	//"Return value: If [ScreenToClient] succeeds, the return value is nonzero.
+	//If [ScreenToClient] fails, the return value is zero."
 	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
 
 	const RECT rc = GetGripperRect( );

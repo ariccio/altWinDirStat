@@ -46,6 +46,58 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
+	void failed_to_open_clipboard( ) {
+		displayWindowsMsgBoxWithError( );
+		displayWindowsMsgBoxWithMessage( L"Cannot open the clipboard." );
+		TRACE( _T( "Cannot open the clipboard!\r\n" ) );
+		}
+
+	class Clipboard_wrapper final {
+		public:
+		DISALLOW_COPY_AND_ASSIGN( Clipboard_wrapper );
+
+		Clipboard_wrapper( const HWND hWnd, const bool empty ) : m_open {
+																		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+																		//If the window handle identifies an existing window, the return value is nonzero.
+																		//If the window handle does not identify an existing window, the return value is zero.
+																		( ASSERT( ::IsWindow( hWnd ) ), 
+
+																		//OpenClipboard function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms649048.aspx
+																		//If the function succeeds, the return value is nonzero.
+																		//If the function fails, the return value is zero.
+																		//To get extended error information, call GetLastError.
+																		::OpenClipboard( hWnd ) )
+																	 } {
+			if ( !m_open ) {
+				failed_to_open_clipboard( );
+				return;
+				}
+			if ( empty ) {
+				//EmptyClipboard function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms649037.aspx
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				//To get extended error information, call GetLastError.
+				if ( !::EmptyClipboard( ) ) {
+					displayWindowsMsgBoxWithError( );
+					displayWindowsMsgBoxWithMessage( L"Cannot empty the clipboard." );
+					TRACE( _T( "Cannot empty the clipboard!\r\n" ) );
+					}
+				}
+			}
+		~Clipboard_wrapper( ) {
+			if ( m_open ) {
+				//CloseClipboard function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms649035.aspx
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				//To get extended error information, call GetLastError.
+				VERIFY( ::CloseClipboard( ) );
+				}
+			}
+		private:
+		const BOOL m_open;
+		};
+
+
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
 		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
@@ -64,16 +116,16 @@ namespace {
 		TRACE( _T( ".....done!\r\n\r\n" ) );
 		return i;
 		}
-	void AddFileExtensionData( _Out_ _Pre_satisfies_( ( extensionRecords._Mylast - extensionRecords._Myfirst ) == 0 ) std::vector<SExtensionRecord>& extensionRecords, _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>& extensionMap ) {
-		extensionRecords.reserve( extensionMap.size( ) + 1 );
-		for ( auto& anExt : extensionMap ) {
-			extensionRecords.emplace_back( std::move( anExt.second.files ), std::move( anExt.second.bytes ), std::move( anExt.first ) );
+	void AddFileExtensionData( _Out_ std::vector<SExtensionRecord>* const extensionRecords, _Inout_ std::unordered_map<std::wstring, minimal_SExtensionRecord>* const extensionMap ) {
+		extensionRecords->reserve( extensionMap->size( ) + 1 );
+		for ( auto& anExt : (*extensionMap) ) {
+			extensionRecords->emplace_back( std::move( anExt.second.files ), std::move( anExt.second.bytes ), std::move( anExt.first ) );
 			}
 		}
 
 	_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
 		WTL::CWaitCursor wc;
-		auto u = reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
+		auto u = reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
 		if ( u == SE_ERR_NOASSOC ) {
 			// Q192352
 			const rsize_t dir_buf_size = MAX_PATH;
@@ -81,7 +133,10 @@ namespace {
 			std::wstring parameters_filename( L"shell32.dll,OpenAs_RunDLL " + std::move( filename ) );
 
 			//-- Get the system directory so that we know where Rundll32.exe resides.
-			const auto sys_dir_res = GetSystemDirectoryW( dir_buf, dir_buf_size );
+			//GetSystemDirectory function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724373.aspx
+			//If the function succeeds, the return value is the length, in TCHARs, of the string copied to the buffer, not including the terminating null character.
+			//If the length is greater than the size of the buffer, the return value is the size of the buffer required to hold the path, including the terminating null character.
+			const auto sys_dir_res = ::GetSystemDirectoryW( dir_buf, dir_buf_size );
 			if ( sys_dir_res == 0 ) {
 				displayWindowsMsgBoxWithError( );
 				std::terminate( );
@@ -89,14 +144,18 @@ namespace {
 				return -1;
 				}
 			if ( sys_dir_res < dir_buf_size ) {
-				return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
+				ASSERT( wcslen( dir_buf ) == ( sys_dir_res + 1 ) );
+				return reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, L"open", L"RUNDLL32.EXE", parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
 				}
-			ASSERT( sys_dir_res > dir_buf_size );
-			if ( sys_dir_res > dir_buf_size ) {
+			ASSERT( sys_dir_res >= dir_buf_size );
+			if ( sys_dir_res >= dir_buf_size ) {
 				const auto str_ptr = std::make_unique<_Null_terminated_ wchar_t[ ]>( sys_dir_res );
-				const auto sys_dir_res_2 = GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
-				if ( ( sys_dir_res_2 != 0 ) && ( sys_dir_res_2 < sys_dir_res ) ) {
-					return reinterpret_cast< INT_PTR >( ShellExecuteW( hwnd, _T( "open" ), _T( "RUNDLL32.EXE" ), parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
+				const auto sys_dir_res_2 = ::GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
+				if ( ( sys_dir_res_2 != 0 ) && ( ( sys_dir_res_2 + 1 ) == sys_dir_res ) ) {
+					ASSERT( ( sys_dir_res_2 + 1 )  == sys_dir_res );
+					ASSERT( wcslen( str_ptr.get( ) ) == sys_dir_res );
+					ASSERT( wcslen( str_ptr.get( ) ) == ( sys_dir_res_2 + 1 ) );
+					return reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, L"open", L"RUNDLL32.EXE", parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
 					}
 				displayWindowsMsgBoxWithMessage( L"Something is extremely wrong (GetSystemDirectoryW)!!" );
 				std::terminate( );
@@ -108,7 +167,7 @@ namespace {
 	void check8Dot3NameCreationAndNotifyUser( ) {
 		HKEY keyHandle = { NULL };
 
-		const auto res_1 = RegOpenKeyExW( HKEY_LOCAL_MACHINE, _T( "SYSTEM\\CurrentControlSet\\Control\\FileSystem" ), NULL, KEY_READ, &keyHandle );
+		const auto res_1 = ::RegOpenKeyExW( HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem", NULL, KEY_READ, &keyHandle );
 
 		if ( res_1 != ERROR_SUCCESS ) {
 			TRACE( _T( "key not found!\r\n" ) );
@@ -116,12 +175,12 @@ namespace {
 			}
 		DWORD valueType = 0;
 		static_assert( sizeof( BYTE ) == 1, "bad BYTE size!" );
-		BYTE data[ 4 ];
+		BYTE data[ 4 ] = { 0 };
 		static_assert( sizeof( data ) == sizeof( REG_DWORD ), "bad size!" );
 			
 		DWORD bufferSize = sizeof( data );
 			
-		const auto res_2 = RegQueryValueExW( keyHandle, _T( "NtfsDisable8dot3NameCreation" ), NULL, &valueType, &data[0], &bufferSize );
+		const auto res_2 = ::RegQueryValueExW( keyHandle, L"NtfsDisable8dot3NameCreation", NULL, &valueType, &data[0], &bufferSize );
 
 		if ( res_2 != ERROR_SUCCESS ) {
 			if ( res_2 == ERROR_MORE_DATA ) {
@@ -155,7 +214,7 @@ namespace {
 			}
 		}
 
-	void SetExtensionColors( _Inout_ std::vector<SExtensionRecord>& extensionsToSet ) {
+	void SetExtensionColors( _Inout_ std::vector<SExtensionRecord>* const extensionsToSet ) {
 		/*
 		  New, much faster, method of assigning colors to extensions. For every element in reverseExtensionMap, assigns a color to the `color` field of an element at key (no longer accurate description). The color assigned is chosen by rotating through a default palette.
 		*/
@@ -167,7 +226,7 @@ namespace {
 		std::vector<COLORREF>::size_type processed = 0;
 
 		//Not vectorized: 1304, loop includes assignments of different sizes
-		for ( auto& anExtension : extensionsToSet ) {
+		for ( auto& anExtension : (*extensionsToSet) ) {
 			//auto test = colorVector.at( processed % ( colorVector.size( ) ) );
 			auto test = colorArray[ processed % ( sizeOfArray ) ];
 			++processed;
@@ -200,26 +259,106 @@ namespace {
 		};
 
 
-	void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>& extension_records, _In_ const CTreeListItem* const root_item ) {
+	void rebuild_extension_data( _Out_ std::vector<SExtensionRecord>* const extension_records, _In_ const CTreeListItem* const root_item ) {
 		std::unordered_map<std::wstring, minimal_SExtensionRecord> extensionMap;
 		extensionMap.reserve( root_item->files_recurse( ) );
 
-		root_item->stdRecurseCollectExtensionData( extensionMap );
-		AddFileExtensionData( extension_records, extensionMap );
+		root_item->stdRecurseCollectExtensionData( &extensionMap );
+		AddFileExtensionData( extension_records, &extensionMap );
 		SetExtensionColors( extension_records );
-		std::sort( extension_records.begin( ), extension_records.end( ), s_compareSExtensionRecordByBytes( ) );
+		std::sort( extension_records->begin( ), extension_records->end( ), s_compareSExtensionRecordByBytes( ) );
 
-		extension_records.shrink_to_fit( );
+		extension_records->shrink_to_fit( );
 
 		}
 
-	void convert_vector_of_extension_records_to_map( _In_ const std::vector<SExtensionRecord>* const records, _Inout_ std::unordered_map<std::wstring, COLORREF>& color_map ) {
+	void convert_vector_of_extension_records_to_map( _In_ const std::vector<SExtensionRecord>* const records, _Inout_ std::unordered_map<std::wstring, COLORREF>* const color_map ) {
 		if ( records != NULL ) {
-			color_map.reserve( records->size( ) );
+			color_map->reserve( records->size( ) );
 			for ( const auto& aRecord : ( *records ) ) {
-				color_map[ aRecord.ext ] = aRecord.color;
+				(*color_map)[ aRecord.ext ] = aRecord.color;
 				}
 			}
+		}
+
+	void CopyToClipboard( _In_ const std::wstring psz, _In_ const HWND hWnd ) {
+		Clipboard_wrapper clipboard( hWnd, true );
+		const rsize_t strSizeInBytes = ( ( psz.length( ) + 1 ) * sizeof( WCHAR ) );
+
+		//GlobalAlloc function: https://msdn.microsoft.com/en-us/library/windows/desktop/aa366574.aspx
+		//If the function succeeds, the return value is a handle to the newly allocated memory object.
+		//If the function fails, the return value is NULL.
+		//To get extended error information, call GetLastError.
+
+		const HGLOBAL handle_globally_allocated_memory = ::GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
+		if ( handle_globally_allocated_memory == NULL ) {
+			displayWindowsMsgBoxWithMessage( global_strings::global_alloc_failed );
+			TRACE( L"%s\r\n", global_strings::global_alloc_failed );
+			return;
+			}
+
+		const auto lp = ::GlobalLock( handle_globally_allocated_memory );
+		if ( lp == NULL ) {
+			displayWindowsMsgBoxWithMessage( L"GlobalLock failed!" );
+			//GlobalFree function: https://msdn.microsoft.com/en-us/library/windows/desktop/aa366579.aspx
+			//If the function succeeds, the return value is NULL.
+			//If the function fails, the return value is equal to a handle to the global memory object.
+			//To get extended error information, call GetLastError.
+			VERIFY( !::GlobalFree( handle_globally_allocated_memory ) );
+			return;
+			}
+
+		auto strP = static_cast< PWSTR >( lp );
+
+		const HRESULT strCopyRes = StringCchCopyW( strP, ( psz.length( ) + 1 ), psz.c_str( ) );
+		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( strCopyRes, "StringCchCopyW" );
+		if ( !SUCCEEDED( strCopyRes ) ) {
+			if ( strCopyRes == STRSAFE_E_INSUFFICIENT_BUFFER ) {
+				displayWindowsMsgBoxWithMessage( std::move( std::wstring( global_strings::string_cch_copy_failed ) + std::wstring( L"(STRSAFE_E_INSUFFICIENT_BUFFER)" ) ) );
+				}
+			else {
+				displayWindowsMsgBoxWithMessage( global_strings::string_cch_copy_failed );
+				}
+			//GlobalUnlock function: https://msdn.microsoft.com/en-us/library/windows/desktop/aa366595.aspx
+			//If the memory object is still locked after decrementing the lock count, the return value is a nonzero value.
+			//If the memory object is unlocked after decrementing the lock count, the function returns zero and GetLastError returns NO_ERROR.
+			//If the function fails, the return value is zero and GetLastError returns a value other than NO_ERROR.
+			const BOOL unlock_res = ::GlobalUnlock( handle_globally_allocated_memory );
+			strP = NULL;
+			if ( unlock_res == 0 ) {
+	#ifdef DEBUG
+				const auto last_err = ::GetLastError( );
+				ASSERT( last_err == NO_ERROR );
+	#endif
+				}
+			return;
+			}
+
+		//GlobalUnlock function: https://msdn.microsoft.com/en-us/library/windows/desktop/aa366595.aspx
+		//If the memory object is still locked after decrementing the lock count, the return value is a nonzero value.
+		//If the memory object is unlocked after decrementing the lock count, the function returns zero and GetLastError returns NO_ERROR.
+		//If the function fails, the return value is zero and GetLastError returns a value other than NO_ERROR.
+		if ( ::GlobalUnlock( handle_globally_allocated_memory ) == 0 ) {
+			const auto err = ::GetLastError( );
+			if ( err != NO_ERROR ) {
+				displayWindowsMsgBoxWithMessage( L"GlobalUnlock failed!" );
+				return;
+				}
+			}
+		//wtf is going on here?
+		UINT uFormat = CF_TEXT;
+		uFormat = CF_UNICODETEXT;
+
+		//SetClipboardData function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms649051.aspx
+		//If the function succeeds, the return value is the handle to the data.
+		//If the function fails, the return value is NULL.
+		//To get extended error information, call GetLastError.
+		if ( NULL == ::SetClipboardData( uFormat, handle_globally_allocated_memory ) ) {
+			displayWindowsMsgBoxWithMessage( global_strings::cannot_set_clipboard_data );
+			TRACE( L"%s\r\n", global_strings::cannot_set_clipboard_data );
+			return;
+			}
+
 		}
 
 	}
@@ -261,7 +400,7 @@ CDirstatDoc* GetDocument( ) {
 IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_selectedItem( NULL ), m_extensionDataValid( false ), m_timeTextWritten( false ), m_searchTime( DBL_MAX ), m_compressed_file_timing( -1 ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
+CDirstatDoc::CDirstatDoc( ) : m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
 	ASSERT( _theDocument == NULL );
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -299,9 +438,7 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 
 void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 	const std::wstring root_folder( pszPathName );
-	FILETIME t;
-	//zeroDate( t );
-	memset_zero_struct( t );
+	FILETIME t = { 0 };
 	const auto new_name_length = root_folder.length( );
 	ASSERT( new_name_length < UINT16_MAX );
 
@@ -318,11 +455,7 @@ void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
 		displayWindowsMsgBoxWithMessage( root_folder );
 		}
-
-	//                                          IT_DIRECTORY
 	m_rootItem = std::make_unique<CTreeListItem>( UINT64_ERROR, t, 0, false, reinterpret_cast<CTreeListItem*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
-	//m_rootItem->m_parent = { NULL };
-
 	}
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
@@ -349,8 +482,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
-	m_searchStartTime = help_QueryPerformanceCounter( );	
-	//m_workingItem = m_rootItem.get( );
+	m_searchStartTime = help_QueryPerformanceCounter( );
 
 	m_frameptr->m_wndSplitter.SetSplitterPos( 1.0 );
 	m_frameptr->m_wndSubSplitter.SetSplitterPos( 1.0 );
@@ -365,8 +497,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 		RebuildExtensionData( );
 		}
 	if ( m_colorMap.empty( ) ) {
-		//VectorExtensionRecordsToMap( );
-		convert_vector_of_extension_records_to_map( GetExtensionRecords( ), m_colorMap );
+		convert_vector_of_extension_records_to_map( GetExtensionRecords( ), &m_colorMap );
 		}
 		
 	if ( m_colorMap.count( ext ) > 0 ) {
@@ -374,8 +505,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 		}
 	TRACE( _T( "Extension %s not in colorMap!\r\n" ), ext );
 	RebuildExtensionData( );
-	//VectorExtensionRecordsToMap( );
-	convert_vector_of_extension_records_to_map( GetExtensionRecords( ), m_colorMap );
+	convert_vector_of_extension_records_to_map( GetExtensionRecords( ), &m_colorMap );
 	if ( m_colorMap.count( ext ) > 0 ) {
 		return m_colorMap.at( ext );
 		}
@@ -384,6 +514,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 	return static_cast<COLORREF>( 0 );
 	}
 
+//We need a getter (NOT public data member) because we may need to do work before accessing.
 _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
 		RebuildExtensionData( );
@@ -424,9 +555,6 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	SortTreeList();
 	m_timeTextWritten = true;
 	TRACE( _T( "All work finished!\r\n" ) );
-#ifdef DUMP_MEMUSAGE
-	//_CrtMemDumpAllObjectsSince( NULL );
-#endif
 	return true;
 	}
 
@@ -474,8 +602,10 @@ bool CDirstatDoc::Work( ) {
 	}
 
 bool CDirstatDoc::IsRootDone( ) const {
-	const auto retVal = ( m_rootItem && m_rootItem->m_attr.m_done );
-	return retVal;
+	if ( !m_rootItem ) {
+		return false;
+		}
+	return m_rootItem->m_attr.m_done;
 	}
 
 void CDirstatDoc::SetSelection( _In_ const CTreeListItem& item ) {
@@ -489,15 +619,15 @@ void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
 	m_frameptr->SetSelectionMessageText( );
 	}
 
-//_Pre_satisfies_( item.m_type == IT_FILE )
 _Pre_satisfies_( item.m_child_info.m_child_info_ptr == nullptr )
 void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
-	WTL::CWaitCursor wc;
-	std::wstring path;
-	//if ( item.m_type == IT_FILE ) {
-	if ( item.m_child_info.m_child_info_ptr == nullptr ) {
-		path = item.GetPath( ).c_str( );
+	if ( item.m_child_info.m_child_info_ptr != nullptr ) {
+		TRACE( _T( "CDirstatDoc::OpenItem called on an item with children! Not opening!\r\n" ) );
+		return;
 		}
+	WTL::CWaitCursor wc;
+	std::wstring path( item.GetPath( ) );
+	//TODO: BUGBUG: Won't be able to open an item that's at a path longer than MAX_PATH!
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path.c_str( ) );
@@ -507,7 +637,7 @@ void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 		return;
 		}
 
-	const auto ShellExRes = ShellExecuteWithAssocDialog( ( AfxGetMainWnd( )->m_hWnd ), std::move( path ) );
+	const auto ShellExRes = ShellExecuteWithAssocDialog( AfxGetMainWnd( )->m_hWnd, std::move( path ) );
 	if ( ShellExRes < 33 ) {
 		return displayWindowsMsgBoxWithError( );
 		}
@@ -523,7 +653,7 @@ void CDirstatDoc::RebuildExtensionData() {
 		return;
 		}
 
-	rebuild_extension_data( m_extensionRecords, rootTemp );
+	rebuild_extension_data( &m_extensionRecords, rootTemp );
 
 	m_extensionDataValid = true;
 	}
@@ -569,8 +699,8 @@ void CDirstatDoc::OnEditCopy( ) {
 		}
 	
 	itemPath.resize( itemPath.length( ) + MAX_PATH );
-	m_frameptr->CopyToClipboard( std::move( itemPath ) );
-	//itemPath.ReleaseBuffer( );
+	CopyToClipboard( std::move( itemPath ), m_frameptr->m_hWnd );
+	//m_frameptr->CopyToClipboard( std::move( itemPath ) );
 	}
 
 
@@ -586,7 +716,4 @@ void CDirstatDoc::Dump( CDumpContext& dc ) const {
 	}
 #endif //_DEBUG
 
-
-#else
 #endif
-

@@ -71,51 +71,51 @@ public:
 #ifdef DEBUG
 	void validateRectangle         ( _In_ const CTreeListItem* const child, _In_ const RECT             rc  ) const;
 #endif
-	void compensateForGrid         ( _Inout_    RECT&             rc,    _In_       CDC&               pdc ) const;
+	void compensateForGrid         ( _Inout_    RECT* const             rc,    _In_       CDC* const               pdc ) const;
 
-	void DrawTreemap               ( _In_ CDC& offscreen_buffer, _Inout_    RECT& rc, _In_ const CTreeListItem* const root,  _In_ const Treemap_Options& options );
+	void DrawTreemap               ( _In_ CDC* const offscreen_buffer, _Inout_    RECT* const rc, _In_ const CTreeListItem* const root,  _In_ const Treemap_Options& options );
 
 	void DrawColorPreview          ( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL );
 
-	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ CTreeListItem* FindItemByPoint( _In_ const CTreeListItem* const root, _In_ const POINT point, _In_opt_ CDirstatDoc* test_doc ) const;
+	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeListItem* FindItemByPoint( _In_ const CTreeListItem* const root, _In_ const POINT point, _In_opt_ const CDirstatDoc* const test_doc ) const;
 
 
 protected:
 
-	void SetPixels        ( _In_ HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ const int rcHeight ) const;
+	void SetPixels        ( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex ) _Pre_readable_size_( maxIndex ) const COLORREF* const pixles, _In_ const int&   yStart, _In_ const int& xStart, _In_ const int& yEnd, _In_ const int& xEnd,   _In_ _In_range_( >=, 0 ) const int rcWidth, _In_ const size_t offset, const size_t maxIndex, _In_ _In_range_( >=, 0 ) const int rcHeight ) const;
 
-	void RecurseDrawGraph ( _In_ CDC& offscreen_buffer, _In_ const CTreeListItem* const     item,   _In_ const RECT& rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RecurseDrawGraph ( _In_ CDC* const offscreen_buffer, _In_ const CTreeListItem* const     item,   _In_ const RECT* const rc,     _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE h ) const;
 
 	void RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const RECT rc, _In_ const DOUBLE height, _In_ const CTreeListItem* const item ) const;
 
-	void DrawCushion      ( _In_ HDC offscreen_buffer, _In_ const RECT&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
-	void DrawSolidRect    ( _In_ HDC hDC, _In_ const RECT&              rc,        _In_ const COLORREF        col,            _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
-	void DrawChildren     ( _In_ CDC& pdc, _In_ const CTreeListItem*  const parent,    _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
+	void DrawCushion      ( _In_ const HDC offscreen_buffer, _In_ const RECT&              rc,        _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const COLORREF col,       _In_ _In_range_( 0, 1 ) const DOUBLE  brightness ) const;
+	void DrawSolidRect    ( _In_ const HDC hDC, _In_ const RECT&              rc,        _In_ const COLORREF        col,            _In_ _In_range_( 0, 1 ) const DOUBLE   brightness ) const;
+	void DrawChildren     ( _In_ CDC* const pdc, _In_ const CTreeListItem*  const parent,    _In_ const DOUBLE ( &surface )[ 4 ], _In_                    const DOUBLE   h          ) const;
 	
 
 
 	//KDS -> KDirStat
-	DOUBLE KDS_CalcNextRow ( _In_ const CTreeListItem* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t& childrenUsed, _Inout_ std::vector<DOUBLE>& childWidth, const std::uint64_t parentSize ) const;
+	DOUBLE KDS_CalcNextRow ( _In_ const CTreeListItem* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild,  _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t* const childrenUsed, _Inout_ std::vector<DOUBLE>* const childWidth, const std::uint64_t parentSize ) const;
 		
-	bool KDS_PlaceChildren ( _In_ const CTreeListItem* const parent, _Inout_    std::vector<double>& childWidth, _Inout_ std::vector<double>& rows,            _Inout_    std::vector<size_t>& childrenPerRow ) const;
-	void KDS_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CTreeListItem* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
+	bool KDS_PlaceChildren ( _In_ const CTreeListItem* const parent, _Inout_    std::vector<double>* const childWidth, _Inout_ std::vector<double>* const rows,            _Inout_    std::vector<size_t>* const childrenPerRow ) const;
+	void KDS_DrawChildren  ( _In_ CDC* const  pdc,                       _In_ const CTreeListItem* const parent,          _In_ const DOUBLE       ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
 	
-	void KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t& c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const;
+	void KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t* const c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC* const pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const;
 
 
 	//SQV -> SequoiaView
-	void SQV_DrawChildren  ( _In_ CDC&  pdc,                       _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
-	void RenderLeaf        ( _In_ CDC&  offscreen_buffer,          _In_ const CTreeListItem* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
-	void RenderRectangle   ( _In_ HDC  offscreen_buffer,          _In_ const RECT&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
+	void SQV_DrawChildren  ( _In_ CDC* const  pdc,                       _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
+	void RenderLeaf        ( _In_ CDC* const  offscreen_buffer,          _In_ const CTreeListItem* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
+	void RenderRectangle   ( _In_ const HDC  offscreen_buffer,          _In_ const RECT&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
 
 	//if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-	void SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>& sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC& pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const;
+	void SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC* const pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const;
 
 	bool IsCushionShading( ) const;
 
 private:
 
-	void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+	void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ const HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
 
 	void DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
 

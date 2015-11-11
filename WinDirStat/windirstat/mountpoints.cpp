@@ -16,10 +16,10 @@ WDS_FILE_INCLUDE_MESSAGE
 
 namespace {
 	void FindVolumeMountPointCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolumeMountPoint ) {
-		VERIFY( FindVolumeMountPointClose( hFindVolumeMountPoint ) );
+		VERIFY( ::FindVolumeMountPointClose( hFindVolumeMountPoint ) );
 		}
 	BOOL FindVolumeCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolume ) {
-		return FindVolumeClose( hFindVolume );
+		return ::FindVolumeClose( hFindVolume );
 		}
 	}
 
@@ -88,7 +88,6 @@ const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY
 		}
 
 	for ( const auto& aPoint : pointer_volume_array ) {
-		//const auto len = aPoint.point.length( );
 		const auto len = aPoint.first.length( );
 		if ( fixedPath.substr( 3 ).substr( 0, len ).compare( aPoint.first ) ==  0 ) {
 			break;
@@ -101,11 +100,9 @@ const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY
 	}
 
 void CMountPoints::GetDriveVolumes( ) {
-	//m_drive.resize( 32 );
-
 	const rsize_t s_char_buffer_size = 5u;
 	_Null_terminated_ wchar_t small_buffer_volume_name[ s_char_buffer_size ] = { 0 };
-	const auto drives = GetLogicalDrives( );
+	const auto drives = ::GetLogicalDrives( );
 	DWORD mask = 0x00000001;
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
@@ -115,13 +112,12 @@ void CMountPoints::GetDriveVolumes( ) {
 		if ( ( drives bitand mask ) != 0 ) {
 			const auto swps = swprintf_s( small_buffer_volume_name, L"%c:\\", ( i + _T( 'A' ) ) );
 			if ( swps == -1 ) {
-				//displayWindowsMsgBoxWithMessage( L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)" );
 				WTL::AtlMessageBox( NULL, L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)", TEXT( "Error" ), MB_OK );
 				std::terminate( );
 				}
 			ASSERT( wcslen( small_buffer_volume_name ) < 5 );
 
-			const BOOL b = GetVolumeNameForVolumeMountPointW( small_buffer_volume_name, volume_, larger_buffer_size );
+			const BOOL b = ::GetVolumeNameForVolumeMountPointW( small_buffer_volume_name, volume_, larger_buffer_size );
 			if ( !b ) {
 #ifdef DEBUG
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed.\r\n" ), small_buffer_volume_name );
@@ -136,7 +132,7 @@ void CMountPoints::GetDriveVolumes( ) {
 void CMountPoints::GetAllMountPoints( ) {
 	const rsize_t volumeTCHARsize = MAX_PATH;
 	_Null_terminated_ wchar_t volume[ volumeTCHARsize ] = { 0 };
-	const HANDLE hvol = FindFirstVolumeW( volume, volumeTCHARsize );
+	const HANDLE hvol = ::FindFirstVolumeW( volume, volumeTCHARsize );
 	if ( hvol == INVALID_HANDLE_VALUE ) {
 		TRACE( _T( "No volumes found.\r\n" ) );
 #ifdef DEBUG
@@ -157,11 +153,11 @@ void CMountPoints::GetAllMountPoints( ) {
 		return;
 		}
 
-	for ( BOOL bContinue = true; bContinue; bContinue = FindNextVolumeW( hvol, volume, volumeTCHARsize ) ) {
+	for ( BOOL bContinue = true; bContinue; bContinue = ::FindNextVolumeW( hvol, volume, volumeTCHARsize ) ) {
 
 		DWORD sysflags;
 		_Null_terminated_ wchar_t fsname_[ volumeTCHARsize ] = { 0 };
-		const BOOL b = GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
+		const BOOL b = ::GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
 		if ( !b ) {
 #ifdef DEBUG
 			const DWORD lastErr = ::GetLastError( );
@@ -178,7 +174,6 @@ void CMountPoints::GetAllMountPoints( ) {
 				TRACE( L"Failed to format the GetVolumeInformationW error message!\r\n" );
 				}
 #endif
-			//m_volume[ volume ] = std::vector<SPointVolume>( );
 			continue;
 			}
 
@@ -186,12 +181,11 @@ void CMountPoints::GetAllMountPoints( ) {
 #ifdef DEBUG
 			TRACE( _T( "This file system (%s) does not support reparse points, and therefore does not support volume mount points.\r\n" ), volume );
 #endif
-			//m_volume[ volume ] = std::vector<SPointVolume>( );
 			continue;
 			}
 
 		_Null_terminated_ wchar_t point[ volumeTCHARsize ] = { 0 };
-		const HANDLE h = FindFirstVolumeMountPointW( volume, point, volumeTCHARsize );
+		const HANDLE h = ::FindFirstVolumeMountPointW( volume, point, volumeTCHARsize );
 		if ( h == INVALID_HANDLE_VALUE ) {
 #ifdef DEBUG
 			const DWORD lastErr = ::GetLastError( );
@@ -209,18 +203,16 @@ void CMountPoints::GetAllMountPoints( ) {
 				}
 
 #endif
-			//m_volume[ volume ] = std::vector<SPointVolume>( );
 			continue;
 			}
 
-		//auto pointer_volume_array = std::vector<SPointVolume>( );
 		std::vector<std::pair<std::wstring, std::wstring>> pointer_volume_array;
-		for ( BOOL bCont = true; bCont; bCont = FindNextVolumeMountPointW( h, point, volumeTCHARsize ) ) {
+		for ( BOOL bCont = true; bCont; bCont = ::FindNextVolumeMountPointW( h, point, volumeTCHARsize ) ) {
 			std::wstring uniquePath_temp( volume );
 			uniquePath_temp += point;
 			const std::wstring uniquePath( std::move( uniquePath_temp ) );
 			_Null_terminated_ wchar_t mountedVolume_[ volumeTCHARsize ] = { 0 };
-			BOOL b2 = GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
+			BOOL b2 = ::GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
 			if ( !b2 ) {
 #ifdef DEBUG
 				const DWORD lastErr = ::GetLastError( );
@@ -240,21 +232,11 @@ void CMountPoints::GetAllMountPoints( ) {
 #endif
 				continue;
 				}
-
-			//TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath.c_str( ), mountedVolume_ );
-				
 #ifdef DEBUG
 			TRACE( _T( "Found a mount point, path: %s, mountedVolume: %s \r\n" ), uniquePath.c_str( ), mountedVolume_ );
 #endif
-			//SPointVolume pv;
-			//pv.point = point;
-			//pv.volume = mountedVolume_;
-			//pv.point.MakeLower( );
-
-			//pointer_volume_array.emplace_back( pv );
 			pointer_volume_array.emplace_back( std::make_pair( point, mountedVolume_ ) );
 			}
-		//VERIFY( FindVolumeMountPointClose( h ) );
 		FindVolumeMountPointCloseHandle( h );
 		
 		
@@ -272,9 +254,8 @@ void CMountPoints::GetAllMountPoints( ) {
 		}
 
 
-	const auto FindVolumeCloseRes = FindVolumeCloseHandle( hvol );
+	const auto FindVolumeCloseRes = ::FindVolumeCloseHandle( hvol );
 	if ( !( FindVolumeCloseRes ) ) {
-		//displayWindowsMsgBoxWithMessage( L"Failed to close a handle in CMountPoints::GetAllMountPoints. Something is wrong!" );
 		WTL::AtlMessageBox( NULL, L"Failed to close a handle in CMountPoints::GetAllMountPoints. Something is wrong!", TEXT( "Error" ), MB_OK );
 		std::terminate( );
 		}

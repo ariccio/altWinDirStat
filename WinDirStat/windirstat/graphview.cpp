@@ -25,22 +25,22 @@ WDS_FILE_INCLUDE_MESSAGE
 namespace {
 
 	//TweakSizeOfRectangleForHightlight is called once, unconditionally.
-	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT& rc, _Inout_ RECT& rcClient, _In_ const bool grid ) {
+	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT* const rc, _Inout_ RECT* const rcClient, _In_ const bool grid ) {
 		if ( grid ) {
-			rc.right++;
-			rc.bottom++;
+			rc->right++;
+			rc->bottom++;
 			}
-		if ( rcClient.left < rc.left ) {
-			rc.left--;
+		if ( rcClient->left < rc->left ) {
+			rc->left--;
 			}
-		if ( rcClient.top < rc.top ) {
-			rc.top--;
+		if ( rcClient->top < rc->top ) {
+			rc->top--;
 			}
-		if ( rc.right < rcClient.right ) {
-			rc.right++;
+		if ( rc->right < rcClient->right ) {
+			rc->right++;
 			}
-		if ( rc.bottom < rcClient.bottom ) {
-			rc.bottom++;
+		if ( rc->bottom < rcClient->bottom ) {
+			rc->bottom++;
 			}
 		}
 
@@ -59,11 +59,7 @@ BEGIN_MESSAGE_MAP( CGraphView, CView )
 END_MESSAGE_MAP( )
 	*/
 
-CGraphView::CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_timer( 0 ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
-	m_size.cx = 0;
-	m_size.cy = 0;
-	m_dimmedSize.cx = 0;
-	m_dimmedSize.cy = 0;
+CGraphView::CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( true ), m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
 	m_showTreemap = CPersistence::GetShowTreemap( );
 	}
 
@@ -77,47 +73,49 @@ const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 		{ 
 			WM_SIZE, 0, 0, 0,
 			AfxSig_vwii,
-			(AFX_PMSG)(AFX_PMSGW) (static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, int, int)>( &ThisClass::OnSize))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, int, int)>( &ThisClass::OnSize )))
 		},
 		{ 
 			WM_LBUTTONDOWN, 0, 0, 0,
 			AfxSig_vwp,
-			(AFX_PMSG)(AFX_PMSGW) (static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, CPoint)>( &ThisClass::OnLButtonDown))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, CPoint)>( &ThisClass::OnLButtonDown )))
 		},
 		{ 
 			WM_SETFOCUS, 0, 0, 0,
 			AfxSig_vW,
-			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(CWnd*)>( &ThisClass::OnSetFocus))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(CWnd*)>( &ThisClass::OnSetFocus )))
 		},
 		{
 			WM_CONTEXTMENU, 0, 0, 0,
 			AfxSig_vWp,
-			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(CWnd*, CPoint)>( &ThisClass::OnContextMenu))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(CWnd*, CPoint)>( &ThisClass::OnContextMenu )))
 		},
 		{
 			WM_MOUSEMOVE, 0, 0, 0,
 			AfxSig_vwp,
-			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, CPoint)>( &ThisClass::OnMouseMove))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT, CPoint)>( &ThisClass::OnMouseMove )))
 		},
 		{
 			WM_DESTROY, 0, 0, 0,
 			AfxSig_vv,
-			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(void)>( &ThisClass::OnDestroy))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(void)>( &ThisClass::OnDestroy )))
 		},
 		{
 			WM_TIMER, 0, 0, 0,
 			AfxSig_v_up_v,
-			(AFX_PMSG)(AFX_PMSGW)(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT_PTR)>( &ThisClass::OnTimer))
+			static_cast<AFX_PMSG>(reinterpret_cast<AFX_PMSGW>(static_cast<void (AFX_MSG_CALL CWnd::*)(UINT_PTR)>( &ThisClass::OnTimer )))
 		},
 		{
-			0, 0, 0, 0, AfxSig_end, (AFX_PMSG)0
+			0, 0, 0, 0,
+			AfxSig_end,
+			(AFX_PMSG)(0)
 		}
 	};
 	static const AFX_MSGMAP messageMap = { &TheBaseClass::GetThisMessageMap, &_messageEntries[ 0 ] };
 	return &messageMap;
 }
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
+void CGraphView::RecurseHighlightExtension( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 	const auto rc = item.m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
@@ -137,9 +135,8 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC& pdc, _In_ const CTreeListI
 	RecurseHighlightChildren( pdc, item, ext );
 	}
 
-void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
-	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+void CGraphView::DrawSelection( _In_ CDC* const pdc ) const {
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
 		return;
@@ -148,35 +145,42 @@ void CGraphView::DrawSelection( _In_ CDC& pdc ) const {
 	if ( item == NULL ) {//no selection to draw.
 		return;
 		}
-	RECT rcClient;
+	RECT rcClient = { 0 };
 
+	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+	//If the window handle identifies an existing window, the return value is nonzero.
+	//If the window handle does not identify an existing window, the return value is zero.
 	ASSERT( ::IsWindow( m_hWnd ) );
-	//::GetClientRect(m_hWnd, lpRect);
+
+	//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+	//Return value: If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	//To get extended error information, call GetLastError.
 	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
-	//GetClientRect( &rcClient );
 
 
 	RECT rc = item->TmiGetRectangle( );
 
-	TweakSizeOfRectangleForHightlight( rc, rcClient, m_treemap.m_options.grid );
+	TweakSizeOfRectangleForHightlight( &rc, &rcClient, m_treemap.m_options.grid );
 
-	CSelectStockObject sobrush( pdc, NULL_BRUSH );
+	SelectStockObject_wrapper sobrush( (*pdc), NULL_BRUSH );
 	const auto Options = GetOptions( );
+
 	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-	CSelectObject sopen( pdc, &pen );
+	SelectObject_wrapper sopen( (*pdc), &pen );
 
 	RenderHighlightRectangle( pdc, rc );
 	}
 
 
-void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& rc ) {
+void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc ) {
 	WTL::CWaitCursor wc;
 
-	VERIFY( m_bitmap.CreateCompatibleBitmap( &pDC, m_size.cx, m_size.cy ) );
+	VERIFY( m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy ) );
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { CGraphView::cause_OnIdle_to_be_called_once( ); } );
 
-	CSelectObject sobmp( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	SelectObject_wrapper sobmp( offscreen_buffer->m_hDC, m_bitmap.m_hObject );
+	const CDirstatDoc* const Document = static_cast<const CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
 		//cause_OnIdle_to_be_called_once( );
@@ -198,9 +202,8 @@ void CGraphView::DoDraw( _In_ CDC& pDC, _In_ CDC& offscreen_buffer, _In_ RECT& r
 
 //only called from one place
 _Pre_satisfies_( item.m_child_info.m_child_info_ptr != NULL )
-inline void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
+inline void CGraphView::RecurseHighlightChildren( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 	ASSERT( item.m_child_info.m_child_info_ptr != nullptr );
-	//ASSERT( item.m_childCount == item.m_child_info->m_childCount );
 	const auto childCount = item.m_child_info.m_child_info_ptr->m_childCount;
 	const auto item_m_children = item.m_child_info.m_child_info_ptr->m_children.get( );
 
@@ -212,7 +215,7 @@ inline void CGraphView::RecurseHighlightChildren( _In_ CDC& pdc, _In_ const CTre
 
 void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 	ASSERT_VALID( pScreen_Device_Context );
-	const auto aDocument = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto aDocument = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( aDocument != NULL );
 	if ( aDocument == NULL ) {
 		return;
@@ -229,14 +232,14 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 		}
 	if ( m_recalculationSuspended || ( !m_showTreemap ) ) {
 		// TODO: draw something interesting, e.g. outline of the first level.
-		return DrawEmptyView( *pScreen_Device_Context );
+		return DrawEmptyView( pScreen_Device_Context );
 		}
-	DrawViewNotEmpty( *pScreen_Device_Context );
+	DrawViewNotEmpty( pScreen_Device_Context );
 	}
 
 
 void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	//Perhaps surprisingly, Document == NULL CAN be a valid condition. We don't have to set the message to anything if there's no document.
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ reset_timer_if_zero( ); } );
 	if ( Document == NULL ) {
@@ -268,7 +271,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	}
 	*/
 
-	const auto item = static_cast< const CTreeListItem* >( m_treemap.FindItemByPoint( root, point, NULL ) );
+	const CTreeListItem* const item = m_treemap.FindItemByPoint( root, point, NULL );
 	if ( item == NULL ) {
 		TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
 		return;
@@ -309,7 +312,7 @@ void CGraphView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
 	}
 
 void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
-	if ( !( STATIC_DOWNCAST( CDirstatDoc, m_pDocument ) )->IsRootDone( ) ) {
+	if ( !( static_cast<CDirstatDoc*>( m_pDocument ) )->IsRootDone( ) ) {
 		CGraphView::Inactivate( );
 		}
 
@@ -341,7 +344,7 @@ void CGraphView::OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) {
 
 void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [=]{ CWnd::OnLButtonDown( nFlags, point ); } );
 	if ( Document == NULL ) {
 		TRACE( _T( "User clicked on nothing. User CAN click on nothing. That's a sane case.\r\n" ) );
@@ -361,12 +364,12 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 		std::terminate( );
 		}
 
-	if ( !IsDrawn( ) ) {
+	if ( !CGraphView::IsDrawn( ) ) {
 		//return CView::OnLButtonDown( nFlags, point );
 		return;
 		}
 
-	const auto item = static_cast< CTreeListItem* >( m_treemap.FindItemByPoint( root, point, Document ) );
+	const CTreeListItem* const item = m_treemap.FindItemByPoint( root, point, Document );
 	if ( item == NULL ) {
 		//return CView::OnLButtonDown( nFlags, point );
 		return;
@@ -377,7 +380,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	return;
 	}
 
-void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
+void CGraphView::DrawHighlights( _In_ CDC* const pdc ) const {
 	const auto logicalFocus = m_frameptr->m_logicalFocus;
 	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		DrawSelection( pdc );
@@ -391,7 +394,7 @@ void CGraphView::DrawHighlights( _In_ CDC& pdc ) const {
 
 void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	if ( Document == NULL ) {
 		TRACE( _T( "User tried to open a Context Menu, but the Document is NULL. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
 		return;
@@ -411,17 +414,17 @@ void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	if ( sub == NULL ) {
 		return;
 		}
-	VERIFY( sub->TrackPopupMenu( TPM_LEFTALIGN | TPM_LEFTBUTTON, ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
+	VERIFY( sub->TrackPopupMenu( ( TPM_LEFTALIGN bitor TPM_LEFTBUTTON ), ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 	}
 
-void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
+void CGraphView::DrawHighlightExtension( _In_ CDC* const pdc ) const {
 	WTL::CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
-	CSelectObject sopen( pdc.m_hDC, pen.m_hObject );
-	CSelectStockObject sobrush( pdc, NULL_BRUSH );
+	SelectObject_wrapper sopen( pdc->m_hDC, pen.m_hObject );
+	SelectStockObject_wrapper sobrush( (*pdc), NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
-	const auto Document = STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	if ( Document == NULL ) {
 		ASSERT( Document != NULL );
 		return;
@@ -434,13 +437,15 @@ void CGraphView::DrawHighlightExtension( _In_ CDC& pdc ) const {
 	}
 
 
-void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const {
+void CGraphView::RenderHighlightRectangle( _In_ CDC* const pdc, _In_ RECT rc_ ) const {
 	/*
 		The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 		A pen and the null brush must be selected.
 		*/
 
-	auto rc = rc_;
+
+	//TODO: eh?
+	RECT rc = rc_;
 
 	ASSERT( ( rc.right - rc.left ) >= 0 );
 	ASSERT( ( rc.bottom - rc.top ) >= 0 );
@@ -448,48 +453,75 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC& pdc, _In_ RECT rc_ ) const 
 	//TODO: BUGBUG: why 7?
 	if ( ( ( rc.right - rc.left ) >= 7 ) && ( ( rc.bottom - rc.top ) >= 7 ) ) {
 
-		VERIFY( pdc.Rectangle( &rc ) );		// w = 7
+		VERIFY( pdc->Rectangle( &rc ) );		// w = 7
 
+		//InflateRect function: https://msdn.microsoft.com/en-us/library/dd144994.aspx
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
 		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
-		//rc.DeflateRect( 1, 1 );
 
 
-		VERIFY( pdc.Rectangle( &rc ) );		// w = 5
+		VERIFY( pdc->Rectangle( &rc ) );		// w = 5
 
 
 
+		//InflateRect function: https://msdn.microsoft.com/en-us/library/dd144994.aspx
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
 		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
-		//rc.DeflateRect( 1, 1 );
 
 
-		VERIFY( pdc.Rectangle( &rc ) );		// w = 3
+		VERIFY( pdc->Rectangle( &rc ) );		// w = 3
 		}
 	else {
 		const auto Options = GetOptions( );
-		return pdc.FillSolidRect( &rc, Options->m_treemapHighlightColor );
+		return pdc->FillSolidRect( &rc, Options->m_treemapHighlightColor );
 		}
 	}
 
 
 void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
-	WTL::CPoint point;
-	VERIFY( ::GetCursorPos( &point ) );
-	CWnd::ScreenToClient( &point );
-
-	RECT rc;
-	/*
-_AFXWIN_INLINE void CWnd::GetClientRect(LPRECT lpRect) const
-	{ ASSERT(::IsWindow(m_hWnd)); ::GetClientRect(m_hWnd, lpRect); }
-	*/
+	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+	//If the window handle identifies an existing window, the return value is nonzero.
+	//If the window handle does not identify an existing window, the return value is zero.
 	ASSERT( ::IsWindow( m_hWnd ) );
 
-	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
+	POINT point = { 0 };
+	
+	//GetCursorPos function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648390.aspx
+	//Returns nonzero if successful or zero otherwise. To get extended error information, call GetLastError.
+	VERIFY( ::GetCursorPos( &point ) );
+	
+
+	//ScreenToClient function: https://msdn.microsoft.com/en-us/library/dd162952.aspx
+	//If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+
+	RECT rc = { 0 };
+
+	//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+	//Return value: If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	//To get extended error information, call GetLastError.
 	VERIFY( ::GetClientRect( m_hWnd, &rc ) );
 
-	if ( !PtInRect( &rc, point ) ) {
+	//PtInRect function: https://msdn.microsoft.com/en-us/library/dd162882.aspx
+	//If the specified point lies within the rectangle, the return value is nonzero.
+	//If the specified point does not lie within the rectangle, the return value is zero.
+	if ( ::PtInRect( &rc, point ) == 0 ) {
 		TRACE( _T( "Mouse has left the tree map area!\r\n" ) );
 		m_frameptr->SetSelectionMessageText( );
-		VERIFY( CWnd::KillTimer( m_timer ) );
+		/*
+		_AFXWIN_INLINE BOOL CWnd::KillTimer(UINT_PTR nIDEvent)
+			{ ASSERT(::IsWindow(m_hWnd)); return ::KillTimer(m_hWnd, nIDEvent); }
+		*/
+		//KillTimer function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644903.aspx
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		//To get extended error information, call GetLastError.
+		VERIFY( ::KillTimer( m_hWnd, m_timer ) );
+		//VERIFY( CWnd::KillTimer( m_timer ) );
 		m_timer = 0;
 		}
 	}

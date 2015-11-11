@@ -372,30 +372,30 @@ void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name ) {
 		}
 	}
 
-_Pre_satisfies_( rect.left > rect.right ) _Post_satisfies_( rect.left <= rect.right )
-void normalize_RECT_left_right( _Inout_ RECT& rect ) {
-	ASSERT( rect.left > rect.right );
-	const auto temp = rect.left;
-	rect.left = rect.right;
-	rect.right = temp;
-	ASSERT( rect.left <= rect.right );
+_Pre_satisfies_( rect->left > rect->right ) _Post_satisfies_( rect->left <= rect->right )
+void normalize_RECT_left_right( _Inout_ RECT* const rect ) {
+	ASSERT( rect->left > rect->right );
+	const auto temp = rect->left;
+	rect->left = rect->right;
+	rect->right = temp;
+	ASSERT( rect->left <= rect->right );
 	}
 
-_Pre_satisfies_( rect.top > rect.bottom ) _Post_satisfies_( rect.top <= rect.bottom )
-void normalize_RECT_top_bottom( _Inout_ RECT& rect ) {
-	ASSERT( rect.top > rect.bottom );
-	const auto temp = rect.top;
-	rect.top = rect.bottom;
-	rect.bottom = temp;
-	ASSERT( rect.top <= rect.bottom );
+_Pre_satisfies_( rect->top > rect->bottom ) _Post_satisfies_( rect->top <= rect->bottom )
+void normalize_RECT_top_bottom( _Inout_ RECT* const rect ) {
+	ASSERT( rect->top > rect->bottom );
+	const auto temp = rect->top;
+	rect->top = rect->bottom;
+	rect->bottom = temp;
+	ASSERT( rect->top <= rect->bottom );
 	}
 
-_Post_satisfies_( rect.left <= rect.right ) _Post_satisfies_( rect.top <= rect.bottom )
-void normalize_RECT( _Inout_ RECT& rect ) {
-	if ( rect.left > rect.right ) {
+_Post_satisfies_( rect->left <= rect->right ) _Post_satisfies_( rect->top <= rect->bottom )
+void normalize_RECT( _Inout_ RECT* const rect ) {
+	if ( rect->left > rect->right ) {
 		normalize_RECT_left_right( rect );
 		}
-	if ( rect.top > rect.bottom ) {
+	if ( rect->top > rect->bottom ) {
 		normalize_RECT_top_bottom( rect );
 		}
 	}
@@ -766,7 +766,7 @@ inline void CRect::NormalizeRect() throw()
 	//	normalize_RECT_top_bottom( out );
 	//	}
 
-	normalize_RECT( out );
+	normalize_RECT( &out );
 
 	//out.NormalizeRect( );
 	ASSERT( out.right >= out.left );

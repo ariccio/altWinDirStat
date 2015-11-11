@@ -4,6 +4,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "macros_that_scare_small_children.h"
 
 #ifndef WDS_DATASTRUCTURES_H
 #define WDS_DATASTRUCTURES_H
@@ -11,26 +12,24 @@
 WDS_FILE_INCLUDE_MESSAGE
 
 
-class CSelectObject final {
+class SelectObject_wrapper final {
 public:
-	CSelectObject( _In_ const HDC hDC, _In_ const HGDIOBJ hObject );
-	~CSelectObject( );
+	explicit SelectObject_wrapper( _In_ const HDC hDC, _In_ const HGDIOBJ hObject );
+	~SelectObject_wrapper( );
 
-	CSelectObject( const CSelectObject& in ) = delete;
-	CSelectObject& operator=( const CSelectObject& rhs ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( SelectObject_wrapper );
 protected:
 	const HDC m_hDC;
 	HGDIOBJ m_pOldObject;
 	};
 
-class CSelectStockObject final {
+class SelectStockObject_wrapper final {
 public:
-	CSelectStockObject( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex );
+	explicit SelectStockObject_wrapper( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex );
 
-	~CSelectStockObject( );
+	~SelectStockObject_wrapper( );
 
-	CSelectStockObject( const CSelectStockObject& in ) = delete;
-	CSelectStockObject& operator=( const CSelectStockObject& rhs ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( SelectStockObject_wrapper );
 protected:
 	const HDC m_hDC;
 	HGDIOBJ m_pOldObject;
@@ -39,12 +38,11 @@ protected:
 class CSetBkMode final {
 public:
 	_Pre_satisfies_( ( mode == OPAQUE ) || ( mode == TRANSPARENT ) )
-	CSetBkMode( _In_ HDC hDC, _In_ const INT mode );
+	explicit CSetBkMode( _In_ HDC hDC, _In_ const INT mode );
 	
 	~CSetBkMode( );
 
-	CSetBkMode( const CSetBkMode& in ) = delete;
-	CSetBkMode& operator=( const CSetBkMode& rhs ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CSetBkMode );
 protected:
 	HDC m_hDC;
 	//C4820: 'CSetBkMode' : '4' bytes padding added after data member 'CSetBkMode::m_oldMode'
@@ -53,12 +51,12 @@ protected:
 
 class CSetTextColor final {
 public:
-	CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color );
+	explicit CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color );
 
 	~CSetTextColor( );
 
-	CSetTextColor( const CSetTextColor& in ) = delete;
-	CSetTextColor& operator=( const CSetTextColor& rhs ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CSetTextColor );
+
 protected:
 	const HDC m_hDC;
 	//C4820: 'CSetTextColor' : '4' bytes padding added after data member 'CSetTextColor::m_oldColor'

@@ -16,6 +16,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "colorbutton.h"
 #include "xyslider.h" //for CXySlider, else we'd have to use PIMPL, which I hate.
 #include "globalhelpers.h"
+#include "macros_that_scare_small_children.h"
 
 //
 // CPageTreemap. "Settings" property page "Treemap".
@@ -32,8 +33,8 @@ class CPageTreemap final : public CPropertyPage {
 
 public:
 	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
-	CPageTreemap& operator=( const CPageTreemap& in ) = delete;
-	CPageTreemap( const CPageTreemap& in ) = delete;
+
+	DISALLOW_COPY_AND_ASSIGN( CPageTreemap );
 
 protected:
 	void UpdateOptions          ( _In_ const bool save = true    );
@@ -105,7 +106,4 @@ protected:
 	afx_msg void OnBnClickedReset();
 
 };
-#else
-
-
 #endif

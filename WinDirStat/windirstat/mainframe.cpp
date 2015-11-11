@@ -1,4 +1,4 @@
-// mainframe.cpp	- Implementation of CMySplitterWnd, CPacmanControl and CMainFrame
+// mainframe.cpp	- Implementation of WDSSplitterWnd, CPacmanControl and CMainFrame
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 
@@ -40,67 +40,33 @@ namespace {
 	enum TOPLEVELMENU {
 		TLM_FILE,
 		TLM_EDIT,
-		//TLM_CLEANUP,
 		TLM_TREEMAP,
-		//TLM_REPORT,
 		TLM_VIEW,
 		TLM_HELP
 		};
 
 
-	void failed_to_open_clipboard( ) {
-		displayWindowsMsgBoxWithError( );
-		displayWindowsMsgBoxWithMessage( L"Cannot open the clipboard." );
-		TRACE( _T( "Cannot open the clipboard!\r\n" ) );
-		}
-
-	class COpenClipboard final {
-		public:
-		COpenClipboard( const COpenClipboard& in ) = delete;
-		COpenClipboard& operator=( const COpenClipboard& in ) = delete;
-
-		COpenClipboard( CWnd* const owner, const bool empty ) : m_open { owner->OpenClipboard( ) } {
-			if ( !m_open ) {
-				failed_to_open_clipboard( );
-				return;
-				}
-			if ( empty ) {
-				if ( !EmptyClipboard( ) ) {
-					displayWindowsMsgBoxWithError( );
-					displayWindowsMsgBoxWithMessage( L"Cannot empty the clipboard." );
-					TRACE( _T( "Cannot empty the clipboard!\r\n" ) );
-					}
-				}
-			}
-		~COpenClipboard( ) {
-			if ( m_open ) {
-				VERIFY( ::CloseClipboard( ) );
-				}
-			}
-		private:
-		const BOOL m_open;
-		};
 
 	const UINT indicators[ ] = { ID_SEPARATOR, ID_INDICATOR_MEMORYUSAGE };
 	
 	template<size_t count>
-	void SetIndicators( CStatusBar& status_bar, const UINT( &indicators_array )[ count ] ) {
+	void SetIndicators( CStatusBar* const status_bar, const UINT( &indicators_array )[ count ] ) {
 		static_assert( sizeof( indicators_array ) == ( count * sizeof( UINT ) ), "Bad SetIndicators argument!" );
-		VERIFY( status_bar.SetIndicators( indicators_array, count ) );
+		VERIFY( status_bar->SetIndicators( indicators_array, count ) );
 		}
 
 	const rsize_t debug_str_size = 100u;
 	
 	void debug_output_searching_time( _In_ const double searchingTime ) {
 		if ( searchingTime == DBL_MAX ) {
-			OutputDebugStringA( "WDS: searching time is not yet initialized!\r\n" );
+			::OutputDebugStringA( "WDS: searching time is not yet initialized!\r\n" );
 			return;
 			}
 		//OutputDebugStringW converts to ASCII internally, so we'll just use char.
 		_Null_terminated_ char searching_done_str[ debug_str_size ] = { 0 };
 		const auto printf_res_1 = _snprintf_s( searching_done_str, debug_str_size, _TRUNCATE, "WDS: searching time: %f\r\n", searchingTime );
 		ASSERT( printf_res_1 != -1 );
-		OutputDebugStringA( searching_done_str );
+		::OutputDebugStringA( searching_done_str );
 
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_1 );
@@ -112,7 +78,7 @@ namespace {
 		_Null_terminated_ char freq_str[ debug_str_size ] = { 0 };
 		const auto printf_res_3 = _snprintf_s( freq_str, debug_str_size, _TRUNCATE, "WDS: timing frequency: %lld\r\n", m_frequency );
 		ASSERT( printf_res_3 != -1 );
-		OutputDebugStringA( freq_str );
+		::OutputDebugStringA( freq_str );
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_3 );
 #endif
@@ -123,7 +89,7 @@ namespace {
 		_Null_terminated_ char drawing_done_str[ debug_str_size ] = { 0 };
 		const auto printf_res_4 = _snprintf_s( drawing_done_str, debug_str_size, _TRUNCATE, "WDS: time to draw window:   %f\r\n", timeToDrawEmptyWindow );
 		ASSERT( printf_res_4 != -1 );
-		OutputDebugStringA( drawing_done_str );
+		::OutputDebugStringA( drawing_done_str );
 #ifndef DEBUG
 		UNREFERENCED_PARAMETER( printf_res_4 );
 #endif
@@ -137,36 +103,51 @@ namespace {
 
 	}
 
+IMPLEMENT_DYNAMIC( WDSOptionsPropertySheet, CPropertySheet )
 
+/*
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
 
-/////////////////////////////////////////////////////////////////////////////
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
 
-IMPLEMENT_DYNAMIC( COptionsPropertySheet, CPropertySheet )
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
+		#class_name, sizeof(class class_name), wSchema, pfnNew, \
+			RUNTIME_CLASS(base_class_name), NULL, class_init }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(class_name); }
 
-BOOL COptionsPropertySheet::OnInitDialog( ) {
+#define IMPLEMENT_DYNAMIC(class_name, base_class_name) \
+	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, NULL, NULL)
+
+*/
+
+BOOL WDSOptionsPropertySheet::OnInitDialog( ) {
 	const BOOL bResult = CPropertySheet::OnInitDialog( );
 
-	RECT rc;
+	RECT rc = { 0 };
 
-	/*
-_AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
-	{ ASSERT(::IsWindow(m_hWnd)); ::GetWindowRect(m_hWnd, lpRect); }
-	*/
-
+	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+	//If the window handle identifies an existing window, the return value is nonzero.
+	//If the window handle does not identify an existing window, the return value is zero.
 	ASSERT( ::IsWindow( m_hWnd ) );
 
-	//If [GetWindowRect] succeeds, the return value is nonzero.
+	//GetWindowRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633519.aspx
+	//If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	//To get extended error information, call GetLastError.
 	VERIFY( ::GetWindowRect( m_hWnd, &rc ) );
 
 	WTL::CPoint pt = CRect( rc ).TopLeft( );
 	
-	CPersistence::GetConfigPosition( pt );
+	CPersistence::GetConfigPosition( &pt );
 	CRect rc2( pt, CRect( rc ).Size( ) );
 
 	ASSERT( m_pCtrlSite == NULL );
 
-	ASSERT( ::IsWindow( m_hWnd ) );
-
+	//MoveWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633534.aspx
+	//If [MoveWindow] succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero. To get extended error information, call GetLastError.
 	//If [MoveWindow] succeeds, the return value is nonzero.
 	VERIFY( ::MoveWindow( m_hWnd, rc2.left, rc2.top, ( rc2.right - rc2.left ), ( rc2.bottom - rc2.top ), TRUE ) );
 
@@ -174,12 +155,18 @@ _AFXWIN_INLINE void CWnd::GetWindowRect(LPRECT lpRect) const
 	return bResult;
 	}
 
-BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) {
+BOOL WDSOptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) {
 	CPersistence::SetConfigPage( CPropertySheet::GetActiveIndex( ) );
 
-	CRect rc;
-	CWnd::GetWindowRect( rc );
-	CPersistence::SetConfigPosition( rc.TopLeft( ) );
+	RECT rc = { 0 };
+
+	//GetWindowRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633519.aspx
+	//If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	//To get extended error information, call GetLastError.
+	VERIFY( ::GetWindowRect( m_hWnd, &rc ) );
+
+	CPersistence::SetConfigPosition( CRect(rc).TopLeft( ) );
 	ASSERT( m_pCtrlSite == NULL );
 	//INT cmd = LOWORD( wParam );
 	return CPropertySheet::OnCommand( wParam, lParam );
@@ -188,29 +175,31 @@ BOOL COptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam ) 
 /////////////////////////////////////////////////////////////////////////////
 
 
-CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
+WDSSplitterWnd::WDSSplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ) {
+	CPersistence::GetSplitterPos( m_persistenceName, &m_wasTrackedByUser, &m_userSplitterPos );
 	}
 
 
-BEGIN_MESSAGE_MAP( CMySplitterWnd, CSplitterWnd )
+BEGIN_MESSAGE_MAP( WDSSplitterWnd, CSplitterWnd )
 	ON_WM_SIZE( )
 END_MESSAGE_MAP( )
 
-//CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name ) : m_persistenceName( name ), m_splitterPos( 0.5 ), m_wasTrackedByUser( false ), m_userSplitterPos( 0.5 ) {
-//	CPersistence::GetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos );
-//	}
 
-
-void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
+void WDSSplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	CSplitterWnd::StopTracking( bAccept );
 	if ( !bAccept ) {
 		return;
 		}
 	RECT rcClient = { 0, 0, 0, 0 };
+	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+	//If the window handle identifies an existing window, the return value is nonzero.
+	//If the window handle does not identify an existing window, the return value is zero.
 	ASSERT( ::IsWindow( m_hWnd ) );
 	
-	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
+	//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+	//Return value: If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	//To get extended error information, call GetLastError.
 	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
 	
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
@@ -236,12 +225,19 @@ void CMySplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	m_userSplitterPos = m_splitterPos;
 	}
 
-void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
+void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 	m_splitterPos = pos;
 	RECT rcClient = { 0, 0, 0, 0 };
 
+	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+	//If the window handle identifies an existing window, the return value is nonzero.
+	//If the window handle does not identify an existing window, the return value is zero.
 	ASSERT( ::IsWindow( m_hWnd ) );
-	//"If [GetClientRect] succeeds, the return value is nonzero. To get extended error information, call GetLastError."
+	
+	//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+	//Return value: If the function succeeds, the return value is nonzero.
+	//If the function fails, the return value is zero.
+	//To get extended error information, call GetLastError.
 	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
 
 	//auto splitter_persist = scopeGuard( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); }, __FILE__, __FUNCSIG__, __LINE__ );
@@ -275,12 +271,7 @@ void CMySplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
 		}
 	}
 
-
-//void CMySplitterWnd::RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
-//	SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
-//	}
-
-void CMySplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
+void WDSSplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ CSplitterWnd::OnSize( nType, cx, cy ); } );
 	if ( CSplitterWnd::GetColumnCount( ) > 1 ) {
 		const INT cxLeft = static_cast< INT >( cx * m_splitterPos );
@@ -363,7 +354,7 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 
 
 	VERIFY( m_wndStatusBar.Create( this ) );
-	SetIndicators( m_wndStatusBar, indicators );
+	SetIndicators( &m_wndStatusBar, indicators );
 
 	RECT rc = { 0, 0, 0, 0 };
 
@@ -389,10 +380,10 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	}
 
 void CMainFrame::InitialShowWindow( ) {
-	auto wp = zero_init_struct<WINDOWPLACEMENT>( );
+	WINDOWPLACEMENT wp = { 0 };
 	wp.length = sizeof( wp );
-	VERIFY( GetWindowPlacement( &wp ) );
-	CPersistence::GetMainWindowPlacement( wp );
+	VERIFY( CWnd::GetWindowPlacement( &wp ) );
+	CPersistence::GetMainWindowPlacement( &wp );
 	//MakeSaneShowCmd( wp.showCmd );
 	if ( wp.showCmd != SW_SHOWMAXIMIZED ) {
 		wp.showCmd = SW_SHOWNORMAL;
@@ -431,7 +422,6 @@ void CMainFrame::OnClose( ) {
 	UNREFERENCED_PARAMETER( timing );
 #endif
 	TRACE( _T( "OnClose timing: %f\r\n" ), timing );
-	//auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	auto pmc = zero_init_struct<PROCESS_MEMORY_COUNTERS>( );
 	pmc.cb = sizeof( pmc );
 
@@ -467,7 +457,7 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
 	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), GraphView_size, pContext ) );
 
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER, static_cast< UINT >( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, 1, 2, ( WS_CHILD | WS_VISIBLE | WS_BORDER ), static_cast< UINT >( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), DirstatView_size, pContext ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), TypeView_size, pContext ) );
 
@@ -546,18 +536,18 @@ void CMainFrame::RestoreGraphView( ) {
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
 	const auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
-	return STATIC_DOWNCAST( CDirstatView, pWnd );
+	return static_cast<CDirstatView*>( pWnd );
 	}
 
 //cannot be defined in header.
 _Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const {
 	const auto pWnd = m_wndSplitter.GetPane( 1, 0 );
-	return STATIC_DOWNCAST( CGraphView, pWnd );
+	return static_cast<CGraphView*>( pWnd );
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) const {
 	const auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
-	return STATIC_DOWNCAST( CTypeView, pWnd );
+	return static_cast<CTypeView*>( pWnd );
 	}
 
 LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
@@ -574,67 +564,6 @@ LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 		GraphView->SuspendRecalculation( false );
 		}
 	return 0;
-	}
-
-void CMainFrame::CopyToClipboard( _In_ const std::wstring psz ) const {
-	COpenClipboard clipboard( const_cast< CMainFrame* >( this ), true );
-	const rsize_t strSizeInBytes = ( ( psz.length( ) + 1 ) * sizeof( WCHAR ) );
-
-	const HGLOBAL handle_globally_allocated_memory = GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
-	if ( handle_globally_allocated_memory == NULL ) {
-		displayWindowsMsgBoxWithMessage( global_strings::global_alloc_failed );
-		TRACE( L"%s\r\n", global_strings::global_alloc_failed );
-		return;
-		}
-
-	const auto lp = GlobalLock( handle_globally_allocated_memory );
-	if ( lp == NULL ) {
-		displayWindowsMsgBoxWithMessage( L"GlobalLock failed!" );
-		return;
-		}
-
-	auto strP = static_cast< PWSTR >( lp );
-
-	const HRESULT strCopyRes = StringCchCopyW( strP, ( psz.length( ) + 1 ), psz.c_str( ) );
-	if ( !SUCCEEDED( strCopyRes ) ) {
-		if ( strCopyRes == STRSAFE_E_INVALID_PARAMETER ) {
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( global_strings::string_cch_copy_failed ) + std::wstring( L"(STRSAFE_E_INVALID_PARAMETER)" ) ) );
-			}
-		if ( strCopyRes == STRSAFE_E_INSUFFICIENT_BUFFER ) {
-			displayWindowsMsgBoxWithMessage( std::move( std::wstring( global_strings::string_cch_copy_failed ) + std::wstring( L"(STRSAFE_E_INSUFFICIENT_BUFFER)" ) ) );
-			}
-		else {
-			displayWindowsMsgBoxWithMessage( global_strings::string_cch_copy_failed );
-			}
-		const BOOL unlock_res = GlobalUnlock( handle_globally_allocated_memory );
-		strP = NULL;
-		const auto last_err = GetLastError( );
-		if ( unlock_res == 0 ) {
-			ASSERT( last_err == NO_ERROR );
-#ifndef DEBUG
-			UNREFERENCED_PARAMETER( last_err );
-#endif
-
-			}
-		return;
-		}
-
-	if ( GlobalUnlock( handle_globally_allocated_memory ) == 0 ) {
-		const auto err = GetLastError( );
-		if ( err != NO_ERROR ) {
-			displayWindowsMsgBoxWithMessage( L"GlobalUnlock failed!" );
-			return;
-			}
-		}
-	//wtf is going on here?
-	UINT uFormat = CF_TEXT;
-	uFormat = CF_UNICODETEXT;
-
-	if ( NULL == SetClipboardData( uFormat, handle_globally_allocated_memory ) ) {
-		displayWindowsMsgBoxWithMessage( global_strings::cannot_set_clipboard_data );
-		TRACE( L"%s\r\n", global_strings::cannot_set_clipboard_data );
-		return;
-		}
 	}
 
 void CMainFrame::OnInitMenuPopup( CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu ) {
@@ -688,20 +617,13 @@ void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ 
 		m_drawTiming = buffer_ptr;
 		return;
 		}
-	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
-		return;
-		}
 	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
 		return;
 		}
-	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
-		return;
-		}
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfW" );
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
 	CFrameWnd::SetMessageText( L"Couldn't set message text, unknown error!" );
-
 	}
 
 void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
@@ -712,18 +634,12 @@ void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_le
 		m_drawTiming = buffer_ptr;
 		return;
 		}
-	if ( fmt_res == STRSAFE_E_END_OF_FILE ) {
-		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_END_OF_FILE" );
-		return;
-		}
 	if ( fmt_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INSUFFICIENT_BUFFER" );
 		return;
 		}
-	if ( fmt_res == STRSAFE_E_INVALID_PARAMETER ) {
-		CFrameWnd::SetMessageText( L"Couldn't set message text: STRSAFE_E_INVALID_PARAMETER" );
-		return;
-		}
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( fmt_res, "StringCchPrintfW" );
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
 	CFrameWnd::SetMessageText( L"Couldn't set message text, unknown error!" );
 	}
 
@@ -826,6 +742,9 @@ void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	CFrameWnd::OnSize( nType, cx, cy );
 
+	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+	//If the window handle identifies an existing window, the return value is nonzero.
+	//If the window handle does not identify an existing window, the return value is zero.
 	if ( !( ::IsWindow( m_wndStatusBar.m_hWnd ) ) ) {
 		return;
 		}
@@ -897,7 +816,7 @@ void CMainFrame::OnViewShowfiletypes( ) {
 	}
 
 void CMainFrame::OnConfigure( ) {
-	COptionsPropertySheet sheet;
+	WDSOptionsPropertySheet sheet;
 
 	CPageGeneral  general( m_appptr );
 	CPageTreemap  treemap;
@@ -925,8 +844,5 @@ void CMainFrame::OnSysColorChange( ) {
 		}
 	
 	}
-
-
-#else
 
 #endif

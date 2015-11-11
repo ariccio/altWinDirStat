@@ -33,7 +33,6 @@ CMainFrame* GetMainFrame( ) {
 
 CDirstatApp* GetApp( ) {
 	return static_cast< CDirstatApp* >( AfxGetApp( ) );
-	//return STATIC_DOWNCAST( CDirstatApp, AfxGetApp( ) );
 	}
 
 
@@ -41,11 +40,11 @@ namespace {
 
 #ifdef DEBUG
 	void setFlags( ) {
-		const auto flag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+		const auto flag = ::_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n\t_CRTDBG_DELAY_FREE_MEM_DEF: %i\r\n" ), flag, ( flag & _CRTDBG_ALLOC_MEM_DF ), ( flag & _CRTDBG_CHECK_CRT_DF ), ( flag & _CRTDBG_LEAK_CHECK_DF ), ( flag & _CRTDBG_DELAY_FREE_MEM_DF ) );
 		
-		_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF bitor _CRTDBG_LEAK_CHECK_DF );
-		const auto flag2 = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+		::_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF bitor _CRTDBG_LEAK_CHECK_DF );
+		const auto flag2 = ::_CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 		TRACE( _T( "CrtDbg state: %i\r\n\t_CRTDBG_ALLOC_MEM_DF: %i\r\n\t_CRTDBG_CHECK_CRT_DF: %i\r\n\t_CRTDBG_LEAK_CHECK_DF: %i\r\n\t_CRTDBG_DELAY_FREE_MEM_DEF: %i\r\n" ), flag2, ( flag2 & _CRTDBG_ALLOC_MEM_DF ), ( flag2 & _CRTDBG_CHECK_CRT_DF ), ( flag2 & _CRTDBG_LEAK_CHECK_DF ), ( flag2 & _CRTDBG_DELAY_FREE_MEM_DF )  );
 		}
 #endif
@@ -72,7 +71,7 @@ SetProcessMitigationPolicy(
 			if ( result == 0 ) {
 				return;
 				}
-			const BOOL free_result = FreeLibrary( the_module );
+			const BOOL free_result = ::FreeLibrary( the_module );
 			ASSERT( free_result != 0 );
 			if ( free_result != 0 ) {
 				return;
@@ -80,7 +79,7 @@ SetProcessMitigationPolicy(
 			displayWindowsMsgBoxWithMessage( L"FreeLibrary( the_module ) failed!" );
 			displayWindowsMsgBoxWithError( );
 			}
-		HMODULE_RAII& operator=( const HMODULE_RAII& in ) = delete;
+		DISALLOW_COPY_AND_ASSIGN( HMODULE_RAII );
 		const HMODULE the_module;
 		const BOOL    result;
 		};
@@ -124,7 +123,7 @@ SetProcessMitigationPolicy(
 	void enable_heap_security_crash_on_corruption( ) {
 
 		//If the function succeeds, the return value is nonzero.
-		BOOL heap_set_info_result = HeapSetInformation( NULL, HeapEnableTerminationOnCorruption, NULL, 0u );
+		BOOL heap_set_info_result = ::HeapSetInformation( NULL, HeapEnableTerminationOnCorruption, NULL, 0u );
 		if ( heap_set_info_result == 0 ) {
 			TRACE( _T( "HeapSetInformation failed!\r\n" ) );
 			}
@@ -202,7 +201,7 @@ SetProcessMitigationPolicy(
 
 	std::pair<const HMODULE, const BOOL> init_kernel32( ) {
 		HMODULE kernel32_temp;
-		const BOOL module_handle_result = GetModuleHandleExW( 0, L"kernel32.dll", &kernel32_temp );
+		const BOOL module_handle_result = ::GetModuleHandleExW( 0, L"kernel32.dll", &kernel32_temp );
 		if ( module_handle_result == 0 ) {
 			TRACE( _T( "Failed to get handle to kernel32.dll!\r\n" ) );
 			}
@@ -218,7 +217,7 @@ SetProcessMitigationPolicy(
 			}
 		const SetProcessMitigationPolicy_t SetProcessMitigationPolicy_f = reinterpret_cast< SetProcessMitigationPolicy_t >( GetProcAddress( module_scope_manager.the_module, "SetProcessMitigationPolicy" ) );
 
-		ASSERT( IsWindows8OrGreater( ) );
+		ASSERT( ::IsWindows8OrGreater( ) );
 		enable_ASLR_mitigation( SetProcessMitigationPolicy_f );
 		
 		
@@ -258,22 +257,11 @@ CDirstatApp::~CDirstatApp( ) {
 	m_pDocTemplate = { NULL };
 	}
 
-//void CDirstatApp::UpdateRamUsage( ) {
-//	CWinThread::OnIdle( 0 );
-//	}
-
-//void CDirstatApp::PeriodicalUpdateRamUsage( ) {
-//	if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
-//		UpdateRamUsage( );
-//		m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
-//		}
-//	}
-
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
 _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) {
 	COLORREF x;
 	ULONG cbValue = sizeof( x );
-	CRegKey key;
+	ATL::CRegKey key;
 
 	// Open the explorer key
 	key.Open( HKEY_CURRENT_USER, _T( "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer" ), KEY_READ );
@@ -307,7 +295,7 @@ _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
 
 	pmc.cb = sizeof( pmc );
 
-	if ( !GetProcessMemoryInfo( GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
+	if ( !::GetProcessMemoryInfo( ::GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
 		return false;
 		}	
 
@@ -326,8 +314,8 @@ BOOL CDirstatApp::InitInstance( ) {
 		}
 
 	//uses ~29K memory
-	if ( !SUCCEEDED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
-		AfxMessageBox( _T( "CoInitializeEx Failed!" ) );
+	if ( !SUCCEEDED( ::CoInitializeEx( NULL, COINIT_APARTMENTTHREADED ) ) ) {
+		::AfxMessageBox( _T( "CoInitializeEx Failed!" ) );
 		return FALSE;
 		}
 
@@ -337,18 +325,18 @@ BOOL CDirstatApp::InitInstance( ) {
 #endif
 
 	// Initialize ATL
-	_Module.Init( NULL, AfxGetInstanceHandle( ) );
+	_Module.Init( NULL, ::AfxGetInstanceHandle( ) );
 
 	VERIFY( CWinApp::InitInstance( ) );
-	InitCommonControls( );          // InitCommonControls() is necessary for Windows XP.
-	if ( AfxOleInit( ) == FALSE ) { // For SHBrowseForFolder()
-		AfxMessageBox( _T( "AfxOleInit Failed!" ) );
+	::InitCommonControls( );          // InitCommonControls() is necessary for Windows XP.
+	if ( ::AfxOleInit( ) == FALSE ) { // For SHBrowseForFolder()
+		::AfxMessageBox( _T( "AfxOleInit Failed!" ) );
 		return FALSE;
 		}
 	
 	
 
-	SetRegistryKey( _T( "Seifert" ) );
+	CWinApp::SetRegistryKey( _T( "Seifert" ) );
 	//LoadStdProfileSettings( 4 );
 
 	GetOptions( )->LoadFromRegistry( );
@@ -358,15 +346,15 @@ BOOL CDirstatApp::InitInstance( ) {
 		return FALSE;
 		}
 
-	AddDocTemplate( m_pDocTemplate );
+	CWinApp::AddDocTemplate( m_pDocTemplate );
 	
 	CCommandLineInfo cmdInfo;
-	ParseCommandLine( cmdInfo );
+	CWinApp::ParseCommandLine( cmdInfo );
 
 	m_nCmdShow = SW_HIDE;
 
 
-	if ( !ProcessShellCommand( cmdInfo ) ) {
+	if ( !CWinApp::ProcessShellCommand( cmdInfo ) ) {
 		return FALSE;
 		}
 
@@ -425,7 +413,7 @@ void CDirstatApp::OnFileOpenLight( ) {
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	BOOL more = FALSE;
 	ASSERT( lCount >= 0 );
-	const auto ramDiff = ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate );
+	const auto ramDiff = ( ::GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate );
 	auto doc = GetDocument( );
 	
 	if ( doc != NULL ) {
@@ -437,7 +425,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	if ( ramDiff > RAM_USAGE_UPDATE_INTERVAL ) {
 		more = CWinApp::OnIdle( lCount );
 		if ( !more ) {
-			PeriodicalUpdateRamUsage( );
+			CDirstatApp::PeriodicalUpdateRamUsage( );
 			}
 		else {
 			more = CWinThread::OnIdle( 0 );

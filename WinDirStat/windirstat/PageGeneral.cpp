@@ -15,14 +15,14 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "options.h"
 
 #include "windirstat.h"
-#include "mainframe.h"		// COptionsPropertySheet
+#include "mainframe.h"		// WDSOptionsPropertySheet
 
 
 
 IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
 
-_Must_inspect_result_ COptionsPropertySheet* CPageGeneral::GetSheet( ) {
-	COptionsPropertySheet* sheet = STATIC_DOWNCAST( COptionsPropertySheet, CWnd::GetParent( ) );
+_Must_inspect_result_ WDSOptionsPropertySheet* CPageGeneral::GetSheet( ) {
+	WDSOptionsPropertySheet* sheet = static_cast<WDSOptionsPropertySheet*>( CWnd::GetParent( ) );
 	ASSERT( sheet != NULL );
 	return sheet;
 	}
@@ -73,8 +73,5 @@ void CPageGeneral::OnOK( ) {
 	Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
 	CPropertyPage::OnOK( );
 	}
-
-
-#else
 
 #endif

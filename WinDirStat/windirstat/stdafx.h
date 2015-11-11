@@ -96,6 +96,17 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif
 
 
+//_ATL_NO_AUTOMATIC_NAMESPACE: https://msdn.microsoft.com/en-us/library/a477k694.aspx
+//A symbol which prevents the default use of namespace as ATL.
+#ifndef _ATL_NO_AUTOMATIC_NAMESPACE
+
+#pragma message( "defining `_ATL_NO_AUTOMATIC_NAMESPACE`..." )
+
+#define _ATL_NO_AUTOMATIC_NAMESPACE
+
+#endif
+
+
 
 #ifndef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES
 

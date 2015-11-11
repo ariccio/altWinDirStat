@@ -1,4 +1,4 @@
-// mainframe.h		- Declaration of CMySplitterWnd and CMainFrame
+// mainframe.h		- Declaration of WDSSplitterWnd and CMainFrame
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
 #pragma once
@@ -16,34 +16,38 @@ WDS_FILE_INCLUDE_MESSAGE
 //#include "windirstat.h"
 //#include "globalhelpers.h"
 #include "LOGICAL_FOCUS_enum.h"
+#include "macros_that_scare_small_children.h"
 
-
-class CMySplitterWnd;
+class WDSSplitterWnd;
 class CMainFrame;
 class CDirstatView;
 class CGraphView;
 class CTypeView;
 class CDirstatApp;
 
-// COptionsPropertySheet. The options dialog.
-class COptionsPropertySheet final : public CPropertySheet {
-	DECLARE_DYNAMIC(COptionsPropertySheet)
+// WDSOptionsPropertySheet. The options dialog.
+class WDSOptionsPropertySheet final : public CPropertySheet {
+	/*
+#define DECLARE_DYNAMIC(class_name) \
+public: \
+	static const CRuntimeClass class##class_name; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \
+	*/
+	DECLARE_DYNAMIC(WDSOptionsPropertySheet)
 public:
-	COptionsPropertySheet& operator=( const COptionsPropertySheet& in ) = delete;
-	COptionsPropertySheet( const COptionsPropertySheet& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( WDSOptionsPropertySheet );
 
-	COptionsPropertySheet     (                                        ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ) { }
+	WDSOptionsPropertySheet     (                                        ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ) { }
 	virtual BOOL OnInitDialog (                                        ) override final;
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override final;
 	};
 
-// CMySplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
-class CMySplitterWnd final : public CSplitterWnd {
+// WDSSplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
+class WDSSplitterWnd final : public CSplitterWnd {
 public:
-	CMySplitterWnd& operator=( const CMySplitterWnd& in ) = delete;
-	CMySplitterWnd( const CMySplitterWnd& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( WDSSplitterWnd );
 
-	CMySplitterWnd::CMySplitterWnd( _In_z_ PCWSTR const name );
+	WDSSplitterWnd::WDSSplitterWnd( _In_z_ PCWSTR const name );
 
 	void RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
 		SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
@@ -55,10 +59,10 @@ public:
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
 
 	PCWSTR const m_persistenceName;		// Name of object for CPersistence
-	DOUBLE       m_splitterPos;			// Current split ratio
-	DOUBLE       m_userSplitterPos;		// Split ratio as set by the user
-	//C4820: 'CMySplitterWnd' : '7' bytes padding added after data member 'CMySplitterWnd::m_wasTrackedByUser' (dirstatdoc.cpp)
-	bool         m_wasTrackedByUser;	// True as soon as user has modified the splitter position
+	DOUBLE       m_splitterPos = 0.5;			// Current split ratio
+	DOUBLE       m_userSplitterPos = 0.5;		// Split ratio as set by the user
+	//C4820: 'WDSSplitterWnd' : '7' bytes padding added after data member 'WDSSplitterWnd::m_wasTrackedByUser' (dirstatdoc.cpp)
+	bool         m_wasTrackedByUser = false;	// True as soon as user has modified the splitter position
 	
 
 	DECLARE_MESSAGE_MAP()
@@ -82,21 +86,14 @@ class CDeadFocusWnd final : public ATL::CWindowImpl<CDeadFocusWnd> {
 public:
 
 	CDeadFocusWnd( CMainFrame* ptr ) : m_frameptr( ptr ) { }
-	CDeadFocusWnd& operator=( const CDeadFocusWnd& in ) = delete;
-	CDeadFocusWnd( const CDeadFocusWnd& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CDeadFocusWnd );
 
-//#pragma warning( once : 4263 )
 	CMainFrame* m_frameptr;
 
-
 	~CDeadFocusWnd( ) = default;
-public:
-	//DECLARE_MESSAGE_MAP()
-	//afx_msg void OnKeyDown( const UINT nChar, const UINT nRepCnt, const UINT nFlags ) {
+
 	LRESULT OnKeyDown( UINT /*nMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 
-
-public:
 	BEGIN_MSG_MAP( CDeadFocusWnd )
 		MESSAGE_HANDLER( WM_KEYDOWN, CDeadFocusWnd::OnKeyDown )
 #pragma warning( suppress : 4365 )//C4365: 'argument' : conversion from 'unsigned int' to 'int', signed/unsigned mismatch
@@ -115,11 +112,21 @@ public:
 	CMainFrame( );
 
 	DECLARE_DYNCREATE(CMainFrame)
+	/*
+#define DECLARE_DYNAMIC(class_name) \
+public: \
+	static const CRuntimeClass class##class_name; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \
 
-	CMainFrame& operator=( const CMainFrame& in ) =  delete;
-	CMainFrame( const CMainFrame& in ) = delete;
+#define DECLARE_DYNCREATE(class_name) \
+	DECLARE_DYNAMIC(class_name) \
+	static CObject* PASCAL CreateObject();
+	*/
+
+	DISALLOW_COPY_AND_ASSIGN( CMainFrame );
 
 	_Ret_maybenull_ static CMainFrame* GetTheFrame( );
+
 	virtual ~CMainFrame( ) final {
 		_theFrame = { NULL };
 		}
@@ -141,7 +148,6 @@ public:
 
 	_Pre_satisfies_( searchTiming >= compressed_file_timing )
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing );
-	void   CopyToClipboard           ( _In_ const std::wstring psz                                   ) const;
 	size_t getExtDataSize            (                                                                                                ) const;
 
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;
@@ -157,8 +163,8 @@ public:
 		}
 
 public:	
-	CMySplitterWnd       m_wndSubSplitter;	// Contains the two upper views (dirstatview & typeview?)
-	CMySplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
+	WDSSplitterWnd       m_wndSubSplitter;	// Contains the two upper views (dirstatview & typeview?)
+	WDSSplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
 	CStatusBar           m_wndStatusBar;	// Status bar
 	//C4820: 'CMainFrame' : '4' bytes padding added after data member 'CMainFrame::m_logicalFocus'
 	LOGICAL_FOCUS        m_logicalFocus;	// Which view has the logical focus

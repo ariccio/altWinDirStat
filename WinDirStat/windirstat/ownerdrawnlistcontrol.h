@@ -266,7 +266,7 @@ public:
 
 
 	COLORREF     default_item_text_color      ( ) const {
-		return GetSysColor( COLOR_WINDOWTEXT );
+		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
 
@@ -326,7 +326,7 @@ protected:
 		*/
 
 		//TODO: performance issue in the line below due to CHandleMap::FromHandle
-		CSelectObject sofont( hDC, list_font->m_hObject );
+		SelectObject_wrapper sofont( hDC, list_font->m_hObject );
 	
 		//subtract 6 from rcRest.right, add 6 to rcRest.left
 		VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
@@ -665,7 +665,7 @@ protected:
 		VERIFY( dcmem.CreateCompatibleDC( pdc ) );
 		CBitmap bm;
 		VERIFY( bm.CreateCompatibleBitmap( pdc, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
-		CSelectObject sobm( dcmem.m_hDC, bm.m_hObject );
+		SelectObject_wrapper sobm( dcmem.m_hDC, bm.m_hObject );
 		RECT rect_to_fill_solidly = rcItem;
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
@@ -772,7 +772,15 @@ public:
 		const rsize_t countArray = 10;
 
 		//void handle_countArray_too_small( _In_ const rsize_t, _In_ const size_t itemCount )
-	
+
+
+		if ( itemCount < 2 ) {
+			//CPersistence expects more than one item arrays
+			//Since that's a nonsensical condition, no point in continuing.
+			std::terminate( );
+			abort( );//Maybe VS2015 will understand that std::terminate( ) doesn't return.
+			}
+
 		if ( countArray <= itemCount ) {
 			handle_countArray_too_small( countArray, itemCount );
 			}
@@ -842,7 +850,14 @@ public:
 
 		const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
 
-		if ( !( itemCount < col_array_size ) ) {
+		if ( itemCount < 2 ) {
+			//CPersistence expects more than one item arrays
+			//Since that's a nonsensical condition, no point in continuing.
+			std::terminate( );
+			abort( );//Maybe VS2015 will understand that std::terminate( ) doesn't return.
+			}
+
+		if ( itemCount >= col_array_size ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SavePersistentAttributes - GetItemCount returned an itemCount of a size bigger than the array allocated!(aborting)" );
 			std::terminate( );
 			}
@@ -1184,7 +1199,7 @@ public:
 		{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
-		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
+		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
 	
 		//const auto align = IsColumnRightAligned( subitem ) ? DT_RIGHT : DT_LEFT;
 		const auto align = is_right_aligned_cache[ static_cast<size_t>( subitem ) ] ? DT_RIGHT : DT_LEFT;
@@ -1347,7 +1362,7 @@ private:
 		{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
-		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
+		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		VERIFY( ::DrawTextW( hDC, buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 
@@ -1371,7 +1386,7 @@ private:
 		{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
-		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
+		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		VERIFY( ::DrawTextW( hDC, item->m_name, static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 			
@@ -1408,7 +1423,7 @@ private:
 		{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
-		CSelectObject sofont( hDC, CWnd::GetFont( )->m_hObject );
+		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
 		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
 		VERIFY( ::DrawTextW( hDC, psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 
@@ -1582,7 +1597,7 @@ protected:
 private:
 	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ CDC* pDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf ) const {
 		CPen pen( PS_SOLID, 1, gridColor );
-		const CSelectObject sopen( pDC->m_hDC, pen.m_hObject );
+		const SelectObject_wrapper sopen( pDC->m_hDC, pen.m_hObject );
 
 		const auto rowHeight = m_rowHeight;
 		for ( auto y = ( m_yFirstItem + static_cast<LONG>( rowHeight ) - 1 ); y < rcClient.bottom; y += static_cast<LONG>( rowHeight ) ) {

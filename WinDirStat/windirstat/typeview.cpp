@@ -55,7 +55,6 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 	if ( subitem == column::COL_EXTENSION ) {
 		ASSERT( list == m_list );
 		UNREFERENCED_PARAMETER( list );
-		//ASSERT( width != NULL );
 		CFont* const list_font = list->GetFont( );
 		const bool list_has_focus = list->HasFocus( );
 		const bool list_is_show_selection_always = list->IsShowSelectionAlways( );
@@ -64,11 +63,11 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 		const bool list_is_full_row_selection = list->m_showFullRowSelection;
 		//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
 
-		DrawLabel( hDC, rc, state, width, focusLeft, true, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+		COwnerDrawnListItem::DrawLabel( hDC, rc, state, width, focusLeft, true, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 		return true;
 		}
 	else if ( subitem == column::COL_COLOR ) {
-		DrawColor( hDC, rc, state, width );
+		CListItem::DrawColor( hDC, rc, state, width );
 		return true;
 		}	
 	if ( width == NULL ) {
@@ -86,7 +85,7 @@ void CListItem::DrawColor( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _O
 		return;
 		}
 
-	DrawSelection( hDC, rc, state, m_list->HasFocus( ), m_list->IsShowSelectionAlways( ), m_list->GetHighlightColor( ), m_list->m_showFullRowSelection );
+	COwnerDrawnListItem::DrawSelection( hDC, rc, state, m_list->HasFocus( ), m_list->IsShowSelectionAlways( ), m_list->GetHighlightColor( ), m_list->m_showFullRowSelection );
 	VERIFY( ::InflateRect( &rc, -( 2 ), -( 3 ) ) );
 
 	if ( ( rc.right <= rc.left ) || ( rc.bottom <= rc.top ) ) {
@@ -115,9 +114,6 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const
 	//handled in FormatBytes.
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
-		//ASSERT( chars_written == strSize );
-		//chars_written = strSize;
-		//sizeBuffNeed = ( ( 64 > sizeBuffNeed ) ? 64 : sizeBuffNeed );//Generic size needed.
 		return res;
 		}
 	return res;
@@ -140,11 +136,10 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_
 		}
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		handle_stack_insufficient_buffer( strSize, 64u, sizeBuffNeed, chars_written );
-		//chars_written = strSize;
-		//sizeBuffNeed = 64;//Generic size needed.
-		//ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
 		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintfExW" );
 	chars_written = 0;
 	return res;
 	}
@@ -156,6 +151,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL
 #endif
 	ASSERT( subitem == column::COL_DESCRIPTION );
 	ASSERT( strSize > 0 );
+	//This routine is NOPed out.
 	if ( strSize > 0 ) {
 		psz_text[ 0 ] = 0;
 		chars_written = 0;
@@ -173,7 +169,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_CO
 #endif
 	ASSERT( subitem == column::COL_BYTESPERCENT );
 	size_t chars_remaining = 0;
-	const auto theDouble = GetBytesFraction( ) * 100;
+	const auto theDouble = CListItem::GetBytesFraction( ) * 100;
 	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
@@ -183,11 +179,10 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_CO
 		}
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
 		handle_stack_insufficient_buffer( strSize, 8u, sizeBuffNeed, chars_written );
-		//chars_written = strSize;
-		//sizeBuffNeed = 8;//Generic size needed, overkill;
-		//ASSERT( chars_written == wcslen( psz_text ) );
 		return res;
 		}
+	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
+	WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( res, "StringCchPrintfExW" );
 	chars_written = 0;
 	return res;
 	}
@@ -205,20 +200,16 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 			case column::COL_ATTRIBUTES:
 			case column::COL_COLOR://COL_COLOR is supposed to have a tiny, colored, treemap - NOT text.
 			default:
-				return WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CListItem::" );
+				return COwnerDrawnListItem::WriteToStackBuffer_default( subitem, psz_text, strSize, sizeBuffNeed, chars_written, L"CListItem::" );
 			case column::COL_DESCRIPTION:
-				return Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_BYTES:
-				return Text_WriteToStackBuffer_COL_BYTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return CListItem::Text_WriteToStackBuffer_COL_BYTES( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_BYTESPERCENT:
-				return Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 			case column::COL_FILES_TYPEVIEW:
-				return Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
+				return CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 	}
-	}
-
-COLORREF CListItem::ItemTextColor( ) const {
-	return default_item_text_color( );
 	}
 
 DOUBLE CListItem::GetBytesFraction( ) const {
@@ -233,16 +224,14 @@ INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_C
 	{
 		case column::COL_DESCRIPTION:
 		case column::COL_EXTENSION:
-			//return signum( wcscmp( m_name.get( ), other->m_name.get( ) ) );
-			//ASSERT( false );//not ever reached?
-			return default_compare( other );
+			return COwnerDrawnListItem::default_compare( other );
 
 		case column::COL_COLOR:
 		case column::COL_BYTES:
 			return signum( static_cast<std::int64_t>( m_bytes ) - static_cast<std::int64_t>( other->m_bytes ) );
 
 		case column::COL_BYTESPERCENT:
-			return signum( GetBytesFraction( ) - other->GetBytesFraction( ) );
+			return signum( CListItem::GetBytesFraction( ) - other->GetBytesFraction( ) );
 		case column::COL_FILES_TYPEVIEW:
 			return signum( static_cast<std::int64_t>( m_files ) - static_cast<std::int64_t>( other->m_files ) );
 
@@ -255,10 +244,10 @@ INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_C
 
 inline INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
 	if ( ( subitem == column::COL_EXTENSION ) || ( subitem == column::COL_DESCRIPTION ) ) {
-		default_compare( baseOther );
+		COwnerDrawnListItem::default_compare( baseOther );
 		}
-	const auto other = static_cast< const CListItem * >( baseOther );
-	return concrete_compare( other, subitem );
+	const CListItem* const other = static_cast< const CListItem * >( baseOther );
+	return CListItem::concrete_compare( other, subitem );
 	}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -278,18 +267,18 @@ CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COw
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
 void CExtensionListControl::Initialize( ) {
 
-	SetSorting( column::COL_BYTES, false );
+	COwnerDrawnListCtrl::SetSorting( column::COL_BYTES, false );
 
-	InsertColumn(column::COL_EXTENSION,      _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_EXTENSION);
-	InsertColumn(column::COL_COLOR,          _T( "Color" ),       LVCFMT_LEFT,  40, column::COL_COLOR);
-	InsertColumn(column::COL_BYTES,          _T( "Bytes" ),       LVCFMT_RIGHT, 60, column::COL_BYTES);
-	InsertColumn(column::COL_BYTESPERCENT,   _T( "% Bytes" ),     LVCFMT_RIGHT, 50, column::COL_BYTESPERCENT);
-	InsertColumn(column::COL_FILES_TYPEVIEW, _T( "Files" ),       LVCFMT_RIGHT, 50, column::COL_FILES_TYPEVIEW);
-	InsertColumn(column::COL_DESCRIPTION,    _T( "Description" ), LVCFMT_LEFT, 170, column::COL_DESCRIPTION);
+	CListCtrl::InsertColumn(column::COL_EXTENSION,      _T( "Extension" ),   LVCFMT_LEFT,  60, column::COL_EXTENSION);
+	CListCtrl::InsertColumn(column::COL_COLOR,          _T( "Color" ),       LVCFMT_LEFT,  40, column::COL_COLOR);
+	CListCtrl::InsertColumn(column::COL_BYTES,          _T( "Bytes" ),       LVCFMT_RIGHT, 60, column::COL_BYTES);
+	CListCtrl::InsertColumn(column::COL_BYTESPERCENT,   _T( "% Bytes" ),     LVCFMT_RIGHT, 50, column::COL_BYTESPERCENT);
+	CListCtrl::InsertColumn(column::COL_FILES_TYPEVIEW, _T( "Files" ),       LVCFMT_RIGHT, 50, column::COL_FILES_TYPEVIEW);
+	CListCtrl::InsertColumn(column::COL_DESCRIPTION,    _T( "Description" ), LVCFMT_LEFT, 170, column::COL_DESCRIPTION);
 
 
 	TRACE( _T( "Loading persistent attributes....\r\n" ) );
-	OnColumnsInserted( );
+	COwnerDrawnListCtrl::OnColumnsInserted( );
 
 	// We don't use the list control's image list, but attaching an image list to the control ensures a proper line height.
 	//SetImageList( NULL, LVSIL_SMALL );
@@ -300,8 +289,9 @@ void CExtensionListControl::OnDestroy( ) {
 	COwnerDrawnListCtrl::OnDestroy();
 	}
 
-_Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ const INT i ) const {
-	const auto ret = reinterpret_cast< CListItem* > ( GetItemData( i ) );
+_Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ _In_range_( >=, 0 ) const INT i ) const {
+	ASSERT( i >= 0 );
+	const auto ret = reinterpret_cast< CListItem* > ( CListCtrl::GetItemData( i ) );
 	
 	if ( ret != NULL ) {
 		return ret;
@@ -347,7 +337,6 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		ASSERT( new_name_length < UINT16_MAX );
 
 		PWSTR new_name_ptr = nullptr;
-		//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, extData->at( i ).ext );
 		const HRESULT copy_res = m_name_pool->m_buffer_impl->copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), extData->at( i ).ext );
 
 		if ( !SUCCEEDED( copy_res ) ) {
@@ -365,7 +354,6 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	CWnd::SetRedraw( FALSE );
 	const auto local_m_exts = m_exts.get( );
 
-	//INT_PTR count = 0;
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
 		totalSizeExtensionNameLength += static_cast<std::uint64_t>( ( local_m_exts + i )->m_name_length );
@@ -375,7 +363,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < ext_data_size; ++i ) {
-		InsertListItem( static_cast<INT_PTR>( i ), ( local_m_exts + i ) );
+		COwnerDrawnListCtrl::InsertListItem( static_cast<INT_PTR>( i ), ( local_m_exts + i ) );
 		}
 
 	CWnd::SetRedraw( TRUE );
@@ -387,7 +375,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 
 	//ASSERT( count == ext_data_size );
 	m_averageExtensionNameLength = static_cast<DOUBLE>( totalSizeExtensionNameLength ) / static_cast<DOUBLE>( ext_data_size );
-	SortItems( );
+	COwnerDrawnListCtrl::SortItems( );
 	}
 
 #ifdef WDS_TYPEVIEW_PUSHED_MACRO_NEW
@@ -400,7 +388,7 @@ void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) {
 	const auto countItems = CListCtrl::GetItemCount( );
 	CWnd::SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		if ( ( wcscmp( GetListItem( i )->m_name, ext ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( wcscmp( CExtensionListControl::GetListItem( i )->m_name, ext ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext, i );
 			CListCtrl::SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			CListCtrl::EnsureVisible( i, false );
@@ -417,7 +405,7 @@ _Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const {
 		return L"";
 		}
 	const auto i = CListCtrl::GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
-	const auto item = GetListItem( i );
+	const auto item = CExtensionListControl::GetListItem( i );
 	return item->m_name;
 	}
 
@@ -446,7 +434,7 @@ void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
 	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 	if ( ( pNMLV->uNewState bitand LVIS_SELECTED ) != 0 ) {
-		m_typeView->SetHighlightExtension( GetSelectedExtension( ) );
+		m_typeView->SetHighlightExtension( CExtensionListControl::GetSelectedExtension( ) );
 		}
 	*pResult = 0;
 	}
@@ -481,14 +469,10 @@ BEGIN_MESSAGE_MAP(CTypeView, CView)
 END_MESSAGE_MAP()
 
 void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) {
-	auto Document = GetDocument( );
+	auto Document = CTypeView::GetDocument( );
 
 	if ( Document != NULL ) {
-#ifndef DEBUG
-		Document->SetHighlightExtension( std::move( ext ) );
-#else
 		Document->SetHighlightExtension( ext );
-#endif
 		
 		if ( GetFocus( ) == &m_extensionListControl ) {
 			Document->UpdateAllViews( this, UpdateAllViews_ENUM::HINT_EXTENSIONSELECTIONCHANGED );
@@ -515,7 +499,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	}
 
 void CTypeView::OnUpdate0( ) {
-	auto theDocument = GetDocument( );
+	auto theDocument = CTypeView::GetDocument( );
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.m_rootSize = theDocument->m_rootItem->size_recurse( );
@@ -560,13 +544,13 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	{
 		case UpdateAllViews_ENUM::HINT_NEWROOT:
 		case 0:
-			OnUpdate0( );
+			CTypeView::OnUpdate0( );
 			// fall thru
 
 		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
 		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
 			if ( m_showTypes ) {
-				SetSelection( );
+				CTypeView::SetSelection( );
 				}
 			return;
 
@@ -575,37 +559,35 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 			return;
 
 		case UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED:
-			return OnUpdateHINT_TREEMAPSTYLECHANGED( );
+			return CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( );
 
 		case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:
-			return OnUpdateHINT_LISTSTYLECHANGED( );
-
-		//case UpdateAllViews_ENUM::HINT_ZOOMCHANGED:
+			return CTypeView::OnUpdateHINT_LISTSTYLECHANGED( );
 		default:
 			return;
 	}
 	}
 
 void CTypeView::SetSelection( ) {
-	const auto Document = GetDocument( );
-	if ( Document != NULL ) {
-		const auto item = Document->m_selectedItem;
-		//if ( item != NULL && item->m_type == IT_FILE ) {
-		if ( ( item != NULL ) && ( item->m_child_info.m_child_info_ptr == nullptr ) ) {
-			PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
-			//ASSERT( item->GetExtension( ).compare( item->CStyle_GetExtensionStrPtr( ) ) == 0 );
-			if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
-				m_extensionListControl.SelectExtension( item->CStyle_GetExtensionStrPtr( ) );
-				}
+	const auto Document = CTypeView::GetDocument( );
+	ASSERT( Document != NULL );
+	if ( Document == NULL ) {
+		return;
+		}
+	const auto item = Document->m_selectedItem;
+	if ( item == NULL ) {
+		return;
+		}
+	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
+		PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
+		if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
+			m_extensionListControl.SelectExtension( item->CStyle_GetExtensionStrPtr( ) );
 			}
 		}
-	ASSERT( Document != NULL );
 	}
 
 _Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
-	//ASSERT( m_pDocument->IsKindOf( RUNTIME_CLASS( CDirstatDoc ) ) );
-	//return static_cast<CDirstatDoc*>( m_pDocument );
-	return STATIC_DOWNCAST( CDirstatDoc, m_pDocument );
+	return static_cast<CDirstatDoc*>( m_pDocument );
 	}
 
 void CTypeView::SysColorChanged( ) {

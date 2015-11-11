@@ -31,14 +31,16 @@ class CListItem final : public COwnerDrawnListItem {
 	public:
 		CListItem( ) : m_list( NULL ) { }
 		CListItem ( _In_ CExtensionListControl* const list, _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ COLORREF color_in, _In_z_ PCWSTR const name, const std::uint16_t length ) : m_list( list ), m_bytes( std::move( bytes_in ) ), m_files( std::move( files_in ) ), color( std::move( color_in ) ), COwnerDrawnListItem( name, length ) { }
-			
-		CListItem& operator=( const CListItem& in ) = delete;
-		CListItem ( CListItem& in ) = delete;
+		
+		DISALLOW_COPY_AND_ASSIGN( CListItem );
 		CListItem( CListItem&& in ) = delete;
 
 		virtual ~CListItem( ) final = default;
 
-		virtual COLORREF     ItemTextColor    ( ) const override final;
+		virtual COLORREF     ItemTextColor( ) const override final {
+			//implementing this inline should help devirtualization
+			return default_item_text_color( );
+			}
 	private:
 		//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
 		inline  INT          concrete_compare ( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
@@ -78,8 +80,7 @@ class CExtensionListControl final : public COwnerDrawnListCtrl {
 public:
 	CExtensionListControl( CTypeView* const typeView );
 	
-	CExtensionListControl& operator=( const CExtensionListControl& in ) = delete;
-	CExtensionListControl( const CExtensionListControl& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( CExtensionListControl );
 
 	virtual ~CExtensionListControl( ) final = default;
 
@@ -105,7 +106,7 @@ public:
 	                                         CTypeView*                        const m_typeView;
 											 std::unique_ptr<Children_String_Heap_Manager>            m_name_pool;
 
-	_Ret_notnull_ CListItem* GetListItem( _In_ const INT i ) const;
+	_Ret_notnull_ CListItem* GetListItem( _In_ _In_range_( >=, 0 ) const INT i ) const;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy();
@@ -131,8 +132,8 @@ public:
 	virtual ~CTypeView( ) final = default;
 	void SysColorChanged( );
 
-	CTypeView& operator=( const CTypeView& in ) = delete;
-	CTypeView( const CTypeView& in ) = delete;
+
+	DISALLOW_COPY_AND_ASSIGN( CTypeView );
 
 	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
 	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
@@ -190,11 +191,5 @@ protected:
 		}
 	afx_msg void OnSetFocus( CWnd* pOldWnd );
 	};
-
-
-
-
-
-#else
 
 #endif

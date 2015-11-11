@@ -85,14 +85,14 @@ _At_( handle, _Post_invalid_ )
 _At_( handle, _Pre_valid_ )
 void close_handle( const HANDLE handle );
 
-_Pre_satisfies_( rect.left > rect.right ) _Post_satisfies_( rect.left <= rect.right )
-inline void normalize_RECT_left_right( _Inout_ RECT& rect );
+_Pre_satisfies_( rect->left > rect->right ) _Post_satisfies_( rect->left <= rect->right )
+inline void normalize_RECT_left_right( _Inout_ RECT* const rect );
 
-_Pre_satisfies_( rect.top > rect.bottom ) _Post_satisfies_( rect.top <= rect.bottom )
-inline void normalize_RECT_top_bottom( _Inout_ RECT& rect );
+_Pre_satisfies_( rect->top > rect->bottom ) _Post_satisfies_( rect->top <= rect->bottom )
+inline void normalize_RECT_top_bottom( _Inout_ RECT* const rect );
 
-_Post_satisfies_( rect.left <= rect.right ) _Post_satisfies_( rect.top <= rect.bottom )
-void normalize_RECT( _Inout_ RECT& rect );
+_Post_satisfies_( rect->left <= rect->right ) _Post_satisfies_( rect->top <= rect->bottom )
+void normalize_RECT( _Inout_ RECT* const rect );
 
 void error_getting_pointer_to( _In_z_ PCWSTR const function_name );
 void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name );
