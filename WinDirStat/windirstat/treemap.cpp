@@ -300,13 +300,168 @@ namespace {
 		return sizes.at( rowBegin );
 		}
 
-	void shrink_for_grid( _In_ CDC* const pdc, _Inout_ RECT* const rc ) {
-		CPen pen { PS_SOLID, 1, GetSysColor( COLOR_3DSHADOW ) };
-		SelectObject_wrapper sopen { pdc->m_hDC, pen.m_hObject };
-		        pdc->MoveTo( rc->right - 1, rc->top );
-		VERIFY( pdc->LineTo( rc->right - 1, rc->bottom ) );
-		        pdc->MoveTo( rc->left,      rc->bottom - 1 );
-		VERIFY( pdc->LineTo( rc->right,     rc->bottom - 1 ) );
+	void shrink_for_grid( _In_ const HDC hDC, _In_ const HDC hAttribDC, _In_ const RECT* const rc ) {
+		/*
+		CPen::CPen(int nPenStyle, int nWidth, COLORREF crColor)
+		{
+			if (!Attach(::CreatePen(nPenStyle, nWidth, crColor)))
+				AfxThrowResourceException();
+		}
+		class CPen : public CGdiObject
+		*/
+		/*
+		_AFXWIN_INLINE CPen::~CPen()
+			{ }
+		_AFXWIN_INLINE CGdiObject::~CGdiObject()
+		{
+			AFX_BEGIN_DESTRUCTOR
+
+				DeleteObject(); 
+
+			AFX_END_DESTRUCTOR
+		}
+		BOOL CGdiObject::DeleteObject()
+		{
+			if (m_hObject == NULL)
+				return FALSE;
+			return ::DeleteObject(Detach());
+		}
+		*/
+
+		//CreatePen function: https://msdn.microsoft.com/en-us/library/dd183509.aspx
+		//The CreatePen function creates a logical pen that has the specified style, width, and color.
+		//The pen can subsequently be selected into a device context and used to draw lines and curves.
+		//If the function succeeds, the return value is a handle that identifies a logical pen.
+		//If the function fails, the return value is NULL.
+		//When you no longer need the pen, call the DeleteObject function to delete it.
+		const HPEN hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
+		ASSERT( hPen != NULL );
+		HPEN_wrapper pen( hPen );
+
+		//CPen pen { PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) };
+		
+		ASSERT( hDC != NULL );
+		SelectObject_wrapper sopen { hDC, pen.m_hObject };
+
+		/*
+		_AFXWIN_INLINE CPoint CDC::MoveTo(POINT point)
+			{ ASSERT(m_hDC != NULL); return MoveTo(point.x, point.y); }
+
+		CPoint CDC::MoveTo(int x, int y)
+		{
+			ASSERT(m_hDC != NULL);
+			CPoint point;
+
+			if (m_hDC != m_hAttribDC)
+				VERIFY(::MoveToEx(m_hDC, x, y, &point));
+			if (m_hAttribDC != NULL)
+				VERIFY(::MoveToEx(m_hAttribDC, x, y, &point));
+			return point;
+		}
+		*/
+		if ( hDC != hAttribDC ) {
+			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			VERIFY( ::MoveToEx( hDC, rc->right - 1, rc->top, NULL ) );
+			}
+		if ( hAttribDC != NULL ) {
+			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			VERIFY( ::MoveToEx( hAttribDC, rc->right - 1, rc->top, NULL ) );
+			}
+		//        pdc->MoveTo( rc->right - 1, rc->top );
+
+
+		/*
+		_AFXWIN_INLINE BOOL CDC::LineTo(POINT point)
+			{ ASSERT(m_hDC != NULL); return LineTo(point.x, point.y); }
+		BOOL CDC::LineTo(int x, int y)
+		{
+			ASSERT(m_hDC != NULL);
+			if (m_hAttribDC != NULL && m_hDC != m_hAttribDC)
+				::MoveToEx(m_hAttribDC, x, y, NULL);
+			return ::LineTo(m_hDC, x, y);
+		}
+		*/
+		if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			VERIFY( ::MoveToEx( hAttribDC, rc->right - 1, rc->bottom, NULL ) );
+			}
+		//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
+		//The LineTo function draws a line from the current position up to, but not including, the specified point.
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		//If LineTo succeeds, the current position is set to the specified ending point.
+		VERIFY( ::LineTo( hDC, rc->right - 1, rc->bottom ) );
+		//VERIFY( pdc->LineTo( rc->right - 1, rc->bottom ) );
+		
+		/*
+		_AFXWIN_INLINE CPoint CDC::MoveTo(POINT point)
+			{ ASSERT(m_hDC != NULL); return MoveTo(point.x, point.y); }
+
+		CPoint CDC::MoveTo(int x, int y)
+		{
+			ASSERT(m_hDC != NULL);
+			CPoint point;
+
+			if (m_hDC != m_hAttribDC)
+				VERIFY(::MoveToEx(m_hDC, x, y, &point));
+			if (m_hAttribDC != NULL)
+				VERIFY(::MoveToEx(m_hAttribDC, x, y, &point));
+			return point;
+		}
+		*/
+		if ( hDC != hAttribDC ) {
+			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			VERIFY( ::MoveToEx( hDC, rc->left, rc->bottom - 1, NULL ) );
+			}
+
+		if ( hAttribDC != NULL ) {
+			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			VERIFY( ::MoveToEx( hAttribDC, rc->left, rc->bottom - 1, NULL ) );
+			}
+		//        pdc->MoveTo( rc->left,      rc->bottom - 1 );
+		
+		
+		/*
+		_AFXWIN_INLINE BOOL CDC::LineTo(POINT point)
+			{ ASSERT(m_hDC != NULL); return LineTo(point.x, point.y); }
+		BOOL CDC::LineTo(int x, int y)
+		{
+			ASSERT(m_hDC != NULL);
+			if (m_hAttribDC != NULL && m_hDC != m_hAttribDC)
+				::MoveToEx(m_hAttribDC, x, y, NULL);
+			return ::LineTo(m_hDC, x, y);
+		}
+		*/
+		if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			VERIFY( ::MoveToEx( hAttribDC, rc->right, rc->bottom - 1, NULL ) );
+			}
+		//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
+		//The LineTo function draws a line from the current position up to, but not including, the specified point.
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		//If LineTo succeeds, the current position is set to the specified ending point.
+		VERIFY( ::LineTo( hDC, rc->right, rc->bottom - 1 ) );
+		//VERIFY( pdc->LineTo( rc->right,     rc->bottom - 1 ) );
+
 		}
 
 	inline const bool zero_size_rect( _In_ const RECT rc ) {
@@ -317,7 +472,10 @@ namespace {
 		}
 
 	inline const bool zero_size_rect( _In_ const RECT* const rc ) {
-		return zero_size_rect( *rc );
+		if ( ( rc->right - rc->left ) <= 0 || ( rc->bottom - rc->top ) <= 0 ) {
+			return true;
+			}
+		return false;
 		}
 
 	inline const bool zero_size_width_or_height_rect( _In_ const RECT rc ) {
@@ -676,23 +834,48 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 
 #endif
 
-void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ CDC* const pdc ) const {
+void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ const HDC hDC, _In_ const HDC hAttribDC ) const {
 	if ( m_options.grid ) {
 		normalize_RECT( rc );
-		pdc->FillSolidRect( rc, m_options.gridColor );
+		/*
+		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+		{
+			ENSURE_VALID(this);
+			ENSURE(m_hDC != NULL);
+			ENSURE(lpRect);
+
+			::SetBkColor(m_hDC, clr);
+			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+		}
+		*/
+		ASSERT( hDC != NULL );
+		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		//If [SetBkColor] fails, the return value is CLR_INVALID.
+		const auto clr_res = ::SetBkColor( hDC, m_options.gridColor );
+		if ( clr_res == CLR_INVALID ) {
+			std::terminate( );
+			}
+		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		//If the function fails, the return value is zero.
+		VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, rc, NULL, 0, NULL ) );
+		//pdc->FillSolidRect( rc, m_options.gridColor );
+
 		rc->right--;
 		rc->bottom--;
-		ASSERT( !zero_size_rect( *rc ) );
+		ASSERT( !zero_size_rect( rc ) );
 		return;
 		}
 	// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
-	shrink_for_grid( pdc, rc );
+	shrink_for_grid( hDC, hAttribDC, rc );
 	rc->right--;
 	rc->bottom--;
-	ASSERT( !zero_size_rect( *rc ) );
+	ASSERT( !zero_size_rect( rc ) );
 	}
 
-void CTreemap::DrawTreemap( _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc, _In_ const CTreeListItem* const root, _In_ const Treemap_Options& options ) {
+void CTreemap::DrawTreemap( _In_ const HDC hOffscreen_buffer, _Inout_ RECT* const rc, _In_ const CTreeListItem* const root, _In_ const Treemap_Options& options, _In_ const HDC hAttribDC ) {
 	ASSERT( ( ( rc->bottom - rc->top ) + ( rc->right - rc->left ) ) > 0 );
 	ASSERT( root != NULL );
 	if ( root == NULL ) {//should never happen! Ever!
@@ -706,7 +889,7 @@ void CTreemap::DrawTreemap( _In_ CDC* const offscreen_buffer, _Inout_ RECT* cons
 	
 	SetOptions( options );
 
-	compensateForGrid( rc, offscreen_buffer );
+	compensateForGrid( rc, hOffscreen_buffer, hAttribDC );
 	
 	if ( zero_size_rect( rc ) ) {
 		return;
@@ -718,11 +901,38 @@ void CTreemap::DrawTreemap( _In_ CDC* const offscreen_buffer, _Inout_ RECT* cons
 		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 
 		root->TmiSetRectangle( *rc );
-		RecurseDrawGraph( offscreen_buffer, root, rc, true, surface, m_options.height );
+		RecurseDrawGraph( hOffscreen_buffer, root, rc, true, surface, m_options.height );
 		WDS_validateRectangle_DEBUG( root, root->TmiGetRectangle( ) );
 		return;
 		}
-	offscreen_buffer->FillSolidRect( rc, RGB( 0, 0, 0 ) );
+	/*
+	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+	{
+		ENSURE_VALID(this);
+		ENSURE(m_hDC != NULL);
+		ENSURE(lpRect);
+
+		::SetBkColor(m_hDC, clr);
+		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+	}
+	*/
+	//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+	//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+	//If [SetBkColor] fails, the return value is CLR_INVALID.
+	ASSERT( hOffscreen_buffer != NULL );
+	const auto clr_res = ::SetBkColor( hOffscreen_buffer, RGB( 0, 0, 0 ) );
+	if ( clr_res == CLR_INVALID ) {
+		std::terminate( );
+		}
+
+	//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+	//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+	//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+	//If the function fails, the return value is zero.
+	VERIFY( ::ExtTextOutW( hOffscreen_buffer, 0, 0, ETO_OPAQUE, rc, NULL, 0, NULL ) );
+	//offscreen_buffer->FillSolidRect( rc, RGB( 0, 0, 0 ) );
+
+
 	WDS_validateRectangle_DEBUG( root, root->TmiGetRectangle( ) );
 	return;
 	}
@@ -837,7 +1047,7 @@ void CTreemap::RecurseDrawGraph_CushionShading( _In_ const bool asroot, _Out_ DO
 		}
 	}
 
-void CTreemap::RecurseDrawGraph( _In_ CDC* const offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT* const rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
+void CTreemap::RecurseDrawGraph( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const item, _In_ const RECT* const rc, _In_ const bool asroot, _In_ const DOUBLE ( &psurface )[ 4 ], _In_ const DOUBLE height ) const {
 	ASSERT( item != NULL );
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		//this should be fast, as we have 0 children.
@@ -880,7 +1090,7 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* const offscreen_buffer, _In_ const CT
 		}
 
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
-		RenderLeaf( offscreen_buffer, item, surface );
+		RenderLeaf( hOffscreen_buffer, item, surface );
 		return;
 		}
 
@@ -889,17 +1099,17 @@ void CTreemap::RecurseDrawGraph( _In_ CDC* const offscreen_buffer, _In_ const CT
 	if ( !( item->m_child_info.m_child_info_ptr->m_childCount > 0 ) ) {
 		return;
 		}
-	DrawChildren( offscreen_buffer, item, surface, height );
+	DrawChildren( hOffscreen_buffer, item, surface, height );
 	WDS_validateRectangle_DEBUG( item, (*rc) );
 	}
 
-void CTreemap::DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
+void CTreemap::DrawChildren( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE height ) const {
 	if ( m_options.style == Treemap_STYLE::KDirStatStyle ) {
-		KDS_DrawChildren( pdc, parent, surface, height );
+		KDS_DrawChildren( hOffscreen_buffer, parent, surface, height );
 		return;
 		}
 	ASSERT( m_options.style == Treemap_STYLE::SequoiaViewStyle );
-	SQV_DrawChildren( pdc, parent, surface, height );
+	SQV_DrawChildren( hOffscreen_buffer, parent, surface, height );
 	}
 
 
@@ -939,7 +1149,7 @@ bool CTreemap::KDS_PlaceChildren( _In_ const CTreeListItem* const parent, _Inout
 	return horizontalRows;
 	}
 
-void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t* const c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ CDC* const pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const {
+void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t& row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ _In_range_( 0, SIZE_T_MAX ) size_t* const c, _In_ const std::vector<double>& childWidth, _In_ const int& width, _In_ const bool& horizontalRows, _In_ const int& bottom, _In_ const double& top, _In_ const RECT& rc, _In_ const HDC hOffscreen_buffer, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& h, _In_ const CTreeListItem* const parent ) const {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( parent );
 #endif
@@ -967,7 +1177,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow
 #endif
 
 		child->TmiSetRectangle( rcChild );
-		RecurseDrawGraph( pdc, child, rcChild, false, surface, ( h * m_options.scaleFactor ) );
+		RecurseDrawGraph( hOffscreen_buffer, child, rcChild, false, surface, ( h * m_options.scaleFactor ) );
 
 		if ( lastChild ) {
 			i++, ((*c)++);
@@ -981,7 +1191,7 @@ void CTreemap::KDS_DrawSingleRow( _In_ const std::vector<size_t>& childrenPerRow
 		}
 	}
 
-void CTreemap::KDS_DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+void CTreemap::KDS_DrawChildren( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	/*
 	  Original author of WDS learned this squarification style from the KDirStat executable. It's the most complex one here but also the clearest, (in their opinion).
 	*/
@@ -1014,7 +1224,7 @@ void CTreemap::KDS_DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* 
 		const double fBottom = top + rows[ row ] * height;
 		const int bottom = gen_bottom( fBottom, rows, horizontalRows, rc, row );
 
-		KDS_DrawSingleRow( childrenPerRow, row, parent_vector_of_children, &c, childWidth, width, horizontalRows, bottom, top, rc, pdc, surface, h, parent );
+		KDS_DrawSingleRow( childrenPerRow, row, parent_vector_of_children, &c, childWidth, width, horizontalRows, bottom, top, rc, hOffscreen_buffer, surface, h, parent );
 		top = fBottom;
 		}
 	}
@@ -1127,7 +1337,7 @@ DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _
 	}
 
 //if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ CDC* const pdc, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
+void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ const HDC hOffscreen_buffer, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const {
 
 	// Build the rectangles of children.
 	RECT rc = { 0 };
@@ -1157,7 +1367,7 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 #endif
 
 		child_at_I->TmiSetRectangle( rc );
-		RecurseDrawGraph( pdc, child_at_I, &rc, false, surface, ( h * scaleFactor ) );
+		RecurseDrawGraph( hOffscreen_buffer, child_at_I, &rc, false, surface, ( h * scaleFactor ) );
 
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
@@ -1189,7 +1399,7 @@ void CTreemap::SQV_put_children_into_their_places( _In_ const size_t& rowBegin, 
 
 
 // The classical squarification method.
-void CTreemap::SQV_DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
+void CTreemap::SQV_DrawChildren( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const {
 	// Rest rectangle to fill
 	CRect remaining( parent->TmiGetRectangle( ) );
 
@@ -1307,7 +1517,7 @@ void CTreemap::SQV_DrawChildren( _In_ CDC* const pdc, _In_ const CTreeListItem* 
 
 		
 		// Now put the children into their places
-		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, &sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, pdc, surface, m_options.scaleFactor, h, widthOfRow );
+		SQV_put_children_into_their_places( rowBegin, rowEnd, parent_vector_of_children, &sizes, sumOfSizesOfChildrenInRow, heightOfNewRow, horizontal, remaining, hOffscreen_buffer, surface, m_options.scaleFactor, h, widthOfRow );
 
 
 		// Put the next row into the rest of the rectangle
@@ -1341,7 +1551,7 @@ bool CTreemap::IsCushionShading( ) const {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ CDC* const offscreen_buffer, _In_ const CTreeListItem* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
+void CTreemap::RenderLeaf( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
 	// Leaves space for grid and then calls RenderRectangle()
 	RECT rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
@@ -1361,7 +1571,7 @@ void CTreemap::RenderLeaf( _In_ CDC* const offscreen_buffer, _In_ const CTreeLis
 		ASSERT( item->m_child_info.m_child_info_ptr == nullptr );
 		colorOfItem = RGB( 254, 254, 254 );
 		}
-	RenderRectangle( offscreen_buffer->m_hDC, rc, surface, colorOfItem );
+	RenderRectangle( hOffscreen_buffer, rc, surface, colorOfItem );
 	WDS_validateRectangle_DEBUG( item, rc );
 	}
 

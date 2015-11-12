@@ -971,7 +971,7 @@ public:
 		}
 
 	void AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
-		WTL::CWaitCursor wc;
+		//WTL::CWaitCursor wc;
 
 		INT width = 10;
 		const auto itemCount = CListCtrl::GetItemCount( );
@@ -1534,11 +1534,11 @@ protected:
 		ASSERT_VALID( pDC );
 		ASSERT( CListCtrl::GetHeaderCtrl( )->GetItemCount( ) > 0 );
 		//TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
-		handle_EraseBkgnd( pDC );
+		handle_EraseBkgnd( pDC->m_hDC, pDC->m_hAttribDC );
 		return true;
 		}
 	afx_msg void OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
-		WTL::CWaitCursor wc;
+		//WTL::CWaitCursor wc;
 		ASSERT( pNMHDR != NULL );
 		if ( pNMHDR != NULL ) {
 			auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
@@ -1595,24 +1595,125 @@ protected:
 
 
 private:
-	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ CDC* pDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf ) const {
-		CPen pen( PS_SOLID, 1, gridColor );
-		const SelectObject_wrapper sopen( pDC->m_hDC, pen.m_hObject );
+	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ const HDC hDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf, _In_ const HDC hAttribDC ) const {
+		const HPEN hPen = ::CreatePen( PS_SOLID, 1, gridColor );
+		ASSERT( hPen != NULL );
+		HPEN_wrapper pen( hPen );
+		//CPen pen( PS_SOLID, 1, gridColor );
+
+
+		const SelectObject_wrapper sopen( hDC, pen.m_hObject );
 
 		const auto rowHeight = m_rowHeight;
 		for ( auto y = ( m_yFirstItem + static_cast<LONG>( rowHeight ) - 1 ); y < rcClient.bottom; y += static_cast<LONG>( rowHeight ) ) {
 			ASSERT( rowHeight == m_rowHeight );
-			pDC->MoveTo( rcClient.left, static_cast<INT>( y ) );
-			VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
+			/*
+			_AFXWIN_INLINE CPoint CDC::MoveTo(POINT point)
+				{ ASSERT(m_hDC != NULL); return MoveTo(point.x, point.y); }
+
+			CPoint CDC::MoveTo(int x, int y)
+			{
+				ASSERT(m_hDC != NULL);
+				CPoint point;
+
+				if (m_hDC != m_hAttribDC)
+					VERIFY(::MoveToEx(m_hDC, x, y, &point));
+				if (m_hAttribDC != NULL)
+					VERIFY(::MoveToEx(m_hAttribDC, x, y, &point));
+				return point;
+			}
+			*/
+			ASSERT( hDC != NULL );
+			if ( hDC != hAttribDC ) {
+				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				VERIFY( ::MoveToEx( hDC, rcClient.left, static_cast< INT >( y ), NULL ) );
+				}
+			if ( hAttribDC != NULL ) {
+				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				VERIFY( ::MoveToEx( hAttribDC, rcClient.left, static_cast< INT >( y ), NULL ) );
+				}
+			//pDC->MoveTo( rcClient.left, static_cast<INT>( y ) );
+
+			/*
+			_AFXWIN_INLINE BOOL CDC::LineTo(POINT point)
+				{ ASSERT(m_hDC != NULL); return LineTo(point.x, point.y); }
+			BOOL CDC::LineTo(int x, int y)
+			{
+				ASSERT(m_hDC != NULL);
+				if (m_hAttribDC != NULL && m_hDC != m_hAttribDC)
+					::MoveToEx(m_hAttribDC, x, y, NULL);
+				return ::LineTo(m_hDC, x, y);
+			}
+			*/
+			if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				VERIFY( ::MoveToEx( hAttribDC, rcClient.right, static_cast< INT >( y ), NULL ) );
+				}
+			//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
+			//The LineTo function draws a line from the current position up to, but not including, the specified point.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			//If LineTo succeeds, the current position is set to the specified ending point.
+			VERIFY( ::LineTo( hDC, rcClient.right, static_cast< INT >( y ) ) );
+			//VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
 			}
 		const auto verticalSize = vertical_readable;
 		for ( size_t i = 0; i < verticalSize; i++ ) {
-			pDC->MoveTo( ( vertical_buf[ i ] - 1 ), rcClient.top );
-			VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
+			ASSERT( hDC != NULL );
+			if ( hDC != hAttribDC ) {
+				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				VERIFY( ::MoveToEx( hDC, ( vertical_buf[ i ] - 1 ), rcClient.top, NULL ) );
+				}
+			if ( hAttribDC != NULL ) {
+				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				VERIFY( ::MoveToEx( hAttribDC, ( vertical_buf[ i ] - 1 ), rcClient.top, NULL ) );
+				}
+			//pDC->MoveTo( ( vertical_buf[ i ] - 1 ), rcClient.top );
+
+			/*
+			_AFXWIN_INLINE BOOL CDC::LineTo(POINT point)
+				{ ASSERT(m_hDC != NULL); return LineTo(point.x, point.y); }
+			BOOL CDC::LineTo(int x, int y)
+			{
+				ASSERT(m_hDC != NULL);
+				if (m_hAttribDC != NULL && m_hDC != m_hAttribDC)
+					::MoveToEx(m_hAttribDC, x, y, NULL);
+				return ::LineTo(m_hDC, x, y);
+			}
+			*/
+			if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
+				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
+				//If the function succeeds, the return value is nonzero.
+				//If the function fails, the return value is zero.
+				VERIFY( ::MoveToEx( hAttribDC, ( vertical_buf[ i ] - 1 ), rcClient.bottom, NULL ) );
+				}
+			//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
+			//The LineTo function draws a line from the current position up to, but not including, the specified point.
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			//If LineTo succeeds, the current position is set to the specified ending point.
+			VERIFY( ::LineTo( hDC, ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
+			//VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
 			}
 		}
 
-	void handle_EraseBkgnd( _In_ CDC* pDC ) {
+	void handle_EraseBkgnd( _In_ const HDC hDC, _In_ const HDC hAttribDC ) {
 		// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
 		if ( CListCtrl::GetItemCount( ) > 0 ) {
 			RECT rc;
@@ -1634,7 +1735,36 @@ private:
 		RECT rcBetween   = rcClient;// between header and first item
 		rcBetween.top    = rcHeader.bottom;
 		rcBetween.bottom = m_yFirstItem;
-		pDC->FillSolidRect( &rcBetween, gridColor );
+
+		/*
+		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+		{
+			ENSURE_VALID(this);
+			ENSURE(m_hDC != NULL);
+			ENSURE(lpRect);
+
+			::SetBkColor(m_hDC, clr);
+			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+		}
+		*/
+		ASSERT( hDC != NULL );
+
+		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		//If [SetBkColor] fails, the return value is CLR_INVALID.
+		const auto clr_res = ::SetBkColor( hDC, gridColor );
+		ASSERT( clr_res != CLR_INVALID );
+		if ( clr_res == CLR_INVALID ) {
+			std::terminate( );
+			}
+
+		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		//If the function fails, the return value is zero.
+		VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &rcBetween, NULL, 0, NULL ) );
+		//pDC->FillSolidRect( &rcBetween, gridColor );
+
 		const rsize_t column_buf_size = 10;
 	
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
@@ -1652,7 +1782,7 @@ private:
 		ASSERT( vertical_readable < column_buf_size );
 
 		if ( m_showGrid ) {
-			draw_grid_for_EraseBkgnd( gridColor, pDC, rcClient, vertical_readable, vertical_buf_temp );
+			draw_grid_for_EraseBkgnd( gridColor, hDC, rcClient, vertical_readable, vertical_buf_temp, hAttribDC );
 			}
 
 		const auto bgcolor    = ::GetSysColor( COLOR_WINDOW );
@@ -1679,7 +1809,33 @@ private:
 		fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 		
 		for ( INT i = 0; i < itemCount; i++ ) {
-			pDC->FillSolidRect( &fill, bgcolor );
+			/*
+			void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+			{
+				ENSURE_VALID(this);
+				ENSURE(m_hDC != NULL);
+				ENSURE(lpRect);
+
+				::SetBkColor(m_hDC, clr);
+				::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+			}
+			*/
+			//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+			//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+			//If [SetBkColor] fails, the return value is CLR_INVALID.
+			const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
+			ASSERT( clr_res_bg != CLR_INVALID );
+			if ( clr_res_bg == CLR_INVALID ) {
+				std::terminate( );
+				}
+
+			//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+			//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+			//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+			//If the function fails, the return value is zero.
+			VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
+			//pDC->FillSolidRect( &fill, bgcolor );
+
 			VERIFY( ::OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) ) );
 			}
 
@@ -1694,12 +1850,67 @@ private:
 			for ( size_t i = 0; i < verticalSize; i++ ) {
 				fill.left = left;
 				fill.right = vertical_buf[ i ] - gridWidth;
-				pDC->FillSolidRect( &fill, bgcolor );
+
+				/*
+				void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+				{
+					ENSURE_VALID(this);
+					ENSURE(m_hDC != NULL);
+					ENSURE(lpRect);
+
+					::SetBkColor(m_hDC, clr);
+					::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+				}
+				*/
+				//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+				//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+				//If [SetBkColor] fails, the return value is CLR_INVALID.
+				const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
+				ASSERT( clr_res_bg != CLR_INVALID );
+				if ( clr_res_bg == CLR_INVALID ) {
+					std::terminate( );
+					}
+
+				//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+				//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+				//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+				//If the function fails, the return value is zero.
+				VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
+				//pDC->FillSolidRect( &fill, bgcolor );
+
 				left = vertical_buf[ i ];
 				}
 			fill.left  = left;
 			fill.right = rcClient.right;
-			pDC->FillSolidRect( &fill, bgcolor );
+
+
+
+			/*
+			void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+			{
+				ENSURE_VALID(this);
+				ENSURE(m_hDC != NULL);
+				ENSURE(lpRect);
+
+				::SetBkColor(m_hDC, clr);
+				::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+			}
+			*/
+			//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+			//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+			//If [SetBkColor] fails, the return value is CLR_INVALID.
+			const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
+			ASSERT( clr_res_bg != CLR_INVALID );
+			if ( clr_res_bg == CLR_INVALID ) {
+				std::terminate( );
+				}
+
+			//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+			//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+			//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+			//If the function fails, the return value is zero.
+			VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
+			//pDC->FillSolidRect( &fill, bgcolor );
 
 			ASSERT( rowHeight == m_rowHeight );
 			top += rowHeight;

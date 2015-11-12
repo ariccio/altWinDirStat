@@ -1898,7 +1898,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 		return;
 		}
 
-	WTL::CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
+	//WTL::CWaitCursor wc; // TODO: smart WaitCursor. In CollapseItem(), too.
 
 #ifdef DEBUG
 	const auto qpf = ( static_cast<DOUBLE>( 1 ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart ) );

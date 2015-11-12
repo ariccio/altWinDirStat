@@ -188,7 +188,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
 	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
 
-	CPen pen( PS_SOLID, 1, GetSysColor( COLOR_3DLIGHT ) );
+	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DLIGHT ) );
 	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
 
 	move_to_coord( pdc, rc.left, m_zero.y );

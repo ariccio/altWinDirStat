@@ -566,7 +566,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	const BOOL behavedWell = QueryPerformanceCounter( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		WTL::AtlMessageBox( NULL, L"QueryPerformanceCounter failed!!", L"ERROR!", MB_OK );
+		::MessageBoxW( NULL, L"QueryPerformanceCounter failed!!", L"ERROR!", MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -574,11 +574,11 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 
 const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 	LARGE_INTEGER doneTime;
+	//QueryPerformanceFrequency function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644905.aspx
+	//On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
 	const BOOL behavedWell = QueryPerformanceFrequency( &doneTime );
-	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		WTL::AtlMessageBox( NULL, L"QueryPerformanceFrequency failed!!", L"ERROR!", MB_OK );
-		doneTime.QuadPart = -1;
+		std::terminate( );
 		}
 	return doneTime;
 	}
@@ -679,7 +679,7 @@ void displayWindowsMsgBoxWithError( const DWORD error ) {
 	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written, error );
 	ASSERT( SUCCEEDED( err_res ) );
 	if ( SUCCEEDED( err_res ) ) {
-		WTL::AtlMessageBox( NULL, err_msg, TEXT( "Error" ), MB_OK );
+		::MessageBoxW( NULL, err_msg, L"Error", MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg );
 		return;
 		}
@@ -691,12 +691,12 @@ void displayWindowsMsgBoxWithError( const DWORD error ) {
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );
 	ASSERT( SUCCEEDED( err_res_2 ) );
 	if ( SUCCEEDED( err_res_2 ) ) {
-		WTL::AtlMessageBox( NULL, err_msg_2, TEXT( "Error" ), MB_OK );
+		::MessageBoxW( NULL, err_msg_2, L"Error", MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg_2 );
 		return;
 		}
 	TRACE( _T( "Error while getting error message!\r\n" ), err_msg_2 );
-	WTL::AtlMessageBox( NULL, _T( "Error while getting error message!\r\n" ), TEXT( "Error" ), MB_OK );
+	::MessageBoxW( NULL, L"Error while getting error message!\r\n", TEXT( "Error" ), MB_OK );
 	}
 
 //This is an error handling function, and is intended to be called rarely!
@@ -714,14 +714,14 @@ void displayWindowsMsgBoxWithMessage( const std::string message ) {
 	auto convert_obj = stdext::cvt::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>, wchar_t>( );
 
 	const auto new_wide_str = convert_obj.from_bytes( message );
-	WTL::AtlMessageBox( NULL, new_wide_str.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
+	::MessageBoxW( NULL, new_wide_str.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
 	TRACE( _T( "Error: %s\r\n" ), new_wide_str.c_str( ) );
 	}
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
 void displayWindowsMsgBoxWithMessage( PCWSTR const message ) {
-	WTL::AtlMessageBox( NULL, message, TEXT( "Error" ), MB_OK );
+	::MessageBoxW( NULL, message, L"Error", MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 

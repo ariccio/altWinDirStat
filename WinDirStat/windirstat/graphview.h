@@ -178,7 +178,7 @@ protected:
 public:
 	
 	//Keeping RenderHighlightRectangle in the implementation file means that we don't need to include options.h in the header.
-	void RenderHighlightRectangle( _In_ CDC* const pdc, _In_ RECT rc_ ) const;
+	void RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const;
 
 protected:
 	void DrawEmptyView( _In_ CDC* const pScreen_Device_Context ) {
@@ -190,10 +190,16 @@ protected:
 
 		RECT rc = { 0 };
 
+		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+		//If the window handle identifies an existing window, the return value is nonzero.
+		//If the window handle does not identify an existing window, the return value is zero.
 		ASSERT( ::IsWindow( m_hWnd ) );
-		//::GetClientRect(m_hWnd, lpRect);
+
+		//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+		//Return value: If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		//To get extended error information, call GetLastError.
 		VERIFY( ::GetClientRect( m_hWnd, &rc ) );
-		//GetClientRect( &rc );
 
 		if ( m_dimmed.m_hObject == NULL ) {
 			return pScreen_Device_Context->FillSolidRect( &rc, gray );
@@ -219,23 +225,30 @@ protected:
 
 
 	//Keeping DrawHighlightExtension in the implementation file means that we don't need to include options.h in the header.
-	void DrawHighlightExtension( _In_ CDC* const pdc ) const;
+	void DrawHighlightExtension( _In_ const HDC screen_device_context ) const;
 
 
-	void RecurseHighlightExtension( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightExtension( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
 
-	void DrawSelection( _In_ CDC* const pdc ) const;
+	void DrawSelection( _In_ const HDC screen_device_context ) const;
 	
 	void DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc );
 	
 	
 	void DrawViewNotEmpty( _In_ CDC* const Screen_Device_Context ) {
-		RECT rc;
-
+		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+		//If the window handle identifies an existing window, the return value is nonzero.
+		//If the window handle does not identify an existing window, the return value is zero.
 		ASSERT( ::IsWindow( m_hWnd ) );
-		//::GetClientRect(m_hWnd, lpRect);
+
+
+		RECT rc = { 0 };
+
+		//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+		//Return value: If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		//To get extended error information, call GetLastError.
 		VERIFY( ::GetClientRect( m_hWnd, &rc ) );
-		//GetClientRect( &rc );
 
 		CDC offscreen_buffer;
 		VERIFY( offscreen_buffer.CreateCompatibleDC( Screen_Device_Context ) );
@@ -247,7 +260,7 @@ protected:
 		SelectObject_wrapper sobmp2( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
 		VERIFY( Screen_Device_Context->BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
-		DrawHighlights( Screen_Device_Context );
+		DrawHighlights( Screen_Device_Context->m_hDC );
 		//VERIFY( dcmem.DeleteDC( ) );
 		}
 
@@ -255,10 +268,10 @@ public:
 
 protected:
 	_Pre_satisfies_( item.m_child_info.m_child_info_ptr != NULL )
-	void RecurseHighlightChildren( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightChildren( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
 
 	//Keeping DrawHighlights in the implementation file means that we don't need to include windirstat.h in the header.
-	void DrawHighlights( _In_ CDC* const pdc ) const;
+	void DrawHighlights( _In_ const HDC Screen_Device_Context ) const;
 
 
 	/*
@@ -281,8 +294,8 @@ protected:
 
 	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
 		CWnd::OnSize( nType, cx, cy );
-		WTL::CSize sz( cx, cy );
-		if ( sz != m_size ) {
+		SIZE sz = { cx, cy };
+		if ( ( sz.cx != m_size.cx ) || ( sz.cy != m_size.cy ) ) {
 			CGraphView::Inactivate( );
 			m_size = sz;
 			}

@@ -35,6 +35,22 @@ protected:
 	HGDIOBJ m_pOldObject;
 	};
 
+class HGDIOBJ_wrapper final {
+public:
+	explicit HGDIOBJ_wrapper( _In_ HGDIOBJ hObject );
+
+	DISALLOW_COPY_AND_ASSIGN( HGDIOBJ_wrapper );
+	
+	_At_( this->m_hObject, _Post_ptr_invalid_ )
+	~HGDIOBJ_wrapper( );
+
+	HGDIOBJ m_hObject;
+	};
+
+using HPEN_wrapper = HGDIOBJ_wrapper;
+
+
+
 class CSetBkMode final {
 public:
 	_Pre_satisfies_( ( mode == OPAQUE ) || ( mode == TRANSPARENT ) )

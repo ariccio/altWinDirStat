@@ -394,7 +394,7 @@ void CMainFrame::InitialShowWindow( ) {
 void CMainFrame::OnClose( ) {
 	TRACE( _T( "CMainFrame::OnClose!\r\n" ) );
 	const auto qpc_1 = help_QueryPerformanceCounter( );
-	WTL::CWaitCursor wc;
+	//WTL::CWaitCursor wc;
 
 	// It's too late, to do this in OnDestroy(). Because the toolbar, if undocked, is already destroyed in OnDestroy(). So we must save the toolbar state here in OnClose().
 	CFrameWnd::SaveBarState( CPersistence::GetBarStateSection( ) );

@@ -115,7 +115,7 @@ const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 	return &messageMap;
 }
 
-void CGraphView::RecurseHighlightExtension( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
+void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 	const auto rc = item.m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
@@ -127,15 +127,15 @@ void CGraphView::RecurseHighlightExtension( _In_ CDC* const pdc, _In_ const CTre
 		const auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
 			auto rcc = item.TmiGetRectangle( );
-			return RenderHighlightRectangle( pdc, rcc );
+			return RenderHighlightRectangle( screen_device_context, rcc );
 			}
 		return;
 		}
 
-	RecurseHighlightChildren( pdc, item, ext );
+	RecurseHighlightChildren( screen_device_context, item, ext );
 	}
 
-void CGraphView::DrawSelection( _In_ CDC* const pdc ) const {
+void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const {
 	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
@@ -163,18 +163,18 @@ void CGraphView::DrawSelection( _In_ CDC* const pdc ) const {
 
 	TweakSizeOfRectangleForHightlight( &rc, &rcClient, m_treemap.m_options.grid );
 
-	SelectStockObject_wrapper sobrush( (*pdc), NULL_BRUSH );
+	SelectStockObject_wrapper sobrush( screen_device_context, NULL_BRUSH );
 	const auto Options = GetOptions( );
 
 	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-	SelectObject_wrapper sopen( (*pdc), &pen );
+	SelectObject_wrapper sopen( screen_device_context, &pen );
 
-	RenderHighlightRectangle( pdc, rc );
+	RenderHighlightRectangle( screen_device_context, rc );
 	}
 
 
 void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc ) {
-	WTL::CWaitCursor wc;
+	//WTL::CWaitCursor wc;
 
 	VERIFY( m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy ) );
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { CGraphView::cause_OnIdle_to_be_called_once( ); } );
@@ -193,7 +193,7 @@ void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, 
 		//cause_OnIdle_to_be_called_once( );
 		return;
 		}
-	m_treemap.DrawTreemap( offscreen_buffer, rc, rootItem, Options->m_treemapOptions );
+	m_treemap.DrawTreemap( offscreen_buffer->m_hDC, rc, rootItem, Options->m_treemapOptions, offscreen_buffer->m_hAttribDC );
 #ifdef _DEBUG
 	m_treemap.RecurseCheckTree( rootItem );
 #endif
@@ -202,14 +202,14 @@ void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, 
 
 //only called from one place
 _Pre_satisfies_( item.m_child_info.m_child_info_ptr != NULL )
-inline void CGraphView::RecurseHighlightChildren( _In_ CDC* const pdc, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
+inline void CGraphView::RecurseHighlightChildren( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
 	ASSERT( item.m_child_info.m_child_info_ptr != nullptr );
 	const auto childCount = item.m_child_info.m_child_info_ptr->m_childCount;
 	const auto item_m_children = item.m_child_info.m_child_info_ptr->m_children.get( );
 
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < childCount; ++i ) {
-		RecurseHighlightExtension( pdc, *( item_m_children + i ), ext );
+		RecurseHighlightExtension( screen_device_context, *( item_m_children + i ), ext );
 		}
 	}
 
@@ -380,13 +380,13 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	return;
 	}
 
-void CGraphView::DrawHighlights( _In_ CDC* const pdc ) const {
+void CGraphView::DrawHighlights( _In_ const HDC screen_device_context ) const {
 	const auto logicalFocus = m_frameptr->m_logicalFocus;
 	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
-		DrawSelection( pdc );
+		DrawSelection( screen_device_context );
 		}
 	if ( logicalFocus == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
-		DrawHighlightExtension( pdc );
+		DrawHighlightExtension( screen_device_context );
 		}
 	m_appptr->PeriodicalUpdateRamUsage( );
 	}
@@ -417,12 +417,12 @@ void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	VERIFY( sub->TrackPopupMenu( ( TPM_LEFTALIGN bitor TPM_LEFTBUTTON ), ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 	}
 
-void CGraphView::DrawHighlightExtension( _In_ CDC* const pdc ) const {
-	WTL::CWaitCursor wc;
+void CGraphView::DrawHighlightExtension( _In_ const HDC screen_device_context ) const {
+	//WTL::CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
-	SelectObject_wrapper sopen( pdc->m_hDC, pen.m_hObject );
-	SelectStockObject_wrapper sobrush( (*pdc), NULL_BRUSH );
+	SelectObject_wrapper sopen( screen_device_context, pen.m_hObject );
+	SelectStockObject_wrapper sobrush( screen_device_context, NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
 	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	if ( Document == NULL ) {
@@ -431,13 +431,13 @@ void CGraphView::DrawHighlightExtension( _In_ CDC* const pdc ) const {
 		}
 	const auto rItem = Document->m_rootItem.get( );
 	if ( rItem != NULL ) {
-		RecurseHighlightExtension( pdc, ( *rItem ), Document->m_highlightExtension );
+		RecurseHighlightExtension( screen_device_context, ( *rItem ), Document->m_highlightExtension );
 		}
 
 	}
 
 
-void CGraphView::RenderHighlightRectangle( _In_ CDC* const pdc, _In_ RECT rc_ ) const {
+void CGraphView::RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const {
 	/*
 		The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 		A pen and the null brush must be selected.
@@ -453,7 +453,42 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC* const pdc, _In_ RECT rc_ ) 
 	//TODO: BUGBUG: why 7?
 	if ( ( ( rc.right - rc.left ) >= 7 ) && ( ( rc.bottom - rc.top ) >= 7 ) ) {
 
-		VERIFY( pdc->Rectangle( &rc ) );		// w = 7
+		/*
+		_AFXWIN_INLINE BOOL CDC::Rectangle(LPCRECT lpRect)
+			{ ASSERT(m_hDC != NULL); return ::Rectangle(m_hDC, lpRect->left, lpRect->top,
+				lpRect->right, lpRect->bottom); }
+		*/
+		//Rectangle function: https://msdn.microsoft.com/en-us/library/dd162898.aspx
+		//The Rectangle function draws a rectangle.
+		//The rectangle is outlined by using the current pen and filled by using the current brush.
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		ASSERT( screen_device_context != NULL );
+		VERIFY( ::Rectangle( screen_device_context, rc.left, rc.top, rc.right, rc.bottom ) );
+		//VERIFY( pdc->Rectangle( &rc ) );		// w = 7
+
+
+		//InflateRect function: https://msdn.microsoft.com/en-us/library/dd144994.aspx
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
+
+		/*
+		_AFXWIN_INLINE BOOL CDC::Rectangle(LPCRECT lpRect)
+			{ ASSERT(m_hDC != NULL); return ::Rectangle(m_hDC, lpRect->left, lpRect->top,
+				lpRect->right, lpRect->bottom); }
+		*/
+		//Rectangle function: https://msdn.microsoft.com/en-us/library/dd162898.aspx
+		//The Rectangle function draws a rectangle.
+		//The rectangle is outlined by using the current pen and filled by using the current brush.
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+
+		ASSERT( screen_device_context != NULL );
+		VERIFY( ::Rectangle( screen_device_context, rc.left, rc.top, rc.right, rc.bottom ) );
+		//VERIFY( pdc->Rectangle( &rc ) );		// w = 5
+
+
 
 		//InflateRect function: https://msdn.microsoft.com/en-us/library/dd144994.aspx
 		//If the function succeeds, the return value is nonzero.
@@ -461,21 +496,51 @@ void CGraphView::RenderHighlightRectangle( _In_ CDC* const pdc, _In_ RECT rc_ ) 
 		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
 
 
-		VERIFY( pdc->Rectangle( &rc ) );		// w = 5
-
-
-
-		//InflateRect function: https://msdn.microsoft.com/en-us/library/dd144994.aspx
+		/*
+		_AFXWIN_INLINE BOOL CDC::Rectangle(LPCRECT lpRect)
+			{ ASSERT(m_hDC != NULL); return ::Rectangle(m_hDC, lpRect->left, lpRect->top,
+				lpRect->right, lpRect->bottom); }
+		*/
+		//Rectangle function: https://msdn.microsoft.com/en-us/library/dd162898.aspx
+		//The Rectangle function draws a rectangle.
+		//The rectangle is outlined by using the current pen and filled by using the current brush.
 		//If the function succeeds, the return value is nonzero.
 		//If the function fails, the return value is zero.
-		VERIFY( ::InflateRect( &rc, -( 1 ), -( 1 ) ) );
-
-
-		VERIFY( pdc->Rectangle( &rc ) );		// w = 3
+		ASSERT( screen_device_context != NULL );
+		VERIFY( ::Rectangle( screen_device_context, rc.left, rc.top, rc.right, rc.bottom ) );
+		//VERIFY( pdc->Rectangle( &rc ) );		// w = 3
 		}
 	else {
 		const auto Options = GetOptions( );
-		return pdc->FillSolidRect( &rc, Options->m_treemapHighlightColor );
+
+
+		/*
+		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+		{
+			ENSURE_VALID(this);
+			ENSURE(m_hDC != NULL);
+			ENSURE(lpRect);
+
+			::SetBkColor(m_hDC, clr);
+			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+		}
+		*/
+		ASSERT( screen_device_context != NULL );
+
+		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		//If [SetBkColor] fails, the return value is CLR_INVALID.
+		const auto color_set_res = ::SetBkColor( screen_device_context, Options->m_treemapHighlightColor );
+		VERIFY( color_set_res != CLR_INVALID );
+
+		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		//If the function fails, the return value is zero.
+		VERIFY( ::ExtTextOutW( screen_device_context, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+
+		return;
+		//return pdc->FillSolidRect( &rc, Options->m_treemapHighlightColor );
 		}
 	}
 

@@ -124,7 +124,7 @@ namespace {
 		}
 
 	_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
-		WTL::CWaitCursor wc;
+		//WTL::CWaitCursor wc;
 		auto u = reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
 		if ( u == SE_ERR_NOASSOC ) {
 			// Q192352
@@ -200,17 +200,17 @@ namespace {
 		*/
 		if ( value == 0 ) {
 			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_all_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			::MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 
 		if ( value == 2 ) {
 			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_per_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			::MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 
 		if ( value == 3 ) {
 			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_sys_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-			WTL::AtlMessageBox( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			::MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 		}
 
@@ -565,7 +565,7 @@ bool CDirstatDoc::Work( ) {
 		return true;
 		}
 	if ( !m_rootItem->m_attr.m_done ) {
-		WTL::CWaitCursor wc;
+		//WTL::CWaitCursor wc;
 
 		auto path( m_rootItem->GetPath( ) );
 		const auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
@@ -625,7 +625,7 @@ void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 		TRACE( _T( "CDirstatDoc::OpenItem called on an item with children! Not opening!\r\n" ) );
 		return;
 		}
-	WTL::CWaitCursor wc;
+	//WTL::CWaitCursor wc;
 	std::wstring path( item.GetPath( ) );
 	//TODO: BUGBUG: Won't be able to open an item that's at a path longer than MAX_PATH!
 	const auto doesFileExist = PathFileExistsW( path.c_str( ) );

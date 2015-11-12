@@ -112,7 +112,7 @@ void CMountPoints::GetDriveVolumes( ) {
 		if ( ( drives bitand mask ) != 0 ) {
 			const auto swps = swprintf_s( small_buffer_volume_name, L"%c:\\", ( i + _T( 'A' ) ) );
 			if ( swps == -1 ) {
-				WTL::AtlMessageBox( NULL, L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)", TEXT( "Error" ), MB_OK );
+				::MessageBoxW( NULL, L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)", L"Error", MB_OK );
 				std::terminate( );
 				}
 			ASSERT( wcslen( small_buffer_volume_name ) < 5 );
@@ -256,7 +256,7 @@ void CMountPoints::GetAllMountPoints( ) {
 
 	const auto FindVolumeCloseRes = ::FindVolumeCloseHandle( hvol );
 	if ( !( FindVolumeCloseRes ) ) {
-		WTL::AtlMessageBox( NULL, L"Failed to close a handle in CMountPoints::GetAllMountPoints. Something is wrong!", TEXT( "Error" ), MB_OK );
+		::MessageBoxW( NULL, L"Failed to close a handle in CMountPoints::GetAllMountPoints. Something is wrong!", L"Error", MB_OK );
 		std::terminate( );
 		}
 	}

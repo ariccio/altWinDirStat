@@ -454,7 +454,7 @@ _Success_( return != NULL ) COptions* GetOptions( ) {
 		return &_theOptions;
 		}
 	TRACE( _T( "&_theOptions is NULL! This should never happen!\r\n" ) );
-	WTL::AtlMessageBox( NULL, _T( "&_theOptions is NULL! This should never happen! Hit `OK` when you're ready to abort." ), _T( "Whoa!" ), MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
+	::MessageBoxW( NULL, L"&_theOptions is NULL! This should never happen! Hit `OK` when you're ready to abort.", L"Whoa!", MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL );
 	std::terminate( );
 	//need to 'call' abort because `/analyze` doesn't understand that std::terminate DOES NOT RETURN!
 	abort( );
