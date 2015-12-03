@@ -7,7 +7,8 @@ This repository is used to be an ugly, hacky, bundle of crap - but now it's just
 
 **I've been working on some interesting static analysis stuff lately, so development has slowed down :(**
 
-In the mean time, I'm planning to cut out some of the MFC code (replaced with the raw Windows API that MFC poorly wraps), and then switch over to VS 2015.
+In the mean time, I'm planning to cut out some of the MFC code (replaced with the raw Windows API that MFC poorly wraps)
+  ...and then switch over to VS 2015.
 
 A quick guide to the structure of this repository:
 
