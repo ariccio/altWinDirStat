@@ -231,3 +231,5 @@ pip-log.txt
 #############
 ## Misc
 #############
+WinDirStat/windirstat.VC.db
+WinDirStat/windirstat.VC.VC.opendb
