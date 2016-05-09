@@ -536,7 +536,7 @@ namespace {
 		}
 
 	template<size_t count>
-	void draw_proper_text_for_each_column( _In_ COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hDC, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
+	void draw_proper_text_for_each_column( _In_ COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
 			//draw the proper text in each column?
 			
@@ -545,15 +545,15 @@ namespace {
 			//CTreeListItem draws self FOR NAME column ONLY!
 			//CDriveItem NEVER draws self.
 			//CListItem (typeview) draws self ONLY for: NAME, and COLOR. 
-			if ( !item->DrawSubitem_( subitems[ i ], hDC, rects_draw[ i ], pdis->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {
-				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], hDC, rects_draw[ i ], pdis, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+			if ( !item->DrawSubitem_( subitems[ i ], hInMemoryDeviceContext, rects_draw[ i ], pDestinationDrawItemStruct->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {
+				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], hInMemoryDeviceContext, rects_draw[ i ], pDestinationDrawItemStruct, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
 				}
 			}
 		}
 
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
-	void draw_focus_rects_draw_focus( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC hDC, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem ) {
+	void draw_focus_rects_draw_focus( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC pDestinationDeviceContext, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem ) {
 		//first iteration is a special case, so we handle it outside the loop, and reduce the number of comparisons in the loop
 		ASSERT( thisLoopSize > 0 );
 		size_t i = 0;
@@ -561,42 +561,42 @@ namespace {
 			rcFocus.left = focusLefts[ i ];
 			}
 		rcFocus.right = rects_draw[ i ].right;
-		VERIFY( ::BitBlt( hDC, ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), hMemoryDeviceContext, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+		VERIFY( ::BitBlt( pDestinationDeviceContext, ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), hMemoryDeviceContext, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
 
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( ; i < thisLoopSize; i++ ) {
 			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
 				
-				VERIFY( ::DrawFocusRect( hDC, &rcFocus ) );
+				VERIFY( ::DrawFocusRect( pDestinationDeviceContext, &rcFocus ) );
 				//pdc->DrawFocusRect( &rcFocus );
 				rcFocus.left = focusLefts[ i ];
 				}
 			rcFocus.right = rects_draw[ i ].right;
-			VERIFY( ::BitBlt( hDC, ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), hMemoryDeviceContext, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+			VERIFY( ::BitBlt( pDestinationDeviceContext, ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), hMemoryDeviceContext, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
 			}
 		}
 
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
-	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hDC, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ CDC* pdc, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) {
+	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC hDestinationDeviceContext, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) {
 		if ( drawFocus ) {
-			return draw_focus_rects_draw_focus( thisLoopSize, hDC, rects_draw, focusLefts, pdc->m_hDC, rcFocus, rcItem );
+			return draw_focus_rects_draw_focus( thisLoopSize, hInMemoryDeviceContext, rects_draw, focusLefts, hDestinationDeviceContext, rcFocus, rcItem );
 			}
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
 			if ( focusLefts[ i ] > rects_draw[ i ].left ) {
 				rcFocus.left = focusLefts[ i ];
 				}
 			rcFocus.right = rects_draw[ i ].right;
-			VERIFY( ::BitBlt( pdc->m_hDC, ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), hDC, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
+			VERIFY( ::BitBlt( hDestinationDeviceContext, ( rcItem.left + rects_draw[ i ].left ), ( rcItem.top + rects_draw[ i ].top ), ( rects_draw[ i ].right - rects_draw[ i ].left ), ( rects_draw[ i ].bottom - rects_draw[ i ].top ), hInMemoryDeviceContext, rects_draw[ i ].left, rects_draw[ i ].top, SRCCOPY ) );
 			}
 		}
 
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
+	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
 		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
-		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pdis, this_ctrl, thisHeaderCtrl );
+		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pDestinationDrawItemStruct, this_ctrl, thisHeaderCtrl );
 		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
 		}
 
@@ -648,24 +648,44 @@ class COwnerDrawnListCtrl : public CListCtrl {
 	*/
 
 protected:
-	virtual void DrawItem( _In_ PDRAWITEMSTRUCT pdis ) override final {
-		const auto item = reinterpret_cast< COwnerDrawnListItem *> ( pdis->itemData );
-		const auto pdc = CDC::FromHandle( pdis->hDC );
+	virtual void DrawItem( _In_ PDRAWITEMSTRUCT pDestinationDrawItemStruct ) override final {
+		const auto item = reinterpret_cast< COwnerDrawnListItem *> ( pDestinationDrawItemStruct->itemData );
+		const auto pCDestinationDeviceContext = CDC::FromHandle( pDestinationDrawItemStruct->hDC );
 		const auto bIsFullRowSelection = m_showFullRowSelection;
-		ASSERT_VALID( pdc );
+		ASSERT_VALID( pCDestinationDeviceContext );
 		//RECT rcItem_temp( pdis->rcItem );
 
-		const RECT rcItem = adjust_rect_for_grid_by_value( m_showGrid, pdis->rcItem );
+		const RECT rcItem = adjust_rect_for_grid_by_value( m_showGrid, pDestinationDrawItemStruct->rcItem );
 
 		//adjust_rect_for_grid( m_showGrid, rcItem_temp );
 
+		//CreateCompatibleDC function: https://msdn.microsoft.com/en-us/library/dd183489.aspx
+		//If the function succeeds, the return value is the handle to a memory DC.
+		//If the function fails, the return value is NULL.
 
-		CDC dcmem; //compiler seems to vectorize this!
+		//When you no longer need the memory DC, call the DeleteDC function.
+		//We recommend that you call DeleteDC to delete the DC.
+		//However, you can also call DeleteObject with the HDC to delete the DC.
+		ASSERT( pDestinationDrawItemStruct->hDC == pCDestinationDeviceContext->m_hDC );
+		HDC hInMemoryDeviceContext = ::CreateCompatibleDC( pDestinationDrawItemStruct->hDC );
+		if ( hInMemoryDeviceContext == NULL ) {
+			std::terminate( );
+			abort( );
+			}
+		auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { 
+			//DeleteDC function: https://msdn.microsoft.com/en-us/library/dd183533.aspx
+			//If the function succeeds, the return value is nonzero.
+			//If the function fails, the return value is zero.
+			const BOOL deleted = ::DeleteDC( hInMemoryDeviceContext );
+			if ( deleted == 0 ) {
+				std::terminate( );
+				}
+			} );
 
-		VERIFY( dcmem.CreateCompatibleDC( pdc ) );
+
 		CBitmap bm;
-		VERIFY( bm.CreateCompatibleBitmap( pdc, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
-		SelectObject_wrapper sobm( dcmem.m_hDC, bm.m_hObject );
+		VERIFY( bm.CreateCompatibleBitmap( pCDestinationDeviceContext, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
+		SelectObject_wrapper sobm( hInMemoryDeviceContext, bm.m_hObject );
 		RECT rect_to_fill_solidly = rcItem;
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
@@ -676,13 +696,13 @@ protected:
 		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
 		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
 		//If the function fails, the return value is CLR_INVALID.
-		const COLORREF set_bk_result = ::SetBkColor( dcmem.m_hDC, GetItemBackgroundColor( pdis->itemID ) );
+		const COLORREF set_bk_result = ::SetBkColor( hInMemoryDeviceContext, GetItemBackgroundColor( pDestinationDrawItemStruct->itemID ) );
 		if ( set_bk_result == CLR_INVALID ) {
 			std::terminate( );
 			}
-		VERIFY( ::ExtTextOut( dcmem.m_hDC, 0, 0, ETO_OPAQUE, &rect_to_fill_solidly, NULL, 0, NULL ) );
+		VERIFY( ::ExtTextOut( hInMemoryDeviceContext, 0, 0, ETO_OPAQUE, &rect_to_fill_solidly, NULL, 0, NULL ) );
 
-		const bool drawFocus = ( pdis->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
+		const bool drawFocus = ( pDestinationDrawItemStruct->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
 		const rsize_t stack_array_size = 12;
 		static_assert( stack_array_size > column::COL_ATTRIBUTES, "we're gonna need a bigger array!" );
@@ -723,7 +743,7 @@ protected:
 
 		//build map of column# -> ENUM_COL
 		//build drawable rect for each column
-		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, pdis, this, thisHeaderCtrl, rcItem );
+		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, pDestinationDrawItemStruct, this, thisHeaderCtrl, rcItem );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
 		const RECT (&rects_draw)[ stack_array_size ] = rects_temp;
@@ -731,14 +751,14 @@ protected:
 		build_focusLefts_from_drawable_rects( thisLoopSize, rects_draw, focusLefts_temp );
 
 
-		draw_proper_text_for_each_column( item, thisLoopSize, subitems, dcmem.m_hDC, rects_draw, pdis, focusLefts_temp, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache, this );
+		draw_proper_text_for_each_column( item, thisLoopSize, subitems, hInMemoryDeviceContext, rects_draw, pDestinationDrawItemStruct, focusLefts_temp, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache, this );
 
 		const int (&focusLefts)[ stack_array_size ] = focusLefts_temp;
 
-		draw_focus_rects( thisLoopSize, dcmem.m_hDC, rects_draw, focusLefts, pdc, rcFocus, rcItem, drawFocus );
+		draw_focus_rects( thisLoopSize, hInMemoryDeviceContext, rects_draw, focusLefts, pCDestinationDeviceContext->m_hDC, rcFocus, rcItem, drawFocus );
 
 		if ( drawFocus ) {
-			pdc->DrawFocusRect( &rcFocus );
+			pCDestinationDeviceContext->DrawFocusRect( &rcFocus );
 			}
 
 		}
