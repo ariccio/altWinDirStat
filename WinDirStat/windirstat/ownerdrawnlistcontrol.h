@@ -515,7 +515,7 @@ namespace {
 
 	//defined at the BOTTOM of this file!
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl );
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl );
 
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
@@ -594,9 +594,9 @@ namespace {
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
+	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
 		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
-		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, pDestinationDrawItemStruct, this_ctrl, thisHeaderCtrl );
+		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, itemID, this_ctrl, thisHeaderCtrl );
 		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
 		}
 
@@ -652,6 +652,7 @@ protected:
 		const auto item = reinterpret_cast< COwnerDrawnListItem *> ( pDestinationDrawItemStruct->itemData );
 		const auto pCDestinationDeviceContext = CDC::FromHandle( pDestinationDrawItemStruct->hDC );
 		const auto bIsFullRowSelection = m_showFullRowSelection;
+		ASSERT( pDestinationDrawItemStruct->hDC != NULL );
 		ASSERT_VALID( pCDestinationDeviceContext );
 		//RECT rcItem_temp( pdis->rcItem );
 
@@ -682,6 +683,8 @@ protected:
 				}
 			} );
 
+		//_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
+		//{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
 
 		CBitmap bm;
 		VERIFY( bm.CreateCompatibleBitmap( pCDestinationDeviceContext, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
@@ -743,7 +746,7 @@ protected:
 
 		//build map of column# -> ENUM_COL
 		//build drawable rect for each column
-		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, pDestinationDrawItemStruct, this, thisHeaderCtrl, rcItem );
+		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, static_cast<INT>( pDestinationDrawItemStruct->itemID ), this, thisHeaderCtrl, rcItem );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
 		const RECT (&rects_draw)[ stack_array_size ] = rects_temp;
@@ -755,10 +758,10 @@ protected:
 
 		const int (&focusLefts)[ stack_array_size ] = focusLefts_temp;
 
-		draw_focus_rects( thisLoopSize, hInMemoryDeviceContext, rects_draw, focusLefts, pCDestinationDeviceContext->m_hDC, rcFocus, rcItem, drawFocus );
+		draw_focus_rects( thisLoopSize, hInMemoryDeviceContext, rects_draw, focusLefts, pDestinationDrawItemStruct->hDC, rcFocus, rcItem, drawFocus );
 
 		if ( drawFocus ) {
-			pCDestinationDeviceContext->DrawFocusRect( &rcFocus );
+			VERIFY( ::DrawFocusRect( pDestinationDrawItemStruct->hDC, &rcFocus ) );
 			}
 
 		}
@@ -2156,9 +2159,9 @@ namespace{
 		}
 
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const PDRAWITEMSTRUCT pdis, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl ) {
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl ) {
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( static_cast<INT>( pdis->itemID ), subitems_temp[ i ], thisHeaderCtrl );
+			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( itemID, subitems_temp[ i ], thisHeaderCtrl );
 			}
 		}
 
