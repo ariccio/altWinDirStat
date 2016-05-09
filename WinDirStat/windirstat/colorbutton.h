@@ -41,6 +41,7 @@ public:
 
 #pragma warning( push )
 #pragma warning( disable: 4365 )
+#pragma warning( disable: 6103 )
 	BEGIN_MSG_MAP(CPreview)
 		MESSAGE_HANDLER( static_cast<unsigned int>( WM_PAINT ), ( CPreview::OnPaint ) )
 		MESSAGE_HANDLER( static_cast<unsigned int>( WM_LBUTTONDOWN ), ( CPreview::OnLButtonDown ) )

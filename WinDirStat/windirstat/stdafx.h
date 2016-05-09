@@ -249,6 +249,16 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif // _AFX
 
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
+#pragma warning(disable:6031) //Return value ignored: 'CoSuspendClassObjects'.
+#pragma warning(disable:6387) //error C6387: '_Param_(1)' could be '0':  this does not adhere to the specification for the function 'ATL::CWindow::SetFont'.
+#pragma warning(disable:6400) //Using 'lstrcmpiW' to perform a case-insensitive compare to constant string 'static'.  Yields unexpected results in non-English locales.
+#pragma warning(disable:6401) //Using 'CompareStringW' in a default locale to perform a case-insensitive compare to constant string '<A>'.  Yields unexpected results in non-English locales.
+#pragma warning(disable:26110) //error C26110: Caller failing to hold lock '(& this->m_cslock)->m_cs' before calling function 'ATL::CComCritSecLock<ATL::CComCriticalSection>::Unlock'.
+#pragma warning(disable:26165) //Possibly failing to release lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Lock'.
+#pragma warning(disable:26160) //Caller possibly failing to hold lock '(& this->m_cslock)->m_cs' before calling function 
+#pragma warning(disable:26167) //Possibly releasing unheld lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Unlock'.
+#pragma warning(disable:28204) //'OnFileOk' : Only one of this override and the one at c:\program files (x86)\windows kits\8.1\include\um\shobjidl.h
+
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
 

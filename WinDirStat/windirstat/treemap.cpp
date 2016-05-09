@@ -1737,6 +1737,7 @@ void CTreemap::DrawCushion( _In_ const HDC offscreen_buffer, _In_ const RECT& rc
 
 	}
 
+#pragma warning(suppress: 6262) //Function uses '37072' bytes of stack:  exceeds /analyze:stacksize '16384'.  Consider moving some data to heap.
 void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
 	ASSERT( brightness <= 1 );
 	ASSERT( brightness >= 0 );
