@@ -536,7 +536,7 @@ namespace {
 		}
 
 	template<size_t count>
-	void draw_proper_text_for_each_column( _In_ COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
+	void draw_proper_text_for_each_column( _In_ const COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
 			//draw the proper text in each column?
 			
@@ -649,7 +649,7 @@ class COwnerDrawnListCtrl : public CListCtrl {
 
 protected:
 	virtual void DrawItem( _In_ PDRAWITEMSTRUCT pDestinationDrawItemStruct ) override final {
-		const auto item = reinterpret_cast< COwnerDrawnListItem *> ( pDestinationDrawItemStruct->itemData );
+		const auto item = reinterpret_cast< const COwnerDrawnListItem *> ( pDestinationDrawItemStruct->itemData );
 		const auto pCDestinationDeviceContext = CDC::FromHandle( pDestinationDrawItemStruct->hDC );
 		const auto bIsFullRowSelection = m_showFullRowSelection;
 		ASSERT( pDestinationDrawItemStruct->hDC != NULL );

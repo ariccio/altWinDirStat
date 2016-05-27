@@ -260,13 +260,13 @@ void CPersistence::SetMainWindowPlacement( _In_ const WINDOWPLACEMENT& wp ) {
 	}
 
 void CPersistence::SetSplitterPos( _In_z_ const PCWSTR name, _In_ const bool valid, _In_ const DOUBLE userpos ) {
-	INT pos = 0;
-	if ( valid ) {
-		pos = static_cast<INT>( userpos * 100 );
-		}
-	else {
-		pos = -1;
-		}
+	const INT pos = ( valid ? static_cast<INT>( userpos * 100 ) : -1 );
+	//if ( valid ) {
+	//	pos = static_cast<INT>( userpos * 100 );
+	//	}
+	//else {
+	//	pos = -1;
+	//	}
 	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), pos );
 	}
 
@@ -282,19 +282,19 @@ void CPersistence::GetSplitterPos( _In_z_  const PCWSTR name, _Out_ bool* const 
 		}
 	}
 
-void CPersistence::GetDialogRectangle( _In_z_ const PCWSTR name, _Out_ RECT* const rc ) {
-	
-	const HRESULT rectangle_result = GetRect( MakeDialogRectangleEntry( name ), rc );
-	ASSERT( SUCCEEDED( rectangle_result ) );
-	if ( !SUCCEEDED( rectangle_result ) ) {
-		//TODO: BUGBUG: Fill with default values!
-		TRACE( _T( "GetRect( MakeDialogRectangleEntry( %s ), rc ) failed!! THIS ISN'T GOOD!\r\n" ), name );
-		}
-
-	RECT temp = (*rc);
-	SanifyRect( &temp );
-	(*rc) = temp;
-	}
+//void CPersistence::GetDialogRectangle( _In_z_ const PCWSTR name, _Out_ RECT* const rc ) {
+//	
+//	const HRESULT rectangle_result = GetRect( MakeDialogRectangleEntry( name ), rc );
+//	ASSERT( SUCCEEDED( rectangle_result ) );
+//	if ( !SUCCEEDED( rectangle_result ) ) {
+//		//TODO: BUGBUG: Fill with default values!
+//		TRACE( _T( "GetRect( MakeDialogRectangleEntry( %s ), rc ) failed!! THIS ISN'T GOOD!\r\n" ), name );
+//		}
+//
+//	RECT temp = (*rc);
+//	SanifyRect( &temp );
+//	(*rc) = temp;
+//	}
 
 void CPersistence::SetDialogRectangle( _In_z_ const PCWSTR name, _In_ const RECT rc ) {
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );

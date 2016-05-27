@@ -80,7 +80,7 @@ public:
 	static void  SetSplitterPos           ( _In_z_  const PCWSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
 	static void  GetConfigPosition        ( _Inout_ POINT* const pt                                                                              );
-	static void  GetDialogRectangle       ( _In_z_  const PCWSTR name,        _Out_ RECT* const rc                                            );
+	//static void  GetDialogRectangle       ( _In_z_  const PCWSTR name,        _Out_ RECT* const rc                                            );
 	static void  GetSplitterPos           ( _In_z_  const PCWSTR name,        _Out_ bool* const valid,               _Out_ DOUBLE* const userpos   );
 	static void  GetMainWindowPlacement   ( _Out_   WINDOWPLACEMENT* const wp                                                                     );
 	static INT   GetConfigPage            ( _In_    const INT max                                                                           );
