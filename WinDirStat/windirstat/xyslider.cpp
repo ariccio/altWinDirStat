@@ -20,44 +20,46 @@ WDS_FILE_INCLUDE_MESSAGE
 namespace {
 	const int GRIPPER_RADIUS = 8;
 
-	void move_to_coord( _In_ const CDC& pdc, _In_ const int rc_x, _In_ const int rc_y ) {
+	void move_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
 		//pdc.MoveTo( rc.left,  m_zero.y ); <---Not handling the return value means that WE DO NOT care about the previous "current position", thus the fourth parameter to MoveToEx should be NULL.
-		ASSERT( pdc.m_hDC != NULL );
-		if ( pdc.m_hDC != pdc.m_hAttribDC ) {
+		ASSERT( hDC != NULL );
+		if ( hDC != hAttribDC ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( pdc.m_hDC, rc_x, rc_y, NULL ) );
+			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, NULL ) );
 			}
-		if ( pdc.m_hAttribDC != NULL ) {
+		if ( hAttribDC != NULL ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( pdc.m_hAttribDC, rc_x, rc_y, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, NULL ) );
 			}
 		}
 	
-	void line_to_coord( _In_ const CDC& pdc, _In_ const int rc_x, _In_ const int rc_y ) {
-		ASSERT( pdc.m_hDC != NULL );
-		if ( ( pdc.m_hAttribDC != NULL ) && ( pdc.m_hDC != pdc.m_hAttribDC ) ) {
+	void line_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
+		ASSERT( hDC != NULL );
+		if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( pdc.m_hAttribDC, rc_x, rc_y, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, NULL ) );
 			}
 
 		//If [LineTo] succeeds, the return value is nonzero. If [LineTo] fails, the return value is zero.
-		VERIFY( ::LineTo( pdc.m_hDC, rc_x, rc_y ) );
+		VERIFY( ::LineTo( hDC, rc_x, rc_y ) );
 		}
 
 
 	void fill_solid_rectangle( _In_ const HDC m_hDC, _In_ const RECT rc, _In_ const COLORREF clr ) {
-		ASSERT( m_hDC != NULL );
+		//ASSERT( m_hDC != NULL );
 
-		//If [SetBkColor] fails, the return value is CLR_INVALID.
-		const COLORREF bk_color_res_1 = ::SetBkColor( m_hDC, clr );
-		ASSERT( bk_color_res_1 != CLR_INVALID );
+		////If [SetBkColor] fails, the return value is CLR_INVALID.
+		//const COLORREF bk_color_res_1 = ::SetBkColor( m_hDC, clr );
+		//ASSERT( bk_color_res_1 != CLR_INVALID );
 
-		if ( bk_color_res_1 == CLR_INVALID ) {
-			TRACE( _T( "::SetBkColor( pdc.m_hDC, color ) failed!!\r\n" ) );
-			}
+		//if ( bk_color_res_1 == CLR_INVALID ) {
+		//	TRACE( _T( "::SetBkColor( pdc.m_hDC, color ) failed!!\r\n" ) );
+		//	}
 
-		//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		VERIFY( ::ExtTextOutW( m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+		////If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		//VERIFY( ::ExtTextOutW( m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+
+		fill_solid_RECT( m_hDC, &rc, clr );
 		}
 	}
 
@@ -98,7 +100,7 @@ void CXySlider::Initialize( ) {
 		//If [MoveWindow] succeeds, the return value is nonzero.
 		VERIFY( ::MoveWindow( m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
 
-		CalcSizes( );
+		CXySlider::CalcSizes( );
 
 		m_inited = true;
 		}
@@ -139,7 +141,7 @@ void CXySlider::CalcSizes( ) {
 	}
 
 void CXySlider::NotifyParent( ) const {
-	NMHDR hdr;
+	NMHDR hdr = { };
 	hdr.hwndFrom = m_hWnd;
 	hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
@@ -148,20 +150,22 @@ void CXySlider::NotifyParent( ) const {
 	}
 
 void CXySlider::PaintBackground( _In_ CDC& pdc ) {
-	ASSERT_VALID( &pdc );
-	ASSERT( pdc.m_hDC != NULL );
+	//ASSERT_VALID( &pdc );
+	//ASSERT( pdc.m_hDC != NULL );
 
-	//If [SetBkColor] fails, the return value is CLR_INVALID.
-	const COLORREF color_res_1 = ::SetBkColor( pdc.m_hDC, GetSysColor( COLOR_BTNFACE ) );
-	
-	//TODO: check this!
-	ASSERT( color_res_1 != CLR_INVALID );
-	if ( color_res_1 == CLR_INVALID ) {
-		TRACE( _T( "SetBkColor( pdc.m_hDC, GetSysColor( COLOR_BTNFACE ) ) failed!!\r\n" ) );
-		}
+	////If [SetBkColor] fails, the return value is CLR_INVALID.
+	//const COLORREF color_res_1 = ::SetBkColor( pdc.m_hDC, GetSysColor( COLOR_BTNFACE ) );
+	//
+	////TODO: check this!
+	//ASSERT( color_res_1 != CLR_INVALID );
+	//if ( color_res_1 == CLR_INVALID ) {
+	//	TRACE( _T( "SetBkColor( pdc.m_hDC, GetSysColor( COLOR_BTNFACE ) ) failed!!\r\n" ) );
+	//	}
 
-	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &m_rcAll, NULL, 0u, NULL ) );
+	////If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+	//VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &m_rcAll, NULL, 0u, NULL ) );
+
+	fill_solid_RECT( pdc.m_hDC, &m_rcAll, ::GetSysColor( COLOR_BTNFACE ) );
 
 	RECT rc = m_rcInner;
 	
@@ -172,32 +176,35 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 
 	//pdc.FillSolidRect( &rc, RGB( 255, 255, 255 ) );
 
-	ASSERT_VALID( &pdc );
-	ASSERT( pdc.m_hDC != NULL );
+	//ASSERT_VALID( &pdc );
+	//ASSERT( pdc.m_hDC != NULL );
 
-	//If [SetBkColor] fails, the return value is CLR_INVALID.
-	const COLORREF color_res_2 = ::SetBkColor( pdc.m_hDC, RGB( 255, 255, 255 ) );
-	
-	//TODO: check this!
-	ASSERT( color_res_2 != CLR_INVALID );
+	////If [SetBkColor] fails, the return value is CLR_INVALID.
+	//const COLORREF color_res_2 = ::SetBkColor( pdc.m_hDC, RGB( 255, 255, 255 ) );
+	//
+	////TODO: check this!
+	//ASSERT( color_res_2 != CLR_INVALID );
 
-	if ( color_res_2 == CLR_INVALID ) {
-		TRACE( _T( "::SetBkColor( pdc.m_hDC, RGB( 255, 255, 255 ) ) failed!!\r\n" ) );
-		}
+	//if ( color_res_2 == CLR_INVALID ) {
+	//	TRACE( _T( "::SetBkColor( pdc.m_hDC, RGB( 255, 255, 255 ) ) failed!!\r\n" ) );
+	//	}
 
-	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-	VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
+	////If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+	//VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
+
+
+	fill_solid_RECT( pdc.m_hDC, &rc, RGB( 255, 255, 255 ) );
 
 	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DLIGHT ) );
 	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
 
-	move_to_coord( pdc, rc.left, m_zero.y );
+	move_to_coord( pdc.m_hDC, rc.left, m_zero.y, pdc.m_hAttribDC );
 
-	line_to_coord( pdc, rc.right, m_zero.y );
+	line_to_coord( pdc.m_hDC, rc.right, m_zero.y, pdc.m_hAttribDC );
 	
-	move_to_coord( pdc, m_zero.x, rc.top );
+	move_to_coord( pdc.m_hDC, m_zero.x, rc.top, pdc.m_hAttribDC );
 
-	line_to_coord( pdc, m_zero.x, rc.bottom );
+	line_to_coord( pdc.m_hDC, m_zero.x, rc.bottom, pdc.m_hAttribDC );
 
 	RECT circle = m_rcAll;
 
@@ -222,7 +229,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 
 void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 	//ASSERT_VALID( pdc );
-	RECT rc = GetGripperRect( );
+	RECT rc = CXySlider::GetGripperRect( );
 
 	COLORREF color_scopeholder = ::GetSysColor( COLOR_BTNFACE );
 	if ( m_gripperHighlight ) {
@@ -248,13 +255,13 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
 	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
 
-	move_to_coord( pdc, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ) );
+	move_to_coord( pdc.m_hDC, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ), pdc.m_hAttribDC );
 
-	line_to_coord( pdc, rc.right, ( rc.top + ( rc.bottom - rc.top ) / 2 ) );
+	line_to_coord( pdc.m_hDC, rc.right, ( rc.top + ( rc.bottom - rc.top ) / 2 ), pdc.m_hAttribDC );
 
-	move_to_coord( pdc, rc.left + ( rc.right - rc.left ) / 2, rc.top );
+	move_to_coord( pdc.m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.top, pdc.m_hAttribDC );
 
-	line_to_coord( pdc, rc.left + ( rc.right - rc.left ) / 2, rc.bottom );
+	line_to_coord( pdc.m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.bottom, pdc.m_hAttribDC );
 	}
 
 void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
@@ -267,9 +274,9 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 	VERIFY( CWnd::RedrawWindow( ) );
 
 	const POINT oldpos = m_externalPos;
-	InternToExtern( );
+	CXySlider::InternToExtern( );
 	if ( ( m_externalPos.x != oldpos.x ) || ( m_externalPos.y != oldpos.y ) ) {
-		NotifyParent( );
+		CXySlider::NotifyParent( );
 		}
 	}
 
@@ -286,7 +293,7 @@ void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& 
 	const INT dx = pt.x - pt0.x;
 	const INT dy = pt.y - pt0.y;
 
-	DoMoveBy( dx, dy );
+	CXySlider::DoMoveBy( dx, dy );
 
 	pt0 = pt;
 	}
@@ -294,7 +301,7 @@ void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& 
 void CXySlider::DoDrag( _In_ const POINT point ) {
 	POINT pt0 = point;
 
-	HighlightGripper( true );
+	CXySlider::HighlightGripper( true );
 
 	/*
 	inline CPoint CRect::CenterPoint() const throw()
@@ -302,27 +309,29 @@ void CXySlider::DoDrag( _In_ const POINT point ) {
 		return CPoint((left+right)/2, (top+bottom)/2);
 	}	
 	*/
-	const RECT grip_rect = GetGripperRect( );
+	const RECT grip_rect = CXySlider::GetGripperRect( );
 	const auto grip_rect_center_x = ( ( grip_rect.left + grip_rect.right ) / 2 );
 	const auto grip_rect_center_y = ( ( grip_rect.top + grip_rect.bottom ) / 2 );
 	const auto new_point_x = ( pt0.x - grip_rect_center_x );
 	const auto new_point_y = ( pt0.y - grip_rect_center_y );
 	const CSize inGripper( new_point_x, new_point_y );
-	POINT ptMin_holder;
-	ptMin_holder.x = ( m_zero.x - m_range.cx + inGripper.cx );
-	ptMin_holder.y = ( m_zero.y - m_range.cy + inGripper.cy );
+	POINT ptMin_holder = {
+		( m_zero.x - m_range.cx + inGripper.cx ),
+		( m_zero.y - m_range.cy + inGripper.cy )
+		};
 	const POINT ptMin = ptMin_holder;
 
-	POINT ptMax_holder;
-	ptMax_holder.x = ( m_zero.x + m_range.cx + inGripper.cx );
-	ptMax_holder.y = ( m_zero.y + m_range.cy + inGripper.cy );
+	POINT ptMax_holder = {
+		( m_zero.x + m_range.cx + inGripper.cx ),
+		( m_zero.y + m_range.cy + inGripper.cy )
+		};
 
 	const POINT ptMax = ptMax_holder;
 
 	CWnd::SetCapture( );
 	do {
 		MSG msg;
-		if ( !GetMessageW( &msg, NULL, 0, 0 ) ) {
+		if ( !::GetMessageW( &msg, NULL, 0, 0 ) ) {
 			break;
 			}
 
@@ -334,48 +343,45 @@ void CXySlider::DoDrag( _In_ const POINT point ) {
 			}
 
 		if ( msg.message == WM_MOUSEMOVE ) {
-			Handle_WM_MOUSEMOVE( ptMin, ptMax, msg, pt0 );
+			CXySlider::Handle_WM_MOUSEMOVE( ptMin, ptMax, msg, pt0 );
 			}
 		else {
-			DispatchMessageW( &msg );
+			::DispatchMessageW( &msg );
 			}
 #pragma warning(suppress:4127)//conditional expression is constant
 		} while ( true );
 
-	VERIFY( ReleaseCapture( ) );
+	VERIFY( ::ReleaseCapture( ) );
 
-	HighlightGripper( false );
+	CXySlider::HighlightGripper( false );
 	}
 
 void CXySlider::DoPage( _In_ const POINT point ) {
-	POINT _m_zero_m_pos_scope_holder;
-	_m_zero_m_pos_scope_holder.x = m_zero.x + m_pos.x;
-	_m_zero_m_pos_scope_holder.y = m_zero.y + m_pos.y;
+	POINT _m_zero_m_pos_scope_holder = {
+		( m_zero.x + m_pos.x ),
+		( m_zero.y + m_pos.y )
+		};
 
 
 	const POINT& _m_zero_m_pos_ = _m_zero_m_pos_scope_holder;
 
-	POINT _point_minus_m_zero_m_pos;
-	_point_minus_m_zero_m_pos.x = point.x;
-	_point_minus_m_zero_m_pos.y = point.y;
+	POINT _point_minus_m_zero_m_pos = { point.x, point.y };
 
 	_point_minus_m_zero_m_pos.x -= _m_zero_m_pos_.x;
 	_point_minus_m_zero_m_pos.y -= _m_zero_m_pos_.y;
 
-	SIZE sz_holder;
-	sz_holder.cx = _point_minus_m_zero_m_pos.x;
-	sz_holder.cy = _point_minus_m_zero_m_pos.y;
+	SIZE sz_holder = { _point_minus_m_zero_m_pos.x, _point_minus_m_zero_m_pos.y };
 
 	const SIZE& sz = sz_holder;
 
 	ASSERT( sz.cx != 0 || sz.cy != 0 );
 
-	const auto len = sqrt( static_cast<DOUBLE>( sz.cx ) * static_cast<DOUBLE>( sz.cx ) + static_cast<DOUBLE>( sz.cy ) * static_cast<DOUBLE>( sz.cy ) );
+	const auto len = ::sqrt( static_cast<DOUBLE>( sz.cx ) * static_cast<DOUBLE>( sz.cx ) + static_cast<DOUBLE>( sz.cy ) * static_cast<DOUBLE>( sz.cy ) );
 
 	const auto dx = static_cast<INT>( 10 * sz.cx / len );
 	const auto dy = static_cast<INT>( 10 * sz.cy / len );
 
-	DoMoveBy( dx, dy );
+	CXySlider::DoMoveBy( dx, dy );
 	}
 
 void CXySlider::HighlightGripper( _In_ const bool on ) {
@@ -448,7 +454,7 @@ BEGIN_MESSAGE_MAP(CXySlider, CStatic)
 END_MESSAGE_MAP()
 
 void CXySlider::OnPaint( ) {
-	Initialize( );
+	CXySlider::Initialize( );
 	const INT w = ( m_rcAll.right - m_rcAll.left );
 	const INT h = ( m_rcAll.bottom - m_rcAll.top );
 
@@ -459,9 +465,9 @@ void CXySlider::OnPaint( ) {
 	VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
 	SelectObject_wrapper sobm( dcmem.m_hDC, bm.m_hObject );
 
-	PaintBackground( dcmem );
+	CXySlider::PaintBackground( dcmem );
 	// PaintValues(&dcmem); This is too noisy
-	PaintGripper( dcmem );
+	CXySlider::PaintGripper( dcmem );
 
 	VERIFY( dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY ) );
 	//VERIFY( dcmem.DeleteDC( ) );
@@ -472,13 +478,13 @@ void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
 	switch ( nChar )
 	{
 		case VK_LEFT:
-			return DoMoveBy( -1,  0 );
+			return CXySlider::DoMoveBy( -1,  0 );
 		case VK_RIGHT:
-			return DoMoveBy(  1,  0 );
+			return CXySlider::DoMoveBy(  1,  0 );
 		case VK_UP:
-			return DoMoveBy(  0, -1 );
+			return CXySlider::DoMoveBy(  0, -1 );
 		case VK_DOWN:
-			return DoMoveBy(  0,  1 );
+			return CXySlider::DoMoveBy(  0,  1 );
 	}
 	}
 
@@ -488,21 +494,21 @@ void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
 	const RECT rc = GetGripperRect( );
 
 	if ( ::PtInRect( &rc, point ) ) {
-		return DoDrag( point );
+		return CXySlider::DoDrag( point );
 		}
-	DoPage( point );
-	InstallTimer( );
+	CXySlider::DoPage( point );
+	CXySlider::InstallTimer( );
 	}
 
 void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
 	CWnd::SetFocus( );
 
-	const RECT grip_rect = GetGripperRect( );
+	const RECT grip_rect = CXySlider::GetGripperRect( );
 	if ( ::PtInRect( &grip_rect, point ) ) {
-		return DoMoveBy( -m_pos.x, -m_pos.y );
+		return CXySlider::DoMoveBy( -m_pos.x, -m_pos.y );
 		}
-	DoPage( point );
-	InstallTimer( );
+	CXySlider::DoPage( point );
+	CXySlider::InstallTimer( );
 	}
 
 void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
@@ -515,16 +521,16 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	//If [ScreenToClient] fails, the return value is zero."
 	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
 
-	const RECT rc = GetGripperRect( );
+	const RECT rc = CXySlider::GetGripperRect( );
 	if ( !::PtInRect( &rc, point ) ) {
-		DoPage( point );
+		CXySlider::DoPage( point );
 		}
 	}
 
 void CXySlider::SetPos( const POINT pt ) {
-	Initialize( );
+	CXySlider::Initialize( );
 	m_externalPos = pt;
-	ExternToIntern( );
+	CXySlider::ExternToIntern( );
 	CWnd::Invalidate( );
 	}
 

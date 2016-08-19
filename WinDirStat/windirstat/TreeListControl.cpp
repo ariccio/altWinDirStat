@@ -54,7 +54,7 @@ namespace {
 	//passing `lhs` & `rhs` by value cause WORSE codegen!
 	inline const INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
 		//duhh, there's a win32 function for this!
-		return CompareFileTime( &lhs, &rhs );
+		return ::CompareFileTime( &lhs, &rhs );
 		}
 
 
@@ -143,7 +143,7 @@ namespace {
 	inline const bool Compare_FILETIME_lessthan( const FILETIME& t1, const FILETIME& t2 ) {
 		//CompareFileTime returns -1 when first FILETIME is less than second FILETIME
 		//Therefore: we can 'emulate' the `<` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
-		return ( CompareFileTime( &t1, &t2 ) == ( -1 ) );
+		return ( ::CompareFileTime( &t1, &t2 ) == ( -1 ) );
 		}
 
 	// Sequence within IDB_NODES
@@ -175,7 +175,7 @@ namespace {
 		if ( SUCCEEDED( alt_errCode ) ) {
 			ASSERT( strSize >= chars_remaining );
 			chars_written = ( strSize - chars_remaining );
-			ASSERT( wcslen( psz_formatted_attributes ) == chars_written );
+			ASSERT( ::wcslen( psz_formatted_attributes ) == chars_written );
 			return alt_errCode;
 			}
 		chars_written = 0;
@@ -214,7 +214,7 @@ const bool CTreeListItem::set_plusminus_and_title_rects( _In_ const RECT rcLabel
 	RECT test_rect = temp_rect;
 	normalize_RECT( &test_rect );
 
-	SetPlusMinusRect( new_plus_minus_rect );
+	CTreeListItem::SetPlusMinusRect( new_plus_minus_rect );
 
 	RECT new_title_rect = rcLabel;
 	VERIFY( ::OffsetRect( &new_title_rect, -( rc_top_left.x ), -( rc_top_left.y ) ) );
@@ -261,6 +261,12 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	static_cast<const CTreeListControl* const>( list )->DrawNode( this, hDC, rcNode );//pass subitem to drawNode?
 	RECT rcLabel = rc_const;
 	rcLabel.left = rcNode.right;
+
+	/*
+	_AFXWIN_INLINE CFont* CWnd::GetFont() const
+	{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
+		(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
+	*/
 	CFont* const list_font = list->GetFont( );
 	const bool list_has_focus = list->HasFocus( );
 	const bool list_is_show_selection_always = list->IsShowSelectionAlways( );
@@ -269,13 +275,13 @@ bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, 
 	const bool list_is_full_row_selection = list->m_showFullRowSelection;
 	//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
 
-	COwnerDrawnListItem::DrawLabel( hDC, rcLabel, state, width, focusLeft, false, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+	COwnerDrawnListItem::DrawLabel( hDC, rcLabel, state, width, focusLeft, false, list_font->m_hObject, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 	if ( width != NULL ) {
 		*width = ( rcLabel.right - rcLabel.left );
-		set_plusminus_and_title_rects( rcLabel, rc_const );
+		CTreeListItem::set_plusminus_and_title_rects( rcLabel, rc_const );
 		return true;
 		}
-	return set_plusminus_and_title_rects( rcLabel, rc_const );
+	return CTreeListItem::set_plusminus_and_title_rects( rcLabel, rc_const );
 	}
 
 void CTreeListItem::childNotNull( _In_ const CTreeListItem* const aTreeListChild, const size_t i ) {
@@ -560,7 +566,7 @@ FILETIME CTreeListItem::FILETIME_recurse( ) const {
 		}
 	ASSERT( m_child_info.m_child_info_ptr != nullptr );
 	//ASSERT( m_childCount == m_child_info->m_childCount );
-	auto ft = zero_init_struct<FILETIME>( );
+	FILETIME ft = { };
 	if ( Compare_FILETIME_lessthan( ft, m_lastChange ) ) {
 		ft = m_lastChange;
 		}
@@ -649,8 +655,8 @@ std::wstring CTreeListItem::GetPath( ) const {
 	std::wstring pathBuf;
 	pathBuf.reserve( MAX_PATH );
 	CTreeListItem::UpwardGetPathWithoutBackslash( pathBuf );
-	ASSERT( wcslen( m_name ) == m_name_length );
-	ASSERT( wcslen( m_name ) < 33000 );
+	ASSERT( ::wcslen( m_name ) == m_name_length );
+	ASSERT( ::wcslen( m_name ) < 33000 );
 	ASSERT( pathBuf.length( ) < 33000 );
 	return pathBuf;
 	}
@@ -743,7 +749,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL c
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
-		ASSERT( chars_written == wcslen( psz_text ) );
+		ASSERT( chars_written == ::wcslen( psz_text ) );
 		return res;
 		}
 	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -766,7 +772,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL
 	const HRESULT res = wds_fmt::FormatBytes( size_recurse( ), psz_text, strSize, chars_written, sizeBuffNeed );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
-		ASSERT( chars_written == wcslen( psz_text ) );
+		ASSERT( chars_written == ::wcslen( psz_text ) );
 		return res;
 		}
 	WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -789,7 +795,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const 
 	const HRESULT res = wds_fmt::CStyle_GetNumberFormatted( number_to_format, psz_text, strSize, chars_written );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
-		ASSERT( chars_written == wcslen( psz_text ) );
+		ASSERT( chars_written == ::wcslen( psz_text ) );
 		return res;
 		}
 
@@ -844,7 +850,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL c
 		//_CrtDbgBreak( );//not handled yet.
 		return res;
 		}
-	ASSERT( chars_written == wcslen( psz_text ) );
+	ASSERT( chars_written == ::wcslen( psz_text ) );
 	return res;
 	}
 
@@ -880,7 +886,7 @@ INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _I
 	const CTreeListItem* const other = tlib;
 	switch ( subitem ) {
 			case column::COL_NAME:
-				return signum( wcscmp( m_name, other->m_name ) );
+				return signum( ::wcscmp( m_name, other->m_name ) );
 			case column::COL_PERCENTAGE:
 				return signum( CTreeListItem::GetFraction( ) - other->GetFraction( ) );
 			case column::COL_SUBTREETOTAL:
@@ -1416,7 +1422,7 @@ void CTreeListControl::handle_OnContextMenu( CPoint pt ) const {
 
 	const auto item = CTreeListControl::GetItem( i );
 	const auto thisHeader = CListCtrl::GetHeaderCtrl( );
-	const auto rc = COwnerDrawnListCtrl::GetWholeSubitemRect( i, 0, thisHeader );
+	const auto rc = COwnerDrawnListCtrl::GetWholeSubitemRect( i, 0, thisHeader->m_hWnd );
 	if ( item == NULL ) {
 		displayWindowsMsgBoxWithMessage( L"GetItem returned NULL!" );
 		return;
@@ -1635,7 +1641,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 		return;
 		}
 	const auto thisHeader = CListCtrl::GetHeaderCtrl( );
-	const auto rc = COwnerDrawnListCtrl::GetWholeSubitemRect( i, 0, thisHeader );
+	const auto rc = COwnerDrawnListCtrl::GetWholeSubitemRect( i, 0, thisHeader->m_hWnd );
 
 	const POINT temp = { rc.left, rc.top };
 	//given temp  == {   0, 84 };

@@ -54,7 +54,11 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 	//Why are we bothering to draw this ourselves?
 	if ( subitem == column::COL_EXTENSION ) {
 		ASSERT( list == m_list );
-		UNREFERENCED_PARAMETER( list );
+		/*
+		_AFXWIN_INLINE CFont* CWnd::GetFont() const
+		{ ASSERT(::IsWindow(m_hWnd)); return CFont::FromHandle(
+			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
+		*/
 		CFont* const list_font = list->GetFont( );
 		const bool list_has_focus = list->HasFocus( );
 		const bool list_is_show_selection_always = list->IsShowSelectionAlways( );
@@ -63,7 +67,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 		const bool list_is_full_row_selection = list->m_showFullRowSelection;
 		//list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection
 
-		COwnerDrawnListItem::DrawLabel( hDC, rc, state, width, focusLeft, true, list_font, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+		COwnerDrawnListItem::DrawLabel( hDC, rc, state, width, focusLeft, true, list_font->m_hObject, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 		return true;
 		}
 	else if ( subitem == column::COL_COLOR ) {
@@ -313,7 +317,7 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ _In_range_( >=
 #endif
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
-	VERIFY( DeleteAllItems( ) );
+	VERIFY( CListCtrl::DeleteAllItems( ) );
 	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
 	auto startTime = help_QueryPerformanceCounter( );
 

@@ -401,6 +401,34 @@ void normalize_RECT( _Inout_ RECT* const rect ) {
 	}
 
 
+void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF clr) {
+		/*
+	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+	{
+		ENSURE_VALID(this);
+		ENSURE(m_hDC != NULL);
+		ENSURE(lpRect);
+
+		::SetBkColor(m_hDC, clr);
+		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+	}
+	*/
+		ASSERT( hDC != NULL );
+
+		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		//If the [SetBkColor] succeeds, the return value specifies the previous background color as a COLORREF value.
+		//If [SetBkColor] fails, the return value is CLR_INVALID.
+		if ( ::SetBkColor( hDC, clr ) == CLR_INVALID ) {
+			std::terminate( );
+			}
+
+		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		//If the function fails, the return value is zero.
+		VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, rect, NULL, 0, NULL ) );
+
+	}
 
 
 
@@ -968,9 +996,92 @@ void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name ) {
 void trace_full_path( _In_z_ PCWSTR const path ) {
 	TRACE( _T( "MyGetFullPathName( m_folder_name_heap ): %s\r\n" ), path );
 	}
-
 #endif
 
+
+int GetItemCount_HDM_GETITEMCOUNT( _In_ HWND hWnd ) {
+	ASSERT( ::IsWindow( hWnd ) );
+	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
+	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
+
+
+	//HDM_GETITEMCOUNT message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775337.aspx
+	//Gets a count of the items in a header control.
+	//[HDM_GETITEMCOUNT message] Returns the number of items if successful, or -1 otherwise.
+	const LRESULT msg_result = ::SendMessageW( hWnd, HDM_GETITEMCOUNT, 0, 0L );
+	if ( msg_result == -1 ) {
+		std::terminate( );
+		}
+	return static_cast< int >( msg_result );
+	}
+
+
+int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nCol ) {
+	ASSERT( ::IsWindow( hWnd ) );
+	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
+	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
+
+	//LVM_GETCOLUMNWIDTH message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774915.aspx
+	//Gets the width of a column in report or list view.
+	return static_cast< int >( ::SendMessageW( hWnd, LVM_GETCOLUMNWIDTH, static_cast<WPARAM>( nCol ), 0 ) );
+	}
+
+_Success_( return )
+BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem, _In_ const HWND hWnd ) {
+	pHeaderItem->mask = HDI_WIDTH;
+	//VERIFY( thisHeader->GetItem( 0, &hditem ) );
+	/*
+	_AFXCMN_INLINE BOOL CHeaderCtrl::GetItem(_In_ int nPos, _Out_ HDITEM* pHeaderItem) const
+		{ ASSERT(::IsWindow(m_hWnd)); return (BOOL)::SendMessage(m_hWnd, HDM_GETITEM, nPos, (LPARAM)pHeaderItem); }
+	*/
+	//HDM_GETITEM message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775335.aspx
+	//Gets information about an item in a header control. 
+	//Returns TRUE if successful, or FALSE otherwise.
+	//wParam: The index of the item for which information is to be retrieved.
+	//lParam: A pointer to an HDITEM structure.
+		//When the message is sent, the mask member indicates the type of information being requested.
+		//When the message returns, the other members receive the requested information.
+		//If the mask member specifies zero, the message returns TRUE but copies no information to the structure.
+	//If the HDI_TEXT flag is set in the mask member of the HDITEM structure:
+		//the control may change the pszText member of the structure to point to the new text instead of filling the buffer with the requested text.
+		//Applications should not assume that the text will always be placed in the requested buffer.
+			
+
+	ASSERT( ::IsWindow( hWnd ) );
+
+	const LRESULT get_item_result = ::SendMessageW( hWnd, HDM_GETITEM, static_cast<WPARAM>( nPos ), reinterpret_cast<LPARAM>( pHeaderItem ) );
+	//if ( get_item_result != TRUE ) {
+	//	std::terminate( );
+	//	}
+	//return TRUE;
+	return static_cast<BOOL>( get_item_result );
+	}
+
+_Success_( return )
+BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const UINT nCode ) {
+	/*
+	BOOL GetItemRect(int nItem, LPRECT lpRect, UINT nCode) const
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		lpRect->left = nCode;
+		return (BOOL)::SendMessage(m_hWnd, LVM_GETITEMRECT, (WPARAM)nItem, (LPARAM)lpRect);
+	}
+	*/
+	//LVM_GETITEMRECT message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761049.aspx
+	//Retrieves the bounding rectangle for all or part of an item in the current view.
+	//Returns TRUE if successful, or FALSE otherwise.
+	//wParam: Index of the list-view item.
+	//lParam: Pointer to a RECT structure that receives the bounding rectangle.
+		//When the message is sent, the left member of this structure is used to specify the portion of the list-view item from which to retrieve the bounding rectangle.
+		//It must be set to one of the following values:
+			//LVIR_BOUNDS
+			//LVIR_ICON
+			//LVIR_LABEL
+			//LVIR_SELECTBOUNDS
+	ASSERT( ::IsWindow( hWnd ) );
+	rect->left = nCode;
+	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_GETITEMRECT, nItem, reinterpret_cast<LPARAM>( rect ) ) );
+	}
 
 _Ret_range_( 0, 100 ) INT Treemap_Options::GetBrightnessPercent( ) const {
 	return RoundDouble( brightness   * 100 );

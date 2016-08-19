@@ -144,7 +144,7 @@ namespace {
 				return -1;
 				}
 			if ( sys_dir_res < dir_buf_size ) {
-				ASSERT( wcslen( dir_buf ) == ( sys_dir_res + 1 ) );
+				ASSERT( ::wcslen( dir_buf ) == ( sys_dir_res + 1 ) );
 				return reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, L"open", L"RUNDLL32.EXE", parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
 				}
 			ASSERT( sys_dir_res >= dir_buf_size );
@@ -153,8 +153,8 @@ namespace {
 				const auto sys_dir_res_2 = ::GetSystemDirectoryW( str_ptr.get( ), sys_dir_res );
 				if ( ( sys_dir_res_2 != 0 ) && ( ( sys_dir_res_2 + 1 ) == sys_dir_res ) ) {
 					ASSERT( ( sys_dir_res_2 + 1 )  == sys_dir_res );
-					ASSERT( wcslen( str_ptr.get( ) ) == sys_dir_res );
-					ASSERT( wcslen( str_ptr.get( ) ) == ( sys_dir_res_2 + 1 ) );
+					ASSERT( ::wcslen( str_ptr.get( ) ) == sys_dir_res );
+					ASSERT( ::wcslen( str_ptr.get( ) ) == ( sys_dir_res_2 + 1 ) );
 					return reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, L"open", L"RUNDLL32.EXE", parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
 					}
 				displayWindowsMsgBoxWithMessage( L"Something is extremely wrong (GetSystemDirectoryW)!!" );
@@ -478,7 +478,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	//check8Dot3NameCreationAndNotifyUser( );
 
 	//const auto rootFolders_( folder );
-	buildDriveItems( pszPathName );
+	CDirstatDoc::buildDriveItems( pszPathName );
 
 	TRACE( _T( "**BANG** ---AAAAND THEY'RE OFF! THE RACE HAS BEGUN!\r\n" ) );
 
@@ -494,7 +494,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 
 COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 	if ( !m_extensionDataValid ) {
-		RebuildExtensionData( );
+		CDirstatDoc::RebuildExtensionData( );
 		}
 	if ( m_colorMap.empty( ) ) {
 		convert_vector_of_extension_records_to_map( GetExtensionRecords( ), &m_colorMap );
@@ -504,7 +504,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 		return m_colorMap.at( ext );
 		}
 	TRACE( _T( "Extension %s not in colorMap!\r\n" ), ext );
-	RebuildExtensionData( );
+	CDirstatDoc::RebuildExtensionData( );
 	convert_vector_of_extension_records_to_map( GetExtensionRecords( ), &m_colorMap );
 	if ( m_colorMap.count( ext ) > 0 ) {
 		return m_colorMap.at( ext );
@@ -517,7 +517,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 //We need a getter (NOT public data member) because we may need to do work before accessing.
 _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionRecords( ) {
 	if ( !m_extensionDataValid ) {
-		RebuildExtensionData( );
+		CDirstatDoc::RebuildExtensionData( );
 		}
  	return &m_extensionRecords;
 	}
@@ -552,7 +552,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 
 	m_frameptr->RestoreGraphView( );
 	//Complete?
-	SortTreeList();
+	CDirstatDoc::SortTreeList();
 	m_timeTextWritten = true;
 	TRACE( _T( "All work finished!\r\n" ) );
 	return true;
@@ -583,7 +583,7 @@ bool CDirstatDoc::Work( ) {
 		//cache the size of root item
 		m_rootItem->refresh_sizeCache( );
 
-		const auto res = OnWorkFinished( );
+		const auto res = CDirstatDoc::OnWorkFinished( );
 		const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
 		ASSERT( DirStatView != NULL );
 		if ( DirStatView == NULL ) {
@@ -628,7 +628,7 @@ void CDirstatDoc::OpenItem( _In_ const CTreeListItem& item ) {
 	//WTL::CWaitCursor wc;
 	std::wstring path( item.GetPath( ) );
 	//TODO: BUGBUG: Won't be able to open an item that's at a path longer than MAX_PATH!
-	const auto doesFileExist = PathFileExistsW( path.c_str( ) );
+	const auto doesFileExist = ::PathFileExistsW( path.c_str( ) );
 	if ( !doesFileExist ) {
 		TRACE( _T( "Path (%s) is invalid!\r\n" ), path.c_str( ) );
 		const std::wstring pathMsg( L"Path (" + path + L") is invalid!\r\n");

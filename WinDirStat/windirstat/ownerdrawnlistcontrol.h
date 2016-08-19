@@ -169,16 +169,20 @@ public:
 private:
 	//defined at the BOTTOM of this file!
 	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ HDC hDC, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
-		auto textColor = GetSysColor( COLOR_WINDOWTEXT );
+		//GetSysColor function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724371.aspx
+		//The function returns the red, green, blue (RGB) color value of the given element.
+		//If the nIndex parameter is out of range, the return value is zero.
+		//COLOR_WINDOWTEXT (8): "Text in windows"
+		//const DWORD textColor = ::GetSysColor( COLOR_WINDOWTEXT );
 		if ( ( state bitand ODS_SELECTED ) != 0 ) {
 			if ( list_has_focus || list_is_show_selection_always ) {
 				ASSERT( ( ( state bitand ODS_SELECTED ) != 0 ) && ( list_has_focus || list_is_show_selection_always ) );
 			
-				DrawHighlightSelectBackground( rcLabel, rc, hDC, textColor, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
-				return textColor;
+				return COwnerDrawnListItem::DrawHighlightSelectBackground( rcLabel, rc, hDC, /*textColor,*/ list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+				//return textColor;
 				}
 			}
-		return item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
+		return COwnerDrawnListItem::item_text_color( ); // Use the color designated for this item. This is currently only for encrypted and compressed items
 		}
 
 
@@ -208,16 +212,16 @@ public:
 //				}
 //			}
 
-		auto r_1 = compare_interface( other, sorting.column1 );
-		if ( abs( r_1 ) < 2 && !sorting.ascending1 ) {
+		auto r_1 = COwnerDrawnListItem::compare_interface( other, sorting.column1 );
+		if ( ::abs( r_1 ) < 2 && !sorting.ascending1 ) {
 			r_1 = -r_1;
 			}
 		auto r_2 = r_1;
 
 		if ( r_2 == 0 && sorting.column2 != sorting.column1 ) {
-			r_2 = compare_interface( other, sorting.column2 );
+			r_2 = COwnerDrawnListItem::compare_interface( other, sorting.column2 );
 		
-			if ( abs( r_2 ) < 2 && !sorting.ascending2 ) {
+			if ( ::abs( r_2 ) < 2 && !sorting.ascending2 ) {
 				return ( -r_2 );
 				}
 			}
@@ -236,36 +240,40 @@ public:
 			return;
 			}
 
+		//InflateRect function: https://msdn.microsoft.com/en-us/library/dd144994.aspx
+		//If the [InflateRect] succeeds, the return value is nonzero.
+		//If the [InflateRect] fails, the return value is zero.
 		VERIFY( ::InflateRect( &rc, -( 0 ), -( static_cast<int>( LABEL_Y_MARGIN ) ) ) );
-	/*
-	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-	{
-		ENSURE_VALID(this);
-		ENSURE(m_hDC != NULL);
-		ENSURE(lpRect);
+	///*
+	//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+	//{
+	//	ENSURE_VALID(this);
+	//	ENSURE(m_hDC != NULL);
+	//	ENSURE(lpRect);
 
-		::SetBkColor(m_hDC, clr);
-		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-	}
-	*/
-		ASSERT( hDC != NULL );
+	//	::SetBkColor(m_hDC, clr);
+	//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+	//}
+	//*/
+	//	ASSERT( hDC != NULL );
 
 
-		//If [SetBkColor] fails, the return value is CLR_INVALID.
-		const auto set_bk_color_res_1 = ::SetBkColor( hDC, list_highlight_color );
-		ASSERT( set_bk_color_res_1 != CLR_INVALID );
-	#ifndef DEBUG
-		UNREFERENCED_PARAMETER( set_bk_color_res_1 );
-	#endif
+	//	//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+	//	//If the [SetBkColor] succeeds, the return value specifies the previous background color as a COLORREF value.
+	//	//If [SetBkColor] fails, the return value is CLR_INVALID.
+	//	VERIFY( ::SetBkColor( hDC, list_highlight_color ) != CLR_INVALID );
 
-		//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+	//	//If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+	//	VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
-		//pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
+	//	//pdc.FillSolidRect( &rc, list->GetHighlightColor( ) );
+
+		fill_solid_RECT( hDC, &rc, list_highlight_color );
 		}
 
 
 	COLORREF     default_item_text_color      ( ) const {
+		//COLOR_WINDOWTEXT (8): "Text in windows"
 		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
@@ -284,7 +292,7 @@ protected:
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
 			chars_written = ( strSize - chars_remaining );
-			ASSERT( chars_written == wcslen( psz_text ) );
+			ASSERT( chars_written == ::wcslen( psz_text ) );
 			return res;
 			}
 		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( res );
@@ -306,11 +314,11 @@ protected:
 
 	INT          default_compare              ( _In_ const COwnerDrawnListItem* const baseOther ) const {
 #pragma warning( suppress: 4200 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
-		return signum( wcscmp( m_name, baseOther->m_name ) );
+		return signum( ::wcscmp( m_name, baseOther->m_name ) );
 		}
 
 	//defined at bottom of THIS file.
-	void         DrawLabel( _In_ HDC hDC, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent, _In_ CFont* const list_font, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+	void         DrawLabel( _In_ HDC hDC, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent, _In_ const HGDIOBJ list_font_GDI_object_handle, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
 		/*
 		  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 		*/
@@ -326,7 +334,8 @@ protected:
 		*/
 
 		//TODO: performance issue in the line below due to CHandleMap::FromHandle
-		SelectObject_wrapper sofont( hDC, list_font->m_hObject );
+		//list_font->m_hObject
+		SelectObject_wrapper sofont( hDC, list_font_GDI_object_handle );
 	
 		//subtract 6 from rcRest.right, add 6 to rcRest.left
 		VERIFY( ::InflateRect( &rcRest, -( TEXT_X_MARGIN ), -( 0 ) ) );
@@ -334,13 +343,13 @@ protected:
 		RECT rcLabel = rcRest;
 		VERIFY( ::DrawTextW( hDC, m_name, static_cast<int>( m_name_length ), &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP ) );//DT_CALCRECT modifies rcLabel!!!
 
-		AdjustLabelForMargin( rcRest, rcLabel );
+		COwnerDrawnListItem::AdjustLabelForMargin( rcRest, rcLabel );
 
 		CSetBkMode bk( hDC, TRANSPARENT );
 		//auto textColor = GetSysColor( COLOR_WINDOWTEXT );
 
 
-		const auto textColor = draw_if_selected_return_text_color( state, rcLabel, rc, hDC, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
+		const auto textColor = COwnerDrawnListItem::draw_if_selected_return_text_color( state, rcLabel, rc, hDC, list_has_focus, list_is_show_selection_always, list_highlight_text_color, list_highlight_color, list_is_full_row_selection );
 
 		//COLORREF draw_if_selected_return_text_color( width, state, list, rcLabel, rc, pdc )
 		//if ( width == NULL && ( state bitand ODS_SELECTED ) != 0 && ( list->HasFocus( ) || list->IsShowSelectionAlways( ) ) ) {
@@ -379,9 +388,9 @@ protected:
 		}
 	
 	//defined at bottom of THIS file.
-	void         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ HDC hDC, _Inout_ COLORREF& textColor, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+	DWORD         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ HDC hDC, /*_In_ const COLORREF textColor,*/ _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
 		// Color for the text in a highlighted item (usually white)
-		textColor = list_highlight_text_color;
+		//textColor = list_highlight_text_color;
 
 		RECT selection = rcLabel;
 		// Depending on "FullRowSelection" style
@@ -390,17 +399,21 @@ protected:
 			}
 
 		// Fill the selection rectangle background (usually dark blue)
-		//pdc.FillSolidRect( &selection, list_highlight_color );
 
-		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		//If the function fails, the return value is CLR_INVALID.
-		const COLORREF result = ::SetBkColor( hDC, list_highlight_color );
-		if ( result == CLR_INVALID ) {
-			std::terminate( );
-			}
-		VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &selection, NULL, 0, NULL ) );
+		////pdc.FillSolidRect( &selection, list_highlight_color );
 
+		////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		////If the function fails, the return value is CLR_INVALID.
+		//const COLORREF result = ::SetBkColor( hDC, list_highlight_color );
+		//if ( result == CLR_INVALID ) {
+		//	std::terminate( );
+		//	}
+		//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &selection, NULL, 0, NULL ) );
+
+		fill_solid_RECT( hDC, &selection, list_highlight_color);
+
+		return list_highlight_text_color;
 		}
 
 
@@ -431,19 +444,17 @@ namespace {
 		}
 
 	//defined at the BOTTOM of this file!
-	void repopulate_right_aligned_cache( _Out_ std::vector<bool>& right_aligned_cache, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t thisLoopSize, _In_ const CHeaderCtrl* const thisHeaderCtrl, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl );
+	void repopulate_right_aligned_cache( _Out_ std::vector<bool>& right_aligned_cache, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t thisLoopSize, _In_ const HWND header_hWnd, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl );
 
 	_Pre_satisfies_( countArray <= itemCount )
 	void handle_countArray_too_small( _In_ const rsize_t countArray, _In_ const size_t itemCount ) {
 		TRACE( _T( "%i <= %i !!!! Something is REALLY wrong!!!\r\n" ), static_cast< int >( countArray ), static_cast< int >( itemCount ) );
 		displayWindowsMsgBoxWithMessage( L"countArray <= itemCount !!!! Something is REALLY wrong!!!" );
-		std::wstring item_count_str;
-		item_count_str = std::to_wstring( itemCount );
+		const std::wstring item_count_str( std::to_wstring( itemCount ) );
 
-		std::wstring count_array_str;
-		count_array_str = std::to_wstring( countArray );
+		const std::wstring count_array_str( std::to_wstring( countArray ) );
 
-		std::wstring err_str( L"Count array: " + count_array_str + L" itemCount: " + item_count_str + L"......aborting!" );
+		const std::wstring err_str( L"Count array: " + count_array_str + L" itemCount: " + item_count_str + L"......aborting!" );
 
 		displayWindowsMsgBoxWithMessage( std::move( err_str ) );
 		std::terminate( );
@@ -515,7 +526,7 @@ namespace {
 
 	//defined at the BOTTOM of this file!
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl );
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ const HWND header_hWnd );
 
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
@@ -594,9 +605,9 @@ namespace {
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ CHeaderCtrl* thisHeaderCtrl, _In_ const RECT rcItem ) {
+	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ const HWND header_hWnd, _In_ const RECT rcItem ) {
 		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
-		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, itemID, this_ctrl, thisHeaderCtrl );
+		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, itemID, this_ctrl, header_hWnd );
 		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
 		}
 
@@ -693,17 +704,7 @@ protected:
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
 		
-		//ASSERT( ( rcItem - rcItem.TopLeft( ) ) == rect_to_fill_solidly );
-		//dcmem.FillSolidRect( &rect_to_fill_solidly, GetItemBackgroundColor( pdis->itemID ) ); //NOT vectorized!
-
-		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		//If the function fails, the return value is CLR_INVALID.
-		const COLORREF set_bk_result = ::SetBkColor( hInMemoryDeviceContext, GetItemBackgroundColor( pDestinationDrawItemStruct->itemID ) );
-		if ( set_bk_result == CLR_INVALID ) {
-			std::terminate( );
-			}
-		VERIFY( ::ExtTextOut( hInMemoryDeviceContext, 0, 0, ETO_OPAQUE, &rect_to_fill_solidly, NULL, 0, NULL ) );
+		fill_solid_RECT( hInMemoryDeviceContext, &rect_to_fill_solidly, COwnerDrawnListCtrl::GetItemBackgroundColor( pDestinationDrawItemStruct->itemID ) );
 
 		const bool drawFocus = ( pDestinationDrawItemStruct->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
@@ -716,7 +717,8 @@ protected:
 		const bool showSelectionAlways = IsShowSelectionAlways( );
 		const auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );//HORRENDOUSLY slow. Pessimisation of memory access, iterates (with a for loop!) over a map. MAXIMUM branch prediction failures! Maximum Bad Speculation stalls!
 
-		const auto resize_size = thisHeaderCtrl->GetItemCount( );
+		//const auto resize_size = thisHeaderCtrl->GetItemCount( );
+		const auto resize_size = GetItemCount_HDM_GETITEMCOUNT( thisHeaderCtrl->m_hWnd );
 
 		check_validity_of_resize_size( resize_size, stack_array_size );
 
@@ -727,7 +729,7 @@ protected:
 
 		const rsize_t thisLoopSize = static_cast<rsize_t>( resize_size );
 		if ( is_right_aligned_cache.empty( ) ) {
-			repopulate_right_aligned_cache( is_right_aligned_cache, thisLoopSize, thisHeaderCtrl, this );
+			repopulate_right_aligned_cache( is_right_aligned_cache, thisLoopSize, thisHeaderCtrl->m_hWnd, this );
 			}
 		ASSERT( thisLoopSize < 8 );
 
@@ -746,7 +748,7 @@ protected:
 
 		//build map of column# -> ENUM_COL
 		//build drawable rect for each column
-		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, static_cast<INT>( pDestinationDrawItemStruct->itemID ), this, thisHeaderCtrl, rcItem );
+		map_column_number_to_ENUM_and_build_drawable_rect( thisLoopSize, order, subitems_temp, rects_temp, static_cast<INT>( pDestinationDrawItemStruct->itemID ), this, thisHeaderCtrl->m_hWnd, rcItem );
 
 		const column::ENUM_COL (&subitems)[ stack_array_size ] = subitems_temp;
 		const RECT (&rects_draw)[ stack_array_size ] = rects_temp;
@@ -766,8 +768,9 @@ protected:
 
 		}
 
+	//Manually tweaked MFC routines.
 	virtual const AFX_MSGMAP* GetMessageMap( ) const override {
-		return GetThisMessageMap( );
+		return COwnerDrawnListCtrl::GetThisMessageMap( );
 		}
 public:
 	static const CRuntimeClass classCOwnerDrawnListCtrl;
@@ -778,7 +781,7 @@ public:
 	//DECLARE_DYNAMIC(COwnerDrawnListCtrl)
 	COwnerDrawnListCtrl ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_frameptr( GetMainFrame( ) ) {
 		ASSERT( rowHeight > 0 );
-		InitializeColors( );
+		COwnerDrawnListCtrl::InitializeColors( );
 		}
 
 	virtual ~COwnerDrawnListCtrl( ) = default;
@@ -790,7 +793,9 @@ public:
 		//TRACE statements in headers output the FULL source file path. Ick.
 		//TRACE( _T( "Loading persistent attributes....\r\n" ) );
 
-		const auto itemCount_default_type = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
+		//const auto itemCount_default_type = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
+		const auto itemCount_default_type = GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd );
+
 		const auto itemCount = static_cast<size_t>( itemCount_default_type );
 		const rsize_t countArray = 10;
 
@@ -838,7 +843,8 @@ public:
 			}
 
 		for ( size_t i = 0; i < itemCount; i++ ) {
-			col_order_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
+			//col_order_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
+			col_order_array[ i ] = GetColumnWidth_LVM_GETCOLUMNWIDTH( m_hWnd, static_cast<int>( i ) );
 			}
 		std::wstring column_widths_default;
 
@@ -855,8 +861,8 @@ public:
 
 		for ( size_t i = 0; i < itemCount; i++ ) {
 			// To avoid "insane" settings we set the column width to maximal twice the default width.
-			const auto maxWidth = CListCtrl::GetColumnWidth( static_cast<int>( i ) ) * 2;
-		
+			//const auto maxWidth = CListCtrl::GetColumnWidth( static_cast<int>( i ) ) * 2;
+			const auto maxWidth = ( GetColumnWidth_LVM_GETCOLUMNWIDTH( m_hWnd, static_cast<int>( i ) ) * 2 );
 	#pragma push_macro("min")
 	#undef min
 			const auto w =	( col_order_array[ i ], maxWidth );
@@ -871,7 +877,8 @@ public:
 		const rsize_t col_array_size = 128;
 		int col_array[ col_array_size ] = { 0 };
 
-		const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
+		//const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
+		const auto itemCount = GetItemCount_HDM_GETITEMCOUNT( m_hWnd );
 
 		if ( itemCount < 2 ) {
 			//CPersistence expects more than one item arrays
@@ -959,7 +966,7 @@ public:
 
 	_Success_( return != -1 ) _Ret_range_( 0, INT_MAX )
 	INT FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
-		auto fi = zero_init_struct<LVFINDINFO>( );
+		LVFINDINFO fi = { };
 
 		fi.flags  = LVFI_PARAM;
 		fi.lParam = reinterpret_cast<LPARAM>( item );
@@ -977,37 +984,45 @@ public:
 		VERIFY( CWnd::ModifyStyle( 0, WS_CLIPCHILDREN ) );
 
 		// Where does the 1st Item begin vertically?
-		if ( CListCtrl::GetItemCount( ) > 0 ) {
+		if ( GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) > 0 ) {
 			RECT rc;
-			VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
+			//VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
+			VERIFY( GetItemRect_LVM_GETITEMRECT( m_hWnd, 0, &rc, LVIR_BOUNDS ) );
 			m_yFirstItem = rc.top;
 			}
 		else {
-			InsertItem( 0, _T( "_tmp" ), 0 );
+			CListCtrl::InsertItem( 0, _T( "_tmp" ), 0 );
 			RECT rc;
-			VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
+			//VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
+			VERIFY( GetItemRect_LVM_GETITEMRECT( m_hWnd, 0, &rc, LVIR_BOUNDS ) );
+
+			/*
+_AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
+	{ ASSERT(::IsWindow(m_hWnd)); return (BOOL) ::SendMessage(m_hWnd, LVM_DELETEITEM, nItem, 0L); }
+			*/
+
 			VERIFY( CListCtrl::DeleteItem( 0 ) );
 			m_yFirstItem = rc.top;
 			}
 
-		LoadPersistentAttributes( );
+		COwnerDrawnListCtrl::LoadPersistentAttributes( );
 		}
 
 	void AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
 		//WTL::CWaitCursor wc;
 
 		INT width = 10;
-		const auto itemCount = CListCtrl::GetItemCount( );
+		const auto itemCount = GetItemCount_HDM_GETITEMCOUNT( m_hWnd );
 		for ( INT i = 0; i < itemCount; i++ ) {
-			ASSERT( itemCount == CListCtrl::GetItemCount( ) );
-			const auto item = GetItem( i );
+			ASSERT( itemCount == GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) );
+			const auto item = COwnerDrawnListCtrl::GetItem( i );
 			if ( item == NULL ) {
 				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::AdjustColumnWidth - item == NULL (aborting)" );
 				std::terminate( );
 				//`/analyze` is confused.
 				return;
 				}
-			const auto w = GetSubItemWidth( item, col );
+			const auto w = COwnerDrawnListCtrl::GetSubItemWidth( item, col );
 			ASSERT( w == ( CListCtrl::GetStringWidth( item->m_name ) + 20 ) );
 			//ASSERT( w == ( GetStringWidth( item->m_name ) + 10 ) );
 			if ( w > width ) {
@@ -1037,20 +1052,21 @@ public:
 
 	COLORREF GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
 		auto selected = ( CListCtrl::GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
-		if ( selected && m_showFullRowSelection && ( HasFocus( ) || IsShowSelectionAlways( ) ) ) {
+		if ( selected && m_showFullRowSelection && ( COwnerDrawnListCtrl::HasFocus( ) || COwnerDrawnListCtrl::IsShowSelectionAlways( ) ) ) {
 			return GetHighlightTextColor( );
 			}
 		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
-	RECT GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, CHeaderCtrl* const thisHeader ) const {
+	RECT GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, const HWND header_hWnd ) const {
 		CRect rc;
 		if ( subitem == 0 ) {
 			// Special case column 0:
 			// If we did GetSubItemRect(item 0, LVIR_LABEL, rc) and we have an image list, then we would get the rectangle excluding the image.
-			auto hditem = zero_init_struct<HDITEM>( );
+			HDITEM hditem = { };
 			hditem.mask = HDI_WIDTH;
-			VERIFY( thisHeader->GetItem( 0, &hditem ) );
+
+			VERIFY( GetItem_HDM_GETITEM( 0, &hditem, header_hWnd ) );
 
 			VERIFY( CListCtrl::GetItemRect( item, rc, LVIR_LABEL ) );
 			rc.left = rc.right - hditem.cxy;
@@ -1163,7 +1179,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 		}
 
 	COLORREF GetHighlightColor( ) const {
-		if ( HasFocus( ) ) {
+		if ( COwnerDrawnListCtrl::HasFocus( ) ) {
 			return ::GetSysColor( COLOR_HIGHLIGHT );
 			}
 		return RGB( 190, 190, 190 );
@@ -1171,7 +1187,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 	
 	_Success_( return != COLORREF( 0 ) )
 	COLORREF GetHighlightTextColor( ) const {
-		if ( HasFocus( ) ) {
+		if ( COwnerDrawnListCtrl::HasFocus( ) ) {
 			return ::GetSysColor( COLOR_HIGHLIGHTTEXT );
 			}
 		return RGB( 0, 0, 0 );
@@ -1180,7 +1196,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 	_Success_( return != COLORREF( 0 ) )
 	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const {
-		return ( IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
+		return ( COwnerDrawnListCtrl::IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 		}
 
 	static_assert( INT_MAX < UINT_MAX, "" );
@@ -1189,9 +1205,9 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 		}
 
 	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const {
-		const auto itemPos = FindListItem( item );
+		const auto itemPos = COwnerDrawnListCtrl::FindListItem( item );
 		if ( itemPos >= 0 ) {
-			return IsItemStripeColor( static_cast<UINT>( itemPos ) );
+			return COwnerDrawnListCtrl::IsItemStripeColor( static_cast<UINT>( itemPos ) );
 			}
 		return COLORREF( 0 );
 		}
@@ -1231,7 +1247,7 @@ public:
 		auto textColor = item->item_text_color( );
 
 		if ( ( pdis->itemState bitand ODS_SELECTED ) && ( showSelectionAlways || HasFocus( ) ) && ( bIsFullRowSelection ) ) {
-			textColor = GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
+			textColor = COwnerDrawnListCtrl::GetItemSelectionTextColor( static_cast<INT>( pdis->itemID ) );
 			}
 
 		CSetTextColor tc( hDC, textColor );
@@ -1244,9 +1260,9 @@ public:
 
 		ASSERT( subitem != column::COL_NAME );
 		rsize_t size_needed = 0;
-		const HRESULT stackbuffer_draw_res = drawSubItem_stackbuffer( item, rcText, align, subitem, hDC, size_needed );
+		const HRESULT stackbuffer_draw_res = COwnerDrawnListCtrl::drawSubItem_stackbuffer( item, rcText, align, subitem, hDC, size_needed );
 		if ( !SUCCEEDED( stackbuffer_draw_res ) ) {
-			DrawText_dynamic( item, rcText, align, subitem, hDC, size_needed );
+			COwnerDrawnListCtrl::DrawText_dynamic( item, rcText, align, subitem, hDC, size_needed );
 			}
 
 		}
@@ -1353,10 +1369,11 @@ protected:
 		}
 
 public:
-	bool IsColumnRightAligned( _In_ const INT col, const CHeaderCtrl* const thisHeaderControl ) const {
-		auto hditem = zero_init_struct<HDITEM>( );
+	bool IsColumnRightAligned( _In_ const INT col, const HWND hWnd ) const {
+		HDITEM hditem = { };
 		hditem.mask = HDI_FORMAT;
-		VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
+		//VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
+		VERIFY( GetItem_HDM_GETITEM( 0, &hditem, m_hWnd ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
 	
@@ -1386,7 +1403,7 @@ private:
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
 		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
-		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
+		const auto align = COwnerDrawnListCtrl::IsColumnRightAligned( subitem, thisHeaderCtrl->m_hWnd ) ? DT_RIGHT : DT_LEFT;
 		VERIFY( ::DrawTextW( hDC, buffer.get( ), static_cast<int>( chars_written_2 ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
@@ -1410,7 +1427,7 @@ private:
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
 		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
-		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
+		const auto align = COwnerDrawnListCtrl::IsColumnRightAligned( subitem, thisHeaderCtrl->m_hWnd ) ? DT_RIGHT : DT_LEFT;
 		VERIFY( ::DrawTextW( hDC, item->m_name, static_cast<int>( item->m_name_length ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 			
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
@@ -1423,7 +1440,7 @@ private:
 	INT GetWidth_not_ownerdrawn( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ RECT& rc, _In_ const HDC hDC ) const {
 		const auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 		if ( subitem == column::COL_NAME ) {
-			return GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, hDC );
+			return COwnerDrawnListCtrl::GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, hDC );
 			}
 
 		const rsize_t subitem_text_size = 128;
@@ -1447,7 +1464,7 @@ private:
 			(HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0, 0)); }
 		*/
 		SelectObject_wrapper sofont( hDC, CWnd::GetFont( )->m_hObject );
-		const auto align = IsColumnRightAligned( subitem, thisHeaderCtrl ) ? DT_RIGHT : DT_LEFT;
+		const auto align = COwnerDrawnListCtrl::IsColumnRightAligned( subitem, thisHeaderCtrl->m_hWnd ) ? DT_RIGHT : DT_LEFT;
 		VERIFY( ::DrawTextW( hDC, psz_subitem_formatted_text, static_cast<int>( chars_written ), &rc, DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_NOPREFIX | DT_NOCLIP | static_cast<UINT>( align ) ) );
 
 		VERIFY( ::InflateRect( &rc, TEXT_X_MARGIN, 0 ) );
@@ -1475,7 +1492,7 @@ protected:
 			return width;
 			}
 
-		return GetWidth_not_ownerdrawn( item, subitem, rc, dc.m_hDC );
+		return COwnerDrawnListCtrl::GetWidth_not_ownerdrawn( item, subitem, rc, dc.m_hDC );
 		}
 
 public:
@@ -1503,15 +1520,13 @@ public:
 private:
 	
 	_Post_satisfies_( readable <= capacity )
-	void buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const CHeaderCtrl* header_ctrl ) const {
-		ASSERT( static_cast<int>( capacity ) >= header_ctrl->GetItemCount( ) );
+	void buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const HWND header_hWnd ) const {
+		ASSERT( static_cast<int>( capacity ) >= GetItemCount_HDM_GETITEMCOUNT( header_hWnd ) );
 		readable = 0;
 
 
-		auto x   = -( CWnd::GetScrollPos( SB_HORZ ) );
-		auto hdi = zero_init_struct<HDITEM>( );
-		hdi.mask = HDI_WIDTH;
-		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
+		int x = -( CWnd::GetScrollPos( SB_HORZ ) );
+		const int header_ctrl_item_count = GetItemCount_HDM_GETITEMCOUNT( header_hWnd );
 		if ( header_ctrl_item_count <= 0 ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl, header_ctrl_item_count <= 0 (aborting)" );
 			std::terminate( );
@@ -1521,10 +1536,14 @@ private:
 			std::terminate( );
 			}
 	
+		HDITEM hdi = { };
+		hdi.mask = HDI_WIDTH;
 		//Probably NOT vectorizable anyway.
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( INT i = 0; i < header_ctrl_item_count; i++ ) {
-			VERIFY( header_ctrl->GetItem( columnOrder[ i ], &hdi ) );
+			VERIFY( GetItem_HDM_GETITEM( 0, &hdi, header_hWnd ) );
+
+			//VERIFY( header_ctrl->GetItem( columnOrder[ i ], &hdi ) );
 			x += hdi.cxy;
 			vertical[ i ] = x;
 			++readable;
@@ -1555,9 +1574,9 @@ protected:
 	//DECLARE_MESSAGE_MAP()
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {
 		ASSERT_VALID( pDC );
-		ASSERT( CListCtrl::GetHeaderCtrl( )->GetItemCount( ) > 0 );
+		ASSERT( GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd ) > 0 );
 		//TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
-		handle_EraseBkgnd( pDC->m_hDC, pDC->m_hAttribDC );
+		COwnerDrawnListCtrl::handle_EraseBkgnd( pDC->m_hDC, pDC->m_hAttribDC );
 		return true;
 		}
 	afx_msg void OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
@@ -1566,7 +1585,7 @@ protected:
 		if ( pNMHDR != NULL ) {
 			auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
 			const INT subitem = phdr->iItem;
-			AdjustColumnWidth( static_cast<column::ENUM_COL>( subitem ) );
+			COwnerDrawnListCtrl::AdjustColumnWidth( static_cast<column::ENUM_COL>( subitem ) );
 			}
 		ASSERT( pResult != NULL );
 		if ( pResult != NULL ) {
@@ -1587,17 +1606,28 @@ protected:
 			}
 		else {
 			//SetSorting( col, true ); //GetAscendingDefault( col ) == true, unconditionally
-			SetSorting( col, AscendingDefault( ) ); //GetAscendingDefault( col ) == true, unconditionally
+			COwnerDrawnListCtrl::SetSorting( col, AscendingDefault( ) ); //GetAscendingDefault( col ) == true, unconditionally
 			}
-		SortItems( );
+		COwnerDrawnListCtrl::SortItems( );
 		}
 	afx_msg void OnHdnItemdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
-		OnHdnItemclick( pNMHDR, pResult );
+		COwnerDrawnListCtrl::OnHdnItemclick( pNMHDR, pResult );
 		}
 	afx_msg void OnHdnItemchanging( NMHDR *pNMHDR, LRESULT *pResult ) {
 		UNREFERENCED_PARAMETER( pNMHDR );
 		CWnd::Default( );
-		CWnd::InvalidateRect( NULL );
+		/*
+_AFXWIN_INLINE void CWnd::InvalidateRect(LPCRECT lpRect, BOOL bErase = 1)
+	{ ASSERT(::IsWindow(m_hWnd)); ::InvalidateRect(m_hWnd, lpRect, bErase); }
+		*/
+
+		//InvalidateRect function: https://msdn.microsoft.com/en-us/library/vs/alm/dd145002.aspx
+		//The InvalidateRect function adds a rectangle to the specified window's update region. The update region represents the portion of the window's client area that must be redrawn.
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		ASSERT( ::IsWindow( m_hWnd ) );
+		VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+		//CWnd::InvalidateRect( NULL );
 		ASSERT( pResult != NULL );
 		if ( pResult != NULL ) {
 			*pResult = 0;
@@ -1607,13 +1637,13 @@ protected:
 #ifdef DEBUG
 		trace_on_destroy( m_persistent_name );
 #endif
-		SavePersistentAttributes( );
+		COwnerDrawnListCtrl::SavePersistentAttributes( );
 		CListCtrl::OnDestroy( );
 		}
 	afx_msg void OnLvnGetdispinfo( NMHDR* pNMHDR, LRESULT* pResult ) {
 		static_assert( sizeof( NMHDR* ) == sizeof( NMLVDISPINFOW* ), "some size issues. Good luck with that cast!" );
 		ASSERT( ( pNMHDR != NULL ) && ( pResult != NULL ) );
-		handle_LvnGetdispinfo( pNMHDR, pResult );
+		COwnerDrawnListCtrl::handle_LvnGetdispinfo( pNMHDR, pResult );
 		}
 
 
@@ -1738,9 +1768,10 @@ private:
 
 	void handle_EraseBkgnd( _In_ const HDC hDC, _In_ const HDC hAttribDC ) {
 		// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
-		if ( CListCtrl::GetItemCount( ) > 0 ) {
+		if ( GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) > 0 ) {
 			RECT rc;
-			VERIFY( CListCtrl::GetItemRect( CListCtrl::GetTopIndex( ), &rc, LVIR_BOUNDS ) );
+			VERIFY( GetItemRect_LVM_GETITEMRECT( m_hWnd, CListCtrl::GetTopIndex( ), &rc, LVIR_BOUNDS ) );
+			//VERIFY( CListCtrl::GetItemRect( CListCtrl::GetTopIndex( ), &rc, LVIR_BOUNDS ) );
 			m_yFirstItem = rc.top;
 			}
 		// else: if we did the same thing as in OnColumnsCreated(), we get repaint problems.
@@ -1759,34 +1790,36 @@ private:
 		rcBetween.top    = rcHeader.bottom;
 		rcBetween.bottom = m_yFirstItem;
 
-		/*
-		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-		{
-			ENSURE_VALID(this);
-			ENSURE(m_hDC != NULL);
-			ENSURE(lpRect);
+		///*
+		//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+		//{
+		//	ENSURE_VALID(this);
+		//	ENSURE(m_hDC != NULL);
+		//	ENSURE(lpRect);
 
-			::SetBkColor(m_hDC, clr);
-			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-		}
-		*/
-		ASSERT( hDC != NULL );
+		//	::SetBkColor(m_hDC, clr);
+		//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+		//}
+		//*/
+		//ASSERT( hDC != NULL );
 
-		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		//If [SetBkColor] fails, the return value is CLR_INVALID.
-		const auto clr_res = ::SetBkColor( hDC, gridColor );
-		ASSERT( clr_res != CLR_INVALID );
-		if ( clr_res == CLR_INVALID ) {
-			std::terminate( );
-			}
+		////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		////If [SetBkColor] fails, the return value is CLR_INVALID.
+		//const auto clr_res = ::SetBkColor( hDC, gridColor );
+		//ASSERT( clr_res != CLR_INVALID );
+		//if ( clr_res == CLR_INVALID ) {
+		//	std::terminate( );
+		//	}
 
-		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		//If the function fails, the return value is zero.
-		VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &rcBetween, NULL, 0, NULL ) );
-		//pDC->FillSolidRect( &rcBetween, gridColor );
+		////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+		////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+		////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		////If the function fails, the return value is zero.
+		//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rcBetween, NULL, 0, NULL ) );
+		////pDC->FillSolidRect( &rcBetween, gridColor );
+
+		fill_solid_RECT( hDC, &rcBetween, gridColor );
 
 		const rsize_t column_buf_size = 10;
 	
@@ -1801,11 +1834,11 @@ private:
 
 		int vertical_buf_temp[ column_buf_size ] = { 0 };
 		rsize_t vertical_readable = 0;
-		buildArrayFromItemsInHeaderControl( column_order, vertical_buf_temp, column_buf_size, vertical_readable, header_ctrl );
+		COwnerDrawnListCtrl::buildArrayFromItemsInHeaderControl( column_order, vertical_buf_temp, column_buf_size, vertical_readable, header_ctrl->m_hWnd );
 		ASSERT( vertical_readable < column_buf_size );
 
 		if ( m_showGrid ) {
-			draw_grid_for_EraseBkgnd( gridColor, hDC, rcClient, vertical_readable, vertical_buf_temp, hAttribDC );
+			COwnerDrawnListCtrl::draw_grid_for_EraseBkgnd( gridColor, hDC, rcClient, vertical_readable, vertical_buf_temp, hAttribDC );
 			}
 
 		const auto bgcolor    = ::GetSysColor( COLOR_WINDOW );
@@ -1832,32 +1865,35 @@ private:
 		fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 		
 		for ( INT i = 0; i < itemCount; i++ ) {
-			/*
-			void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-			{
-				ENSURE_VALID(this);
-				ENSURE(m_hDC != NULL);
-				ENSURE(lpRect);
+			///*
+			//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+			//{
+			//	ENSURE_VALID(this);
+			//	ENSURE(m_hDC != NULL);
+			//	ENSURE(lpRect);
 
-				::SetBkColor(m_hDC, clr);
-				::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-			}
-			*/
-			//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-			//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-			//If [SetBkColor] fails, the return value is CLR_INVALID.
-			const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
-			ASSERT( clr_res_bg != CLR_INVALID );
-			if ( clr_res_bg == CLR_INVALID ) {
-				std::terminate( );
-				}
+			//	::SetBkColor(m_hDC, clr);
+			//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+			//}
+			//*/
+			////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+			////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+			////If [SetBkColor] fails, the return value is CLR_INVALID.
+			//const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
+			//ASSERT( clr_res_bg != CLR_INVALID );
+			//if ( clr_res_bg == CLR_INVALID ) {
+			//	std::terminate( );
+			//	}
 
-			//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-			//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-			//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-			//If the function fails, the return value is zero.
-			VERIFY( ::ExtTextOut( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
-			//pDC->FillSolidRect( &fill, bgcolor );
+			////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+			////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+			////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+			////If the function fails, the return value is zero.
+			//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
+			////pDC->FillSolidRect( &fill, bgcolor );
+
+
+			fill_solid_RECT( hDC, &fill, bgcolor );
 
 			VERIFY( ::OffsetRect( &fill, 0, static_cast<int>( m_rowHeight ) ) );
 			}
@@ -1874,32 +1910,34 @@ private:
 				fill.left = left;
 				fill.right = vertical_buf[ i ] - gridWidth;
 
-				/*
-				void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-				{
-					ENSURE_VALID(this);
-					ENSURE(m_hDC != NULL);
-					ENSURE(lpRect);
+				///*
+				//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+				//{
+				//	ENSURE_VALID(this);
+				//	ENSURE(m_hDC != NULL);
+				//	ENSURE(lpRect);
 
-					::SetBkColor(m_hDC, clr);
-					::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-				}
-				*/
-				//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-				//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-				//If [SetBkColor] fails, the return value is CLR_INVALID.
-				const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
-				ASSERT( clr_res_bg != CLR_INVALID );
-				if ( clr_res_bg == CLR_INVALID ) {
-					std::terminate( );
-					}
+				//	::SetBkColor(m_hDC, clr);
+				//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+				//}
+				//*/
+				////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+				////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+				////If [SetBkColor] fails, the return value is CLR_INVALID.
+				//const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
+				//ASSERT( clr_res_bg != CLR_INVALID );
+				//if ( clr_res_bg == CLR_INVALID ) {
+				//	std::terminate( );
+				//	}
 
-				//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-				//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-				//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-				//If the function fails, the return value is zero.
-				VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
-				//pDC->FillSolidRect( &fill, bgcolor );
+				////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+				////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+				////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+				////If the function fails, the return value is zero.
+				//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
+				////pDC->FillSolidRect( &fill, bgcolor );
+
+				fill_solid_RECT( hDC, &fill, bgcolor );
 
 				left = vertical_buf[ i ];
 				}
@@ -1908,32 +1946,35 @@ private:
 
 
 
-			/*
-			void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-			{
-				ENSURE_VALID(this);
-				ENSURE(m_hDC != NULL);
-				ENSURE(lpRect);
+			///*
+			//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+			//{
+			//	ENSURE_VALID(this);
+			//	ENSURE(m_hDC != NULL);
+			//	ENSURE(lpRect);
 
-				::SetBkColor(m_hDC, clr);
-				::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-			}
-			*/
-			//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-			//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-			//If [SetBkColor] fails, the return value is CLR_INVALID.
-			const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
-			ASSERT( clr_res_bg != CLR_INVALID );
-			if ( clr_res_bg == CLR_INVALID ) {
-				std::terminate( );
-				}
+			//	::SetBkColor(m_hDC, clr);
+			//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+			//}
+			//*/
+			////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+			////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+			////If [SetBkColor] fails, the return value is CLR_INVALID.
+			//const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
+			//ASSERT( clr_res_bg != CLR_INVALID );
+			//if ( clr_res_bg == CLR_INVALID ) {
+			//	std::terminate( );
+			//	}
 
-			//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-			//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-			//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-			//If the function fails, the return value is zero.
-			VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
-			//pDC->FillSolidRect( &fill, bgcolor );
+			////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+			////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+			////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+			////If the function fails, the return value is zero.
+			//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
+			////pDC->FillSolidRect( &fill, bgcolor );
+
+
+			fill_solid_RECT( hDC, &fill, bgcolor );
 
 			ASSERT( rowHeight == m_rowHeight );
 			top += rowHeight;
@@ -2151,17 +2192,17 @@ private:
 
 namespace{
 
-	void repopulate_right_aligned_cache( _Out_ std::vector<bool>& right_aligned_cache, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t thisLoopSize, _In_ const CHeaderCtrl* const thisHeaderCtrl, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
+	void repopulate_right_aligned_cache( _Out_ std::vector<bool>& right_aligned_cache, _In_ _In_range_( 1, SIZE_T_MAX ) const size_t thisLoopSize, _In_ const HWND header_hWnd, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
 		right_aligned_cache.reserve( thisLoopSize );
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			right_aligned_cache.push_back( owner_drawn_list_ctrl->IsColumnRightAligned( static_cast<int>( i ), thisHeaderCtrl ) );
+			right_aligned_cache.push_back( owner_drawn_list_ctrl->IsColumnRightAligned( static_cast<int>( i ), header_hWnd ) );
 			}
 		}
 
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ CHeaderCtrl* const thisHeaderCtrl ) {
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ const HWND header_hWnd ) {
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
-			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( itemID, subitems_temp[ i ], thisHeaderCtrl );
+			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( itemID, subitems_temp[ i ], header_hWnd );
 			}
 		}
 

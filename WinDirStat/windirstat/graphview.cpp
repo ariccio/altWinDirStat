@@ -124,15 +124,15 @@ void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context
 	//if ( item.m_type == IT_FILE ) {
 	if ( item.m_child_info.m_child_info_ptr == nullptr ) {
 		const auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
-		const auto scmp = wcscmp( extensionStrPtr, ext.c_str( ) );
+		const auto scmp = ::wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
 			auto rcc = item.TmiGetRectangle( );
-			return RenderHighlightRectangle( screen_device_context, rcc );
+			return CGraphView::RenderHighlightRectangle( screen_device_context, rcc );
 			}
 		return;
 		}
 
-	RecurseHighlightChildren( screen_device_context, item, ext );
+	CGraphView::RecurseHighlightChildren( screen_device_context, item, ext );
 	}
 
 void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const {
@@ -169,7 +169,7 @@ void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const {
 	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
 	SelectObject_wrapper sopen( screen_device_context, &pen );
 
-	RenderHighlightRectangle( screen_device_context, rc );
+	CGraphView::RenderHighlightRectangle( screen_device_context, rc );
 	}
 
 
@@ -209,7 +209,7 @@ inline void CGraphView::RecurseHighlightChildren( _In_ const HDC screen_device_c
 
 	//Not vectorized: 1200, loop contains data dependencies
 	for ( size_t i = 0; i < childCount; ++i ) {
-		RecurseHighlightExtension( screen_device_context, *( item_m_children + i ), ext );
+		CGraphView::RecurseHighlightExtension( screen_device_context, *( item_m_children + i ), ext );
 		}
 	}
 
@@ -232,9 +232,9 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 		}
 	if ( m_recalculationSuspended || ( !m_showTreemap ) ) {
 		// TODO: draw something interesting, e.g. outline of the first level.
-		return DrawEmptyView( pScreen_Device_Context );
+		return CGraphView::DrawEmptyView( pScreen_Device_Context );
 		}
-	DrawViewNotEmpty( pScreen_Device_Context );
+	CGraphView::DrawViewNotEmpty( pScreen_Device_Context );
 	}
 
 
@@ -286,7 +286,7 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	//TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld), %s\r\n" ), point.x, point.y, item->GetPath( ).c_str( ) );
 	m_frameptr->SetMessageText( item->GetPath( ).c_str( ) );
 
-	reset_timer_if_zero( );
+	CGraphView::reset_timer_if_zero( );
 	}
 
 
@@ -383,10 +383,10 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 void CGraphView::DrawHighlights( _In_ const HDC screen_device_context ) const {
 	const auto logicalFocus = m_frameptr->m_logicalFocus;
 	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
-		DrawSelection( screen_device_context );
+		CGraphView::DrawSelection( screen_device_context );
 		}
 	if ( logicalFocus == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
-		DrawHighlightExtension( screen_device_context );
+		CGraphView::DrawHighlightExtension( screen_device_context );
 		}
 	m_appptr->PeriodicalUpdateRamUsage( );
 	}
@@ -431,7 +431,7 @@ void CGraphView::DrawHighlightExtension( _In_ const HDC screen_device_context ) 
 		}
 	const auto rItem = Document->m_rootItem.get( );
 	if ( rItem != NULL ) {
-		RecurseHighlightExtension( screen_device_context, ( *rItem ), Document->m_highlightExtension );
+		CGraphView::RecurseHighlightExtension( screen_device_context, ( *rItem ), Document->m_highlightExtension );
 		}
 
 	}
@@ -514,31 +514,32 @@ void CGraphView::RenderHighlightRectangle( _In_ const HDC screen_device_context,
 		const auto Options = GetOptions( );
 
 
-		/*
-		void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-		{
-			ENSURE_VALID(this);
-			ENSURE(m_hDC != NULL);
-			ENSURE(lpRect);
+		///*
+		//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
+		//{
+		//	ENSURE_VALID(this);
+		//	ENSURE(m_hDC != NULL);
+		//	ENSURE(lpRect);
 
-			::SetBkColor(m_hDC, clr);
-			::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-		}
-		*/
-		ASSERT( screen_device_context != NULL );
+		//	::SetBkColor(m_hDC, clr);
+		//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
+		//}
+		//*/
+		//ASSERT( screen_device_context != NULL );
 
-		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		//If [SetBkColor] fails, the return value is CLR_INVALID.
-		const auto color_set_res = ::SetBkColor( screen_device_context, Options->m_treemapHighlightColor );
-		VERIFY( color_set_res != CLR_INVALID );
+		////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+		////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+		////If [SetBkColor] fails, the return value is CLR_INVALID.
+		//const auto color_set_res = ::SetBkColor( screen_device_context, Options->m_treemapHighlightColor );
+		//VERIFY( color_set_res != CLR_INVALID );
 
-		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		//If the function fails, the return value is zero.
-		VERIFY( ::ExtTextOutW( screen_device_context, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+		////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+		////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+		////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+		////If the function fails, the return value is zero.
+		//VERIFY( ::ExtTextOutW( screen_device_context, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
+		fill_solid_RECT(screen_device_context, &rc, Options->m_treemapHighlightColor );
 		return;
 		//return pdc->FillSolidRect( &rc, Options->m_treemapHighlightColor );
 		}

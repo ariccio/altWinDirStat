@@ -291,7 +291,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 
 _Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
 	//auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
-	auto pmc = zero_init_struct<PROCESS_MEMORY_COUNTERS>( );
+	PROCESS_MEMORY_COUNTERS pmc = { };
 
 	pmc.cb = sizeof( pmc );
 

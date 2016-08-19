@@ -39,8 +39,8 @@ struct Children_String_Heap_Manager_Impl final {
 	_Success_( SUCCEEDED( return ) )
 	const HRESULT copy_name_str_into_buffer( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
 
-	const size_t m_buffer_size;
-	size_t m_buffer_filled;
+	_Field_range_(0, SIZE_T_MAX) const size_t m_buffer_size;
+	_Field_range_(<=, m_buffer_size) size_t m_buffer_filled;
 #pragma warning( suppress: 4200 )//yes, this is Microsoft-specific
 	_Field_size_part_( m_buffer_size, m_buffer_filled ) wchar_t m_string_buffer[ ];
 

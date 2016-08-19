@@ -24,7 +24,7 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	//CPaintDC dc( this );
 	PAINTSTRUCT ps = { 0 };
 
-	HDC hDC = BeginPaint( &ps );
+	HDC hDC = ATL::CWindow::BeginPaint( &ps );
 	ASSERT( hDC != NULL );
 
 	RECT rc;
@@ -55,7 +55,7 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	const HWND parent = ::GetParent( m_hWnd );
 	ASSERT( parent != NULL );
 
-	auto window_info = zero_init_struct<WINDOWINFO>( );
+	WINDOWINFO window_info = { };
 	window_info.cbSize = sizeof( WINDOWINFO );
 
 	//GetWindowInfo function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633516.aspx
@@ -69,21 +69,23 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		displayWindowsMsgBoxWithError( err );
 		const auto color = color_scope_holder;
 
-		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		//If [SetBkColor] fails, the return value is CLR_INVALID.
-		const auto set_color_res_1 = ::SetBkColor( hDC, color );
-		ASSERT( set_color_res_1 != CLR_INVALID );
-#ifndef DEBUG
-		UNREFERENCED_PARAMETER( set_color_res_1 );
-#endif
-		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		//If the function fails, the return value is zero.
-		VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+//		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+//		//If the [SetBkColor] succeeds, the return value specifies the previous background color as a COLORREF value.
+//		//If [SetBkColor] fails, the return value is CLR_INVALID.
+//		const auto set_color_res_1 = ::SetBkColor( hDC, color );
+//		ASSERT( set_color_res_1 != CLR_INVALID );
+//#ifndef DEBUG
+//		UNREFERENCED_PARAMETER( set_color_res_1 );
+//#endif
+//		//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+//		//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+//		//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+//		//If the function fails, the return value is zero.
+//		VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
-		EndPaint( &ps );
+		fill_solid_RECT( hDC, &rc, color );
+
+		ATL::CWindow::EndPaint( &ps );
 		return 0;
 		}
 
@@ -97,20 +99,22 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		}
 	const auto color = color_scope_holder;
 			
-	//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-	//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-	//If [SetBkColor] fails, the return value is CLR_INVALID.
-	const auto set_color_res_2 = ::SetBkColor( hDC, color );
-	ASSERT( set_color_res_2 != CLR_INVALID );
-#ifndef DEBUG
-	UNREFERENCED_PARAMETER( set_color_res_2 );
-#endif
+//	//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
+//	//If the function succeeds, the return value specifies the previous background color as a COLORREF value.
+//	//If [SetBkColor] fails, the return value is CLR_INVALID.
+//	const auto set_color_res_2 = ::SetBkColor( hDC, color );
+//	ASSERT( set_color_res_2 != CLR_INVALID );
+//#ifndef DEBUG
+//	UNREFERENCED_PARAMETER( set_color_res_2 );
+//#endif
+//
+//	//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
+//	//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
+//	//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
+//	//If the function fails, the return value is zero.
+//	VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
-	//ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-	//If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-	//However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-	//If the function fails, the return value is zero.
-	VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
+	fill_solid_RECT( hDC, &rc, color );
 
 	EndPaint( &ps );
 	return 0;

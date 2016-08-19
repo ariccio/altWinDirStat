@@ -202,7 +202,9 @@ protected:
 		VERIFY( ::GetClientRect( m_hWnd, &rc ) );
 
 		if ( m_dimmed.m_hObject == NULL ) {
-			return pScreen_Device_Context->FillSolidRect( &rc, gray );
+			//return pScreen_Device_Context->FillSolidRect( &rc, gray );
+			fill_solid_RECT( pScreen_Device_Context->m_hDC, &rc, gray );
+			return;
 			}
 		CDC offscreen_buffer;
 		VERIFY( offscreen_buffer.CreateCompatibleDC( pScreen_Device_Context ) );
@@ -212,13 +214,15 @@ protected:
 		if ( ( rc.right - rc.left ) > m_dimmedSize.cx ) {
 			RECT r = rc;
 			r.left = r.left + m_dimmedSize.cx;
-			pScreen_Device_Context->FillSolidRect( &r, gray );
+			//pScreen_Device_Context->FillSolidRect( &r, gray );
+			fill_solid_RECT( pScreen_Device_Context->m_hDC, &r, gray );
 			}
 
 		if ( ( rc.bottom - rc.top ) > m_dimmedSize.cy ) {
 			RECT r = rc;
 			r.top = r.top + m_dimmedSize.cy;
-			pScreen_Device_Context->FillSolidRect( &r, gray );
+			//pScreen_Device_Context->FillSolidRect( &r, gray );
+			fill_solid_RECT( pScreen_Device_Context->m_hDC, &r, gray );
 			}
 		//VERIFY( dcmem.DeleteDC( ) );
 		}

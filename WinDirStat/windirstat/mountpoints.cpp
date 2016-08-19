@@ -30,7 +30,7 @@ const bool CMountPoints::IsVolume( _In_ const std::wstring& path ) const {
 		}
 	ASSERT( ( path.at( 1 )  == L':' ) );
 
-	const auto pathAtZero = towlower( path[ 0 ] );
+	const auto pathAtZero = ::towlower( path[ 0 ] );
 	const auto weirdAss_a = _T( 'a' );
 	const auto indexItem  = pathAtZero - weirdAss_a;
 	//return IsVolumeMountPoint( indexItem, path );
@@ -54,7 +54,7 @@ const bool CMountPoints::IsMountPoint( _In_ const std::wstring& path ) const {
 		}
 	ASSERT( ( path.length( ) >= 3 ) && ( path.at( 1 )  == L':' ) && ( path.at( 2 )  == L'\\' ) );
 
-	const auto pathAtZero = towlower( path[ 0 ] );
+	const auto pathAtZero = ::towlower( path[ 0 ] );
 	const auto weirdAss_a = _T( 'a' );
 	const auto indexItem  = pathAtZero - weirdAss_a;
 	return IsVolumeMountPoint( indexItem, path );

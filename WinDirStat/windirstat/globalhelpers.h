@@ -94,6 +94,9 @@ inline void normalize_RECT_top_bottom( _Inout_ RECT* const rect );
 _Post_satisfies_( rect->left <= rect->right ) _Post_satisfies_( rect->top <= rect->bottom )
 void normalize_RECT( _Inout_ RECT* const rect );
 
+void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF clr);
+
+
 void error_getting_pointer_to( _In_z_ PCWSTR const function_name );
 void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name );
 
@@ -180,13 +183,15 @@ void trace_m_stripeColor( _In_ const COLORREF m_stripeColor );
 
 void trace_on_destroy( _In_z_ PCWSTR const m_persistent_name );
 
-
-
-
-
-
 void trace_full_path( _In_z_ PCWSTR const path );
 #endif
+
+
+int GetItemCount_HDM_GETITEMCOUNT( _In_ HWND hWnd );
+int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nCol );
+BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem, _In_ const HWND hWnd );
+
+BOOL GetItemRect( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Inout_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const UINT nCode );
 
 // Collection of all treemap options.
 struct Treemap_Options final {
