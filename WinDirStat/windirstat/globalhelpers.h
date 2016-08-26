@@ -189,9 +189,13 @@ void trace_full_path( _In_z_ PCWSTR const path );
 
 int GetItemCount_HDM_GETITEMCOUNT( _In_ HWND hWnd );
 int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nCol );
+
+
+_Success_( return )
 BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem, _In_ const HWND hWnd );
 
-BOOL GetItemRect( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Inout_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const UINT nCode );
+_Success_( return )
+BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const LONG nCode );
 
 // Collection of all treemap options.
 struct Treemap_Options final {

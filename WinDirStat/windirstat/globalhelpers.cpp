@@ -1058,7 +1058,7 @@ BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM*
 	}
 
 _Success_( return )
-BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const UINT nCode ) {
+BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const LONG nCode ) {
 	/*
 	BOOL GetItemRect(int nItem, LPRECT lpRect, UINT nCode) const
 	{
@@ -1080,7 +1080,7 @@ BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 )
 			//LVIR_SELECTBOUNDS
 	ASSERT( ::IsWindow( hWnd ) );
 	rect->left = nCode;
-	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_GETITEMRECT, nItem, reinterpret_cast<LPARAM>( rect ) ) );
+	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_GETITEMRECT, static_cast<WPARAM>( nItem ), reinterpret_cast<LPARAM>( rect ) ) );
 	}
 
 _Ret_range_( 0, 100 ) INT Treemap_Options::GetBrightnessPercent( ) const {

@@ -227,6 +227,15 @@ SetProcessMitigationPolicy(
 		
 		enable_EXTENSION_POINT_mitigation( SetProcessMitigationPolicy_f );
 		enable_strict_HANDLE_check_mitigation( SetProcessMitigationPolicy_f );
+		//TODO:
+			//ProhibitDynamicCode: https://msdn.microsoft.com/en-us/library/windows/desktop/mt706243.aspx
+			//EnableControlFlowGuard: https://msdn.microsoft.com/en-us/library/windows/desktop/mt654121.aspx
+			//
+
+		//(Win 10 only):
+			//MicrosoftSignedOnly:https://msdn.microsoft.com/en-us/library/windows/desktop/mt706242.aspx
+			//DisableNonSystemFonts: https://msdn.microsoft.com/en-us/library/windows/desktop/mt706244.aspx
+
 		}
 
 

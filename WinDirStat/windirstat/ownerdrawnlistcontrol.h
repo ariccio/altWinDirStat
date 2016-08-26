@@ -878,7 +878,7 @@ public:
 		int col_array[ col_array_size ] = { 0 };
 
 		//const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
-		const auto itemCount = GetItemCount_HDM_GETITEMCOUNT( m_hWnd );
+		const auto itemCount = GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd );
 
 		if ( itemCount < 2 ) {
 			//CPersistence expects more than one item arrays
@@ -1373,7 +1373,7 @@ public:
 		HDITEM hditem = { };
 		hditem.mask = HDI_FORMAT;
 		//VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
-		VERIFY( GetItem_HDM_GETITEM( 0, &hditem, m_hWnd ) );
+		VERIFY( GetItem_HDM_GETITEM( col, &hditem, hWnd ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
 	
@@ -1541,7 +1541,7 @@ private:
 		//Probably NOT vectorizable anyway.
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( INT i = 0; i < header_ctrl_item_count; i++ ) {
-			VERIFY( GetItem_HDM_GETITEM( 0, &hdi, header_hWnd ) );
+			VERIFY( GetItem_HDM_GETITEM( columnOrder[ i ], &hdi, header_hWnd ) );
 
 			//VERIFY( header_ctrl->GetItem( columnOrder[ i ], &hdi ) );
 			x += hdi.cxy;
@@ -1615,6 +1615,15 @@ protected:
 		}
 	afx_msg void OnHdnItemchanging( NMHDR *pNMHDR, LRESULT *pResult ) {
 		UNREFERENCED_PARAMETER( pNMHDR );
+		/*
+		LRESULT CWnd::Default()
+		{
+			// call DefWindowProc with the last message
+			_AFX_THREAD_STATE* pThreadState = _afxThreadState.GetData();
+			return DefWindowProc(pThreadState->m_lastSentMsg.message,
+				pThreadState->m_lastSentMsg.wParam, pThreadState->m_lastSentMsg.lParam);
+		}
+		*/
 		CWnd::Default( );
 		/*
 _AFXWIN_INLINE void CWnd::InvalidateRect(LPCRECT lpRect, BOOL bErase = 1)
