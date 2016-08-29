@@ -216,6 +216,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 
 
+#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
@@ -303,7 +304,7 @@ extern WTL::CAppModule _Module;
 //#include <afxmt.h>		// MFC Multithreading
 
 
-#include <cvt/wstring>		//for wstring_convert
+//#include <cvt/wstring>		//for wstring_convert
 
 #include <windowsx.h>
 #include <stdlib.h>
@@ -323,15 +324,18 @@ extern WTL::CAppModule _Module;
 
 #include <iso646.h>
 #include <wctype.h>
-#include <concurrent_vector.h>
 
+#pragma warning (push)
+#pragma warning (disable:4619)  // unreachable code
+#include <concurrent_vector.h>
+#pragma warning (pop)
 
 #pragma warning(pop)
 
 #pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 
 // Headers placed in the common directory (used by windirstat and by setup)
-#include "../common/version.h"
+//#include "../common/version.h"
 
 #ifndef _INC_STDARG
 #include <stdarg.h>

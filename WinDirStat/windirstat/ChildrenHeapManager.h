@@ -62,9 +62,11 @@ class Children_String_Heap_Manager final {
 	
 public:
 	Children_String_Heap_Manager( _In_ const rsize_t number_of_characters_needed ) /* : buffer_ptr { new wchar_t[ number_of_characters_needed ] }*/ {
-		const rsize_t size_of_base_struct = sizeof( Children_String_Heap_Manager_Impl );
+		constexpr rsize_t size_of_base_struct = sizeof( Children_String_Heap_Manager_Impl );
 		const rsize_t size_total_needed = ( size_of_base_struct + ( sizeof( wchar_t ) * number_of_characters_needed ) );
 		m_buffer_impl = reinterpret_cast<Children_String_Heap_Manager_Impl*>( malloc( size_total_needed ) );
+#pragma message("This is temporary!")
+#pragma warning(suppress: 6386)
 		new ( m_buffer_impl ) Children_String_Heap_Manager_Impl( number_of_characters_needed );
 		}
 	~Children_String_Heap_Manager( ) {

@@ -1,8 +1,8 @@
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+#include "stdafx.h"
 
 #pragma once
 
-#include "stdafx.h"
 
 #ifndef WDS_DATASTRUCTURES_CPP
 #define WDS_DATASTRUCTURES_CPP
@@ -179,21 +179,38 @@ SExtensionRecord::SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u }
 
 SExtensionRecord::SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
 
-SExtensionRecord::SExtensionRecord( const SExtensionRecord& in ) {
-	/*
-	std::wstring ext;
-	_Field_range_( 0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
-	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
-	COLORREF color;
-	*/
-	ext = in.ext;
-	files = in.files;
-	bytes = in.bytes;
-	color = in.color;
+//SExtensionRecord::SExtensionRecord( const SExtensionRecord& in ) {
+//	/*
+//	std::wstring ext;
+//	_Field_range_( 0, 4294967295 ) std::uint32_t files;//save 4 bytes :)
+//	_Field_range_( 0, 18446744073709551615 ) std::uint64_t bytes;
+//	COLORREF color;
+//	*/
+//	ext = in.ext;
+//	files = in.files;
+//	bytes = in.bytes;
+//	color = in.color;
+//	}
+
+
+SExtensionRecord& SExtensionRecord::operator=( SExtensionRecord&& in ) {
+	files = std::move( in.files );
+	bytes = std::move( in.bytes );
+	ext = std::move( in.ext );
+	color = std::move( in.color );
+	return *this;
 	}
 
 const bool SExtensionRecord::compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const {
 	return ( lhs.ext.compare( rhs.ext ) < 0 );
+	}
+
+//Yes, this is used!
+SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) {
+	ext = std::move( in.ext );
+	files = std::move( in.files );
+	bytes = std::move( in.bytes );
+	color = std::move( in.color );
 	}
 
 minimal_SExtensionRecord::minimal_SExtensionRecord( ) : files { 0u }, bytes { 0u } { }

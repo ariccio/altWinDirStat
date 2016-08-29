@@ -38,10 +38,16 @@ class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDial
 
 	// IUnknown methods
 	IFACEMETHODIMP QueryInterface( _In_ REFIID riid, _COM_Outptr_ void** ppv ) {
+
+		//#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
+		//#define QITABENTMULTI(Cthis, Ifoo, Iimpl) { &__uuidof(Ifoo), OFFSETOFCLASS(Iimpl, Cthis) }
+
 		static const QITAB qit[ ] =
 			{
-			QITABENT( CFileDialogEventHandler, IFileDialogEvents ),
-			QITABENT( CFileDialogEventHandler, IFileDialogControlEvents ),
+			//QITABENT( CFileDialogEventHandler, IFileDialogEvents ),
+				{ &__uuidof(IFileDialogEvents), static_cast<int>( OFFSETOFCLASS( IFileDialogEvents, CFileDialogEventHandler ) ) },
+			//QITABENT( CFileDialogEventHandler, IFileDialogControlEvents ),
+				{ &__uuidof(IFileDialogControlEvents), static_cast<int>( OFFSETOFCLASS( IFileDialogControlEvents, CFileDialogEventHandler ) ) },
 			{ 0 }
 #pragma warning( suppress: 4365)
 			};

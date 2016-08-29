@@ -1,10 +1,9 @@
 // TreeListControl.cpp	- Implementation of CTreeListItem and CTreeListControl
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+#include "stdafx.h"
 
 #pragma once
-
-#include "stdafx.h"
 
 #ifndef WDS_TREELISTCONTROL_CPP
 #define WDS_TREELISTCONTROL_CPP
@@ -301,7 +300,7 @@ void CTreeListItem::childNotNull( _In_ const CTreeListItem* const aTreeListChild
 
 
 //TODO: This should be reversed (i.e. CTreeListControl::SortChildren( _Inout_ CTreeListItem* const item ) )
-_Pre_satisfies_( this->m_vi._Myptr != nullptr )
+_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 void CTreeListItem::SortChildren( _In_ const CTreeListControl* const ctrl ) {
 	ASSERT( CTreeListItem::IsVisible( ) );
 
@@ -508,7 +507,7 @@ const COLORREF CTreeListItem::Concrete_ItemTextColor( ) const {
 		}
 	//ASSERT( GetItemTextColor( true ) == default_item_text_color( ) );
 	//return GetItemTextColor( true ); // The rest is not colored
-	return default_item_text_color( ); // The rest is not colored
+	return COwnerDrawnListItem::default_item_text_color( ); // The rest is not colored
 	}
 
 
@@ -918,7 +917,7 @@ void CTreeListItem::refresh_sizeCache( ) {
 		ASSERT( m_child_info.m_child_info_ptr != nullptr );
 		//ASSERT( m_child_info->m_childCount == m_childCount );
 
-		const auto children_size = m_child_info.m_child_info_ptr->m_childCount;
+		const std::uint32_t children_size = m_child_info.m_child_info_ptr->m_childCount;
 		const auto child_array = m_child_info.m_child_info_ptr->m_children.get( );
 		for ( size_t i = 0; i < children_size; ++i ) {
 			( child_array + i )->refresh_sizeCache( );
@@ -930,7 +929,7 @@ void CTreeListItem::refresh_sizeCache( ) {
 		ASSERT( m_child_info.m_child_info_ptr != nullptr );
 		//ASSERT( m_child_info->m_childCount == m_childCount );
 
-		const auto childCount = m_child_info.m_child_info_ptr->m_childCount;
+		const std::uint32_t childCount = m_child_info.m_child_info_ptr->m_childCount;
 		const rsize_t stack_alloc_threshold = 128;
 		if ( childCount < stack_alloc_threshold ) {
 			std::uint64_t child_totals[ stack_alloc_threshold ];
@@ -1034,13 +1033,13 @@ void CTreeListItem::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const
 	return;
 	}
 
-_Pre_satisfies_( this->m_vi._Myptr != nullptr ) 
+_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr ) 
 RECT CTreeListItem::GetPlusMinusRect( ) const {
 	ASSERT( CTreeListItem::IsVisible( ) );
 	return BuildRECT( m_vi->rcPlusMinus );
 	}
 
-_Pre_satisfies_( this->m_vi._Myptr != nullptr )
+_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 RECT CTreeListItem::GetTitleRect( ) const {
 	ASSERT( CTreeListItem::IsVisible( ) );
 	return BuildRECT( m_vi->rcTitle );
@@ -1095,9 +1094,14 @@ void CTreeListControl::adjustColumnSize( _In_ const CTreeListItem* const item_at
 
 	const auto w = COwnerDrawnListCtrl::GetSubItemWidth( item_at_index, column::COL_NAME ) + 5;
 
-	const auto colWidth = CListCtrl::GetColumnWidth( static_cast<int>( column::COL_NAME ) );
+	const int colWidth = GetColumnWidth_LVM_GETCOLUMNWIDTH( m_hWnd, static_cast<int>( column::COL_NAME ) );
+	//const auto colWidth = CListCtrl::GetColumnWidth( static_cast<int>( column::COL_NAME ) );
 	if ( colWidth < w ) {
-		VERIFY( CListCtrl::SetColumnWidth( 0, w + colWidth ) );
+		//_AFXCMN_INLINE BOOL CListCtrl::SetColumnWidth(_In_ int nCol, _In_ int cx)
+		//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL) ::SendMessage(m_hWnd, LVM_SETCOLUMNWIDTH, nCol, MAKELPARAM(cx, 0)); }
+
+		VERIFY( SetColumnWidth_LVM_SETCOLUMNWIDTH( m_hWnd, static_cast<int>( column::COL_NAME ), w + colWidth ) );
+		//VERIFY( CListCtrl::SetColumnWidth( 0, w + colWidth ) );
 		}
 	}
 
@@ -1361,7 +1365,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-_Pre_satisfies_( item->m_vi._Myptr != nullptr ) _Success_( return )
+_Pre_satisfies_( item->m_vi._Mypair._Myval2 != nullptr ) _Success_( return )
 const bool CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ HDC hDC, _In_ const RECT& rcRest, _In_ HDC hDCmem, _In_ const UINT ysrc ) const {
 	bool didBitBlt = false;
 	auto ancestor = item;
@@ -1888,7 +1892,11 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 	CTreeListControl::insertItemsAdjustWidths( item, count, maxwidth, scroll, i );
 	
 	if ( scroll && ( CListCtrl::GetColumnWidth( static_cast<int>( column::COL_NAME ) ) < maxwidth ) ) {
-		VERIFY( CListCtrl::SetColumnWidth( static_cast<int>( column::COL_NAME ), maxwidth ) );
+		//Should I use PathCompactPath (https://msdn.microsoft.com/en-us/library/windows/desktop/bb773575.aspx) here?
+		//NOTE: PathCompactPath has a MAX_PATH width
+		//See also: PathCompactPathEx (https://msdn.microsoft.com/en-us/library/windows/desktop/bb773578.aspx)
+		VERIFY( SetColumnWidth_LVM_SETCOLUMNWIDTH( m_hWnd, static_cast<int>( column::COL_NAME ), maxwidth ) );
+		//VERIFY( CListCtrl::SetColumnWidth( static_cast<int>( column::COL_NAME ), maxwidth ) );
 		}
 	}
 
@@ -2083,7 +2091,10 @@ void CTreeListControl::EnsureItemVisible( _In_ const CTreeListItem* const item )
 	if ( i == -1 ) {
 		return;
 		}
-	VERIFY( CListCtrl::EnsureVisible( i, false ) );
+	//_AFXCMN_INLINE BOOL CListCtrl::EnsureVisible(_In_ int nItem, _In_ BOOL bPartialOK)
+	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL) ::SendMessage(m_hWnd, LVM_ENSUREVISIBLE, nItem, MAKELPARAM(bPartialOK, 0)); }
+	VERIFY( EnsureVisible_LVM_ENSUREVISIBLE( m_hWnd, i, FALSE ) );
+	//VERIFY( CListCtrl::EnsureVisible( i, false ) );
 	}
 
 

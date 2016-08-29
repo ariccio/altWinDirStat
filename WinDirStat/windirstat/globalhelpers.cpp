@@ -1,10 +1,10 @@
 // globalhelpers.cpp - Implementation of global helper functions
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+#include "stdafx.h"
 
 #pragma once
 
-#include "stdafx.h"
 
 #ifndef WDS_GLOBALHELPERS_CPP
 #define WDS_GLOBALHELPERS_CPP
@@ -739,11 +739,11 @@ void displayWindowsMsgBoxWithMessage( const std::string message ) {
 	//MessageBoxW( NULL, message.c_str( ), TEXT( "Error" ), MB_OK );
 	
 	//see: https://code.google.com/p/hadesmem/source/browse/trunk/Include/Common/HadesCommon/I18n.hpp?r=1163
-	auto convert_obj = stdext::cvt::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>, wchar_t>( );
+	//auto convert_obj = stdext::cvt::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>, wchar_t>( );
 
-	const auto new_wide_str = convert_obj.from_bytes( message );
-	::MessageBoxW( NULL, new_wide_str.c_str( ), L"Error", MB_OK | MB_ICONINFORMATION );
-	TRACE( _T( "Error: %s\r\n" ), new_wide_str.c_str( ) );
+	//const auto new_wide_str = convert_obj.from_bytes( message );
+	::MessageBoxA( NULL, message.c_str( ), "Error", MB_OK | MB_ICONINFORMATION );
+	TRACE( _T( "Error: %S\r\n" ), message.c_str( ) );
 	}
 
 //This is an error handling function, and is intended to be called rarely!
@@ -999,7 +999,7 @@ void trace_full_path( _In_z_ PCWSTR const path ) {
 #endif
 
 
-int GetItemCount_HDM_GETITEMCOUNT( _In_ HWND hWnd ) {
+int GetItemCount_HDM_GETITEMCOUNT( _In_ const HWND hWnd ) {
 	ASSERT( ::IsWindow( hWnd ) );
 	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
 	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
@@ -1016,24 +1016,79 @@ int GetItemCount_HDM_GETITEMCOUNT( _In_ HWND hWnd ) {
 	}
 
 
-int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nCol ) {
+int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nCol ) {
 	ASSERT( ::IsWindow( hWnd ) );
 	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
 	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
 
 	//LVM_GETCOLUMNWIDTH message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774915.aspx
 	//Gets the width of a column in report or list view.
+	//wParam
+		//The index of the column. This parameter is ignored in list view.
+	//lParam
+		//Must be zero.
+	//Returns the column width if successful, or zero otherwise.
+	//If this message is sent to a list-view control with the LVS_REPORT style and the specified column does not exist, the return value is undefined.
+
 	return static_cast< int >( ::SendMessageW( hWnd, LVM_GETCOLUMNWIDTH, static_cast<WPARAM>( nCol ), 0 ) );
 	}
 
+BOOL SetColumnWidth_LVM_SETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nCol, _In_ _In_range_( >=, 0 ) const int cx ) {
+	ASSERT( ::IsWindow( hWnd ) );
+	//_AFXCMN_INLINE BOOL CListCtrl::SetColumnWidth(_In_ int nCol, _In_ int cx)
+	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL) ::SendMessage(m_hWnd, LVM_SETCOLUMNWIDTH, nCol, MAKELPARAM(cx, 0)); }
+
+	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
+	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
+
+	//LVM_SETCOLUMNWIDTH message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761163.aspx
+	//Changes the width of a column in report-view mode or the width of all columns in list-view mode.
+	//wParam
+		//Zero-based index of a valid column. For list-view mode, this parameter must be set to zero.
+	//lParam
+		//New width of the column, in pixels. For report-view mode, the following special values are supported:
+	//Returns TRUE if successful, or FALSE otherwise.
+	
+	//Assume that you have a 2-column list-view control with a width of 500 pixels.
+		//If the width of column zero is set to 200 pixels, and you send this message with wParam = 1 and lParam = LVSCW_AUTOSIZE_USEHEADER, the second (and last) column will be 300 pixels wide.
+
+	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_SETCOLUMNWIDTH, static_cast<WPARAM>( nCol ), MAKELPARAM( cx, 0 ) ) );
+	}
+
+BOOL EnsureVisible_LVM_ENSUREVISIBLE( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _In_  _In_range_( FALSE, TRUE ) const BOOL bPartialOK ) {
+	ASSERT( ::IsWindow( hWnd ) );
+
+	//_AFXCMN_INLINE BOOL CListCtrl::EnsureVisible(_In_ int nItem, _In_ BOOL bPartialOK)
+	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL) ::SendMessage(m_hWnd, LVM_ENSUREVISIBLE, nItem, MAKELPARAM(bPartialOK, 0)); }
+
+	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
+	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
+
+	//LVM_ENSUREVISIBLE message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774902.aspx
+	//Ensures that a list-view item is either entirely or partially visible, scrolling the list-view control if necessary.
+	//wParam
+		//The index of the list-view item.
+	//lParam
+		//A value specifying whether the item must be entirely visible. If this parameter is TRUE, no scrolling occurs if the item is at least partially visible.
+	//Returns TRUE if successful, or FALSE otherwise.
+	//The message fails if the window style includes LVS_NOSCROLL.
+
+	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_ENSUREVISIBLE, static_cast<WPARAM>( nItem ), bPartialOK ) );
+	}
+
 _Success_( return )
-BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem, _In_ const HWND hWnd ) {
+BOOL GetItem_HDM_GETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem ) {
+	ASSERT( ::IsWindow( hWnd ) );
+
 	pHeaderItem->mask = HDI_WIDTH;
 	//VERIFY( thisHeader->GetItem( 0, &hditem ) );
 	/*
 	_AFXCMN_INLINE BOOL CHeaderCtrl::GetItem(_In_ int nPos, _Out_ HDITEM* pHeaderItem) const
 		{ ASSERT(::IsWindow(m_hWnd)); return (BOOL)::SendMessage(m_hWnd, HDM_GETITEM, nPos, (LPARAM)pHeaderItem); }
 	*/
+	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
+	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
+
 	//HDM_GETITEM message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775335.aspx
 	//Gets information about an item in a header control. 
 	//Returns TRUE if successful, or FALSE otherwise.
@@ -1055,6 +1110,27 @@ BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM*
 	//	}
 	//return TRUE;
 	return static_cast<BOOL>( get_item_result );
+	}
+
+BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_range_( >=, 0 ) const int nPos, _In_ const HDITEM * const pHeaderItem ) {
+	ASSERT( ::IsWindow( hWnd ) );
+	//_AFXCMN_INLINE BOOL CHeaderCtrl::SetItem(_In_ int nPos, _In_ HDITEM* pHeaderItem)
+	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL)::SendMessage(m_hWnd, HDM_SETITEM, nPos, (LPARAM)pHeaderItem); }
+
+	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
+	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
+
+	//HDM_SETITEM message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775367.aspx
+	//Sets the attributes of the specified item in a header control.
+	//wParam
+		//The current index of the item whose attributes are to be changed.
+	//lParam
+		//A pointer to an HDITEM structure that contains item information. When this message is sent, the mask member of the structure must be set to indicate which attributes are being set.
+	//Returns nonzero upon success, or zero otherwise.
+	//The HDITEM structure that supports this message supports item order and image list information. By using these members, you can control the order in which items are displayed and specify images to appear with items.
+
+	return static_cast<BOOL>( ::SendMessageW( hWnd, HDM_SETITEM, static_cast<WPARAM>( nPos ), reinterpret_cast<LPARAM>( pHeaderItem ) ) );
+
 	}
 
 _Success_( return )

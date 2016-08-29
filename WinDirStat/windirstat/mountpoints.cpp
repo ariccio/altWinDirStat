@@ -1,9 +1,9 @@
 // mountpoints.h	- Declaration of CMountPoins
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
-#pragma once
-
 #include "stdafx.h"
+
+#pragma once
 
 #ifndef WDS_MOUNTPOINTS_CPP_INCLUDED
 #define WDS_MOUNTPOINTS_CPP_INCLUDED

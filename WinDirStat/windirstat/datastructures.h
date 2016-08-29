@@ -86,11 +86,13 @@ protected:
 struct SExtensionRecord final {
 	SExtensionRecord( );
 
-	SExtensionRecord( const SExtensionRecord& in );
+	//SExtensionRecord( const SExtensionRecord& in ) = delete;
 	//SExtensionRecord( SExtensionRecord& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( SExtensionRecord );
 
 	//Yes, this is used!
 	SExtensionRecord( SExtensionRecord&& in );
+	SExtensionRecord& operator=( SExtensionRecord&& in );
 
 	SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in );
 	/*

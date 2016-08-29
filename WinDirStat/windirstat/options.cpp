@@ -1,11 +1,9 @@
 // options.cpp	- Implementation of CPersistence, COptions and CRegistryUser
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
-
+#include "stdafx.h"
 
 #pragma once
-
-#include "stdafx.h"
 
 #ifndef WDS_OPTIONS_CPP
 #define WDS_OPTIONS_CPP
@@ -66,6 +64,7 @@ namespace registry_strings {
 namespace helpers {
 	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ const PCWSTR entry_fmt_str ) {
 		//TODO: uses heap!
+#pragma warning(suppress:4774)
 		const auto chars_needed = ( _scwprintf( entry_fmt_str, name ) + 1 );
 		std::unique_ptr<_Null_terminated_ wchar_t[]> char_buffer_ptr = std::make_unique<wchar_t[ ]>( static_cast<size_t>( chars_needed ) );
 		
@@ -433,12 +432,16 @@ void CPersistence::SetRect( _In_z_ const PCWSTR entry, _In_ const RECT rc ) {
 _Success_( SUCCEEDED( return ) )
 const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT* const rc ) {
 	const auto s = CRegistryUser::GetProfileString_( registry_strings::sectionPersistence, entry.c_str( ), _T( "" ) );
-	RECT tmp;
-	const auto r = swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &tmp.left, &tmp.top, &tmp.right, &tmp.bottom );
+	//RECT tmp;
+	int left = 0;
+	int top = 0;
+	int right = 0;
+	int bottom = 0;
+	const auto r = swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &left, &top, &right, &bottom );
 	static_assert( SUCCEEDED( S_OK ), "Bad success return value!" );
 	if ( r == 4 ) {
-		TRACE( _T( "swscanf_s succeeded! read in rectangle: %d,%d,%d,%d\r\n" ), tmp.left, tmp.top, tmp.right, tmp.bottom );
-		(*rc) = tmp;
+		TRACE( _T( "swscanf_s succeeded! read in rectangle: %l,%l,%l,%l\r\n" ), left, top, right, bottom );
+		(*rc) = { left, top, right, bottom };
 		return S_OK;
 		}
 	

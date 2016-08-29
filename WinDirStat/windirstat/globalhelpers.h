@@ -189,10 +189,13 @@ void trace_full_path( _In_z_ PCWSTR const path );
 
 int GetItemCount_HDM_GETITEMCOUNT( _In_ HWND hWnd );
 int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nCol );
-
+BOOL SetColumnWidth_LVM_SETCOLUMNWIDTH( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nCol, _In_ _In_range_( >=, 0 ) int cx );
+BOOL EnsureVisible_LVM_ENSUREVISIBLE( _In_ HWND hWnd, _In_ _In_range_( >=, 0 ) int nItem, _In_  _In_range_( FALSE, TRUE ) BOOL bPartialOK );
 
 _Success_( return )
-BOOL GetItem_HDM_GETITEM( _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem, _In_ const HWND hWnd );
+BOOL GetItem_HDM_GETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem );
+
+BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) int nPos, _In_ const HDITEM* pHeaderItem );
 
 _Success_( return )
 BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const LONG nCode );

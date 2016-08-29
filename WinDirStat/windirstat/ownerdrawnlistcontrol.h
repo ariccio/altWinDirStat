@@ -439,7 +439,7 @@ protected:
 
 namespace {
 	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
-		const auto sorting = reinterpret_cast<const SSorting*>( lParamSort );
+		const SSorting* const sorting = reinterpret_cast<const SSorting*>( lParamSort );
 		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
 		}
 
@@ -728,8 +728,8 @@ protected:
 		VERIFY( thisHeaderCtrl->GetOrderArray( order_temp, resize_size )) ;
 
 		const rsize_t thisLoopSize = static_cast<rsize_t>( resize_size );
-		if ( is_right_aligned_cache.empty( ) ) {
-			repopulate_right_aligned_cache( is_right_aligned_cache, thisLoopSize, thisHeaderCtrl->m_hWnd, this );
+		if ( m_is_right_aligned_cache.empty( ) ) {
+			repopulate_right_aligned_cache( m_is_right_aligned_cache, thisLoopSize, thisHeaderCtrl->m_hWnd, this );
 			}
 		ASSERT( thisLoopSize < 8 );
 
@@ -756,7 +756,7 @@ protected:
 		build_focusLefts_from_drawable_rects( thisLoopSize, rects_draw, focusLefts_temp );
 
 
-		draw_proper_text_for_each_column( item, thisLoopSize, subitems, hInMemoryDeviceContext, rects_draw, pDestinationDrawItemStruct, focusLefts_temp, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache, this );
+		draw_proper_text_for_each_column( item, thisLoopSize, subitems, hInMemoryDeviceContext, rects_draw, pDestinationDrawItemStruct, focusLefts_temp, showSelectionAlways, bIsFullRowSelection, m_is_right_aligned_cache, this );
 
 		const int (&focusLefts)[ stack_array_size ] = focusLefts_temp;
 
@@ -774,7 +774,7 @@ protected:
 		}
 public:
 	static const CRuntimeClass classCOwnerDrawnListCtrl;
-	virtual CRuntimeClass* GetRuntimeClass( ) const {
+	virtual CRuntimeClass* GetRuntimeClass( ) const override {
 		return ((CRuntimeClass*)(&COwnerDrawnListCtrl::classCOwnerDrawnListCtrl) );
 		}
 
@@ -786,8 +786,7 @@ public:
 
 	virtual ~COwnerDrawnListCtrl( ) = default;
 
-	COwnerDrawnListCtrl& operator=( const COwnerDrawnListCtrl& in ) = delete;
-	COwnerDrawnListCtrl( const COwnerDrawnListCtrl& in ) = delete;
+	DISALLOW_COPY_AND_ASSIGN( COwnerDrawnListCtrl );
 
 	void LoadPersistentAttributes( ) {
 		//TRACE statements in headers output the FULL source file path. Ick.
@@ -865,10 +864,12 @@ public:
 			const auto maxWidth = ( GetColumnWidth_LVM_GETCOLUMNWIDTH( m_hWnd, static_cast<int>( i ) ) * 2 );
 	#pragma push_macro("min")
 	#undef min
-			const auto w =	( col_order_array[ i ], maxWidth );
+							//I'm an idiot, somehow I deleted std::min!
+			const auto w = std::min( col_order_array[ i ], maxWidth );
 	#pragma pop_macro("min")
 
-			VERIFY( CListCtrl::SetColumnWidth( static_cast<int>( i ), w ) );
+			VERIFY( SetColumnWidth_LVM_SETCOLUMNWIDTH( m_hWnd, static_cast<int>( i ), w ) );
+			//VERIFY( CListCtrl::SetColumnWidth( static_cast<int>( i ), w ) );
 			}
 		// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 		}
@@ -878,8 +879,8 @@ public:
 		int col_array[ col_array_size ] = { 0 };
 
 		//const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
-		const auto itemCount = GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd );
-
+		const int itemCount = GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd );
+		ASSERT( itemCount > -1 );
 		if ( itemCount < 2 ) {
 			//CPersistence expects more than one item arrays
 			//Since that's a nonsensical condition, no point in continuing.
@@ -903,14 +904,26 @@ public:
 		CPersistence::SetColumnOrder( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 
 		for ( INT_PTR i = 0; i < itemCount; i++ ) {
-			col_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
+			col_array[ i ] = GetColumnWidth_LVM_GETCOLUMNWIDTH( m_hWnd, static_cast<int>( i ) );
+			//col_array[ i ] = CListCtrl::GetColumnWidth( static_cast<int>( i ) );
 			}
 		CPersistence::SetColumnWidths( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 		}
 
 	void SortItems( ) {
-		VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
-		auto hditem = zero_init_struct<HDITEM>( );
+
+		//_AFXCMN_INLINE BOOL CListCtrl::SortItems(_In_ PFNLVCOMPARE pfnCompare, _In_ DWORD_PTR dwData)
+		//{ ASSERT(::IsWindow(m_hWnd)); ASSERT((CWnd::GetStyle() & LVS_OWNERDATA)==0); return (BOOL) ::SendMessage(m_hWnd, LVM_SORTITEMS, dwData, (LPARAM)pfnCompare); }
+		ASSERT( ::IsWindow( m_hWnd ) );
+		ASSERT( ( CWnd::GetStyle( ) & LVS_OWNERDATA ) == 0 );
+
+		VERIFY( static_cast<BOOL>( ::SendMessageW( m_hWnd, LVM_SORTITEMS, reinterpret_cast<WPARAM>( &m_sorting ), reinterpret_cast<LPARAM>( &_CompareFunc ) ) ) );
+
+		static_assert( std::is_convertible<WPARAM, DWORD_PTR>::value, "Why the hell does CListCtrl::SortItems take a DWORD_PTR and SendMessage takes a WPARAM?" );
+
+		//VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
+
+		HDITEM hditem = { };
 		auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
@@ -924,7 +937,8 @@ public:
 		hditem.cchTextMax = text_char_count;
 
 		if ( m_indicatedColumn != -1 ) {
-			VERIFY( thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem ) );
+			VERIFY( GetItem_HDM_GETITEM( thisHeaderCtrl->m_hWnd, m_indicatedColumn, &hditem ) );
+			//VERIFY( thisHeaderCtrl->GetItem( m_indicatedColumn, &hditem ) );
 			//text.ReleaseBuffer( );
 			//text           = text.Mid( 2 );
 			//PWSTR text_str = &( text_buffer_1[ 2 ] );
@@ -932,14 +946,16 @@ public:
 			//hditem.pszText = text.GetBuffer( text_char_count );
 			hditem.pszText = &( text_buffer_1[ 2 ] );
 			hditem.cchTextMax = ( text_char_count - 3 );
-			VERIFY( thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem ) );
+			//VERIFY( thisHeaderCtrl->SetItem( m_indicatedColumn, &hditem ) );
+			VERIFY( SetItem_HDM_SETITEM( thisHeaderCtrl->m_hWnd, m_indicatedColumn, &hditem ) );
 			//text.ReleaseBuffer( );
 			}
 
 		//hditem.pszText = text.GetBuffer( text_char_count );
 		hditem.pszText = text_buffer_1;
 		hditem.cchTextMax = text_char_count;
-		VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
+		VERIFY( GetItem_HDM_GETITEM( thisHeaderCtrl->m_hWnd, m_sorting.column1, &hditem ) );
+		//VERIFY( thisHeaderCtrl->GetItem( m_sorting.column1, &hditem ) );
 		//text.ReleaseBuffer( );
 
 		_Null_terminated_ wchar_t text_buffer_2[ text_char_count ] = { 0 };
@@ -953,8 +969,8 @@ public:
 			}
 		//hditem.pszText = text.GetBuffer( text_char_count );
 		hditem.pszText = text_buffer_2;
-		VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
-
+		//VERIFY( thisHeaderCtrl->SetItem( m_sorting.column1, &hditem ) );
+		VERIFY( SetItem_HDM_SETITEM( thisHeaderCtrl->m_hWnd, m_sorting.column1, &hditem ) );
 		//goddamnit, static_assert is AWESOME when combined with template metaprogramming!
 		static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, decltype( m_indicatedColumn )>::value, "m_sorting.column1 MUST be convertible to an ENUM_COL!" );
 		//static_assert( std::is_convertible<std::underlying_type<column::ENUM_COL>::type, std::int8_t>::value, "m_sorting.column1 MUST be convertible to an ENUM_COL!" );
@@ -971,7 +987,23 @@ public:
 		fi.flags  = LVFI_PARAM;
 		fi.lParam = reinterpret_cast<LPARAM>( item );
 
-		const auto i = static_cast<INT>( CListCtrl::FindItem( &fi ) );
+		//_AFXCMN_INLINE int CListCtrl::FindItem(_In_ LVFINDINFO* pFindInfo, _In_ int nStart = -1) const
+			//{ ASSERT(::IsWindow(m_hWnd)); return (int) ::SendMessage(m_hWnd, LVM_FINDITEM, nStart, (LPARAM)pFindInfo); }
+		//LVM_FINDITEM message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774903.aspx
+		//Searches for a list-view item with the specified characteristics.
+		//wParam
+			//The index of the item to begin the search with or -1 to start from the beginning. The specified item is itself excluded from the search.
+		//lParam
+			//A pointer to an LVFINDINFO structure that contains information about what to search for.
+		//Returns the index of the item if successful, or -1 otherwise.
+
+		//LVFINDINFO structure: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774745.aspx
+		//Contains information used when searching for a list-view item.
+		ASSERT( ::IsWindow( m_hWnd ) );
+
+
+		//const int i = static_cast<INT>( CListCtrl::FindItem( &fi ) );
+		const int i = static_cast<int>( ::SendMessageW( m_hWnd, LVM_FINDITEM, static_cast<WPARAM>( -1 ), reinterpret_cast<LPARAM>( &fi ) ) );
 
 		return i;
 		}
@@ -991,6 +1023,9 @@ public:
 			m_yFirstItem = rc.top;
 			}
 		else {
+			//_AFXCMN_INLINE int CListCtrl::InsertItem(_In_ int nItem, _In_z_ LPCTSTR lpszItem, _In_ int nImage)
+			//{ ASSERT(::IsWindow(m_hWnd)); return InsertItem(LVIF_TEXT|LVIF_IMAGE, nItem, lpszItem, 0, 0, nImage, 0); }
+
 			CListCtrl::InsertItem( 0, _T( "_tmp" ), 0 );
 			RECT rc;
 			//VERIFY( CListCtrl::GetItemRect( 0, &rc, LVIR_BOUNDS ) );
@@ -1023,13 +1058,17 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 				return;
 				}
 			const auto w = COwnerDrawnListCtrl::GetSubItemWidth( item, col );
+			//_AFXCMN_INLINE int CListCtrl::GetStringWidth(_In_z_ LPCTSTR lpsz) const
+			//{ ASSERT(::IsWindow(m_hWnd)); return (int) ::SendMessage(m_hWnd, LVM_GETSTRINGWIDTH, 0, (LPARAM)lpsz); }
+
 			ASSERT( w == ( CListCtrl::GetStringWidth( item->m_name ) + 20 ) );
 			//ASSERT( w == ( GetStringWidth( item->m_name ) + 10 ) );
 			if ( w > width ) {
 				width = w;
 				}
 			}
-		VERIFY( CListCtrl::SetColumnWidth( col, width + 5 ) );
+		VERIFY( SetColumnWidth_LVM_SETCOLUMNWIDTH( m_hWnd, col, width + 5 ) );
+		//VERIFY( CListCtrl::SetColumnWidth( col, width + 5 ) );
 		}
 	
 	void InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
@@ -1045,15 +1084,20 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		}
 	
 	void AddExtendedStyle( _In_ const DWORD exStyle ) {
+		//_AFXCMN_INLINE DWORD CListCtrl::SetExtendedStyle(_In_ DWORD dwNewStyle)
+		//{ ASSERT(::IsWindow(m_hWnd)); return (DWORD) ::SendMessage(m_hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, (LPARAM) dwNewStyle); }
 		CListCtrl::SetExtendedStyle( CListCtrl::GetExtendedStyle( ) bitor exStyle );
 		}
 	
 	//COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 
 	COLORREF GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
-		auto selected = ( CListCtrl::GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
+		//_AFXCMN_INLINE UINT CListCtrl::GetItemState(_In_ int nItem, _In_ UINT nMask) const
+		//{ ASSERT(::IsWindow(m_hWnd)); return (UINT) ::SendMessage(m_hWnd, LVM_GETITEMSTATE, nItem, nMask); }
+
+		const bool selected = ( CListCtrl::GetItemState( i, LVIS_SELECTED ) & LVIS_SELECTED ) != 0;
 		if ( selected && m_showFullRowSelection && ( COwnerDrawnListCtrl::HasFocus( ) || COwnerDrawnListCtrl::IsShowSelectionAlways( ) ) ) {
-			return GetHighlightTextColor( );
+			return COwnerDrawnListCtrl::GetHighlightTextColor( );
 			}
 		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
@@ -1066,9 +1110,10 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 			HDITEM hditem = { };
 			hditem.mask = HDI_WIDTH;
 
-			VERIFY( GetItem_HDM_GETITEM( 0, &hditem, header_hWnd ) );
+			VERIFY( GetItem_HDM_GETITEM( header_hWnd, 0, &hditem ) );
 
-			VERIFY( CListCtrl::GetItemRect( item, rc, LVIR_LABEL ) );
+			//VERIFY( CListCtrl::GetItemRect( item, rc, LVIR_LABEL ) );
+			VERIFY( GetItemRect_LVM_GETITEMRECT( m_hWnd, item, &rc, LVIR_LABEL ) );
 			rc.left = rc.right - hditem.cxy;
 			}
 		else {
@@ -1137,9 +1182,9 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
 	COwnerDrawnListItem* GetItem( _In_ _In_range_( 0, INT_MAX )   const int i ) const {
 		ASSERT( i < CListCtrl::GetItemCount( ) );
-		const auto itemCount = CListCtrl::GetItemCount( );
+		const int itemCount = CListCtrl::GetItemCount( );
 		if ( i < itemCount ) {
-			return reinterpret_cast< COwnerDrawnListItem* >( CListCtrl::GetItemData( static_cast<int>( i ) ) );
+			return reinterpret_cast< COwnerDrawnListItem* >( CListCtrl::GetItemData( i ) );
 			}
 		return NULL;
 		}
@@ -1373,7 +1418,7 @@ public:
 		HDITEM hditem = { };
 		hditem.mask = HDI_FORMAT;
 		//VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
-		VERIFY( GetItem_HDM_GETITEM( col, &hditem, hWnd ) );
+		VERIFY( GetItem_HDM_GETITEM( hWnd, col, &hditem ) );
 		return ( hditem.fmt bitand HDF_RIGHT ) != 0;
 		}
 	
@@ -1514,7 +1559,7 @@ public:
 						  SSorting          m_sorting;
 						  //C4820: 'COwnerDrawnListCtrl' : '3' bytes padding added after data member 'COwnerDrawnListCtrl::m_indicatedColumn'
 	_Field_range_( 0, 8 ) std::int8_t       m_indicatedColumn;
-						  std::vector<bool> is_right_aligned_cache;
+						  std::vector<bool> m_is_right_aligned_cache;
 
 
 private:
@@ -1541,7 +1586,7 @@ private:
 		//Probably NOT vectorizable anyway.
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( INT i = 0; i < header_ctrl_item_count; i++ ) {
-			VERIFY( GetItem_HDM_GETITEM( columnOrder[ i ], &hdi, header_hWnd ) );
+			VERIFY( GetItem_HDM_GETITEM( header_hWnd, columnOrder[ i ], &hdi ) );
 
 			//VERIFY( header_ctrl->GetItem( columnOrder[ i ], &hdi ) );
 			x += hdi.cxy;
