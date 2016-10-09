@@ -104,6 +104,8 @@ struct child_info_block_manager final {
 		const rsize_t size_of_a_single_struct_in_bytes = sizeof( child_info );
 		const size_t total_size_needed = ( size_of_a_single_struct_in_bytes + ( number_of_characters_needed * sizeof( wchar_t ) ) );
 		void* const memory_block = malloc( total_size_needed );
+#pragma message("This is temporary!")
+#pragma warning(suppress: 6386)
 		m_child_info_ptr = new ( memory_block ) child_info( number_of_characters_needed, child_count );
 		}
 	~child_info_block_manager( ) {

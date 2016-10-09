@@ -1112,7 +1112,7 @@ BOOL GetItem_HDM_GETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const i
 	return static_cast<BOOL>( get_item_result );
 	}
 
-BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_range_( >=, 0 ) const int nPos, _In_ const HDITEM * const pHeaderItem ) {
+BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _In_ const HDITEM * const pHeaderItem ) {
 	ASSERT( ::IsWindow( hWnd ) );
 	//_AFXCMN_INLINE BOOL CHeaderCtrl::SetItem(_In_ int nPos, _In_ HDITEM* pHeaderItem)
 	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL)::SendMessage(m_hWnd, HDM_SETITEM, nPos, (LPARAM)pHeaderItem); }

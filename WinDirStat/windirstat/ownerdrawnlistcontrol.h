@@ -816,6 +816,55 @@ public:
 	
 		INT col_order_array[ countArray ] = { 0 };
 
+		/*
+CWnd* PASCAL CWnd::FromHandle(HWND hWnd)
+{
+	CHandleMap* pMap = afxMapHWND(TRUE); //create map if not exist
+	ASSERT(pMap != NULL);
+	CWnd* pWnd = (CWnd*)pMap->FromHandle(hWnd);
+
+	pWnd->AttachControlSite(pMap);
+
+	ASSERT(pWnd == NULL || pWnd->m_hWnd == hWnd);
+	return pWnd;
+}
+
+CHeaderCtrl* CListCtrl::GetHeaderCtrl() const
+{
+	ASSERT(::IsWindow(m_hWnd));
+
+	HWND hWnd = (HWND) ::SendMessage(m_hWnd, LVM_GETHEADER, 0, 0);
+	if (hWnd == NULL)
+		return NULL;
+	else
+		return (CHeaderCtrl*) CHeaderCtrl::FromHandle(hWnd);
+}
+
+
+BOOL CListCtrl::GetColumnOrderArray(LPINT piArray, int iCount = -1) const
+{
+	ASSERT(::IsWindow(m_hWnd));
+
+	// if -1 was passed, find the count ourselves
+
+	int nCount = iCount;
+	if (nCount == -1)
+	{
+		CHeaderCtrl* pCtrl = GetHeaderCtrl();
+		ASSERT(pCtrl != NULL);
+		if (pCtrl != NULL)
+			nCount = pCtrl->GetItemCount();
+	}
+	if (nCount == -1)
+		return FALSE;
+
+	ASSERT(AfxIsValidAddress(piArray, nCount * sizeof(int)));
+	return (BOOL) ::SendMessage(m_hWnd, LVM_GETCOLUMNORDERARRAY,
+		(WPARAM) nCount, (LPARAM) piArray);
+}
+
+		*/
+
 		const auto res_2 = CListCtrl::GetColumnOrderArray( col_order_array, itemCount_default_type );
 		if ( res_2 == 0 ) {
 			displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::LoadPersistenAttributes - GetColumnOrderArray failed!(aborting)" );
@@ -834,6 +883,18 @@ public:
 		ASSERT( column_order_default.back( ) != L',' );
 		
 		CPersistence::GetColumnOrder( m_persistent_name, col_order_array, itemCount, column_order_default.c_str( ) );
+
+		/*
+BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
+{
+	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(AfxIsValidAddress(piArray, iCount * sizeof(int), FALSE));
+
+	return (BOOL) ::SendMessage(m_hWnd, LVM_SETCOLUMNORDERARRAY,
+					(WPARAM) iCount, (LPARAM) piArray);
+}
+
+		*/
 
 		const auto res2 = CListCtrl::SetColumnOrderArray( static_cast<int>( itemCount ), col_order_array );
 		if ( res2 == 0 ) {
@@ -924,7 +985,7 @@ public:
 		//VERIFY( CListCtrl::SortItems( &_CompareFunc, reinterpret_cast<DWORD_PTR>( &m_sorting ) ) );
 
 		HDITEM hditem = { };
-		auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
+		CHeaderCtrl* const thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
 		const rsize_t text_char_count = 260u;
@@ -1057,7 +1118,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 				//`/analyze` is confused.
 				return;
 				}
-			const auto w = COwnerDrawnListCtrl::GetSubItemWidth( item, col );
+			const INT w = COwnerDrawnListCtrl::GetSubItemWidth( item, col );
 			//_AFXCMN_INLINE int CListCtrl::GetStringWidth(_In_z_ LPCTSTR lpsz) const
 			//{ ASSERT(::IsWindow(m_hWnd)); return (int) ::SendMessage(m_hWnd, LVM_GETSTRINGWIDTH, 0, (LPARAM)lpsz); }
 
@@ -1067,6 +1128,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 				width = w;
 				}
 			}
+		ASSERT( width >= 0 );
 		VERIFY( SetColumnWidth_LVM_SETCOLUMNWIDTH( m_hWnd, col, width + 5 ) );
 		//VERIFY( CListCtrl::SetColumnWidth( col, width + 5 ) );
 		}
