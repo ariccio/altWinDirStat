@@ -577,8 +577,11 @@ bool CDirstatDoc::Work( ) {
 		
 		auto timing_and_elevate = DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
 		m_compressed_file_timing = timing_and_elevate.first;
-		const bool should_we_elevate = timing_and_elevate.second;
+		//const bool should_we_elevate = timing_and_elevate.second;
 		ASSERT( m_rootItem->m_attr.m_done );
+		//if ( should_we_elevate ) {
+		//	displayWindowsMsgBoxWithMessage( L"Couldn't query MFT file size, as Windows denied access. If you'd like to see the size of the MFT, run as an administrator." );
+		//	}
 		
 		//cache the size of root item
 		m_rootItem->refresh_sizeCache( );
@@ -593,9 +596,6 @@ bool CDirstatDoc::Work( ) {
 			}
 		
 		m_rootItem->AddChildren( &( DirStatView->m_treeListControl ) );
-		if ( should_we_elevate ) {
-			displayWindowsMsgBoxWithMessage( L"Couldn't query MFT file size, as Windows denied access. If you'd like to see the size of the MFT, run as an administrator." );
-			}
 		return res;
 		}
 	return false;

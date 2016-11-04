@@ -62,9 +62,9 @@ namespace registry_strings {
 	}
 
 namespace helpers {
-	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ const PCWSTR entry_fmt_str ) {
+	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ _Printf_format_string_ const PCWSTR entry_fmt_str ) {
 		//TODO: uses heap!
-#pragma warning(suppress:4774)
+//#pragma warning(suppress:4774)
 		const auto chars_needed = ( _scwprintf( entry_fmt_str, name ) + 1 );
 		std::unique_ptr<_Null_terminated_ wchar_t[]> char_buffer_ptr = std::make_unique<wchar_t[ ]>( static_cast<size_t>( chars_needed ) );
 		

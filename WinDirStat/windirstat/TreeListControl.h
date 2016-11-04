@@ -171,25 +171,25 @@ class CTreeListItem final : public COwnerDrawnListItem {
 			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
 
 
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		std::int16_t  GetIndent( ) const {
 			ASSERT( IsVisible( ) );
 			return m_vi->indent;
 			}
 
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		void SetExpanded( _In_ const bool expanded = true ) {
 			ASSERT( IsVisible( ) );
 			m_vi->isExpanded = expanded;
 			}
 
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		void SetPlusMinusRect( _In_ const RECT& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcPlusMinus = SRECT( rc );
 			}
 
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		void SetTitleRect( _In_ const RECT& rc ) const {
 			ASSERT( IsVisible( ) );
 			m_vi->rcTitle = SRECT( rc );
@@ -199,7 +199,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		
 		//TODO: This should be reversed (i.e. CTreeListControl::SortChildren( _Inout_ CTreeListItem* const item ) )
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		void SortChildren                       ( _In_ const CTreeListControl* const ctrl );
 
 		_Pre_satisfies_( this->m_parent != NULL )
@@ -211,7 +211,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 			return ( m_child_info.m_child_info_ptr != NULL );
 			}
 		
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		bool IsExpanded( ) const {
 			ASSERT( IsVisible( ) );
 			return m_vi->isExpanded; 
@@ -221,10 +221,10 @@ class CTreeListItem final : public COwnerDrawnListItem {
 			return ( m_vi != nullptr );
 			}
 	
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		RECT GetPlusMinusRect( ) const;
 
-		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+		//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		RECT GetTitleRect( ) const;
 
 		
@@ -331,7 +331,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				void EnsureItemVisible                         ( _In_     const CTreeListItem* const item                                                                                    );
 				void handle_VK_LEFT                            ( _In_     const CTreeListItem* const item,     _In_ _In_range_( 0, INT32_MAX ) const int i );
 				
-		_Pre_satisfies_( item->m_vi._Mypair._Myval2 != nullptr ) _Success_( return )
+		//_Pre_satisfies_( item->m_vi._Mypair._Myval2 != nullptr ) _Success_( return )
 				const bool DrawNodeNullWidth                   ( _In_     const CTreeListItem* const item, _In_ HDC hDC,  _In_ const RECT& rcRest, _In_    HDC hDCmem, _In_ const UINT ysrc ) const;
 				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const;
 				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc            ) const;

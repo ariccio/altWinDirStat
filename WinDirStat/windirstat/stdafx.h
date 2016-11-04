@@ -327,7 +327,7 @@ extern WTL::CAppModule _Module;
 
 #pragma warning (push)
 #pragma warning (disable:4619)  // unreachable code
-#include <concurrent_vector.h>
+//#include <concurrent_vector.h>
 #pragma warning (pop)
 
 #pragma warning(pop)

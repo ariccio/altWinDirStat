@@ -35,7 +35,7 @@ namespace registry_strings {
 	}
 
 namespace helpers {
-	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ const PCWSTR entry_fmt_str );
+	std::wstring generalized_make_entry( _In_z_ const PCWSTR name, _In_z_ _Printf_format_string_ const PCWSTR entry_fmt_str );
 	std::wstring MakeColumnOrderEntry( _In_z_ const PCWSTR name );
 	std::wstring MakeColumnWidthsEntry( _In_z_ const PCWSTR name );
 	}

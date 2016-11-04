@@ -300,7 +300,7 @@ void CTreeListItem::childNotNull( _In_ const CTreeListItem* const aTreeListChild
 
 
 //TODO: This should be reversed (i.e. CTreeListControl::SortChildren( _Inout_ CTreeListItem* const item ) )
-_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 void CTreeListItem::SortChildren( _In_ const CTreeListControl* const ctrl ) {
 	ASSERT( CTreeListItem::IsVisible( ) );
 
@@ -1033,13 +1033,13 @@ void CTreeListItem::UpwardGetPathWithoutBackslash( std::wstring& pathBuf ) const
 	return;
 	}
 
-_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr ) 
+//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr ) 
 RECT CTreeListItem::GetPlusMinusRect( ) const {
 	ASSERT( CTreeListItem::IsVisible( ) );
 	return BuildRECT( m_vi->rcPlusMinus );
 	}
 
-_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
+//_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 RECT CTreeListItem::GetTitleRect( ) const {
 	ASSERT( CTreeListItem::IsVisible( ) );
 	return BuildRECT( m_vi->rcTitle );
@@ -1365,7 +1365,7 @@ BEGIN_MESSAGE_MAP(CTreeListControl, COwnerDrawnListCtrl)
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-_Pre_satisfies_( item->m_vi._Mypair._Myval2 != nullptr ) _Success_( return )
+//_Pre_satisfies_( item->m_vi._Mypair._Myval2 != nullptr ) _Success_( return )
 const bool CTreeListControl::DrawNodeNullWidth( _In_ const CTreeListItem* const item, _In_ HDC hDC, _In_ const RECT& rcRest, _In_ HDC hDCmem, _In_ const UINT ysrc ) const {
 	bool didBitBlt = false;
 	auto ancestor = item;

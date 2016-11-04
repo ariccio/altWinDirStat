@@ -107,17 +107,23 @@ namespace {
 
 	struct pair_of_item_and_path final {
 		pair_of_item_and_path( ) = default;
-		pair_of_item_and_path( pair_of_item_and_path&& in ) = default;
+		pair_of_item_and_path(CTreeListItem* ptr_in, const std::wstring& path_in ) : ptr( ptr_in ), path( path_in ) {}
+
 		CTreeListItem* ptr;
 		std::wstring path;
-		DISALLOW_COPY_AND_ASSIGN( pair_of_item_and_path );
+		//DISALLOW_COPY_AND_ASSIGN( pair_of_item_and_path );
 		};
 
 	struct pair_of_dirs_and_compressed_file_sizes final {
-		pair_of_dirs_and_compressed_file_sizes( ) = default;
+		pair_of_dirs_and_compressed_file_sizes( ) : dirsToWorkOn( std::make_unique<std::vector<pair_of_item_and_path>>() ), sizesToWorkOn( std::make_unique<std::vector<pair_of_item_and_path>>() ) { }
+		pair_of_dirs_and_compressed_file_sizes( pair_of_dirs_and_compressed_file_sizes&& in ) {
+			dirsToWorkOn = std::move( in.dirsToWorkOn );
+			sizesToWorkOn = std::move( in.sizesToWorkOn );
+			}
+
 		std::unique_ptr<std::vector<pair_of_item_and_path>> dirsToWorkOn;
 		std::unique_ptr<std::vector<pair_of_item_and_path>> sizesToWorkOn;
-		//DISALLOW_COPY_AND_ASSIGN( pair_of_dirs_and_compressed_file_sizes );
+		DISALLOW_COPY_AND_ASSIGN( pair_of_dirs_and_compressed_file_sizes );
 		};
 
 	}
@@ -535,12 +541,12 @@ namespace {
 		std::vector<std::future<decltype(DoSomeWork(nullptr, std::wstring(), nullptr, false))>> workers;
 		workers.reserve( dirsToWorkOnCount );
 		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
-			ASSERT( (*dirs_to_work_on)[ i ].second.length( ) > 1 );
-			ASSERT( (*dirs_to_work_on)[ i ].second.back( ) != L'\\' );
-			ASSERT( (*dirs_to_work_on)[ i ].second.back( ) != L'*' );
+			ASSERT( (*dirs_to_work_on)[ i ].path.length( ) > 1 );
+			ASSERT( (*dirs_to_work_on)[ i ].path.back( ) != L'\\' );
+			ASSERT( (*dirs_to_work_on)[ i ].path.back( ) != L'*' );
 			//TODO: investigate task_group
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			workers.emplace_back( std::async( DoSomeWork, (*dirs_to_work_on)[ i ].ptr, std::move( (*dirs_to_work_on)[ i ].path ), app, std::move( false ) ) );
+			workers.emplace_back( std::async( DoSomeWork, (*dirs_to_work_on)[ i ].ptr, std::move( (*dirs_to_work_on)[ i ].path ), app, false ) );
 			}
 		return workers;
 		}
@@ -584,7 +590,7 @@ namespace {
 
 	std::unique_ptr<std::vector<pair_of_item_and_path>> launch_directory_workers( _Inout_ CTreeListItem* const ThisCItem, _In_ const CDirstatApp* const app, _In_ const rsize_t dirCount, _In_ const rsize_t vecFiles_size, _In_ const std::vector<DIRINFO>& vecDirs ) {
 		//std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
-		std::unique_ptr<std::vector<pair_of_item_and_path>> dirsToWorkOn;
+		std::unique_ptr<std::vector<pair_of_item_and_path>> dirsToWorkOn = std::make_unique<std::vector<pair_of_item_and_path>>( );
 		dirsToWorkOn->reserve( dirCount );
 		const auto thisOptions = GetOptions( );
 
@@ -620,7 +626,7 @@ namespace {
 
 				if ( !newitem->m_attr.m_done ) {
 					ASSERT( !dontFollow );
-					dirsToWorkOn->emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
+					dirsToWorkOn->emplace_back( newitem, std::move( dir.path ) );
 					}
 				else {
 					ASSERT( dontFollow );
@@ -658,8 +664,7 @@ namespace {
 
 
 		if ( total_count == 0 ) {
-
-			return std::make_pair( pair_of_dirs_and_compressed_file_sizes( ), should_we_elevate );
+			return std::make_pair( std::move( pair_of_dirs_and_compressed_file_sizes( ) ), should_we_elevate );
 			}
 
 		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
@@ -679,18 +684,28 @@ namespace {
 
 		//ASSERT( path.back( ) != _T( '\\' ) );
 		//sizesToWorkOn_ CANNOT BE CONST!!
-		auto sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
-		auto dirsToWorkOn = launch_directory_workers( ThisCItem, app, dirCount, fileCount, vecDirs );
+		std::unique_ptr<std::vector<pair_of_item_and_path>> sizesToWorkOn_ = addFiles_returnSizesToWorkOn( ThisCItem, vecFiles, path );
+		std::unique_ptr<std::vector<pair_of_item_and_path>> dirsToWorkOn = launch_directory_workers( ThisCItem, app, dirCount, fileCount, vecDirs );
 
 
 		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 		//ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 		//ThisCItem->m_children_vector.shrink_to_fit( );
 		pair_of_dirs_and_compressed_file_sizes pair_dirs_and_files;
-		pair_dirs_and_files.dirsToWorkOn = std::move( dirsToWorkOn );
-		pair_dirs_and_files.sizesToWorkOn = std::move( sizesToWorkOn_ );
-		std::pair<pair_of_dirs_and_compressed_file_sizes, const bool> pair_both( pair_dirs_and_files, should_we_elevate );
-		return std::make_pair( pair_dirs_and_files, should_we_elevate );
+		if ( dirsToWorkOn->size( ) == 0u ) {
+			//pair_dirs_and_files.dirsToWorkOn;
+			}
+		else {
+			pair_dirs_and_files.dirsToWorkOn = std::move( dirsToWorkOn );
+			}
+		if ( sizesToWorkOn_->size( ) == 0u ) {
+			//pair_dirs_and_files.sizesToWorkOn = nullptr;
+			}
+		else {
+			pair_dirs_and_files.sizesToWorkOn = std::move( sizesToWorkOn_ );
+			}
+		//std::pair<pair_of_dirs_and_compressed_file_sizes, bool> pair_both( pair_dirs_and_files, should_we_elevate );
+		return std::make_pair( std::move( pair_dirs_and_files ), should_we_elevate );
 		}
 
 	_Success_( return < UINT64_ERROR )
@@ -758,7 +773,7 @@ namespace {
 
 WDS_DECLSPEC_NOTHROW std::unique_ptr<std::vector<pair_of_item_and_path>> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	//std::vector<std::pair<CTreeListItem*, std::wstring>> sizesToWorkOn_;
-	std::unique_ptr<std::vector<pair_of_item_and_path>> sizesToWorkOn;
+	std::unique_ptr<std::vector<pair_of_item_and_path>> sizesToWorkOn = std::make_unique<std::vector<pair_of_item_and_path>>();
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
 	sizesToWorkOn->reserve( vecFiles.size( ) );
 
@@ -857,10 +872,24 @@ WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListIt
 	if ( path.back( ) == L'\\' ) {
 		path.pop_back( );
 		}
-	concurrency::concurrent_vector<pair_of_item_and_path> sizes_to_work_on;
 
-	const auto qpc_1 = help_QueryPerformanceCounter( );
+	//First, figure out if we'll need to elevate to figure out the size of the MFT:
+	ASSERT( ThisCItem->m_parent == NULL );
 	
+	//We're actually going to ignore vecFiles & vecDirs anyways.
+	std::vector<FILEINFO> vecFiles;
+	std::vector<DIRINFO> vecDirs;
+	const bool should_we_elevate_temp = handle_NTFS_special_files( path, app, vecFiles, vecDirs );
+	if ( should_we_elevate_temp ) {
+		displayWindowsMsgBoxWithMessage( L"Couldn't query MFT file size, as Windows denied access. If you'd like to see the size of the MFT, run as an administrator." );
+		}
+
+
+	//concurrency::concurrent_vector<pair_of_item_and_path> sizes_to_work_on;
+
+	ASSERT( ThisCItem->m_parent == NULL );
+	const auto qpc_1 = help_QueryPerformanceCounter( );
+
 	auto work_result  = DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
 	const bool should_we_elevate = work_result.first;
 	
@@ -922,7 +951,7 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 
 	auto kookyPair = readJobNotDoneWork( ThisCItem, std::move( path ), app );
 
-	auto& itemsToWorkOn = kookyPair.first;
+	pair_of_dirs_and_compressed_file_sizes& itemsToWorkOn = kookyPair.first;
 
 	const bool should_we_elevate = kookyPair.second;
 	//if ( ThisCItem->m_child_info == nullptr ) {
@@ -940,7 +969,7 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 		ASSERT( itemsToWorkOn.sizesToWorkOn->size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
 		ThisCItem->m_size = 0;
-		return std::make_pair( should_we_elevate, itemsToWorkOn.sizesToWorkOn );
+		return std::make_pair( should_we_elevate, std::move( itemsToWorkOn.sizesToWorkOn ) );
 		}
 
 	//std::vector<std::pair<CItemBranch*, std::wstring>>& dirs_to_work_on = itemsToWorkOn.first;
@@ -976,7 +1005,7 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 		(void)
 #endif
 		
-		worker.get( );
+		worker.get( ).first;
 
 #ifdef DEBUG
 		ASSERT( verify_bool_is_false == false );
@@ -985,7 +1014,7 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 		}
 
 	ThisCItem->m_attr.m_done = true;
-	return std::make_pair( should_we_elevate, itemsToWorkOn.sizesToWorkOn );
+	return std::make_pair( std::move( should_we_elevate ), std::move( itemsToWorkOn.sizesToWorkOn ) );
 	}
 
 _Success_( return < UINT64_ERROR )
