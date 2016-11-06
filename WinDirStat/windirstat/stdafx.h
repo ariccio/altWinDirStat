@@ -215,6 +215,10 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #pragma warning(disable:4062) //The enumerate has no associated handler in a switch statement, and there is no default label.
 
 
+//This is a nonsensical warning.
+#pragma warning(disable:4467) //warning C4467: usage of ATL attributes is deprecated
+							  //the compiler also says: "note: to simplify migration, consider the temporary use of /Wv:18 flag with the version of the compiler with which you used to build without warnings:
+
 
 #pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
 

@@ -12,7 +12,15 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "dirstatdoc.h"
 #include "globalhelpers.h"
 #include "TreeListControl.h"
+
+
+
+#pragma warning (push)
+//This warning fires on a few comparisons like this:
+//#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_TH2)
+#pragma warning (disable:4668)  //warning C4668: '_WIN32_WINNT_WIN10_TH2' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 #include <WinIoCtl.h>
+#pragma warning (pop)
 
 
 #ifdef new
@@ -20,6 +28,14 @@ WDS_FILE_INCLUDE_MESSAGE
 #define WDS_DIRECTORY_ENUMERATION_PUSHED_MACRO_NEW
 #undef new
 #endif
+
+//This warning fires SOMEWHERE in here, and it's not clear where.
+#pragma warning(disable:4503) //directory_enumeration.cpp(1052): warning C4503: 'std::_Func_class<_Ret>::_Reset_impl': decorated name length exceeded, name was truncated
+//C4503 also gives this useless extra info:
+//                 with
+//                 [
+//                     _Ret=_Ret
+//                 ]
 
 namespace {
 	struct FILEINFO final {
@@ -554,6 +570,9 @@ namespace {
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 	WDS_DECLSPEC_NOTHROW void size_workers( _In_ std::unique_ptr<std::vector<pair_of_item_and_path>>& sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
+		if ( sizes == nullptr ) {
+			return;
+			}
 		std::vector<std::future<void>> sizesToWorkOn_;
 		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
 		sizesToWorkOn_.reserve( sizes->size( ) + 1 );
@@ -696,12 +715,14 @@ namespace {
 			//pair_dirs_and_files.dirsToWorkOn;
 			}
 		else {
+			ASSERT( pair_dirs_and_files.dirsToWorkOn->size( ) == 0 );
 			pair_dirs_and_files.dirsToWorkOn = std::move( dirsToWorkOn );
 			}
 		if ( sizesToWorkOn_->size( ) == 0u ) {
 			//pair_dirs_and_files.sizesToWorkOn = nullptr;
 			}
 		else {
+			ASSERT( pair_dirs_and_files.sizesToWorkOn->size( ) == 0 );
 			pair_dirs_and_files.sizesToWorkOn = std::move( sizesToWorkOn_ );
 			}
 		//std::pair<pair_of_dirs_and_compressed_file_sizes, bool> pair_both( pair_dirs_and_files, should_we_elevate );
@@ -890,7 +911,7 @@ WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListIt
 	ASSERT( ThisCItem->m_parent == NULL );
 	const auto qpc_1 = help_QueryPerformanceCounter( );
 
-	auto work_result  = DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
+	std::pair<bool, std::unique_ptr<std::vector<pair_of_item_and_path>>> work_result  = DoSomeWork( std::move( ThisCItem ), std::move( path ), app, std::move( isRootRecurse ) );
 	const bool should_we_elevate = work_result.first;
 	
 	const auto qpc_2 = help_QueryPerformanceCounter( );
@@ -941,6 +962,9 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 	//This is temporary.
 	UNREFERENCED_PARAMETER( isRootRecurse );
 
+
+	//std::unique_ptr<std::vector<pair_of_item_and_path>> compressed_files_to_return{ nullptr };
+
 	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
@@ -949,7 +973,7 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 		path = fixedPath;
 		}
 
-	auto kookyPair = readJobNotDoneWork( ThisCItem, std::move( path ), app );
+	std::pair<pair_of_dirs_and_compressed_file_sizes, bool> kookyPair = readJobNotDoneWork( ThisCItem, std::move( path ), app );
 
 	pair_of_dirs_and_compressed_file_sizes& itemsToWorkOn = kookyPair.first;
 
@@ -969,6 +993,7 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 		ASSERT( itemsToWorkOn.sizesToWorkOn->size( ) == 0 );
 		ThisCItem->m_attr.m_done = true;
 		ThisCItem->m_size = 0;
+		//compressed_files_to_return = std::move( itemsToWorkOn.sizesToWorkOn );
 		return std::make_pair( should_we_elevate, std::move( itemsToWorkOn.sizesToWorkOn ) );
 		}
 
@@ -995,8 +1020,21 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 		//sizes_to_work_on->emplace_back( std::move( a_pair ) );
 		//}
 
+	std::unique_ptr<std::vector<pair_of_item_and_path>> compressed_files_to_return = std::make_unique<std::vector<pair_of_item_and_path>>( );
+	if ( ( itemsToWorkOn.sizesToWorkOn != nullptr ) && ( itemsToWorkOn.sizesToWorkOn->size( ) != 0 ) ) {
+		ASSERT( compressed_files_to_return->size( ) == 0 );
+		//ASSERT( itemsToWorkOn.sizesToWorkOn->size( ) != 0 );
+		//compressed_files_to_return = std::move( itemsToWorkOn.sizesToWorkOn );
+		compressed_files_to_return->reserve( compressed_files_to_return->size( ) + itemsToWorkOn.sizesToWorkOn->size( ) );
+		compressed_files_to_return->insert( compressed_files_to_return->end( ), itemsToWorkOn.sizesToWorkOn->begin( ), itemsToWorkOn.sizesToWorkOn->end( ) );
+		}
+	else {
+		//compressed_files_to_return = std::make_unique<std::vector<pair_of_item_and_path>>( );
+		}
+
 	for ( auto&& worker : workers ) {
-		
+		const auto work_res = worker.get( );
+
 		//purposefully ignore the bool-return-value.
 		//it *should* only ever be true for the root directory, which is done syncronously.
 #ifdef DEBUG
@@ -1004,17 +1042,21 @@ WDS_DECLSPEC_NOTHROW std::pair<bool, std::unique_ptr<std::vector<pair_of_item_an
 #else
 		(void)
 #endif
-		
-		worker.get( ).first;
-
+		work_res.first;
 #ifdef DEBUG
 		ASSERT( verify_bool_is_false == false );
 #endif
-
+		const std::unique_ptr<std::vector<pair_of_item_and_path>>& worker_sizes_to_work_on = work_res.second;
+		if ( ( worker_sizes_to_work_on != nullptr ) && ( worker_sizes_to_work_on->size( ) != 0 ) ) {
+			//ASSERT( worker_sizes_to_work_on->size( ) != 0 );
+			//ASSERT( compressed_files_to_return->size( ) == 0 );
+			compressed_files_to_return->reserve( compressed_files_to_return->size( ) + worker_sizes_to_work_on->size( ) );
+			compressed_files_to_return->insert( compressed_files_to_return->end( ), worker_sizes_to_work_on->begin( ), worker_sizes_to_work_on->end( ) );
+			}
 		}
 
 	ThisCItem->m_attr.m_done = true;
-	return std::make_pair( std::move( should_we_elevate ), std::move( itemsToWorkOn.sizesToWorkOn ) );
+	return std::make_pair( std::move( should_we_elevate ), std::move( compressed_files_to_return ) );
 	}
 
 _Success_( return < UINT64_ERROR )
