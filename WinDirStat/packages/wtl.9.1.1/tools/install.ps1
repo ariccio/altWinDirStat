@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop";
 try {
     # Avoid race conditions when checking the file.
 
-    $mutex = New-Object System.Threading.Mutex($false, "Global¥WTL_AppWizInstaller");
+    $mutex = New-Object System.Threading.Mutex($false, "Global\WTL_AppWizInstaller");
     $mutex.WaitOne() | Out-Null;
 
     # Determine the VS version and edition.
@@ -13,11 +13,19 @@ try {
     $vsVersion = "";
     $vsEdition = "";
     try {
-        $dte2 = Get-Interface $dte ([EnvDTE80.DTE2]);
-        $vsVersion = $dte2."Version";	# "10.0", "11.0" or "12.0"
-        $vsEdition = $dte2."Edition";	# "Professional", "Desktop Express" etc.
+        $vsVersion = $dte."Version";	# "10.0", "11.0" or "12.0"
+        $vsEdition = $dte."Edition";	# "Professional", "Desktop Express" etc.
     }
     catch [Exception] {
+    }
+    if ($vsVersion -eq "" -or $vsEdition -eq "") {
+        try {
+            $dte2 = Get-Interface $dte ([EnvDTE80.DTE2]);
+            $vsVersion = $dte2."Version";	# "10.0", "11.0" or "12.0"
+            $vsEdition = $dte2."Edition";	# "Professional", "Desktop Express" etc.
+        }
+        catch [Exception] {
+        }
     }
     if ($vsVersion -eq "" -or $vsEdition -eq "") {
         echo "install.ps1: Failed to determine the VS version.";
@@ -82,6 +90,9 @@ try {
     }
     elseif ($vsVersion -eq "14.0") {
         $verTitle = "2015";
+    }
+    elseif ($vsVersion -eq "15.0") {
+        $verTitle = "2017";
     }
     else {
         echo "install.ps1: Unsupported Visual Studio version.";
