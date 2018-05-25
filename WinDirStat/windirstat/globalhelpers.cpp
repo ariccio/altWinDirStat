@@ -199,7 +199,7 @@ namespace {
 
 	//_In_range_ upper bound is totally arbitrary! Lower bound is enough for WRITE_BAD_FMT
 	void ensure_valid_return_date( _In_ const int gdfres, _In_ _In_ _In_range_( 24, 2048 ) const rsize_t strSize, _In_ const SYSTEMTIME system_time, _Inout_ PWSTR psz_formatted_datetime ) {
-		if ( !( ( gdfres + 1 ) < static_cast< std::int64_t >( strSize ) ) ) {
+		if ( ( gdfres + 1 ) >= static_cast< std::int64_t >( strSize ) ) {
 			displayWindowsMsgBoxWithMessage( L"Error in ensure_valid_return_date!(aborting)" );
 			std::wstring err_str( L"DEBUGGING INFO: strSize: " );
 			err_str += std::to_wstring( strSize );
@@ -218,11 +218,12 @@ namespace {
 				}
 			std::terminate( );
 			}
-		std::terminate( );
+		//std::terminate here is WRONG!
+		//std::terminate( );
 		}
 
 	void ensure_valid_return_time( const int gtfres, const rsize_t strSize, _Inout_ PWSTR psz_formatted_datetime ) {
-		if ( !( ( gtfres + 1 ) < static_cast< std::int64_t >( strSize ) ) ) {
+		if ( ( gtfres + 1 ) >= static_cast< std::int64_t >( strSize ) ) {
 			displayWindowsMsgBoxWithMessage( L"Error in ensure_valid_return_time!(aborting)" );
 			std::wstring err_str( L"DEBUGGING INFO: strSize: " );
 			err_str += std::to_wstring( strSize );
@@ -241,7 +242,8 @@ namespace {
 				}
 			std::terminate( );
 			}
-		std::terminate( );
+		//std::terminate here is WRONG!
+		//std::terminate( );
 		}
 
 
@@ -462,6 +464,18 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 		}
 
 	//const int gtfres = GetTimeFormatW( lcid, 0, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( static_cast<int>( strSize ) - static_cast<int>( chars_written ) ) );
+
+	// GetDateFormatEx function: https://msdn.microsoft.com/en-us/library/windows/desktop/dd318088.aspx
+	// Returns the number of characters written to the lpDateStr buffer if successful.
+	// If the cchDate parameter is set to 0, the function returns the number of characters required to hold the formatted date string, including the terminating null character.
+	// This function returns 0 if it does not succeed. 
+
+
+	// GetTimeFormatEx function: https://msdn.microsoft.com/en-us/library/windows/desktop/dd318131.aspx
+	// Returns the number of characters retrieved in the buffer indicated by lpTimeStr.
+	// If the cchTime parameter is set to 0, the function returns the size of the buffer required to hold the formatted time string, including a terminating null character.
+	// This function returns 0 if it does not succeed. 
+
 	const int gtfres = GetTimeFormatEx( date_time_format_locale_name_str, GetTimeFormatEx_flags, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( static_cast<int>( strSize ) - static_cast<int>( chars_written ) ) );
 
 	ensure_valid_return_time( gtfres, strSize, psz_formatted_datetime );
@@ -531,11 +545,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( con
 			displayWindowsMsgBoxWithError( last_err );
 			std::terminate( );
 		}
-	ASSERT( false );
-	displayWindowsMsgBoxWithMessage( L"Unintended execution in CStyle_GetNumberFormatted, after GetNumberFormatEx!(aborting!)" );
-	std::terminate( );
 	static_assert( !SUCCEEDED( E_FAIL ), "bad error return type!" );
-	return E_FAIL;
 	}
 
 _Success_( SUCCEEDED( return ) )

@@ -946,7 +946,6 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 			//CPersistence expects more than one item arrays
 			//Since that's a nonsensical condition, no point in continuing.
 			std::terminate( );
-			abort( );//Maybe VS2015 will understand that std::terminate( ) doesn't return.
 			}
 
 		if ( itemCount >= col_array_size ) {

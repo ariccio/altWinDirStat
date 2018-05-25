@@ -102,10 +102,30 @@ struct child_info_block_manager final {
 	child_info_block_manager( ) : m_child_info_ptr( nullptr ) { }
 	child_info_block_manager( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) {
 		const rsize_t size_of_a_single_struct_in_bytes = sizeof( child_info );
-		const size_t total_size_needed = ( size_of_a_single_struct_in_bytes + ( number_of_characters_needed * sizeof( wchar_t ) ) );
+		const rsize_t character_bytes_needed = ( number_of_characters_needed * sizeof( wchar_t ) );
+		
+		//maybe /analyze thinks we will overflow?
+		//apparently not, but this is a good idea anyways.
+		if ( ( number_of_characters_needed * sizeof( wchar_t ) ) < number_of_characters_needed ) {
+			std::terminate( );
+			} 
+		if ( ( character_bytes_needed + size_of_a_single_struct_in_bytes ) < size_of_a_single_struct_in_bytes ) {
+			std::terminate( );
+			}
+		if ( ( character_bytes_needed + size_of_a_single_struct_in_bytes ) < character_bytes_needed ) {
+			std::terminate( );
+			}
+
+		const size_t total_size_needed = ( size_of_a_single_struct_in_bytes + character_bytes_needed );
+		ASSERT( total_size_needed > 0 );
+		if ( total_size_needed < sizeof( child_info ) ) {
+			std::terminate( );
+			}
 		void* const memory_block = malloc( total_size_needed );
-#pragma message("This is temporary!")
-#pragma warning(suppress: 6386)
+		if ( memory_block == nullptr ) {
+			std::terminate( );
+			}
+
 		m_child_info_ptr = new ( memory_block ) child_info( number_of_characters_needed, child_count );
 		}
 	~child_info_block_manager( ) {

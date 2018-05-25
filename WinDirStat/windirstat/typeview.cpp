@@ -303,7 +303,6 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ _In_range_( >=
 	ASSERT( false );
 	displayWindowsMsgBoxWithMessage( L"GetListItem found NULL list item!" );
 	std::terminate( );
-	abort( );
 
 	//Shut the compiler up. This code SHOULD NEVER execute, but if execution DOES get here, we'll purposely crash.
 	( ( CListItem* )( 0 ) )->m_name;

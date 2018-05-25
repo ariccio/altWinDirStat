@@ -60,7 +60,6 @@ SelectStockObject_wrapper::SelectStockObject_wrapper( _In_ HDC hDC, _In_ _In_ran
 	HGDIOBJ hStockObj = ::GetStockObject( nIndex );
 	if ( hStockObj == NULL ) {
 		std::terminate( );
-		abort( );
 		}
 
 	//SelectObject function: https://msdn.microsoft.com/en-us/library/dd162957.aspx
@@ -131,7 +130,6 @@ CSetBkMode::CSetBkMode( _In_ HDC hDC, _In_ const INT mode ) : m_hDC { hDC } {
 CSetBkMode::~CSetBkMode( ) {
 	if ( m_hDC == NULL ) {
 		std::terminate( );
-		abort( );
 		}
 	ASSERT( m_oldMode != 0 );
 	//SetBkMode function: https://msdn.microsoft.com/en-us/library/dd162965.aspx
@@ -159,7 +157,6 @@ CSetTextColor::CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color ) : m_hDC 
 CSetTextColor::~CSetTextColor( ) {
 	if ( m_hDC == NULL ) {
 		std::terminate( );
-		abort( );
 		}
 	//SetTextColor function: https://msdn.microsoft.com/en-us/library/dd145093.aspx
 	//If the function succeeds, the return value is a color reference for the previous text color as a COLORREF value.

@@ -13,7 +13,7 @@
 #define STDAFX_INCLUDED
 
 
-#pragma message( "defining `_HAS_EXCEPTIONS 0`..." )
+//#pragma message( "defining `_HAS_EXCEPTIONS 0`..." )
 
 //#define _HAS_EXCEPTIONS 0
 

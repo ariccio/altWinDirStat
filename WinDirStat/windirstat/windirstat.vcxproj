@@ -204,15 +204,15 @@
       <ShowIncludes>false</ShowIncludes>
       <OpenMPSupport>false</OpenMPSupport>
       <ErrorReporting>Send</ErrorReporting>
-      <ExpandAttributedSource>true</ExpandAttributedSource>
       <FloatingPointModel>Precise</FloatingPointModel>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -255,16 +255,16 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/cgthreads8 /Bt+</AdditionalOptions>
       <EnablePREfast>true</EnablePREfast>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ExpandAttributedSource>true</ExpandAttributedSource>
       <PreprocessToFile>false</PreprocessToFile>
       <ShowIncludes>false</ShowIncludes>
       <ErrorReporting>Send</ErrorReporting>
       <OmitFramePointers>false</OmitFramePointers>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -317,10 +317,10 @@
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -380,11 +380,11 @@
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>false</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ExpandAttributedSource>true</ExpandAttributedSource>
-      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
@@ -407,7 +407,7 @@
       <C99Support>false</C99Support>
       <Optimization>MaxSpeedHighLevel</Optimization>
       <OffloadConstructs>Optional</OffloadConstructs>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -464,11 +464,11 @@
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>false</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ExpandAttributedSource>true</ExpandAttributedSource>
-      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <LevelOfStaticAnalysis>None</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>None</ModeOfStaticAnalysis>
@@ -493,7 +493,7 @@
       <EmitDiagnosticsToFile>false</EmitDiagnosticsToFile>
       <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
       <Optimization>Full</Optimization>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -558,8 +558,8 @@
       <ErrorReporting>Send</ErrorReporting>
       <Optimization>Full</Optimization>
       <OmitFramePointers>false</OmitFramePointers>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <ExceptionHandling>false</ExceptionHandling>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>true</TreatWarningAsError>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
@@ -616,15 +616,15 @@
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ExpandAttributedSource>true</ExpandAttributedSource>
-      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
       <CallingConvention>FastCall</CallingConvention>
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -678,15 +678,15 @@
       <ShowIncludes>false</ShowIncludes>
       <UseFullPaths>true</UseFullPaths>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ExpandAttributedSource>true</ExpandAttributedSource>
-      <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <EnablePREfast>true</EnablePREfast>
       <FloatingPointModel>Fast</FloatingPointModel>
       <CallingConvention>FastCall</CallingConvention>
       <LevelOfStaticAnalysis>Verbose</LevelOfStaticAnalysis>
       <AnalyzeIncludeFiles>true</AnalyzeIncludeFiles>
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

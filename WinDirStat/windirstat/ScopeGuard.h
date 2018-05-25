@@ -99,7 +99,7 @@ class ScopeGuard final {
 
 //intentionally ASKING for inlining.
 template <class Fun>
-__forceinline ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const func_expr_in, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
+/*__forceinline*/ ScopeGuard<Fun> scopeGuard( Fun f, _In_z_ PCSTR const func_expr_in, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
 	static_assert( std::is_move_constructible<Fun>::value, "It's important that `Fun` be move-constructable, as ScopeGuard has a move constructor" );
 	
 #if !_HAS_EXCEPTIONS

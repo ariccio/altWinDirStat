@@ -166,7 +166,7 @@ void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const {
 	const auto Options = GetOptions( );
 
 	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
-	SelectObject_wrapper sopen( screen_device_context, &pen );
+	SelectObject_wrapper sopen( screen_device_context, pen.m_hObject );
 
 	CGraphView::RenderHighlightRectangle( screen_device_context, rc );
 	}

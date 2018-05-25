@@ -663,6 +663,9 @@ namespace {
 		//ThisCItem->m_child_info->m_name_pool.reset( total_size_alloc );
 
 		//ASSERT( ThisCItem->m_name_pool.m_buffer_filled == 0 );
+
+		//for some reason, /analyze thinks it could be nullptr, so lets ASSERT it.
+		//ASSERT( ThisCItem->m_child_info.m_child_info_ptr != nullptr );
 		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == 0 );
 
 		//ASSERT( path.back( ) != _T( '\\' ) );
@@ -755,6 +758,11 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			ASSERT( new_name_length < UINT16_MAX );
 
 			ASSERT( ThisCItem->m_child_info.m_child_info_ptr != nullptr );
+
+			// Ok, I *really* don't see how this should happen, but /analyze thinks it can, so I'll be defensive. And I'll shup it up.
+			if ( ThisCItem->m_child_info.m_child_info_ptr == nullptr ) {
+				std::terminate( );
+				}
 
 			PWSTR new_name_ptr = nullptr;
 			//ThisCItem->m_name_pool.copy_name_str_into_buffer

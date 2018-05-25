@@ -1895,7 +1895,6 @@ void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex 
 	HDC hTempDeviceContextMemory = ::CreateCompatibleDC( offscreen_buffer );
 	if ( hTempDeviceContextMemory == NULL ) {
 		std::terminate( );
-		abort( );
 		}
 
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] {
@@ -1924,7 +1923,6 @@ void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex 
 	if ( !res ) {
 		displayWindowsMsgBoxWithMessage( L"bmp.CreateBitmap failed!!! AHHH!!!!" );
 		std::terminate( );
-		abort( );
 		}
 
 	/*
