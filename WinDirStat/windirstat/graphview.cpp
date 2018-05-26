@@ -165,7 +165,13 @@ void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const {
 	SelectStockObject_wrapper sobrush( screen_device_context, NULL_BRUSH );
 	const auto Options = GetOptions( );
 
+	//See also:
+	//	CreatePen function: https://msdn.microsoft.com/en-us/library/dd183509.aspx
+	//	Creating Colored Pens and Brushes: https://msdn.microsoft.com/en-us/library/dd183523.aspx
 	CPen pen( PS_SOLID, 1, Options->m_treemapHighlightColor );
+
+	//need to pass pen.m_hObject instead &pen, because MFC sucks and I hate it
+	//otherwise SelectObject returns HGDI_ERROR
 	SelectObject_wrapper sopen( screen_device_context, pen.m_hObject );
 
 	CGraphView::RenderHighlightRectangle( screen_device_context, rc );
@@ -526,17 +532,6 @@ void CGraphView::RenderHighlightRectangle( _In_ const HDC screen_device_context,
 		//*/
 		//ASSERT( screen_device_context != NULL );
 
-		////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		////If [SetBkColor] fails, the return value is CLR_INVALID.
-		//const auto color_set_res = ::SetBkColor( screen_device_context, Options->m_treemapHighlightColor );
-		//VERIFY( color_set_res != CLR_INVALID );
-
-		////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-		////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-		////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		////If the function fails, the return value is zero.
-		//VERIFY( ::ExtTextOutW( screen_device_context, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL ) );
 
 		fill_solid_RECT(screen_device_context, &rc, Options->m_treemapHighlightColor );
 		return;

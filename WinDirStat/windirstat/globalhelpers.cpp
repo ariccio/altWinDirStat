@@ -415,6 +415,7 @@ void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF 
 		::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
 	}
 	*/
+
 		ASSERT( hDC != NULL );
 
 		//SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
