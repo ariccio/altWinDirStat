@@ -85,13 +85,13 @@ _At_( handle, _Post_invalid_ )
 _At_( handle, _Pre_valid_ )
 void close_handle( const HANDLE handle );
 
-_Pre_satisfies_( rect->left > rect->right ) _Post_satisfies_( rect->left <= rect->right )
+_Post_satisfies_( rect->left <= rect->right )
 inline void normalize_RECT_left_right( _Inout_ RECT* const rect );
 
-_Pre_satisfies_( rect->top > rect->bottom ) _Post_satisfies_( rect->top <= rect->bottom )
+_Post_satisfies_( rect->top <= rect->bottom )
 inline void normalize_RECT_top_bottom( _Inout_ RECT* const rect );
 
-_Post_satisfies_( rect->left <= rect->right ) _Post_satisfies_( rect->top <= rect->bottom )
+_Post_satisfies_( rect->left <= rect->right ) /*_Post_satisfies_( rect->top <= rect->bottom )*/
 void normalize_RECT( _Inout_ RECT* const rect );
 
 void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF clr);

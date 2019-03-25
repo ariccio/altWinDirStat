@@ -374,7 +374,7 @@ void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name ) {
 		}
 	}
 
-_Pre_satisfies_( rect->left > rect->right ) _Post_satisfies_( rect->left <= rect->right )
+_Post_satisfies_( rect->left <= rect->right )
 void normalize_RECT_left_right( _Inout_ RECT* const rect ) {
 	ASSERT( rect->left > rect->right );
 	const auto temp = rect->left;
@@ -383,7 +383,7 @@ void normalize_RECT_left_right( _Inout_ RECT* const rect ) {
 	ASSERT( rect->left <= rect->right );
 	}
 
-_Pre_satisfies_( rect->top > rect->bottom ) _Post_satisfies_( rect->top <= rect->bottom )
+_Post_satisfies_( rect->top <= rect->bottom )
 void normalize_RECT_top_bottom( _Inout_ RECT* const rect ) {
 	ASSERT( rect->top > rect->bottom );
 	const auto temp = rect->top;
@@ -392,7 +392,7 @@ void normalize_RECT_top_bottom( _Inout_ RECT* const rect ) {
 	ASSERT( rect->top <= rect->bottom );
 	}
 
-_Post_satisfies_( rect->left <= rect->right ) _Post_satisfies_( rect->top <= rect->bottom )
+_Post_satisfies_( rect->left <= rect->right ) /*_Post_satisfies_( rect->top <= rect->bottom )*/
 void normalize_RECT( _Inout_ RECT* const rect ) {
 	if ( rect->left > rect->right ) {
 		normalize_RECT_left_right( rect );

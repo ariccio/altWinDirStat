@@ -259,7 +259,11 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #pragma warning(disable:26160) //Caller possibly failing to hold lock '(& this->m_cslock)->m_cs' before calling function 
 #pragma warning(disable:26167) //Possibly releasing unheld lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Unlock'.
 #pragma warning(disable:28204) //'OnFileOk' : Only one of this override and the one at c:\program files (x86)\windows kits\8.1\include\um\shobjidl.h
-
+#pragma warning(disable:6386)  //Buffer overrun while writing to 'm_pDACL':  the writable size is 'pDACL->AclSize' bytes, but '8' bytes might be written.
+								//Buffer overrun while writing to 'm_pSACL':  the writable size is 'pSACL->AclSize' bytes, but '8' bytes might be written.
+								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
+								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
+								//Code analysis is confused about pACL (access control list) in CSecurityDescriptor::AddAccessAllowedACEToACL, CSecurityDescriptor::AddAccessDeniedACEToACL, CSecurityDescriptor::Attach, CSecurityDescriptor::Attach, in file "c:\program files (x86)\microsoft visual studio 14.0\vc\atlmfc\include\atlcom.h", where it *appears* to be correct. Code analysis seems to think the writable size is only 8 bytes for some reason!
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
 
@@ -270,7 +274,14 @@ extern WTL::CAppModule _Module;
 
 #pragma warning(disable:4640) //construction of local static object is not thread-safe	
 
-#include <atlctrlx.h>
+#pragma warning(disable:28197) //Possibly leaking memory 'pParam[i].pszValue'. c:\users\lucius riccio\documents\github\altwindirstat\windirstat\packages\wtl.9.1.1\lib\native\include\atlctrlx.h function DoSortItems
+								//It seems to be worried because for some weird ass reason, ATL deletes the pointer through GetItemData (across the ListView boundary) instead of through the original pointer?
+								//Should be fine unless somehow the number of items are changed by the custom sorting operation?
+
+#pragma warning(disable:6211) //Leaking memory 'pParam' due to an exception.   Is a local catch block needed to clean up memory? c:\users\lucius riccio\documents\github\altwindirstat\windirstat\packages\wtl.9.1.1\lib\native\include\atlctrlx.h	3202
+							// It's worried about an exception, which ATL seems to usually ignore with ATLTRY (which expands to a try() catch(...). ATL doesn't seem to care about std:bad_alloc at all.
+
+#include <atlctrlx.h> 
 #include <atlmisc.h>        // ATL utility classes (i.e. CString)
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>
@@ -291,6 +302,11 @@ extern WTL::CAppModule _Module;
 #include <type_traits>
 #include <utility>
 #include <tuple>
+
+#pragma warning(disable:6014) //Leaking memory '_PCallback'. in c:\program files (x86)\microsoft visual studio 14.0\vc\include\pplcancellation_token.h	725 function register_callback
+								// It's not, it gets destroyed later, but needs a __drv_aliasesMem annotation
+
+#include <ppltasks.h>
 //#include <iterator>
 //#include <PathCch.h>
 //#pragma comment(lib, "Pathcch")
@@ -389,6 +405,9 @@ extern WTL::CAppModule _Module;
 #pragma warning(3:4711)
 
 #pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
+
+//#pragma message( "enabling `_Analysis_mode_(_Analysis_local_leak_checks_)` for enhanced leak detection..." )
+//_Analysis_mode_(_Analysis_local_leak_checks_)
 
 #else
 #error ass

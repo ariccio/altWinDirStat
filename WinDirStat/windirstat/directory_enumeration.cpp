@@ -520,9 +520,9 @@ namespace {
 		}
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	WDS_DECLSPEC_NOTHROW std::vector<std::future<bool>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+	WDS_DECLSPEC_NOTHROW std::vector<concurrency::task<bool>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
-		std::vector<std::future<bool>> workers;
+		std::vector<concurrency::task<bool>> workers;
 		workers.reserve( dirsToWorkOnCount );
 		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 			ASSERT( dirs_to_work_on[ i ].second.length( ) > 1 );
@@ -530,7 +530,9 @@ namespace {
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
 			//TODO: investigate task_group
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			workers.emplace_back( std::async( DoSomeWork, std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, sizes_to_work_on_in, std::move( false ) ) );
+			workers.emplace_back( concurrency::create_task( [=]{
+				return DoSomeWork( std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, sizes_to_work_on_in, false); 
+				}) );
 			}
 		return workers;
 		}
@@ -538,12 +540,14 @@ namespace {
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
 	WDS_DECLSPEC_NOTHROW void size_workers( _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
-		std::vector<std::future<void>> sizesToWorkOn_;
+		std::vector<concurrency::task<void>> sizesToWorkOn_;
 		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
 		sizesToWorkOn_.reserve( sizes->size( ) + 1 );
 		const auto number_sizes = sizes->size( );
 		for ( size_t i = 0; i < number_sizes; ++i ) {
-			sizesToWorkOn_.emplace_back( std::async( compose_compressed_file_size_and_fixup_child, ( *sizes )[ i ].ptr, ( *sizes )[ i ].path ) );
+			sizesToWorkOn_.emplace_back( concurrency::create_task( [=]{
+				return compose_compressed_file_size_and_fixup_child(( *sizes )[ i ].ptr, ( *sizes )[ i ].path);
+				}) );
 			}
 
 		for ( size_t i = 0; i < number_sizes; ++i ) {
@@ -837,6 +841,14 @@ WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListIt
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	//ASSERT( ThisCItem->m_childCount == 0 );
+
+	concurrency::SchedulerPolicy sched_policy;
+	{
+		sched_policy.SetConcurrencyLimits(1u, 64u);
+		concurrency::CurrentScheduler::Create(sched_policy);
+		concurrency::CurrentScheduler::Detach();
+	}
+
 	ASSERT( ThisCItem->m_child_info.m_child_info_ptr == nullptr );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	ASSERT( strcmp_path == 0 );
