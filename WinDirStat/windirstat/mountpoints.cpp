@@ -54,10 +54,16 @@ const bool CMountPoints::IsMountPoint( _In_ const std::wstring& path ) const {
 		}
 	ASSERT( ( path.length( ) >= 3 ) && ( path.at( 1 )  == L':' ) && ( path.at( 2 )  == L'\\' ) );
 
-	const auto pathAtZero = ::towlower( path[ 0 ] );
-	const auto weirdAss_a = _T( 'a' );
+	const std::wint_t pathAtZero = ::towlower( path[ 0 ] );
+	const wchar_t weirdAss_a = L'a';
+	if( weirdAss_a > pathAtZero ){
+		std::terminate();
+		}
 	const auto indexItem  = pathAtZero - weirdAss_a;
-	return IsVolumeMountPoint( indexItem, path );
+	if ( indexItem < 0 ){
+		std::terminate();
+		}
+	return IsVolumeMountPoint( static_cast<rsize_t>( indexItem ), path );
 	}
 
 void CMountPoints::Clear( ) {
@@ -67,7 +73,7 @@ void CMountPoints::Clear( ) {
 	m_volume.clear( );
 	}
 
-const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY_SIZE - 1 ) ) const int index_in_m_drive, _In_ const std::wstring& path ) const {
+const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY_SIZE - 1 ) ) const rsize_t index_in_m_drive, _In_ const std::wstring& path ) const {
 	if ( m_volume.empty( ) ) {
 		return false;
 		}
@@ -76,12 +82,12 @@ const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY
 		return false;
 		}
 
-	if ( m_volume.count( m_drive[ static_cast<size_t>( index_in_m_drive ) ] ) == 0 ) {
-		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive[ static_cast<size_t>( index_in_m_drive ) ].c_str( ) );
+	if ( m_volume.count( m_drive[ index_in_m_drive ] ) == 0 ) {
+		TRACE( _T( "CMountPoints: Volume(%s) unknown!\r\n" ), m_drive[ index_in_m_drive ].c_str( ) );
 		return false;
 		}
-	const std::vector<std::pair<std::wstring, std::wstring>>& pointer_volume_array = m_volume.at( m_drive[ static_cast<size_t>( index_in_m_drive ) ] );
-	auto fixedPath( path );
+	const std::vector<std::pair<std::wstring, std::wstring>>& pointer_volume_array = m_volume.at( m_drive[ index_in_m_drive ] );
+	std::wstring fixedPath( path );
 	ASSERT( fixedPath.length( ) > 0 );
 	if ( fixedPath.back( ) != _T( '\\' ) ) {
 		fixedPath += _T( "\\" );
@@ -89,6 +95,7 @@ const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY
 
 	for ( const auto& aPoint : pointer_volume_array ) {
 		const auto len = aPoint.first.length( );
+		//Ok, this is terribly wasteful.
 		if ( fixedPath.substr( 3 ).substr( 0, len ).compare( aPoint.first ) ==  0 ) {
 			break;
 			}

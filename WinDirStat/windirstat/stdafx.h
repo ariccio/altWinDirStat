@@ -302,6 +302,8 @@ extern WTL::CAppModule _Module;
 #include <type_traits>
 #include <utility>
 #include <tuple>
+//#include <chrono>
+//#include <experimental/coroutine>
 
 #pragma warning(disable:6014) //Leaking memory '_PCallback'. in c:\program files (x86)\microsoft visual studio 14.0\vc\include\pplcancellation_token.h	725 function register_callback
 								// It's not, it gets destroyed later, but needs a __drv_aliasesMem annotation

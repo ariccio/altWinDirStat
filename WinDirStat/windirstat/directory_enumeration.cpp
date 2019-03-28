@@ -22,6 +22,23 @@ WDS_FILE_INCLUDE_MESSAGE
 #endif
 
 namespace {
+
+	// Lets try: http://cpp.mimuw.edu.pl/files/await-yield-c++-coroutines.pdf
+	//auto operator co_await(std::chrono::system_clock::duration duration) {
+	//	class awaiter {
+	//		std::chrono::system_clock::duration duration;
+	//	public:
+	//		explicit awaiter(std::chrono::system_clock::duration d) : duration(d) {}
+
+	//		bool await_ready() const {
+	//			return false;
+	//			}
+
+	//		void await_suspend(std::experimental::coroutine_handle<> coro) {
+	//			SetTimer(duration, [coro]{coro.resume();});
+	//			}
+	//		}
+
 	struct FILEINFO final {
 		FILEINFO( ) { }
 		//FILEINFO( const FILEINFO& in ) = delete;
@@ -125,35 +142,35 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
 	BOOL findNextFileRes = TRUE;
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
-		const int scmpVal  = wcscmp( fData.cFileName, L".." );
-		const int scmpVal2 = wcscmp( fData.cFileName, L"." );
+		const int scmpVal  = ::wcscmp( fData.cFileName, L".." );
+		const int scmpVal2 = ::wcscmp( fData.cFileName, L"." );
 		if ( ( scmpVal == 0 ) || ( scmpVal2 == 0 ) ) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
-			findNextFileRes = FindNextFileW( fDataHand, &fData );
+			findNextFileRes = ::FindNextFileW( fDataHand, &fData );
 			continue;//No point in operating on ourselves!
 			}
 		else if ( fData.dwFileAttributes bitand FILE_ATTRIBUTE_DIRECTORY ) {
 			ASSERT( path.substr( path.length( ) - 3, 3 ).compare( L"*.*" ) == 0 );
 			const std::wstring alt_path_this_dir( path.substr( 0, path.length( ) - 3 ) + fData.cFileName );
 			directories.emplace_back(	UINT64_ERROR,
-										std::move( fData.ftLastWriteTime ),
-										std::move( fData.dwFileAttributes ),
+										fData.ftLastWriteTime,
+										fData.dwFileAttributes,
 										fData.cFileName,
 										std::move( alt_path_this_dir )
 										);
 			}
 		else {
-			files.emplace_back( std::move( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ) ), 
-											fData.ftLastWriteTime,
-											fData.dwFileAttributes,
-											fData.cFileName
+			files.emplace_back( ( static_cast<std::uint64_t>( fData.nFileSizeHigh ) * ( static_cast<std::uint64_t>( MAXDWORD ) + 1 ) ) + static_cast<std::uint64_t>( fData.nFileSizeLow ), 
+								fData.ftLastWriteTime,
+								fData.dwFileAttributes,
+								fData.cFileName
 							  );
 			}
-		findNextFileRes = FindNextFileW( fDataHand, &fData );
+		findNextFileRes = ::FindNextFileW( fDataHand, &fData );
 		}
 	if ( fDataHand == INVALID_HANDLE_VALUE ) {
 		return;
 		}
-	VERIFY( FindClose( fDataHand ) );
+	VERIFY( ::FindClose( fDataHand ) );
 	}
 
 namespace {
@@ -230,7 +247,7 @@ namespace {
 
 		DWORD bytes_returned = 0u;
 
-		const BOOL data_res = DeviceIoControl( root_volume_handle, FSCTL_GET_NTFS_VOLUME_DATA, NULL, 0u, &data_buf, sizeof( NTFS_VOLUME_DATA_BUFFER ), &bytes_returned, NULL );
+		const BOOL data_res = ::DeviceIoControl( root_volume_handle, FSCTL_GET_NTFS_VOLUME_DATA, NULL, 0u, &data_buf, sizeof( NTFS_VOLUME_DATA_BUFFER ), &bytes_returned, NULL );
 		if ( data_res == 0 ) {
 			const DWORD last_err = ::GetLastError( );
 			TRACE( _T( "FSCTL_GET_NTFS_VOLUME_DATA failed! Error: %lu\r\n" ), last_err );
@@ -282,8 +299,8 @@ namespace {
 	__forceinline WDS_DECLSPEC_NOTHROW std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
 		ULARGE_INTEGER ret;
 		ret.QuadPart = 0;//zero initializing this is critical!
-		ret.LowPart = GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
-		const DWORD last_err = GetLastError( );
+		ret.LowPart = ::GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
+		const DWORD last_err = ::GetLastError( );
 		if ( ret.QuadPart == INVALID_FILE_SIZE ) {
 			if ( ret.HighPart != NULL ) {
 				GetCompressedFileSize_failure_logger( path, ret, last_err );
@@ -519,9 +536,13 @@ namespace {
 			}
 		}
 
+	typedef bool should_we_elevate_t;
+	typedef std::pair<CTreeListItem*, std::wstring> item_and_path_t;
+
+
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	WDS_DECLSPEC_NOTHROW std::vector<concurrency::task<bool>> start_workers( std::vector<std::pair<CTreeListItem*, std::wstring>> dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
-		const auto dirsToWorkOnCount = dirs_to_work_on.size( );
+	WDS_DECLSPEC_NOTHROW std::vector<concurrency::task<bool>> start_workers( std::vector<item_and_path_t>& dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+		const size_t dirsToWorkOnCount = dirs_to_work_on.size( );
 		std::vector<concurrency::task<bool>> workers;
 		workers.reserve( dirsToWorkOnCount );
 		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
@@ -530,8 +551,8 @@ namespace {
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
 			//TODO: investigate task_group
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			workers.emplace_back( concurrency::create_task( [=]{
-				return DoSomeWork( std::move( dirs_to_work_on[ i ].first ), std::move( dirs_to_work_on[ i ].second ), app, sizes_to_work_on_in, false); 
+			workers.emplace_back( concurrency::create_task( [=, dirs_to_work_on_inner = std::move(dirs_to_work_on[ i ])]{
+				return DoSomeWork( dirs_to_work_on_inner.first, std::move( dirs_to_work_on_inner.second ), app, sizes_to_work_on_in, false); 
 				}) );
 			}
 		return workers;
@@ -576,10 +597,11 @@ namespace {
 		return total_length;
 		}
 
-	std::vector<std::pair<CTreeListItem*, std::wstring>> launch_directory_workers( _Inout_ CTreeListItem* const ThisCItem, _In_ const CDirstatApp* const app, _In_ const rsize_t dirCount, _In_ const rsize_t vecFiles_size, _In_ const std::vector<DIRINFO>& vecDirs ) {
-		std::vector<std::pair<CTreeListItem*, std::wstring>> dirsToWorkOn;
+
+	std::vector<item_and_path_t> launch_directory_workers( _Inout_ CTreeListItem* const ThisCItem, _In_ const CDirstatApp* const app, _In_ const rsize_t dirCount, _In_ const rsize_t vecFiles_size, _In_ std::vector<DIRINFO>& vecDirs ) {
+		std::vector<item_and_path_t> dirsToWorkOn;
 		dirsToWorkOn.reserve( dirCount );
-		const auto thisOptions = GetOptions( );
+		const COptions* const thisOptions = GetOptions( );
 
 		//ASSERT( static_cast< size_t >( ThisCItem->m_childCount ) == vecFiles.size( ) );
 
@@ -587,10 +609,13 @@ namespace {
 
 		//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
 		for ( const auto& dir : vecDirs ) {
-			const bool dontFollow = ( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) || ( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
+			const bool dontFollow =
+				( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) ||
+				( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
 			const auto new_name_length = dir.name.length( );
-			ASSERT( new_name_length < UINT16_MAX );
-
+			if( new_name_length >= UINT16_MAX ) {
+				std::terminate();
+				}
 
 			ASSERT( ThisCItem->m_child_info.m_child_info_ptr != nullptr );
 
@@ -598,14 +623,16 @@ namespace {
 			//const HRESULT copy_res = allocate_and_copy_name_str( new_name_ptr, new_name_length, dir.name );
 			const HRESULT copy_res = ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.copy_name_str_into_buffer( new_name_ptr, ( new_name_length + 1u ), dir.name );
 
-			if ( !SUCCEEDED( copy_res ) ) {
+			ASSERT( (!SUCCEEDED(copy_res) == (FAILED(copy_res))));
+			if ( FAILED( copy_res ) ) {
 				displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy (directory) name str! (readJobNotDoneWork)(aborting!)" );
 				displayWindowsMsgBoxWithMessage( dir.name.c_str( ) );
 				}
 			else {
 				//                                                                                               IT_DIRECTORY
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
-				const auto newitem = new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) ) CTreeListItem { static_cast< std::uint64_t >( UINT64_ERROR ), std::move( dir.lastWriteTime ), std::move( dir.attributes ), dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				CTreeListItem* const newitem = new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) )
+									CTreeListItem { UINT64_ERROR, dir.lastWriteTime, dir.attributes, dontFollow, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 
 				//++( ThisCItem->m_childCount );
 				++total_so_far;
@@ -613,7 +640,12 @@ namespace {
 
 				if ( !newitem->m_attr.m_done ) {
 					ASSERT( !dontFollow );
-					dirsToWorkOn.emplace_back( std::move( std::make_pair( std::move( newitem ), std::move( dir.path ) ) ) );
+					// When we do this:
+					//  dirsToWorkOn.emplace_back( std::make_pair( std::move( newitem ), std::move( dir.path ) ) );
+					// it copy constructs.
+					// Instead, we'll use some std::piecewise_construct and some std::forward_as_tuple magic to do it in place!
+					// This is why I love this language!
+					dirsToWorkOn.emplace_back( std::piecewise_construct, std::forward_as_tuple( newitem ), std::forward_as_tuple( std::move( dir.path ) ) );
 					}
 				else {
 					ASSERT( dontFollow );
@@ -626,8 +658,12 @@ namespace {
 		return dirsToWorkOn;
 		}
 
-
-	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW std::pair<std::pair<std::vector<std::pair<CTreeListItem*, std::wstring>>,std::vector<std::pair<CTreeListItem*, std::wstring>>>, bool> readJobNotDoneWork( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* const app ) {
+					
+	_Pre_satisfies_( !ThisCItem->m_attr.m_done ) WDS_DECLSPEC_NOTHROW
+		std::pair<
+			std::pair<std::vector<item_and_path_t>, std::vector<item_and_path_t>>,
+			should_we_elevate_t>
+		readJobNotDoneWork( _Inout_ CTreeListItem* const ThisCItem, const std::wstring& path, _In_ const CDirstatApp* const app ) {
 		std::vector<FILEINFO> vecFiles;
 		std::vector<DIRINFO>  vecDirs;
 
@@ -651,7 +687,9 @@ namespace {
 
 
 		if ( total_count == 0 ) {
-			return std::make_pair( std::make_pair( std::vector<std::pair<CTreeListItem*, std::wstring>>( ), std::vector<std::pair<CTreeListItem*, std::wstring>>( ) ), should_we_elevate );
+			return std::make_pair(
+				std::make_pair(std::vector<item_and_path_t>( ), std::vector<item_and_path_t>( )),
+				should_we_elevate );
 			}
 
 		static_assert( sizeof( std::wstring::value_type ) == sizeof( wchar_t ), "WTF" );
@@ -681,7 +719,9 @@ namespace {
 		ASSERT( ThisCItem->m_child_info.m_child_info_ptr->m_name_pool.m_buffer_filled == ( total_size_alloc - 1 ) );
 		//ASSERT( ( fileCount + dirCount ) == ThisCItem->m_childCount );
 		//ThisCItem->m_children_vector.shrink_to_fit( );
-		return std::make_pair( std::make_pair( std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ ) ), should_we_elevate );
+		return std::make_pair(
+			std::make_pair(std::move( dirsToWorkOn ), std::move( sizesToWorkOn_ )),
+			should_we_elevate );
 		}
 
 	_Success_( return < UINT64_ERROR )
@@ -747,10 +787,10 @@ namespace {
 
 
 
-WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+WDS_DECLSPEC_NOTHROW std::vector<item_and_path_t> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CTreeListItem*, std::wstring>> sizesToWorkOn_;
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
-	sizesToWorkOn_.reserve( vecFiles.size( ) );
+	//sizesToWorkOn_.reserve( vecFiles.size( ) );
 
 	ASSERT( path.back( ) != _T( '\\' ) );
 
@@ -780,10 +820,10 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 			else {
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                                            IT_FILE
-				auto newChild = ::new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				auto newChild = ::new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) ) CTreeListItem { aFile.length, aFile.lastWriteTime, aFile.attributes, true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
 				//sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( std::async( GetCompressedFileSize_filename, std::move( path + _T( '\\' ) + aFile.name  ) ) ) );
-				sizesToWorkOn_.emplace_back( std::move( newChild ), std::move( path + _T( '\\' ) + aFile.name  ) );
+				sizesToWorkOn_.emplace_back( newChild, std::move( path + _T( '\\' ) + aFile.name  ) );
 				}
 			}
 		else {
@@ -797,7 +837,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 				std::terminate( );
 
 				//so /analyze understands
-				abort( );
+				//abort( );
 				return sizesToWorkOn_;
 
 				}
@@ -812,7 +852,7 @@ WDS_DECLSPEC_NOTHROW std::vector<std::pair<CTreeListItem*, std::wstring>> addFil
 				ASSERT( ThisCItem->m_child_info.m_child_info_ptr != nullptr );
 				//ASSERT( total_so_far == ThisCItem->m_childCount );
 				//                                                                            IT_FILE
-				::new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) ) CTreeListItem { std::move( aFile.length ), std::move( aFile.lastWriteTime ), std::move( aFile.attributes ), true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
+				::new ( &( ThisCItem->m_child_info.m_child_info_ptr->m_children[ total_so_far ] ) ) CTreeListItem { aFile.length, aFile.lastWriteTime, aFile.attributes, true, ThisCItem, new_name_ptr, static_cast< std::uint16_t >( new_name_length ) };
 				}
 			}
 		//detect overflows. highly unlikely.
@@ -843,11 +883,9 @@ WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListIt
 	//ASSERT( ThisCItem->m_childCount == 0 );
 
 	concurrency::SchedulerPolicy sched_policy;
-	{
-		sched_policy.SetConcurrencyLimits(1u, 64u);
-		concurrency::CurrentScheduler::Create(sched_policy);
-		concurrency::CurrentScheduler::Detach();
-	}
+	sched_policy.SetConcurrencyLimits(1u, 4u);
+	concurrency::CurrentScheduler::Create(sched_policy);
+	//concurrency::CurrentScheduler::Detach();
 
 	ASSERT( ThisCItem->m_child_info.m_child_info_ptr == nullptr );
 	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
@@ -913,15 +951,15 @@ WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 	//This is temporary.
 	UNREFERENCED_PARAMETER( isRootRecurse );
 
-	ASSERT( wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
-	auto strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
+	ASSERT( ::wcscmp( L"\\\\?\\", path.substr( 0, 4 ).c_str( ) ) == 0 );
+	const int strcmp_path = path.compare( 0, 4, L"\\\\?\\", 0, 4 );
 	if ( strcmp_path != 0 ) {
-		auto fixedPath( L"\\\\?\\" + path );
+		const std::wstring fixedPath( L"\\\\?\\" + path );
 		TRACE( _T( "path fixed as: %s\r\n" ), fixedPath.c_str( ) );
 		path = fixedPath;
 		}
 
-	auto kookyPair = readJobNotDoneWork( ThisCItem, std::move( path ), app );
+	auto kookyPair = readJobNotDoneWork( ThisCItem, path, app );
 
 	auto itemsToWorkOn = kookyPair.first;
 
@@ -948,25 +986,25 @@ WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 
 	//auto workers = start_workers( std::move( dirs_to_work_on ), app, sizes_to_work_on_in );
 
-	auto workers = start_workers( std::move( itemsToWorkOn.first ), app, sizes_to_work_on_in );
+	auto workers = start_workers( itemsToWorkOn.first, app, sizes_to_work_on_in );
 
 	//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
 	//process_vector_of_compressed_file_futures( vector_of_compressed_file_futures );
 
 
-	std::vector<std::pair<CTreeListItem*, std::wstring>>& vector_of_compressed_file_futures = itemsToWorkOn.second;
+	std::vector<item_and_path_t>& vector_of_compressed_file_futures = itemsToWorkOn.second;
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( auto& a_pair : vector_of_compressed_file_futures ) {
-		pair_of_item_and_path the_pair;
-		the_pair.ptr  = a_pair.first;
-		the_pair.path = std::move( a_pair.second );
-		sizes_to_work_on_in->push_back( the_pair );
+		//pair_of_item_and_path the_pair;
+		//the_pair.ptr  = a_pair.first;
+		//the_pair.path = std::move( a_pair.second );
+		sizes_to_work_on_in->push_back( { a_pair.first, std::move(a_pair.second) } );
 		}
 
 	for ( auto& worker : workers ) {
-		
+		//if ( worker.is_done() ) {
 		//purposefully ignore the bool-return-value.
 		//it *should* only ever be true for the root directory, which is done syncronously.
 #ifdef DEBUG
@@ -974,13 +1012,12 @@ WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 #else
 		(void)
 #endif
-		
+			
 		worker.get( );
 
 #ifdef DEBUG
 		ASSERT( verify_bool_is_false == false );
-#endif
-
+	#endif
 		}
 
 	ThisCItem->m_attr.m_done = true;

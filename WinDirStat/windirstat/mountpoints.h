@@ -53,7 +53,7 @@ private:
 
 	void GetAllMountPoints( );
 
-	const bool IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY_SIZE - 1 ) ) const int index_in_m_drive, _In_ const std::wstring& path ) const;
+	const bool IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY_SIZE - 1 ) ) const rsize_t index_in_m_drive, _In_ const std::wstring& path ) const;
 
 
 	// m_drive contains the volume identifiers of the Drives A:, B: etc.

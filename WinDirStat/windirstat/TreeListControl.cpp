@@ -910,6 +910,8 @@ void CTreeListItem::refresh_sizeCache( ) {
 	if ( m_child_info.m_child_info_ptr == nullptr ) {
 		//ASSERT( m_childCount == 0 );
 		ASSERT( m_child_info.m_child_info_ptr == nullptr );
+		
+		//If you hit this, this were likely not initialized!
 		ASSERT( m_size < UINT64_ERROR );
 		return;
 		}
@@ -952,6 +954,7 @@ void CTreeListItem::refresh_sizeCache( ) {
 		//return total;
 
 		//---
+		ASSERT(total < UINT64_ERROR);
 		m_size = total;
 		}
 	}
