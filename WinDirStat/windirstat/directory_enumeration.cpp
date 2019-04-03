@@ -176,7 +176,9 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 namespace {
 	//end copied & pasted
 
-
+	//To investigate: $Directory, as seen in ProcMon?
+	//Apparently, there are a few others, like: $ConvertToNonResident 
+	//according to: http://www.databaseforum.info/15/11/850013b6a85528a1.html
 	PCWSTR const NTFS_SPECIAL_FILES[] = {
 		/*L"$MFT",*/ //Will query manually with: FSCTL_GET_NTFS_VOLUME_DATA
 		L"$MFTMirr",
@@ -541,9 +543,9 @@ namespace {
 
 
 	//sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-	WDS_DECLSPEC_NOTHROW std::vector<concurrency::task<bool>> start_workers( std::vector<item_and_path_t>& dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
+	WDS_DECLSPEC_NOTHROW std::vector<std::function<bool()>> start_workers( std::vector<item_and_path_t>& dirs_to_work_on, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in ) {
 		const size_t dirsToWorkOnCount = dirs_to_work_on.size( );
-		std::vector<concurrency::task<bool>> workers;
+		std::vector<std::function<bool()>> workers;
 		workers.reserve( dirsToWorkOnCount );
 		for ( size_t i = 0; i < dirsToWorkOnCount; ++i ) {
 			ASSERT( dirs_to_work_on[ i ].second.length( ) > 1 );
@@ -551,9 +553,9 @@ namespace {
 			ASSERT( dirs_to_work_on[ i ].second.back( ) != L'*' );
 			//TODO: investigate task_group
 			//using std::launch::async ( instead of the default, std::launch::any ) causes WDS to hang!
-			workers.emplace_back( concurrency::create_task( [=, dirs_to_work_on_inner = std::move(dirs_to_work_on[ i ])]{
+			workers.emplace_back( [=, dirs_to_work_on_inner = std::move(dirs_to_work_on[ i ])]{
 				return DoSomeWork( dirs_to_work_on_inner.first, std::move( dirs_to_work_on_inner.second ), app, sizes_to_work_on_in, false); 
-				}) );
+				} );
 			}
 		return workers;
 		}
@@ -1013,7 +1015,7 @@ WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 		(void)
 #endif
 			
-		worker.get( );
+		worker( );
 
 #ifdef DEBUG
 		ASSERT( verify_bool_is_false == false );
