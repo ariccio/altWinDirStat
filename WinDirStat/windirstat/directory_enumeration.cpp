@@ -138,8 +138,7 @@ bool DoSomeWork ( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ c
 WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _Inout_ std::vector<DIRINFO>& directories, const std::wstring path ) {
 	//ASSERT( path.back( ) == L'*' );
 	WIN32_FIND_DATA fData;
-	HANDLE fDataHand = NULL;
-	fDataHand = FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
+	HANDLE fDataHand = ::FindFirstFileExW( path.c_str( ), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0 );
 	BOOL findNextFileRes = TRUE;
 	while ( ( fDataHand != INVALID_HANDLE_VALUE ) && ( findNextFileRes != 0 ) ) {
 		const int scmpVal  = ::wcscmp( fData.cFileName, L".." );
