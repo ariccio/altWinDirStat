@@ -17,7 +17,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "macros_that_scare_small_children.h"
 
 _Success_( SUCCEEDED( return ) )
-const HRESULT Children_String_Heap_Manager_Impl::copy_name_str_into_buffer( _Pre_invalid_ _Always_(_Post_z_) _Out_writes_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {
+const HRESULT Children_String_Heap_Manager_Impl::copy_name_str_into_buffer( _Pre_invalid_ _Always_(_Post_z_) _Out_writes_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) noexcept {
 	ASSERT( m_buffer_size > m_buffer_filled );
 	ASSERT( new_name_length < UINT16_MAX );
 	ASSERT( new_name_length == ( name.length( ) + 1 ) );

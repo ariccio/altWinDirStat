@@ -98,7 +98,7 @@ void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF 
 
 
 void error_getting_pointer_to( _In_z_ PCWSTR const function_name );
-void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name );
+void test_if_null_funcptr( const void* func_ptr, _In_z_ PCWSTR const function_name ) noexcept;
 
 void InitializeCriticalSection_wrapper( _Pre_invalid_ _Post_valid_ _Out_ CRITICAL_SECTION& cs ) noexcept;
 

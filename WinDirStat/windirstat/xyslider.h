@@ -20,7 +20,7 @@ class CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	CXySlider( ) : m_inited { false }, m_gripperHighlight { false }, m_timer { 0u } {
+	CXySlider( ) noexcept : m_inited { false }, m_gripperHighlight { false }, m_timer { 0u } {
 		m_externalPos.x = 0;
 		m_externalPos.y = 0;
 		m_externalRange.cx = 100;
@@ -142,11 +142,13 @@ protected:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LRESULT OnSetPos( WPARAM, LPARAM lparam ) {
 		const auto point = reinterpret_cast<const POINT*>( lparam );
+		VERIFY(point);
 		SetPos( *point );
 		return 0;
 		}
 	afx_msg LRESULT OnGetPos( WPARAM, LPARAM lparam ) {
 		auto point = reinterpret_cast<POINT*>( lparam );
+		VERIFY(point);
 		*point = m_externalPos;
 		return 0;
 		}

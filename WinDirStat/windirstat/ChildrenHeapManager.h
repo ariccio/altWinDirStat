@@ -27,8 +27,8 @@ struct Children_String_Heap_Manager_Impl final {
 	Children_String_Heap_Manager_Impl( const Children_String_Heap_Manager_Impl& in ) = delete;
 
 	//TODO: inline these?
-	__forceinline Children_String_Heap_Manager_Impl( ) : m_buffer_size { 0u }, m_buffer_filled { 0u }/*, m_string_buffer { nullptr }*/ { }
-	__forceinline Children_String_Heap_Manager_Impl( _In_ const rsize_t number_of_characters_needed ) : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 )/*, m_string_buffer( new wchar_t[ number_of_characters_needed ] )*/ { }
+	__forceinline Children_String_Heap_Manager_Impl( ) noexcept : m_buffer_size { 0u }, m_buffer_filled { 0u }/*, m_string_buffer { nullptr }*/ { }
+	__forceinline Children_String_Heap_Manager_Impl( _In_ const rsize_t number_of_characters_needed ) noexcept : m_buffer_size( number_of_characters_needed ), m_buffer_filled( 0 )/*, m_string_buffer( new wchar_t[ number_of_characters_needed ] )*/ { }
 
 	//__forceinline void reset( const rsize_t number_of_characters_needed ) {
 	//	m_buffer_filled = 0u;
@@ -37,7 +37,7 @@ struct Children_String_Heap_Manager_Impl final {
 	//	}
 
 	_Success_( SUCCEEDED( return ) )
-	const HRESULT copy_name_str_into_buffer( _Pre_invalid_ _Always_(_Post_z_) _Out_writes_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name );
+	const HRESULT copy_name_str_into_buffer( _Pre_invalid_ _Always_(_Post_z_) _Out_writes_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) noexcept;
 
 	_Field_range_(0, SIZE_T_MAX) const size_t m_buffer_size;
 	_Field_range_(<=, m_buffer_size) size_t m_buffer_filled;
@@ -64,7 +64,7 @@ public:
 	Children_String_Heap_Manager( _In_ const rsize_t number_of_characters_needed ) /* : buffer_ptr { new wchar_t[ number_of_characters_needed ] }*/ {
 		constexpr rsize_t size_of_base_struct = sizeof( Children_String_Heap_Manager_Impl );
 		const rsize_t size_total_needed = ( size_of_base_struct + ( sizeof( wchar_t ) * number_of_characters_needed ) );
-		m_buffer_impl = reinterpret_cast<Children_String_Heap_Manager_Impl*>( malloc( size_total_needed ) );
+		m_buffer_impl = static_cast<Children_String_Heap_Manager_Impl*>( malloc( size_total_needed ) );
 #pragma message("This is temporary!")
 #pragma warning(suppress: 6386)
 		new ( m_buffer_impl ) Children_String_Heap_Manager_Impl( number_of_characters_needed );
@@ -99,7 +99,7 @@ struct child_info final {
 
 struct child_info_block_manager final {
 	child_info* m_child_info_ptr;
-	child_info_block_manager( ) : m_child_info_ptr( nullptr ) { }
+	child_info_block_manager( ) noexcept : m_child_info_ptr( nullptr ) { }
 	child_info_block_manager( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) {
 		const rsize_t size_of_a_single_struct_in_bytes = sizeof( child_info );
 		const rsize_t character_bytes_needed = ( number_of_characters_needed * sizeof( wchar_t ) );

@@ -25,8 +25,8 @@ public:
 
 	DISALLOW_COPY_AND_ASSIGN( CPreview );
 
-	CPreview( ) = default;
-	void SetColor( _In_ const COLORREF color ) {
+	CPreview( ) noexcept = default;
+	void SetColor( _In_ const COLORREF color ) noexcept {
 		m_color = color;
 		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
 		//If the window handle identifies an existing window, the return value is nonzero.

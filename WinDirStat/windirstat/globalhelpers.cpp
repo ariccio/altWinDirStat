@@ -368,7 +368,7 @@ void error_getting_pointer_to( _In_z_ PCWSTR const function_name ) {
 	displayWindowsMsgBoxWithMessage( std::move( message ) );
 	}
 
-void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name ) {
+void test_if_null_funcptr( const void* func_ptr, _In_z_ PCWSTR const function_name ) noexcept {
 	if ( func_ptr == NULL ) {
 		error_getting_pointer_to( function_name );
 		}
