@@ -22,10 +22,10 @@ WDS_FILE_INCLUDE_MESSAGE
 
 namespace {
 
-	const PCWSTR date_time_format_locale_name_str = LOCALE_NAME_INVARIANT;
-	const DWORD GetDateFormatEx_flags             = DATE_SHORTDATE;
-	const DWORD GetTimeFormatEx_flags             = 0;
-	const double COLOR_MAX_VALUE = 255.0;
+	const constexpr PCWSTR date_time_format_locale_name_str = LOCALE_NAME_INVARIANT;
+	const constexpr DWORD GetDateFormatEx_flags             = DATE_SHORTDATE;
+	const constexpr DWORD GetTimeFormatEx_flags             = 0;
+	const constexpr double COLOR_MAX_VALUE = 255.0;
 
 
 
@@ -61,7 +61,7 @@ namespace {
 		}
 
 	_Must_inspect_result_ 
-	const bool display_GetDateFormatEx_flags( _In_ const DWORD flags ) {
+	const bool display_GetDateFormatEx_flags( _In_ const DWORD flags ) noexcept {
 		if ( ( flags bitand DATE_LONGDATE ) ) {
 			displayWindowsMsgBoxWithMessage( L"GetDateFormatEx passed DATE_LONGDATE" );
 			return true;
@@ -90,7 +90,7 @@ namespace {
 		}
 
 	_Must_inspect_result_ 
-	const bool display_GetTimeFormatEx_flags( _In_ const DWORD flags ) {
+	const bool display_GetTimeFormatEx_flags( _In_ const DWORD flags ) noexcept {
 		if ( ( flags bitand TIME_NOMINUTESORSECONDS ) ) {
 			displayWindowsMsgBoxWithMessage( L"GetTimeFormatEx passed TIME_NOMINUTESORSECONDS" );
 			return true;
@@ -149,7 +149,7 @@ namespace {
 	//This is an error handling function, and is intended to be called rarely!
 	__declspec(noinline)
 	_Must_inspect_result_ _Success_( return == true )
-	const bool get_time_format_err( _In_ const rsize_t str_size, _In_ const DWORD flags ) {
+	const bool get_time_format_err( _In_ const rsize_t str_size, _In_ const DWORD flags ) noexcept {
 		const auto err = GetLastError( );
 		if ( err == ERROR_INSUFFICIENT_BUFFER ) {
 			TRACE( _T( "%s\r\n" ), global_strings::get_time_format_buffer_err );
@@ -185,7 +185,7 @@ namespace {
 		}
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
-	_Success_( SUCCEEDED( return ) ) inline HRESULT file_time_to_system_time_err( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+	_Success_( SUCCEEDED( return ) ) inline HRESULT file_time_to_system_time_err( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) noexcept {
 		const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( psz_formatted_datetime, strSize, chars_written );
 		ASSERT( SUCCEEDED( err_res ) );
 		if ( !SUCCEEDED( err_res ) ) {
@@ -254,7 +254,7 @@ namespace {
 		std::terminate( );
 		}
 
-	void convert_number_to_string_failed( _In_range_( 19, 128 ) const rsize_t bufSize, _In_ const std::int64_t number, _In_ const HRESULT strsafe_printf_res ) {
+	void convert_number_to_string_failed( _In_range_( 19, 128 ) const rsize_t bufSize, _In_ const std::int64_t number, _In_ const HRESULT strsafe_printf_res ) noexcept {
 		auto guard = WDS_SCOPEGUARD_INSTANCE( [ &] { convert_number_to_string_failed_display_debugging_info( bufSize, number ); } );
 		
 		if ( strsafe_printf_res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -274,10 +274,10 @@ namespace {
 		return;
 		}
 
-	void convert_number_to_string( _In_range_( 19, 128 ) const rsize_t bufSize, _Pre_writable_size_( bufSize ) _Post_z_ PWSTR number_str_buffer, _In_ const std::int64_t number ) {
+	void convert_number_to_string( _In_range_( 19, 128 ) const rsize_t bufSize, _Pre_writable_size_( bufSize ) _Post_z_ PWSTR number_str_buffer, _In_ const std::int64_t number ) noexcept {
 		rsize_t chars_remaining = 0;
 
-		const HRESULT strsafe_printf_res = StringCchPrintfExW( number_str_buffer, bufSize, NULL, &chars_remaining, 0, L"%I64d", number );
+		const HRESULT strsafe_printf_res = ::StringCchPrintfExW( number_str_buffer, bufSize, NULL, &chars_remaining, 0, L"%I64d", number );
 		if ( SUCCEEDED( strsafe_printf_res ) ) {
 			return;
 			}
@@ -287,7 +287,7 @@ namespace {
 		convert_number_to_string_failed( bufSize, number, strsafe_printf_res );
 		}
 
-	inline void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) {
+	inline void DistributeFirst( _Inout_ _Out_range_(0, 255) INT& first, _Inout_ _Out_range_(0, 255) INT& second, _Inout_ _Out_range_(0, 255) INT& third ) noexcept {
 		const INT h = ( first - 255 ) / 2;
 		first = 255;
 		second += h;
@@ -313,7 +313,7 @@ namespace {
 }
 
 _Success_( SUCCEEDED( return ) )
-const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) {
+const HRESULT WriteToStackBuffer_do_nothing( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) noexcept {
 	if ( strSize > 1 ) {
 		psz_text[ 0 ] = 0;
 		chars_written = 0;
@@ -331,15 +331,15 @@ QPC_timer::QPC_timer( ) : m_frequency( help_QueryPerformanceFrequency( ).QuadPar
 	ASSERT( m_frequency > 0 );
 	}
 
-void QPC_timer::begin( ) {
+void QPC_timer::begin( ) noexcept {
 	m_start = help_QueryPerformanceCounter( ).QuadPart;
 	}
 
-void QPC_timer::end( ) {
+void QPC_timer::end( ) noexcept {
 	m_end = help_QueryPerformanceCounter( ).QuadPart;
 	}
 
-const double QPC_timer::total_time_elapsed( ) const {
+const double QPC_timer::total_time_elapsed( ) const noexcept {
 	ASSERT( m_end > m_start );
 	static_assert( std::is_same<std::int64_t, LONGLONG>::value, "difference is wrong!" );
 	const auto difference = ( m_end - m_start );
@@ -349,12 +349,12 @@ const double QPC_timer::total_time_elapsed( ) const {
 	}
 
 
-void InitializeCriticalSection_wrapper( _Pre_invalid_ _Post_valid_ _Out_ CRITICAL_SECTION& cs ) {
-	InitializeCriticalSection( &cs );
+void InitializeCriticalSection_wrapper( _Pre_invalid_ _Post_valid_ _Out_ CRITICAL_SECTION& cs ) noexcept {
+	::InitializeCriticalSection( &cs );
 	}
 
 void DeleteCriticalSection_wrapper( _Pre_valid_ _Post_invalid_ CRITICAL_SECTION& cs ) {
-	DeleteCriticalSection( &cs );
+	::DeleteCriticalSection( &cs );
 	}
 
 
@@ -375,7 +375,7 @@ void test_if_null_funcptr( void* func_ptr, _In_z_ PCWSTR const function_name ) {
 	}
 
 _Post_satisfies_( rect->left <= rect->right )
-void normalize_RECT_left_right( _Inout_ RECT* const rect ) {
+void normalize_RECT_left_right( _Inout_ RECT* const rect ) noexcept {
 	ASSERT( rect->left > rect->right );
 	const auto temp = rect->left;
 	rect->left = rect->right;
@@ -384,7 +384,7 @@ void normalize_RECT_left_right( _Inout_ RECT* const rect ) {
 	}
 
 _Post_satisfies_( rect->top <= rect->bottom )
-void normalize_RECT_top_bottom( _Inout_ RECT* const rect ) {
+void normalize_RECT_top_bottom( _Inout_ RECT* const rect ) noexcept {
 	ASSERT( rect->top > rect->bottom );
 	const auto temp = rect->top;
 	rect->top = rect->bottom;
@@ -393,7 +393,7 @@ void normalize_RECT_top_bottom( _Inout_ RECT* const rect ) {
 	}
 
 _Post_satisfies_( rect->left <= rect->right ) /*_Post_satisfies_( rect->top <= rect->bottom )*/
-void normalize_RECT( _Inout_ RECT* const rect ) {
+void normalize_RECT( _Inout_ RECT* const rect ) noexcept {
 	if ( rect->left > rect->right ) {
 		normalize_RECT_left_right( rect );
 		}
@@ -403,7 +403,7 @@ void normalize_RECT( _Inout_ RECT* const rect ) {
 	}
 
 
-void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF clr) {
+void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF clr) noexcept {
 		/*
 	void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
 	{
@@ -436,10 +436,10 @@ void fill_solid_RECT( _In_ const HDC hDC, _In_ const RECT* const rect, COLORREF 
 
 
 //TODO: mark to only return STRSAFE_E_INSUFFICIENT_BUFFER, E_FAIL, or S_OK.
-_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ const FILETIME t, _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_datetime, _In_range_( 128, 2048 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) noexcept {
 	ASSERT( &t != NULL );
 	SYSTEMTIME st;
-	if ( !FileTimeToSystemTime( &t, &st ) ) {
+	if ( !::FileTimeToSystemTime( &t, &st ) ) {
 		return file_time_to_system_time_err( psz_formatted_datetime, strSize, chars_written );
 		}
 	
@@ -448,7 +448,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 	//GRR DATE_AUTOLAYOUT doesn't work, because we're not targeting a Windows 7 minimum!!
 	//const int gdfres = GetDateFormatEx( LOCALE_NAME_INVARIANT, DATE_SHORTDATE bitor DATE_AUTOLAYOUT, )
 
-	const int gdfres = GetDateFormatEx( date_time_format_locale_name_str, GetDateFormatEx_flags, &st, NULL, psz_formatted_datetime, static_cast< int >( strSize ), NULL );
+	const int gdfres = ::GetDateFormatEx( date_time_format_locale_name_str, GetDateFormatEx_flags, &st, NULL, psz_formatted_datetime, static_cast< int >( strSize ), NULL );
 
 	ensure_valid_return_date( gdfres, strSize, st, psz_formatted_datetime );
 	chars_written = static_cast<rsize_t>( gdfres );
@@ -477,7 +477,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 	// If the cchTime parameter is set to 0, the function returns the size of the buffer required to hold the formatted time string, including a terminating null character.
 	// This function returns 0 if it does not succeed. 
 
-	const int gtfres = GetTimeFormatEx( date_time_format_locale_name_str, GetTimeFormatEx_flags, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( static_cast<int>( strSize ) - static_cast<int>( chars_written ) ) );
+	const int gtfres = ::GetTimeFormatEx( date_time_format_locale_name_str, GetTimeFormatEx_flags, &st, NULL, ( psz_formatted_datetime + chars_written ), static_cast<int>( static_cast<int>( strSize ) - static_cast<int>( chars_written ) ) );
 
 	ensure_valid_return_time( gtfres, strSize, psz_formatted_datetime );
 
@@ -495,7 +495,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 
 
 //
-_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
+_Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) noexcept {
 	// Returns formatted number like "123.456.789".
 	// 18446744073709551615 is max ( for std::uint64_t )
 	//                     ^ 20 characters
@@ -555,7 +555,7 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 	new_name_ptr = new wchar_t[ new_name_length + 2u ];
 	PWSTR pszend = NULL;
 	rsize_t chars_remaining = new_name_length;
-	const HRESULT res = StringCchCopyExW( new_name_ptr, ( new_name_length + 1u ), name.c_str( ), &pszend, &chars_remaining, 0 );
+	const HRESULT res = ::StringCchCopyExW( new_name_ptr, ( new_name_length + 1u ), name.c_str( ), &pszend, &chars_remaining, 0 );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 #ifdef DEBUG
@@ -589,7 +589,7 @@ void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_fu
 
 //this function is only called in the rare/error path, so NON-inline code is faster, and smaller.
 __declspec(noinline)
-void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written ) {
+void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const rsize_t generic_size_needed, _Out_ rsize_t& size_buff_need, _Out_ rsize_t& chars_written ) noexcept {
 	chars_written = str_size;
 	if ( str_size < generic_size_needed ) {
 		size_buff_need = generic_size_needed;
@@ -600,9 +600,9 @@ void handle_stack_insufficient_buffer( _In_ const rsize_t str_size, _In_ const r
 	}
 
 
-const LARGE_INTEGER help_QueryPerformanceCounter( ) {
+const LARGE_INTEGER help_QueryPerformanceCounter( ) noexcept {
 	LARGE_INTEGER doneTime;
-	const BOOL behavedWell = QueryPerformanceCounter( &doneTime );
+	const BOOL behavedWell = ::QueryPerformanceCounter( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
 		::MessageBoxW( NULL, L"QueryPerformanceCounter failed!!", L"ERROR!", MB_OK );
@@ -611,7 +611,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) {
 	return doneTime;
 	}
 
-const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
+const LARGE_INTEGER help_QueryPerformanceFrequency( ) noexcept {
 	LARGE_INTEGER doneTime;
 	//QueryPerformanceFrequency function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644905.aspx
 	//On systems that run Windows XP or later, the function will always succeed and will thus never return zero.
@@ -626,27 +626,27 @@ const LARGE_INTEGER help_QueryPerformanceFrequency( ) {
 static_assert( !SUCCEEDED( E_FAIL ), "CStyle_GetLastErrorAsFormattedMessage doesn't return a valid error code!" );
 static_assert( SUCCEEDED( S_OK ), "CStyle_GetLastErrorAsFormattedMessage doesn't return a valid success code!" );
 //On returning E_FAIL, call GetLastError for details. That's not my idea! //TODO: mark as only returning S_OK, E_FAIL
-_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) noexcept {
 	//const auto err = GetLastError( );
 	const auto err = error;
-	const auto ret = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
+	const auto ret = ::FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
 	if ( ret != 0 ) {
 		chars_written = ret;
 		return S_OK;
 		}
-	const DWORD error_err = GetLastError( );
+	const DWORD error_err = ::GetLastError( );
 	TRACE( _T( "FormatMessageW failed with error code: `%lu`!!\r\n" ), error_err );
 	
 	const rsize_t err_msg_buff_size = 512;
 	_Null_terminated_ char err_msg_buff[ err_msg_buff_size ] = { 0 };
 	const HRESULT output_error_message_format_result = StringCchPrintfA( err_msg_buff, err_msg_buff_size, "WDS: FormatMessageW failed with error code: `%lu`!!\r\n", error_err );
 	if ( SUCCEEDED( output_error_message_format_result ) ) {
-		OutputDebugStringA( err_msg_buff );
+		::OutputDebugStringA( err_msg_buff );
 		}
 	else {
 		WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( output_error_message_format_result );
 		WDS_STRSAFE_E_INVALID_PARAMETER_HANDLER( output_error_message_format_result, "StringCchPrintfA" );
-		OutputDebugStringA( "WDS: FormatMessageW failed, and THEN formatting the error message for FormatMessageW failed!\r\n" );
+		::OutputDebugStringA( "WDS: FormatMessageW failed, and THEN formatting the error message for FormatMessageW failed!\r\n" );
 		}
 	if ( strSize > 41 ) {
 		wds_fmt::write_bad_fmt_msg( psz_formatted_error, chars_written );
@@ -662,7 +662,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) {
+void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) _Post_readable_size_( chars_written ) PWSTR psz_fmt_msg, _Out_ rsize_t& chars_written ) noexcept {
 	psz_fmt_msg[  0 ] = L'F';
 	psz_fmt_msg[  1 ] = L'o';
 	psz_fmt_msg[  2 ] = L'r';
@@ -710,7 +710,7 @@ void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) 
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void displayWindowsMsgBoxWithError( const DWORD error ) {
+void displayWindowsMsgBoxWithError( const DWORD error ) noexcept {
 	const rsize_t err_msg_size = 1024u;
 	_Null_terminated_ wchar_t err_msg[ err_msg_size ] = { 0 };
 	rsize_t chars_written = 0;
@@ -759,12 +759,12 @@ void displayWindowsMsgBoxWithMessage( const std::string message ) {
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void displayWindowsMsgBoxWithMessage( PCWSTR const message ) {
+void displayWindowsMsgBoxWithMessage( PCWSTR const message ) noexcept {
 	::MessageBoxW( NULL, message, L"Error", MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 
-RECT BuildRECT( const SRECT& in ) {
+RECT BuildRECT( const SRECT& in ) noexcept {
 	//ASSERT( ( in.left != -1 ) && ( in.top != -1 ) && ( in.right != -1 ) && ( in.bottom != -1 ) );
 	ASSERT( ( in.right + 1 ) >= in.left );
 	ASSERT( in.bottom >= in.top );
@@ -818,7 +818,7 @@ inline void CRect::NormalizeRect() throw()
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void wds_fmt::write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage ) {
+void wds_fmt::write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 ) PWSTR psz_formatted_usage ) noexcept {
 	psz_formatted_usage[ 0  ] = 'M';
 	psz_formatted_usage[ 1  ] = 'E';
 	psz_formatted_usage[ 2  ] = 'M';
@@ -836,7 +836,7 @@ void wds_fmt::write_MEM_INFO_ERR( _Out_writes_z_( 13 ) _Pre_writable_size_( 13 )
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void wds_fmt::write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) {
+void wds_fmt::write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PWSTR psz_ram_usage ) noexcept {
 	psz_ram_usage[ 0  ] = 'R';
 	psz_ram_usage[ 1  ] = 'A';
 	psz_ram_usage[ 2  ] = 'M';
@@ -855,7 +855,7 @@ void wds_fmt::write_RAM_USAGE( _Out_writes_z_( 12 ) _Pre_writable_size_( 13 ) PW
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val ) {
+void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG max_val ) noexcept {
 	ASSERT( min_val <= max_val );
 	if ( val < min_val ) {
 		val = min_val;
@@ -870,7 +870,7 @@ void CheckMinMax( _Inout_ LONG& val, _In_ const LONG min_val, _In_ const LONG ma
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) {
+void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_val ) noexcept {
 	ASSERT( min_val <= max_val );
 
 	if ( val < static_cast<LONG>( min_val ) ) {
@@ -886,7 +886,7 @@ void CheckMinMax( _Inout_ LONG& val, _In_ const INT min_val, _In_ const INT max_
 _Pre_satisfies_( min_val < max_val )
 _Post_satisfies_( min_val <= val )
 _Post_satisfies_( val <= max_val )
-void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val ) {
+void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_val ) noexcept {
 	ASSERT( min_val <= max_val );
 
 	if ( val < min_val ) {
@@ -899,10 +899,10 @@ void CheckMinMax( _Inout_ INT& val, _In_ const INT min_val, _In_ const INT max_v
 	ASSERT( min_val <= val );
 	}
 
-bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
+bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) noexcept {
 	//CompareFileTime returns 0 when first FILETIME is equal to the second FILETIME
 	//Therefore: we can 'emulate' the `==` operator, by checking if ( CompareFileTime( &t1, &t2 ) == ( 0 ) );
-	return ( CompareFileTime( &t1, &t2 ) == ( 0 ) );
+	return ( ::CompareFileTime( &t1, &t2 ) == ( 0 ) );
 	}
 
 
@@ -911,7 +911,7 @@ bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) {
 
 
 
-void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) {
+void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) noexcept {
 	ASSERT( red + green + blue <= 3 * COLOR_MAX_VALUE );
 	if ( red > 255 ) {
 #ifdef COLOR_DEBUGGING
@@ -935,7 +935,7 @@ void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0
 
 
 
-COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) {
+COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range_( 0, 1 ) const DOUBLE brightness ) noexcept {
 	ASSERT( brightness >= 0.0 );
 	ASSERT( brightness <= 1.0 );
 
@@ -974,9 +974,9 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 _Pre_satisfies_( handle != INVALID_HANDLE_VALUE )
 _At_( handle, _Post_invalid_ )
 _At_( handle, _Pre_valid_ )
-void close_handle( const HANDLE handle ) {
+void close_handle( const HANDLE handle ) noexcept {
 	//If [CloseHandle] succeeds, the return value is nonzero.
-	const BOOL res = CloseHandle( handle );
+	const BOOL res = ::CloseHandle( handle );
 	ASSERT( res != 0 );
 	if ( !res ) {
 		TRACE( _T( "Closing handle failed!\r\n" ) );
@@ -1010,7 +1010,7 @@ void trace_full_path( _In_z_ PCWSTR const path ) {
 #endif
 
 
-int GetItemCount_HDM_GETITEMCOUNT( _In_ const HWND hWnd ) {
+int GetItemCount_HDM_GETITEMCOUNT( _In_ const HWND hWnd ) noexcept {
 	ASSERT( ::IsWindow( hWnd ) );
 	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
 	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
@@ -1027,7 +1027,7 @@ int GetItemCount_HDM_GETITEMCOUNT( _In_ const HWND hWnd ) {
 	}
 
 
-int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nCol ) {
+int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nCol ) noexcept {
 	ASSERT( ::IsWindow( hWnd ) );
 	//SendMessage function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644950.aspx
 	//The return value [of SendMessage] specifies the result of the message processing; it depends on the message sent.
@@ -1044,7 +1044,7 @@ int GetColumnWidth_LVM_GETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=
 	return static_cast< int >( ::SendMessageW( hWnd, LVM_GETCOLUMNWIDTH, static_cast<WPARAM>( nCol ), 0 ) );
 	}
 
-BOOL SetColumnWidth_LVM_SETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nCol, _In_ _In_range_( >=, 0 ) const int cx ) {
+BOOL SetColumnWidth_LVM_SETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nCol, _In_ _In_range_( >=, 0 ) const int cx ) noexcept {
 	ASSERT( ::IsWindow( hWnd ) );
 	//_AFXCMN_INLINE BOOL CListCtrl::SetColumnWidth(_In_ int nCol, _In_ int cx)
 	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL) ::SendMessage(m_hWnd, LVM_SETCOLUMNWIDTH, nCol, MAKELPARAM(cx, 0)); }
@@ -1066,7 +1066,7 @@ BOOL SetColumnWidth_LVM_SETCOLUMNWIDTH( _In_ const HWND hWnd, _In_ _In_range_( >
 	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_SETCOLUMNWIDTH, static_cast<WPARAM>( nCol ), MAKELPARAM( cx, 0 ) ) );
 	}
 
-BOOL EnsureVisible_LVM_ENSUREVISIBLE( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _In_  _In_range_( FALSE, TRUE ) const BOOL bPartialOK ) {
+BOOL EnsureVisible_LVM_ENSUREVISIBLE( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _In_  _In_range_( FALSE, TRUE ) const BOOL bPartialOK ) noexcept {
 	ASSERT( ::IsWindow( hWnd ) );
 
 	//_AFXCMN_INLINE BOOL CListCtrl::EnsureVisible(_In_ int nItem, _In_ BOOL bPartialOK)
@@ -1088,7 +1088,7 @@ BOOL EnsureVisible_LVM_ENSUREVISIBLE( _In_ const HWND hWnd, _In_ _In_range_( >=,
 	}
 
 _Success_( return )
-BOOL GetItem_HDM_GETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem ) {
+BOOL GetItem_HDM_GETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _Out_ HDITEM* const pHeaderItem ) noexcept {
 	ASSERT( ::IsWindow( hWnd ) );
 
 	pHeaderItem->mask = HDI_WIDTH;
@@ -1123,7 +1123,7 @@ BOOL GetItem_HDM_GETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const i
 	return static_cast<BOOL>( get_item_result );
 	}
 
-BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _In_ const HDITEM * const pHeaderItem ) {
+BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nPos, _In_ const HDITEM * const pHeaderItem ) noexcept {
 	ASSERT( ::IsWindow( hWnd ) );
 	//_AFXCMN_INLINE BOOL CHeaderCtrl::SetItem(_In_ int nPos, _In_ HDITEM* pHeaderItem)
 	//{ ASSERT(::IsWindow(m_hWnd)); return (BOOL)::SendMessage(m_hWnd, HDM_SETITEM, nPos, (LPARAM)pHeaderItem); }
@@ -1145,7 +1145,7 @@ BOOL SetItem_HDM_SETITEM( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const i
 	}
 
 _Success_( return )
-BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const LONG nCode ) {
+BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 ) const int nItem, _Out_ RECT* const rect, _In_ _In_range_( LVIR_BOUNDS, LVIR_SELECTBOUNDS ) const LONG nCode ) noexcept {
 	/*
 	BOOL GetItemRect(int nItem, LPRECT lpRect, UINT nCode) const
 	{
@@ -1170,66 +1170,66 @@ BOOL GetItemRect_LVM_GETITEMRECT( _In_ const HWND hWnd, _In_ _In_range_( >=, 0 )
 	return static_cast<BOOL>( ::SendMessageW( hWnd, LVM_GETITEMRECT, static_cast<WPARAM>( nItem ), reinterpret_cast<LPARAM>( rect ) ) );
 	}
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::GetBrightnessPercent( ) const {
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetBrightnessPercent( ) const noexcept {
 	return RoundDouble( brightness   * 100 );
 	}
 
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::GetHeightPercent( ) const {
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetHeightPercent( ) const noexcept {
 	return RoundDouble( height       * 100 );
 	}
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::GetScaleFactorPercent( ) const {
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetScaleFactorPercent( ) const noexcept {
 	return RoundDouble( scaleFactor  * 100 );
 	}
 
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::GetAmbientLightPercent( ) const {
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetAmbientLightPercent( ) const noexcept {
 	return RoundDouble( ambientLight * 100 );
 	}
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::GetLightSourceXPercent( ) const {
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetLightSourceXPercent( ) const noexcept {
 	return RoundDouble( lightSourceX * 100 );
 	}
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::GetLightSourceYPercent( ) const {
+_Ret_range_( 0, 100 ) INT Treemap_Options::GetLightSourceYPercent( ) const noexcept {
 	return RoundDouble( lightSourceY * 100 );
 	}
 
-POINT Treemap_Options::GetLightSourcePoint( ) const {
+POINT Treemap_Options::GetLightSourcePoint( ) const noexcept {
 	return POINT { GetLightSourceXPercent( ), GetLightSourceYPercent( ) };
 	}
 
-_Ret_range_( 0, 100 ) INT Treemap_Options::RoundDouble ( const DOUBLE d ) const {
-	return signum( d ) * static_cast<INT>( abs( d ) + 0.5 );
+_Ret_range_( 0, 100 ) INT Treemap_Options::RoundDouble ( const DOUBLE d ) const noexcept {
+	return ::signum( d ) * static_cast<INT>( ::abs( d ) + 0.5 );
 	}
 
-void Treemap_Options::SetBrightnessPercent( const INT    n   ) {
+void Treemap_Options::SetBrightnessPercent( const INT    n   ) noexcept {
 	brightness   = n / 100.0;
 	}
 
-void Treemap_Options::SetHeightPercent( const INT    n   ) {
+void Treemap_Options::SetHeightPercent( const INT    n   ) noexcept {
 	height       = n / 100.0;
 	}
 
-void Treemap_Options::SetScaleFactorPercent( const INT    n   ) {
+void Treemap_Options::SetScaleFactorPercent( const INT    n   ) noexcept {
 	scaleFactor  = n / 100.0;
 	}
 
-void Treemap_Options::SetAmbientLightPercent( const INT    n   ) {
+void Treemap_Options::SetAmbientLightPercent( const INT    n   ) noexcept {
 	ambientLight = n / 100.0;
 	}
 
-void Treemap_Options::SetLightSourceXPercent( const INT    n   ) {
+void Treemap_Options::SetLightSourceXPercent( const INT    n   ) noexcept {
 	lightSourceX = n / 100.0; 
 	}
 
-void Treemap_Options::SetLightSourceYPercent( const INT    n   ) {
+void Treemap_Options::SetLightSourceYPercent( const INT    n   ) noexcept {
 	lightSourceY = n / 100.0;
 	}
 
 
-void Treemap_Options::SetLightSourcePoint   ( const POINT  pt  ) {
+void Treemap_Options::SetLightSourcePoint   ( const POINT  pt  ) noexcept {
 	SetLightSourceXPercent( pt.x );
 	SetLightSourceYPercent( pt.y );
 	}
@@ -1245,11 +1245,11 @@ SRECT::SRECT( const RECT& in ) {
 	}
 
 
-const int SRECT::Width( ) const {
+const int SRECT::Width( ) const noexcept {
 	return right - left;
 	}
 
-const int SRECT::Height( ) const {
+const int SRECT::Height( ) const noexcept {
 	return bottom - top;
 	}
 

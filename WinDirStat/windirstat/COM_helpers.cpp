@@ -18,7 +18,7 @@ WDS_FILE_INCLUDE_MESSAGE
 //Keeping OnOpenAFolder in the implementation file means that we don't need to include ScopeGuard.h in the header.
 std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
 	IFileDialog* file_dialog = nullptr;
-	const HRESULT create_file_dialog_result = CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &file_dialog ) );
+	const HRESULT create_file_dialog_result = ::CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &file_dialog ) );
 	if ( !SUCCEEDED( create_file_dialog_result ) ) {
 		TRACE( _T( "create_file_dialog_result-> FAILED!\r\n" ) );
 		return L"";

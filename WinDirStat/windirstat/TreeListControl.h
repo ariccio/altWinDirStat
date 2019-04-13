@@ -59,19 +59,19 @@ struct VISIBLEINFO final {
 // m_vi is freed as soon as the item is removed from the List.
 class CTreeListItem final : public COwnerDrawnListItem {
 	
-		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
+		virtual bool   DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept override final;
 		
-		virtual INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const override final;
+		virtual INT Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                          ) const noexcept override final;
 
 		//ItemTextColor __should__ be private!
-		virtual COLORREF ItemTextColor( ) const override final {
+		virtual COLORREF ItemTextColor( ) const noexcept override final {
 			return Concrete_ItemTextColor( );
 			}
 
-		inline INT     concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+		inline INT     concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept;
 		const bool     set_plusminus_and_title_rects( _In_ const RECT rcLabel, _In_ const RECT rc_const ) const;
 
-		const COLORREF Concrete_ItemTextColor( ) const;
+		const COLORREF Concrete_ItemTextColor( ) const noexcept;
 
 		CTreeListItem( CTreeListItem& in ) = delete;
 		CTreeListItem& operator=( const CTreeListItem& in ) = delete;
@@ -81,7 +81,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 	public:
 		//Unconditionally called only ONCE, so we ask for inlining.
 		//Encodes the attributes to fit (in) 1 byte
-		__forceinline void SetAttributes( _In_ const DWORD attr ) {
+		__forceinline void SetAttributes( _In_ const DWORD attr ) noexcept {
 			if ( attr == INVALID_FILE_ATTRIBUTES ) {
 				m_attr.invalid = true;
 				return;
@@ -107,52 +107,52 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
+		virtual HRESULT Text_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept override final;
 
 		_Pre_satisfies_( subitem == column::COL_PERCENTAGE ) _Success_( SUCCEEDED( return ) )
-		  const HRESULT WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		  const HRESULT WriteToStackBuffer_COL_PERCENTAGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_NTCOMPRESS ) _Success_( SUCCEEDED( return ) )
-		  const HRESULT WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		  const HRESULT WriteToStackBuffer_COL_NTCOMPRESS( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_SUBTREETOTAL ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT WriteToStackBuffer_COL_SUBTREETOTAL( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( ( subitem == column::COL_FILES ) || ( subitem == column::COL_ITEMS ) ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT WriteToStackBuffer_COL_FILES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_LASTCHANGE ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
-		FILETIME FILETIME_recurse( ) const;
+		FILETIME FILETIME_recurse( ) const noexcept;
 
 		_Ret_range_( 0, UINT64_MAX )
-		std::uint64_t size_recurse( ) const;
+		std::uint64_t size_recurse( ) const noexcept;
 
 		//4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		_Ret_range_( 0, 4294967295 )
-		std::uint32_t files_recurse( ) const;
+		std::uint32_t files_recurse( ) const noexcept;
 
-		DOUBLE  GetFraction                   (                                                                   ) const;
+		DOUBLE  GetFraction                   (                                                                   ) const noexcept;
 
 		std::vector<const CTreeListItem*> size_sorted_vector_of_children( ) const;
 
 		void    UpwardGetPathWithoutBackslash ( std::wstring& pathBuf ) const;
 
-		void refresh_sizeCache( );
+		void refresh_sizeCache( ) noexcept;
 
 		_Pre_satisfies_( this->m_parent == NULL )
 		void AddChildren( _In_ CTreeListControl* const tree_list_control );
 
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx : Note  The maximum path of 32,767 characters is approximate, because the "\\?\" prefix may be expanded to a longer string by the system at run time, and this expansion applies to the total length.
-		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const;
+		_Ret_range_( 0, 33000 ) DOUBLE  averageNameLength             (                                                                   ) const noexcept;
 
 		std::wstring GetPath                       ( ) const;
 
-		INT     GetSortAttributes             (                                                                   ) const;
+		INT     GetSortAttributes             (                                                                   ) const noexcept;
 
 		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
 
@@ -168,29 +168,29 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		size_t  FindSortedChild                 ( _In_ const CTreeListItem* const child, _In_ const size_t child_count ) const;
 
 		_Pre_satisfies_( this->m_child_info.m_child_info_ptr == nullptr )
-			PCWSTR const CStyle_GetExtensionStrPtr( ) const;
+			PCWSTR const CStyle_GetExtensionStrPtr( ) const noexcept;
 
 
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
-		std::int16_t  GetIndent( ) const {
+		std::int16_t  GetIndent( ) const noexcept {
 			ASSERT( IsVisible( ) );
 			return m_vi->indent;
 			}
 
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
-		void SetExpanded( _In_ const bool expanded = true ) {
+		void SetExpanded( _In_ const bool expanded = true ) noexcept {
 			ASSERT( IsVisible( ) );
 			m_vi->isExpanded = expanded;
 			}
 
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
-		void SetPlusMinusRect( _In_ const RECT& rc ) const {
+		void SetPlusMinusRect( _In_ const RECT& rc ) const noexcept {
 			ASSERT( IsVisible( ) );
 			m_vi->rcPlusMinus = SRECT( rc );
 			}
 
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
-		void SetTitleRect( _In_ const RECT& rc ) const {
+		void SetTitleRect( _In_ const RECT& rc ) const noexcept {
 			ASSERT( IsVisible( ) );
 			m_vi->rcTitle = SRECT( rc );
 			}
@@ -203,21 +203,21 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		void SortChildren                       ( _In_ const CTreeListControl* const ctrl );
 
 		_Pre_satisfies_( this->m_parent != NULL )
-		bool  HasSiblings                       (                                           ) const;
+		bool  HasSiblings                       (                                           ) const noexcept;
 		
 		void childNotNull( _In_ const CTreeListItem* const aTreeListChild, const size_t i );
 		
-		bool HasChildren ( ) const {
+		bool HasChildren ( ) const noexcept {
 			return ( m_child_info.m_child_info_ptr != NULL );
 			}
 		
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
-		bool IsExpanded( ) const {
+		bool IsExpanded( ) const noexcept {
 			ASSERT( IsVisible( ) );
 			return m_vi->isExpanded; 
 			}
 		
-		bool IsVisible( ) const {
+		bool IsVisible( ) const noexcept {
 			return ( m_vi != nullptr );
 			}
 	
@@ -281,12 +281,18 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			}
 
 		//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
-		void SysColorChanged( ) {
+		void SysColorChanged( ) noexcept {
 			InitializeColors( );
 			InitializeNodeBitmaps( );
 			}
 
 		void DeleteItem( _In_ _In_range_( 0, INT_MAX ) const int i ) {
+			
+			/*
+			From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxcmn.inl:
+			_AFXCMN_INLINE int CListCtrl::GetItemCount() const
+				{ ASSERT(::IsWindow(m_hWnd)); return (int) ::SendMessage(m_hWnd, LVM_GETITEMCOUNT, 0, 0L); }
+			*/
 			ASSERT( i < CListCtrl::GetItemCount( ) );
 			auto const anItem = GetItem( i );
 			if ( anItem != NULL ) {
@@ -303,21 +309,21 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 		virtual ~CTreeListControl( ) = default;
 
 #pragma warning( suppress: 4263 )
-		        BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID );
+		        BOOL CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID ) noexcept;
 
 		_Must_inspect_result_ _Success_( return != -1 ) _Ret_range_( 0, INT_MAX )
 				INT  GetSelectedItem       ( ) const;
 				bool SelectedItemCanToggle ( ) const;
-				void InitializeNodeBitmaps ( ) const;
+				void InitializeNodeBitmaps ( ) const noexcept;
 				void Sort                  ( );
 				void ToggleSelectedItem    ( );
 
 		_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
-				CTreeListItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const;
+				CTreeListItem* GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const noexcept;
 
 
 				int  EnumNode                                  ( _In_     const CTreeListItem* const item ) const;
-				void SetRootItem                               ( _In_opt_ const CTreeListItem* const root );
+				void SetRootItem                               ( _In_opt_ const CTreeListItem* const root ) noexcept;
 		_Pre_satisfies_( !isDone )
 				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent,   _In_ CTreeListItem* const child, _In_ const bool isDone );
 				INT  find_item_then_show_first_try_failed      ( _In_     const CTreeListItem* const path,     _In_ const int i );
@@ -333,8 +339,8 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				
 		_Pre_satisfies_( item->m_vi._Mypair._Myval2 != nullptr ) _Success_( return )
 				const bool DrawNodeNullWidth                   ( _In_     const CTreeListItem* const item, _In_ HDC hDC,  _In_ const RECT& rcRest, _In_    HDC hDCmem, _In_ const UINT ysrc ) const;
-				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const;
-				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc            ) const;
+				RECT DrawNode_Indented                         ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc,     _Inout_ RECT& rcRest ) const noexcept;
+				RECT DrawNode                                  ( _In_     const CTreeListItem* const item, _In_ HDC hDC, _Inout_    RECT& rc            ) const noexcept;
 
 		_Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
 				int  collapse_parent_plus_one_through_index    ( _In_     const CTreeListItem*       thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent );

@@ -29,10 +29,10 @@ class CDirstatApp;
 
 
 #ifdef DEBUG
-void trace_empty_view_graphview( );
-void trace_call_onidle( );
-void trace_mouse_left( );
-void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path );
+void trace_empty_view_graphview( ) noexcept;
+void trace_call_onidle( ) noexcept;
+void trace_mouse_left( ) noexcept;
+void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) noexcept;
 #endif
 
 
@@ -81,7 +81,7 @@ public:
 public:
 	static const CRuntimeClass classCGraphView;
 	
-	virtual CRuntimeClass* GetRuntimeClass( ) const final {
+	virtual CRuntimeClass* GetRuntimeClass( ) const noexcept final {
 		return const_cast<CRuntimeClass*>( &CGraphView::classCGraphView );
 		}
 
@@ -96,14 +96,20 @@ public:
 
 	DISALLOW_COPY_AND_ASSIGN( CGraphView );
 
-	void SuspendRecalculation( _In_ const bool suspend ) {
+	void SuspendRecalculation( _In_ const bool suspend ) noexcept {
 		m_recalculationSuspended = suspend;
 		if ( !suspend ) {
+			/*
+			From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxwin2.inl:113:
+			_AFXWIN_INLINE void CWnd::Invalidate(BOOL bErase)
+				{ ASSERT(::IsWindow(m_hWnd)); ::InvalidateRect(m_hWnd, NULL, bErase); }
+
+			*/
 			CWnd::Invalidate( );
 			}
 		}
 
-	void DrawEmptyView( ) {
+	void DrawEmptyView( ) noexcept {
 		CClientDC dc( this );
 		DrawEmptyView( &dc );
 		}
@@ -137,11 +143,11 @@ protected:
 	virtual void OnDraw( CDC* pScreen_Device_Context ) override final;
 	
 	//this is just a comparison, it should be inlined.
-	inline bool IsDrawn( ) const {
+	inline bool IsDrawn( ) const noexcept {
 		return ( m_bitmap.m_hObject != NULL );
 		}
 
-	void Inactivate( ) {
+	void Inactivate( ) noexcept {
 		if ( m_bitmap.m_hObject != NULL ) {
 			m_dimmed.Detach( );
 			VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
@@ -149,7 +155,7 @@ protected:
 			}
 		}
 	
-	void reset_timer_if_zero( ) {
+	void reset_timer_if_zero( ) noexcept {
 		if ( m_timer == 0 ) {
 #ifdef DEBUG
 			trace_mouse_left( );
@@ -158,7 +164,7 @@ protected:
 			}
 		}
 
-	void EmptyView( ) {
+	void EmptyView( ) noexcept {
 		if ( m_bitmap.m_hObject != NULL ) {
 			m_bitmap.DeleteObject( );
 			}
@@ -167,7 +173,7 @@ protected:
 			}
 		}
 
-	void cause_OnIdle_to_be_called_once( ) const {
+	void cause_OnIdle_to_be_called_once( ) const noexcept {
 		// Cause OnIdle() to be called once.
 #ifdef DEBUG
 		trace_call_onidle( );
@@ -178,10 +184,10 @@ protected:
 public:
 	
 	//Keeping RenderHighlightRectangle in the implementation file means that we don't need to include options.h in the header.
-	void RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const;
+	void RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const noexcept;
 
 protected:
-	void DrawEmptyView( _In_ CDC* const pScreen_Device_Context ) {
+	void DrawEmptyView( _In_ CDC* const pScreen_Device_Context ) noexcept {
 #ifdef DEBUG
 		trace_empty_view_graphview( );
 #endif
@@ -229,17 +235,17 @@ protected:
 
 
 	//Keeping DrawHighlightExtension in the implementation file means that we don't need to include options.h in the header.
-	void DrawHighlightExtension( _In_ const HDC screen_device_context ) const;
+	void DrawHighlightExtension( _In_ const HDC screen_device_context ) const noexcept;
 
 
-	void RecurseHighlightExtension( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
+	void RecurseHighlightExtension( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const noexcept;
 
-	void DrawSelection( _In_ const HDC screen_device_context ) const;
+	void DrawSelection( _In_ const HDC screen_device_context ) const noexcept;
 	
 	void DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc );
 	
 	
-	void DrawViewNotEmpty( _In_ CDC* const Screen_Device_Context ) {
+	void DrawViewNotEmpty( _In_ CDC* const Screen_Device_Context ) noexcept {
 		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
 		//If the window handle identifies an existing window, the return value is nonzero.
 		//If the window handle does not identify an existing window, the return value is zero.
@@ -275,7 +281,7 @@ protected:
 	void RecurseHighlightChildren( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const;
 
 	//Keeping DrawHighlights in the implementation file means that we don't need to include windirstat.h in the header.
-	void DrawHighlights( _In_ const HDC Screen_Device_Context ) const;
+	void DrawHighlights( _In_ const HDC Screen_Device_Context ) const noexcept;
 
 
 	/*
@@ -284,10 +290,7 @@ protected: \
 	static const AFX_MSGMAP* PASCAL GetThisMessageMap(); \
 	virtual const AFX_MSGMAP* GetMessageMap() const; \
 -------------------------------------------------------
-
 	*/
-
-
 protected:
 	static const AFX_MSGMAP* PASCAL GetThisMessageMap( );
 	

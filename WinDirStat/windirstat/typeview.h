@@ -24,46 +24,46 @@ class CDirstatDoc;
 class CExtensionListControl;
 class CListItem;
 
-void trace_on_erase_bkgnd_typeview( );
+void trace_on_erase_bkgnd_typeview( ) noexcept;
 
 // CListItem. The items of the CExtensionListControl.
 class CListItem final : public COwnerDrawnListItem {
-	public:
+	DISALLOW_COPY_AND_ASSIGN(CListItem);
+public:
 		CListItem( ) : m_list( NULL ) { }
 		CListItem ( _In_ CExtensionListControl* const list, _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ COLORREF color_in, _In_z_ PCWSTR const name, const std::uint16_t length ) : m_list( list ), m_bytes( std::move( bytes_in ) ), m_files( std::move( files_in ) ), color( std::move( color_in ) ), COwnerDrawnListItem( name, length ) { }
 		
-		DISALLOW_COPY_AND_ASSIGN( CListItem );
 		CListItem( CListItem&& in ) = delete;
 
 		virtual ~CListItem( ) final = default;
 
-		virtual COLORREF     ItemTextColor( ) const override final {
+		virtual COLORREF     ItemTextColor( ) const noexcept override final {
 			//implementing this inline should help devirtualization
 			return default_item_text_color( );
 			}
 	private:
 		//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
 		inline  INT          concrete_compare ( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
-		virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const override final;
-		virtual bool         DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const override final;
+		virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const noexcept override final;
+		virtual bool         DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept override final;
 			
 		_Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-		virtual HRESULT Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const override final;
+		virtual HRESULT Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept override final;
 
 		_Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_DESCRIPTION ) _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( strSize > 0 )
-		 inline const HRESULT Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
 		_Pre_satisfies_( subitem == column::COL_BYTESPERCENT ) _Success_( SUCCEEDED( return ) )
-		 inline const HRESULT Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
+		 inline const HRESULT Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept;
 
-			    void         DrawColor        ( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width ) const;
-			    DOUBLE       GetBytesFraction (                                                                                 ) const;
+			    void         DrawColor        ( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width ) const noexcept;
+			    DOUBLE       GetBytesFraction (                                                                                 ) const noexcept;
 	private:
 		const CExtensionListControl* m_list;
 		_Field_range_( 0, 4294967295 )
@@ -77,21 +77,22 @@ class CListItem final : public COwnerDrawnListItem {
 
 // CExtensionListControl.
 class CExtensionListControl final : public COwnerDrawnListCtrl {
+	DISALLOW_COPY_AND_ASSIGN(CExtensionListControl);
+
 public:
 	CExtensionListControl( CTypeView* const typeView );
 	
-	DISALLOW_COPY_AND_ASSIGN( CExtensionListControl );
 
 	virtual ~CExtensionListControl( ) final = default;
 
 public:
-	        _Ret_z_ PCWSTR const GetSelectedExtension        (                                                    ) const;
+	        _Ret_z_ PCWSTR const GetSelectedExtension        (                                                    ) const noexcept;
 
-	        void               Initialize                  (                                                    );
+	        void               Initialize                  (                                                    ) noexcept;
 	        void               SetExtensionData            ( _In_ const std::vector<SExtensionRecord>* extData  );
-	        void               SelectExtension             ( _In_z_ PCWSTR const ext                        );
+	        void               SelectExtension             ( _In_z_ PCWSTR const ext                        ) noexcept;
 	
-	void SysColorChanged( ) {
+	void SysColorChanged( ) noexcept {
 		COwnerDrawnListCtrl::InitializeColors( );
 		}
 	
@@ -123,20 +124,36 @@ public:
 // cushion colors.
 //
 class CTypeView final : public CView {
+	DISALLOW_COPY_AND_ASSIGN(CTypeView);
+
 protected:
 	CTypeView( );
 	
-	DECLARE_DYNCREATE(CTypeView)
+	/*
+	#define DECLARE_DYNCREATE(class_name) \
+		DECLARE_DYNAMIC(class_name) \
+		static CObject* PASCAL CreateObject();
+#define DECLARE_DYNAMIC(class_name) \
+public: \
+	static const CRuntimeClass class##class_name; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \
+
+	*/
+	//DECLARE_DYNCREATE(CTypeView)
+
+public: 
+	static const CRuntimeClass classCTypeView;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+	static CObject* PASCAL CreateObject() noexcept;
 
 public:
 	virtual ~CTypeView( ) final = default;
-	void SysColorChanged( );
+	void SysColorChanged( ) noexcept;
 
 
-	DISALLOW_COPY_AND_ASSIGN( CTypeView );
 
-	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const;
-	                                      void         SetHighlightExtension ( _In_ const std::wstring ext );
+	_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* GetDocument           (                             ) const noexcept;
+	                                      void         SetHighlightExtension ( _In_ const std::wstring ext ) noexcept;
 
 
 
@@ -144,7 +161,7 @@ public:
 		return CView::PreCreateWindow( cs );
 		}
 
-	void ShowTypes( _In_ const bool show ) {
+	void ShowTypes( _In_ const bool show ) noexcept {
 		m_showTypes = show;
 		OnUpdate( NULL, 0, NULL );
 		}
@@ -174,10 +191,10 @@ protected:
 		CView::OnDraw( pDC );
 		}
 
-	void SetSelection( );
-	void OnUpdate0( );
-	void OnUpdateHINT_LISTSTYLECHANGED( );
-	void OnUpdateHINT_TREEMAPSTYLECHANGED( );
+	void SetSelection( ) noexcept;
+	void OnUpdate0( ) noexcept;
+	void OnUpdateHINT_LISTSTYLECHANGED( ) noexcept;
+	void OnUpdateHINT_TREEMAPSTYLECHANGED( ) noexcept;
 
 
 	DECLARE_MESSAGE_MAP()

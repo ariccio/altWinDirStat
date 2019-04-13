@@ -80,7 +80,7 @@ struct SimpleClientDeviceContext {
 
 namespace CColorSpace {
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) {
+	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) noexcept {
 		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
 		}
 
@@ -100,7 +100,7 @@ namespace {
 
 
 
-	inline void fixup_align_for_indent( _In_ const bool indent, _Inout_ RECT& rcRest ) {
+	inline void fixup_align_for_indent( _In_ const bool indent, _Inout_ RECT& rcRest ) noexcept {
 		// Increase indentation according to tree-level
 		if ( indent ) {
 			//add 5
@@ -108,9 +108,9 @@ namespace {
 			}
 		}
 
-	const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
-	const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
-	const UINT LABEL_Y_MARGIN   = 2;
+	constexpr const INT  TEXT_X_MARGIN    = 6;	// Horizontal distance of the text from the edge of the item rectangle
+	constexpr const UINT LABEL_INFLATE_CX = 3;// How much the label is enlarged, to get the selection and focus rectangle
+	constexpr const UINT LABEL_Y_MARGIN   = 2;
 	}
 
 
@@ -121,7 +121,7 @@ template<class derived_class>
 class COwnerDrawnListItemImpl {
 public:
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept {
 		return static_cast<derived_class*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
 		}
 	};
@@ -130,31 +130,31 @@ public:
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
 class COwnerDrawnListItem {
 
-	virtual COLORREF ItemTextColor( ) const = 0;
-	virtual INT      Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const = 0;
+	virtual COLORREF ItemTextColor( ) const noexcept = 0;
+	virtual INT      Compare( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept = 0;
 
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
-	virtual HRESULT  Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const = 0;
+	virtual HRESULT  Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept = 0;
 
 	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	virtual bool     DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const = 0;
+	virtual bool     DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept = 0;
 
 public:
-	INT      compare_interface          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+	INT      compare_interface          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept {
 		return Compare( other, subitem );
 		}
 
-	COLORREF item_text_color( ) const {
+	COLORREF item_text_color( ) const noexcept {
 		return ItemTextColor( );
 		}
 
-	bool     DrawSubitem_               ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+	bool     DrawSubitem_               ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept {
 		return DrawSubitem( subitem, hDC, rc, state, width, focusLeft, list );
 		}
 
 
 	_Must_inspect_result_ _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
-	HRESULT  GetText_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+	HRESULT  GetText_WriteToStackBuffer ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 		const HRESULT res = Text_WriteToStackBuffer( subitem, psz_text, strSize, sizeBuffNeed, chars_written );
 #ifdef DEBUG
 		if ( SUCCEEDED( res ) ) {
@@ -168,7 +168,7 @@ public:
 
 private:
 	//defined at the BOTTOM of this file!
-	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ HDC hDC, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+	COLORREF draw_if_selected_return_text_color( _In_ const UINT state, _In_ const RECT rcLabel, _In_ const RECT rc, _In_ HDC hDC, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const noexcept {
 		//GetSysColor function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724371.aspx
 		//The function returns the red, green, blue (RGB) color value of the given element.
 		//If the nIndex parameter is out of range, the return value is zero.
@@ -202,7 +202,7 @@ public:
 		}
 
 
-	INT CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const {
+	INT CompareS( _In_ const COwnerDrawnListItem* const other, _In_ const SSorting& sorting ) const noexcept {
 //		if ( sorting.column1 == column::COL_NAME ) {
 //#pragma warning( suppress: 4711 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
 //			const auto sort_result = signum( wcscmp( m_name, other->m_name ) );
@@ -229,7 +229,7 @@ public:
 		}
 	
 	//defined at bottom of THIS file.
-	void         DrawSelection( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+	void         DrawSelection( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const noexcept {
 		if ( !list_is_full_row_selection ) {
 			return;
 			}
@@ -272,7 +272,7 @@ public:
 		}
 
 
-	COLORREF     default_item_text_color      ( ) const {
+	COLORREF     default_item_text_color      ( ) const noexcept {
 		//COLOR_WINDOWTEXT (8): "Text in windows"
 		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
@@ -284,11 +284,11 @@ protected:
 	//HRESULT      WriteToStackBuffer_COL_NAME ( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _Out_ _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const;
 
 	_Success_( SUCCEEDED( return ) )
-	HRESULT WriteToStackBuffer_default( const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR derived_type ) const {
+	HRESULT WriteToStackBuffer_default( const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written, _In_z_ const PCWSTR derived_type ) const noexcept {
 		sizeBuffNeed = SIZE_T_ERROR;
 		size_t chars_remaining = 0;
 		ASSERT( strSize > 8 );
-		const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
+		const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"BAD GetText_WriteToStackBuffer - subitem" );
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
 			chars_written = ( strSize - chars_remaining );
@@ -312,13 +312,13 @@ protected:
 		return res;
 		}
 
-	INT          default_compare              ( _In_ const COwnerDrawnListItem* const baseOther ) const {
+	INT          default_compare              ( _In_ const COwnerDrawnListItem* const baseOther ) const noexcept {
 #pragma warning( suppress: 4200 )//C4711: function 'int __cdecl signum<int>(int)' selected for automatic inline expansion
 		return signum( ::wcscmp( m_name, baseOther->m_name ) );
 		}
 
 	//defined at bottom of THIS file.
-	void         DrawLabel( _In_ HDC hDC, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent, _In_ const HGDIOBJ list_font_GDI_object_handle, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+	void         DrawLabel( _In_ HDC hDC, _In_ RECT& rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const bool indent, _In_ const HGDIOBJ list_font_GDI_object_handle, _In_ const bool list_has_focus, _In_ const bool list_is_show_selection_always, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const noexcept {
 		/*
 		  Draws an item label (icon, text) in all parts of the WinDirStat view. The rest is drawn by DrawItem()
 		*/
@@ -388,7 +388,7 @@ protected:
 		}
 	
 	//defined at bottom of THIS file.
-	DWORD         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ HDC hDC, /*_In_ const COLORREF textColor,*/ _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {
+	DWORD         DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ HDC hDC, /*_In_ const COLORREF textColor,*/ _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const noexcept {
 		// Color for the text in a highlighted item (usually white)
 		//textColor = list_highlight_text_color;
 
@@ -438,7 +438,7 @@ protected:
 
 
 namespace {
-	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) {
+	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) noexcept {
 		const SSorting* const sorting = reinterpret_cast<const SSorting*>( lParamSort );
 		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
 		}
@@ -461,7 +461,7 @@ namespace {
 		}
 
 	_Pre_satisfies_( !SUCCEEDED( fmt_res ) )
-	void handle_formatting_error_COwnerDrawnListCtrl_SortItems( _In_ const HRESULT fmt_res ) {
+	void handle_formatting_error_COwnerDrawnListCtrl_SortItems( _In_ const HRESULT fmt_res ) noexcept {
 		displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::SortItems - StringCchPrintfW failed!(aborting)" );
 		//TODO:use
 		//WDS_ASSERT_EXPECTED_STRING_FORMAT_FAILURE_HRESULT( fmt_res );
@@ -485,7 +485,7 @@ namespace {
 			std::terminate( );
 			}
 		}
-	inline RECT adjust_rect_for_grid_by_value( _In_ const bool show_grid, _In_ RECT rc_temp ) {
+	inline RECT adjust_rect_for_grid_by_value( _In_ const bool show_grid, _In_ RECT rc_temp ) noexcept {
 		if ( show_grid ) {
 			rc_temp.bottom--;
 			rc_temp.right--;
@@ -494,14 +494,14 @@ namespace {
 		return rc_temp;
 		}
 
-	inline void adjust_rect_for_grid( _In_ const bool show_grid, _Inout_ RECT& rcItem_temp ) {
+	inline void adjust_rect_for_grid( _In_ const bool show_grid, _Inout_ RECT& rcItem_temp ) noexcept {
 		if ( show_grid ) {
 			rcItem_temp.bottom--;
 			rcItem_temp.right--;
 			}
 		}
 
-	void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size ) {
+	void check_validity_of_resize_size( _In_ const int resize_size, _In_ const rsize_t stack_array_size ) noexcept {
 		if ( resize_size == -1 ) {
 			displayWindowsMsgBoxWithMessage( L"thisHeaderCtrl->GetItemCount( ) returned -1! (aborting!)" );
 			std::terminate( );
@@ -516,7 +516,7 @@ namespace {
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	inline void iterate_over_columns_and_populate_column_fields_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ] ) {
+	inline void iterate_over_columns_and_populate_column_fields_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ] ) noexcept {
 		static_assert( std::is_convertible< INT, std::underlying_type<column::ENUM_COL>::type>::value, "" );
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			//iterate over columns, properly populate fields.
@@ -526,12 +526,12 @@ namespace {
 
 	//defined at the BOTTOM of this file!
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ const HWND header_hWnd );
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ const HWND header_hWnd ) noexcept;
 
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	inline void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _Inout_updates_( thisLoopSize ) RECT( &rects )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) {
+	inline void build_array_of_drawable_rects_by_offsetting_( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _Inout_updates_( thisLoopSize ) RECT( &rects )[ count ], _In_ const LONG rcItem_left, _In_ const LONG rcItem_top ) noexcept {
 		//Not vectorized: Loop contains loop-carried data dependences that prevent vectorization. Different iterations of the loop interfere with each other such that vectorizing the loop would produce wrong answers, and the auto-vectorizer cannot prove to itself that there are no such data dependences.
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			VERIFY( ::OffsetRect( &( rects[ i ] ), -( rcItem_left ), -( rcItem_top ) ) );
@@ -539,7 +539,7 @@ namespace {
 		}
 
 	template<size_t count>
-	void build_focusLefts_from_drawable_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _Out_ _Out_writes_( thisLoopSize ) int( &focusLefts_temp )[ count ] ) {
+	void build_focusLefts_from_drawable_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _Out_ _Out_writes_( thisLoopSize ) int( &focusLefts_temp )[ count ] ) noexcept {
 		for ( size_t i = 0; i < thisLoopSize; i++ ) {
 			//draw the proper text in each column?
 			focusLefts_temp[ i ] = rects_draw[ i ].left;
@@ -548,7 +548,7 @@ namespace {
 
 	template<size_t count>
 	void draw_proper_text_for_each_column( _In_ const COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) {
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+		for ( size_t i = 0; i < thisLoopSize; i++ ) noexcept {
 			//draw the proper text in each column?
 			
 			//focusLefts_temp[ i ] = rects_draw[ i ].left;
@@ -564,7 +564,7 @@ namespace {
 
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
-	void draw_focus_rects_draw_focus( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC pDestinationDeviceContext, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem ) {
+	void draw_focus_rects_draw_focus( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC pDestinationDeviceContext, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem ) noexcept {
 		//first iteration is a special case, so we handle it outside the loop, and reduce the number of comparisons in the loop
 		ASSERT( thisLoopSize > 0 );
 		size_t i = 0;
@@ -589,7 +589,7 @@ namespace {
 
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
-	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC hDestinationDeviceContext, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) {
+	void draw_focus_rects( _In_ _In_range_( 1, 8 ) const rsize_t thisLoopSize, _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ _In_reads_( thisLoopSize ) const int( &focusLefts )[ count ], _In_ HDC hDestinationDeviceContext, _Inout_ RECT& rcFocus, _In_ const RECT& rcItem, _In_ const bool drawFocus ) noexcept {
 		if ( drawFocus ) {
 			return draw_focus_rects_draw_focus( thisLoopSize, hInMemoryDeviceContext, rects_draw, focusLefts, hDestinationDeviceContext, rcFocus, rcItem );
 			}
@@ -605,7 +605,7 @@ namespace {
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	template<size_t count>
-	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ const HWND header_hWnd, _In_ const RECT rcItem ) {
+	inline void map_column_number_to_ENUM_and_build_drawable_rect( const rsize_t thisLoopSize, _In_ const INT( &order )[ count ], _Out_ _Out_writes_( thisLoopSize ) column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _Inout_ const COwnerDrawnListCtrl* const this_ctrl, _Inout_ const HWND header_hWnd, _In_ const RECT rcItem ) noexcept {
 		iterate_over_columns_and_populate_column_fields_( thisLoopSize, order, subitems_temp );
 		build_array_of_rects_from_subitem_rects( thisLoopSize, subitems_temp, rects_temp, itemID, this_ctrl, header_hWnd );
 		build_array_of_drawable_rects_by_offsetting_( thisLoopSize, rects_temp, rcItem.left, rcItem.top );
@@ -659,10 +659,10 @@ class COwnerDrawnListCtrl : public CListCtrl {
 	*/
 
 protected:
-	virtual void DrawItem( _In_ PDRAWITEMSTRUCT pDestinationDrawItemStruct ) override final {
+	virtual void DrawItem( _In_ PDRAWITEMSTRUCT pDestinationDrawItemStruct ) noexcept override final {
 		const auto item = reinterpret_cast< const COwnerDrawnListItem *> ( pDestinationDrawItemStruct->itemData );
-		const auto pCDestinationDeviceContext = CDC::FromHandle( pDestinationDrawItemStruct->hDC );
-		const auto bIsFullRowSelection = m_showFullRowSelection;
+		CDC* const pCDestinationDeviceContext = CDC::FromHandle( pDestinationDrawItemStruct->hDC );
+		const bool bIsFullRowSelection = m_showFullRowSelection;
 		ASSERT( pDestinationDrawItemStruct->hDC != NULL );
 		ASSERT_VALID( pCDestinationDeviceContext );
 		//RECT rcItem_temp( pdis->rcItem );
@@ -935,7 +935,7 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 		// We refrain from saving the sorting because it is too likely, that users start up with insane settings and don't get it.
 		}
 
-	void SavePersistentAttributes( ) {
+	void SavePersistentAttributes( ) noexcept {
 		const rsize_t col_array_size = 128;
 		int col_array[ col_array_size ] = { 0 };
 
@@ -970,7 +970,7 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 		CPersistence::SetColumnWidths( m_persistent_name, col_array, static_cast<rsize_t>( itemCount ) );
 		}
 
-	void SortItems( ) {
+	void SortItems( ) noexcept {
 
 		//_AFXCMN_INLINE BOOL CListCtrl::SortItems(_In_ PFNLVCOMPARE pfnCompare, _In_ DWORD_PTR dwData)
 		//{ ASSERT(::IsWindow(m_hWnd)); ASSERT((CWnd::GetStyle() & LVS_OWNERDATA)==0); return (BOOL) ::SendMessage(m_hWnd, LVM_SORTITEMS, dwData, (LPARAM)pfnCompare); }
@@ -1041,7 +1041,7 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 		}
 
 	_Success_( return != -1 ) _Ret_range_( 0, INT_MAX )
-	INT FindListItem( _In_ const COwnerDrawnListItem* const item ) const {
+	INT FindListItem( _In_ const COwnerDrawnListItem* const item ) const noexcept {
 		LVFINDINFO fi = { };
 
 		fi.flags  = LVFI_PARAM;
@@ -1068,7 +1068,7 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 		return i;
 		}
 
-	void OnColumnsInserted( ) {
+	void OnColumnsInserted( ) noexcept {
 		/*
 		  This method MUST be called BEFORE the Control is shown.
 		*/
@@ -1103,7 +1103,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		COwnerDrawnListCtrl::LoadPersistentAttributes( );
 		}
 
-	void AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) {
+	void AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) noexcept {
 		//WTL::CWaitCursor wc;
 
 		INT width = 10;
@@ -1132,7 +1132,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		//VERIFY( CListCtrl::SetColumnWidth( col, width + 5 ) );
 		}
 	
-	void InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) {
+	void InsertListItem( _In_ _In_range_( 0, INT32_MAX ) const INT_PTR i, _In_ const COwnerDrawnListItem* const item ) noexcept {
 		auto lvitem = zero_init_struct<LVITEM>( );
 
 		lvitem.mask = LVIF_TEXT | LVIF_PARAM;
@@ -1144,7 +1144,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		VERIFY( i == CListCtrl::InsertItem( &lvitem ) );
 		}
 	
-	void AddExtendedStyle( _In_ const DWORD exStyle ) {
+	void AddExtendedStyle( _In_ const DWORD exStyle ) noexcept {
 		//_AFXCMN_INLINE DWORD CListCtrl::SetExtendedStyle(_In_ DWORD dwNewStyle)
 		//{ ASSERT(::IsWindow(m_hWnd)); return (DWORD) ::SendMessage(m_hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, (LPARAM) dwNewStyle); }
 		CListCtrl::SetExtendedStyle( CListCtrl::GetExtendedStyle( ) bitor exStyle );
@@ -1152,7 +1152,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 	
 	//COLORREF GetItemSelectionBackgroundColor ( _In_ _In_range_( 0, INT_MAX )   const INT i  ) const;
 
-	COLORREF GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const {
+	COLORREF GetItemSelectionTextColor( _In_ _In_range_( 0, INT_MAX )   const INT i ) const noexcept {
 		//_AFXCMN_INLINE UINT CListCtrl::GetItemState(_In_ int nItem, _In_ UINT nMask) const
 		//{ ASSERT(::IsWindow(m_hWnd)); return (UINT) ::SendMessage(m_hWnd, LVM_GETITEMSTATE, nItem, nMask); }
 
@@ -1163,7 +1163,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		return ::GetSysColor( COLOR_WINDOWTEXT );
 		}
 	
-	RECT GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, const HWND header_hWnd ) const {
+	RECT GetWholeSubitemRect( _In_ const INT item, _In_ const INT subitem, const HWND header_hWnd ) const noexcept {
 		CRect rc;
 		if ( subitem == 0 ) {
 			// Special case column 0:
@@ -1180,7 +1180,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		else {
 
 			/*
-#define ListView_GetSubItemRect(hwnd, iItem, iSubItem, code, prc) \
+	#define ListView_GetSubItemRect(hwnd, iItem, iSubItem, code, prc) \
         (BOOL)SNDMSG((hwnd), LVM_GETSUBITEMRECT, (WPARAM)(int)(iItem), \
                 ((prc) ? ((((LPRECT)(prc))->top = (iSubItem)), (((LPRECT)(prc))->left = (code)), (LPARAM)(prc)) : (LPARAM)(LPRECT)NULL))
 			*/
@@ -1213,21 +1213,21 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 
 
 			/*
-BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) const
-{
-	ASSERT(::IsWindow(m_hWnd));
-	ASSERT(nArea == LVIR_BOUNDS || nArea == LVIR_ICON || nArea == LVIR_LABEL || nArea == LVIR_SELECTBOUNDS);
+			BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) const
+			{
+				ASSERT(::IsWindow(m_hWnd));
+				ASSERT(nArea == LVIR_BOUNDS || nArea == LVIR_ICON || nArea == LVIR_LABEL || nArea == LVIR_SELECTBOUNDS);
 
-	RECT rect;
-	rect.top = iSubItem;
-	rect.left = nArea;
-	BOOL bRet = (BOOL) ::SendMessage(m_hWnd, LVM_GETSUBITEMRECT,
-		iItem, (LPARAM) &rect);
+				RECT rect;
+				rect.top = iSubItem;
+				rect.left = nArea;
+				BOOL bRet = (BOOL) ::SendMessage(m_hWnd, LVM_GETSUBITEMRECT,
+					iItem, (LPARAM) &rect);
 
-	if (bRet)
-		ref = rect;
-	return bRet;
-}
+				if (bRet)
+					ref = rect;
+				return bRet;
+			}
 			*/
 
 			VERIFY( CListCtrl::GetSubItemRect( item, subitem, LVIR_LABEL, rc ) );
@@ -1241,7 +1241,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 		}
 
 	_Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
-	COwnerDrawnListItem* GetItem( _In_ _In_range_( 0, INT_MAX )   const int i ) const {
+	COwnerDrawnListItem* GetItem( _In_ _In_range_( 0, INT_MAX )   const int i ) const noexcept {
 		ASSERT( i < CListCtrl::GetItemCount( ) );
 		const int itemCount = CListCtrl::GetItemCount( );
 		if ( i < itemCount ) {
@@ -1250,14 +1250,14 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 		return NULL;
 		}
 
-	void SetSorting( RANGE_ENUM_COL const column::ENUM_COL sortColumn, _In_ const bool ascending ) {
+	void SetSorting( RANGE_ENUM_COL const column::ENUM_COL sortColumn, _In_ const bool ascending ) noexcept {
 		m_sorting.ascending2 = m_sorting.ascending1;
 		m_sorting.column1    = sortColumn;
 		m_sorting.column2    = m_sorting.column1;
 		m_sorting.ascending1 = ascending;
 		}
 
-	void ShowFullRowSelection( _In_ const bool show ) {
+	void ShowFullRowSelection( _In_ const bool show ) noexcept {
 		m_showFullRowSelection = show;
 		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
@@ -1266,7 +1266,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 			}
 		}
 
-	void ShowGrid( _In_ const bool show ) {
+	void ShowGrid( _In_ const bool show ) noexcept {
 		m_showGrid = show;
 		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
@@ -1275,7 +1275,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 			}
 		}
 
-	void ShowStripes( _In_ const bool show ) {
+	void ShowStripes( _In_ const bool show ) noexcept {
 		m_showStripes = show;
 		if ( ::IsWindow( m_hWnd ) ) {
 			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
@@ -1284,7 +1284,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 			}
 		}
 
-	COLORREF GetHighlightColor( ) const {
+	COLORREF GetHighlightColor( ) const noexcept {
 		if ( COwnerDrawnListCtrl::HasFocus( ) ) {
 			return ::GetSysColor( COLOR_HIGHLIGHT );
 			}
@@ -1292,7 +1292,7 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 		}
 	
 	_Success_( return != COLORREF( 0 ) )
-	COLORREF GetHighlightTextColor( ) const {
+	COLORREF GetHighlightTextColor( ) const noexcept {
 		if ( COwnerDrawnListCtrl::HasFocus( ) ) {
 			return ::GetSysColor( COLOR_HIGHLIGHTTEXT );
 			}
@@ -1301,37 +1301,37 @@ BOOL CListCtrl::GetSubItemRect(int iItem, int iSubItem, int nArea, CRect& ref) c
 
 
 	_Success_( return != COLORREF( 0 ) )
-	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const {
+	COLORREF GetItemBackgroundColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const noexcept {
 		return ( COwnerDrawnListCtrl::IsItemStripeColor( i ) ? m_stripeColor : m_windowColor );
 		}
 
 	static_assert( INT_MAX < UINT_MAX, "" );
-	bool IsItemStripeColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const {
+	bool IsItemStripeColor( _In_ _In_range_( 0, UINT_MAX ) const UINT i ) const noexcept {
 		return ( m_showStripes && ( i % 2 != 0 ) );
 		}
 
-	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const {
+	bool IsItemStripeColor( _In_ const COwnerDrawnListItem* const item ) const noexcept {
 		const auto itemPos = COwnerDrawnListCtrl::FindListItem( item );
 		if ( itemPos >= 0 ) {
 			return COwnerDrawnListCtrl::IsItemStripeColor( static_cast<UINT>( itemPos ) );
 			}
 		return COLORREF( 0 );
 		}
-	bool HasFocus( ) const {
+	bool HasFocus( ) const noexcept {
 		return ::GetFocus( ) == m_hWnd;
 		}
-	bool IsShowSelectionAlways( ) const {
+	bool IsShowSelectionAlways( ) const noexcept {
 		return ( CWnd::GetStyle( ) bitand LVS_SHOWSELALWAYS ) != 0;
 		}
 
-	bool AscendingDefault( ) const {
+	bool AscendingDefault( ) const noexcept {
 		//return GetAscendingDefault( );
 		return true;
 		}
 
 
 public:
-	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ HDC hDC, _In_ const RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const {
+	void DoDrawSubItemBecauseItCannotDrawItself( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ HDC hDC, _In_ const RECT& rcDraw, _In_ const PDRAWITEMSTRUCT& pdis, _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, const std::vector<bool>& is_right_aligned_cache ) const noexcept {
 		item->DrawSelection( hDC, rcDraw, pdis->itemState, HasFocus( ), IsShowSelectionAlways( ), GetHighlightColor( ), m_showFullRowSelection );
 
 		RECT rcText = rcDraw;
@@ -1375,7 +1375,7 @@ public:
 
 protected:
 	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
-	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ HDC hDC, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const {
+	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ HDC hDC, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const noexcept {
 		const rsize_t subitem_text_size = 128;
 		_Null_terminated_ wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		//rsize_t sizeNeeded = 0;
@@ -1440,7 +1440,7 @@ private:
 		}
 
 protected:
-	void InitializeColors( ) {
+	void InitializeColors( ) noexcept {
 		// I try to find a good contrast to COLOR_WINDOW (usually white or light grey).
 		// This is a result of experiments. 
 
@@ -1475,7 +1475,7 @@ protected:
 		}
 
 public:
-	bool IsColumnRightAligned( _In_ const INT col, const HWND hWnd ) const {
+	bool IsColumnRightAligned( _In_ const INT col, const HWND hWnd ) const noexcept {
 		HDITEM hditem = { };
 		hditem.mask = HDI_FORMAT;
 		//VERIFY( thisHeaderControl->GetItem( col, &hditem ) );
@@ -1520,7 +1520,7 @@ private:
 		}
 
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX )
-	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ const HDC hDC ) const {
+	INT GetWidthFastPath( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ CHeaderCtrl* const thisHeaderCtrl, _In_ RECT& rc, _In_ const HDC hDC ) const noexcept {
 		//column::COL_NAME requires very little work!
 		if ( item->m_name_length == 0 ) {
 			ASSERT( 0 == CListCtrl::GetStringWidth( item->m_name ) );
@@ -1543,7 +1543,7 @@ private:
 		}
 
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX )
-	INT GetWidth_not_ownerdrawn( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ RECT& rc, _In_ const HDC hDC ) const {
+	INT GetWidth_not_ownerdrawn( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem, _In_ RECT& rc, _In_ const HDC hDC ) const noexcept {
 		const auto thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 		if ( subitem == column::COL_NAME ) {
 			return COwnerDrawnListCtrl::GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, hDC );
@@ -1580,7 +1580,7 @@ private:
 
 protected:
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
-	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const {
+	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const noexcept {
 		if ( item == NULL ) {
 			return -1;
 			}
@@ -1626,7 +1626,7 @@ public:
 private:
 	
 	_Post_satisfies_( readable <= capacity )
-	void buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const HWND header_hWnd ) const {
+	void buildArrayFromItemsInHeaderControl( _In_ _Pre_readable_size_( capacity ) const int* const columnOrder, _Out_ _Pre_writable_size_( capacity ) _Post_readable_size_( readable ) int* vertical, _In_ const rsize_t capacity, _Out_ rsize_t& readable, _In_ const HWND header_hWnd ) const noexcept {
 		ASSERT( static_cast<int>( capacity ) >= GetItemCount_HDM_GETITEMCOUNT( header_hWnd ) );
 		readable = 0;
 
@@ -1763,7 +1763,7 @@ _AFXWIN_INLINE void CWnd::InvalidateRect(LPCRECT lpRect, BOOL bErase = 1)
 
 
 private:
-	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ const HDC hDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf, _In_ const HDC hAttribDC ) const {
+	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ const HDC hDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf, _In_ const HDC hAttribDC ) const noexcept {
 		const HPEN hPen = ::CreatePen( PS_SOLID, 1, gridColor );
 		ASSERT( hPen != NULL );
 		HPEN_wrapper pen( hPen );
@@ -1881,7 +1881,7 @@ private:
 			}
 		}
 
-	void handle_EraseBkgnd( _In_ const HDC hDC, _In_ const HDC hAttribDC ) {
+	void handle_EraseBkgnd( _In_ const HDC hDC, _In_ const HDC hAttribDC ) noexcept {
 		// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
 		if ( GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) > 0 ) {
 			RECT rc;
@@ -2097,7 +2097,7 @@ private:
 
 		}
 
-	void handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESULT* pResult ) {
+	void handle_LvnGetdispinfo( _In_ NMHDR* pNMHDR, _In_ LRESULT* pResult ) noexcept {
 		auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 		*pResult = 0;
 		ASSERT( di->item.iItem <= CListCtrl::GetItemCount( ) );
@@ -2315,7 +2315,7 @@ namespace{
 		}
 
 	template<size_t count>
-	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ const HWND header_hWnd ) {
+	void build_array_of_rects_from_subitem_rects( _In_ _In_range_( 1, count ) const size_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems_temp )[ count ], _Out_ _Out_writes_( thisLoopSize ) RECT( &rects_temp )[ count ], _In_ const INT itemID, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl, _In_ const HWND header_hWnd ) noexcept {
 		for ( size_t i = 0; i < thisLoopSize; ++i ) {
 			rects_temp[ i ] = owner_drawn_list_ctrl->GetWholeSubitemRect( itemID, subitems_temp[ i ], header_hWnd );
 			}

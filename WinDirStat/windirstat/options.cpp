@@ -110,7 +110,7 @@ namespace helpers {
 #ifdef DEBUG
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value ) {
+void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value ) noexcept {
 	TRACE( _T( "Setting profile string\r\n\tsection: `%s`,\r\n\tentry: `%s`,\r\n\tvalue: `%s`\r\n" ), section, entry, value );
 	}
 
@@ -130,7 +130,7 @@ namespace {
 		RGB( 255, 255,   0 )
 		};
 
-	void SanifyRect( _Inout_ RECT* const rc ) {
+	void SanifyRect( _Inout_ RECT* const rc ) noexcept {
 		const INT visible = 30;
 		normalize_RECT( rc );
 
@@ -200,7 +200,7 @@ namespace {
 		WINDOWPLACEMENT wp = { 0 };
 		wp.length = sizeof( wp );
 		
-		const INT r = swscanf_s( s.c_str( ), _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
+		const INT r = ::swscanf_s( s.c_str( ), _T( "%u,%u," ) _T( "%ld,%ld,%ld,%ld," ) _T( "%ld,%ld,%ld,%ld" ), &wp.flags, &wp.showCmd, &wp.ptMinPosition.x, &wp.ptMinPosition.y, &wp.ptMaxPosition.x, &wp.ptMaxPosition.y, &wp.rcNormalPosition.left, &wp.rcNormalPosition.right, &wp.rcNormalPosition.top, &wp.rcNormalPosition.bottom );
 		TRACE( _T( "swscanf_s result: %i\r\n" ), r );
 		TRACE( _T( "WINDOWPLACEMENT:\r\n\twp.flags: %u,\r\n\twp.showCmd: %u,\r\n\twp.ptMinPosition.x: %ld,\r\n\twp.ptMinPosition.y: %ld,\r\n\twp.ptMaxPosition.x: %ld,\r\n\twp.ptMaxPosition.y: %ld,\r\n\twp.rcNormalPosition.left: %ld,\r\n\twp.rcNormalPosition.right: %ld,\r\n\twp.rcNormalPosition.top: %ld,\r\n\twp.rcNormalPosition.bottom: %ld\r\n" ), wp.flags, wp.showCmd, wp.ptMinPosition.x, wp.ptMinPosition.y, wp.ptMaxPosition.x, wp.ptMaxPosition.y, wp.rcNormalPosition.left, wp.rcNormalPosition.right, wp.rcNormalPosition.top, wp.rcNormalPosition.bottom );
 		if ( r == 10 ) {
@@ -269,7 +269,7 @@ void CPersistence::SetSplitterPos( _In_z_ const PCWSTR name, _In_ const bool val
 	CRegistryUser::SetProfileInt( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), pos );
 	}
 
-void CPersistence::GetSplitterPos( _In_z_  const PCWSTR name, _Out_ bool* const valid, _Out_ DOUBLE* const userpos ) {
+void CPersistence::GetSplitterPos( _In_z_  const PCWSTR name, _Out_ bool* const valid, _Out_ DOUBLE* const userpos ) noexcept {
 	const auto pos = CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, MakeSplitterPosEntry( name ).c_str( ), -1 );
 	if ( pos > 100 ) {
 		(*valid) = false;
@@ -299,7 +299,7 @@ void CPersistence::SetDialogRectangle( _In_z_ const PCWSTR name, _In_ const RECT
 	SetRect( MakeDialogRectangleEntry( name ).c_str( ), rc );
 	}
 
-INT CPersistence::GetConfigPage( _In_ const INT max_val ) {
+INT CPersistence::GetConfigPage( _In_ const INT max_val ) noexcept {
 	/* changed max to max_val to avoid conflict in ASSERT macro*/
 	auto n = static_cast< INT >( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPage, 0 ) );
 	CheckMinMax( n, 0, max_val );
@@ -437,7 +437,7 @@ const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT* 
 	int top = 0;
 	int right = 0;
 	int bottom = 0;
-	const auto r = swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &left, &top, &right, &bottom );
+	const auto r = ::swscanf_s( s.c_str( ), _T( "%d,%d,%d,%d" ), &left, &top, &right, &bottom );
 	static_assert( SUCCEEDED( S_OK ), "Bad success return value!" );
 	if ( r == 4 ) {
 		TRACE( _T( "swscanf_s succeeded! read in rectangle: %l,%l,%l,%l\r\n" ), left, top, right, bottom );
@@ -451,7 +451,7 @@ const HRESULT CPersistence::GetRect( _In_ const std::wstring entry, _Out_ RECT* 
 	}
 
 /////////////////////////////////////////////////////////////////////////////
-_Success_( return != NULL ) COptions* GetOptions( ) {
+_Success_( return != NULL ) COptions* GetOptions( ) noexcept {
 	ASSERT( ( &_theOptions ) != NULL );
 	if ( ( &_theOptions ) != NULL ) {
 		return &_theOptions;
@@ -626,11 +626,11 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_
 	const LONG   query_res = ::RegQueryValueExW( reg_sec_key, entry, NULL, &dwType, registry_data_buffer, &buffer_size_byte_count );
 	
 	if ( query_res == ERROR_SUCCESS ) {
-		ASSERT( ( wcslen( reinterpret_cast<wchar_t*>( registry_data_buffer ) ) + 1 ) == ( buffer_size_byte_count / sizeof( wchar_t ) ) );
+		ASSERT( ( ::wcslen( reinterpret_cast<wchar_t*>( registry_data_buffer ) ) + 1 ) == ( buffer_size_byte_count / sizeof( wchar_t ) ) );
 		
 		//yeah, this is actually twice as big as the buffer size needed, but who cares?
 		_Null_terminated_ wchar_t reg_data_buffer[ buffer_size ] = { 0 };
-		std::memcpy( reg_data_buffer, registry_data_buffer, buffer_size_byte_count );
+		memcpy_s( reg_data_buffer, buffer_size, registry_data_buffer, buffer_size_byte_count );
 		//_CrtDbgBreak( );
 #ifdef DEBUG
 		const std::wstring normal_res( AfxGetApp( )->GetProfileStringW( section, entry, defaultValue ).GetString( ) );
@@ -643,30 +643,30 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_
 	}
 
 
-void CRegistryUser::SetProfileInt( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const INT value ) {
-	ASSERT( wcslen( entry ) != 0 );
-	if ( wcslen( entry ) == 0 ) {
+void CRegistryUser::SetProfileInt( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const INT value ) noexcept {
+	ASSERT( ::wcslen( entry ) != 0 );
+	if ( ::wcslen( entry ) == 0 ) {
 		displayWindowsMsgBoxWithMessage( L"can set a registry key with an empty string!" );
 		return;
 		}
 	AfxGetApp( )->WriteProfileInt( section, entry, value );
 	}
 
-UINT CRegistryUser::GetProfileInt_( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const INT defaultValue ) {
-	ASSERT( wcslen( entry ) != 0 );
-	if ( wcslen( entry ) == 0 ) {
+UINT CRegistryUser::GetProfileInt_( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const INT defaultValue ) noexcept {
+	ASSERT( ::wcslen( entry ) != 0 );
+	if ( ::wcslen( entry ) == 0 ) {
 		displayWindowsMsgBoxWithMessage( L"can Get a registry key with an empty string!(aborting!)" );
 		std::terminate( );
 		}
 	return AfxGetApp( )->GetProfileIntW( section, entry, defaultValue );
 	}
 
-void CRegistryUser::SetProfileBool( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const bool value ) {
+void CRegistryUser::SetProfileBool( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const bool value ) noexcept {
 	const BOOL value_to_set = ( ( value ) ? TRUE : FALSE );
 	SetProfileInt( section, entry, value_to_set );
 	}
 
-bool CRegistryUser::GetProfileBool( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const bool defaultValue ) {
+bool CRegistryUser::GetProfileBool( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_ const bool defaultValue ) noexcept {
 	return GetProfileInt_( section, entry, defaultValue ) != 0;
 	}
 

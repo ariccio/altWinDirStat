@@ -38,29 +38,29 @@ public:
 	// "Page size" is always 10 Pixel
 
 protected:
-	void Initialize       (                             );
-	void CalcSizes        (                             ) ;
-	void NotifyParent     (                             ) const;
-	void RemoveTimer      (                                  );
-	void PaintBackground  ( _In_ CDC& pdc                    );
-	void PaintGripper     ( _In_ CDC& pdc                    );
-	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              );
-	void DoDrag           ( _In_ const POINT point                );
-	void DoPage           ( _In_ const POINT point                );
-	void HighlightGripper ( _In_ const bool on );
-	void Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 );
+	void Initialize       (                             ) noexcept;
+	void CalcSizes        (                             ) noexcept;
+	void NotifyParent     (                             ) const noexcept;
+	void RemoveTimer      (                                  ) noexcept;
+	void PaintBackground  ( _In_ CDC& pdc                    ) noexcept;
+	void PaintGripper     ( _In_ CDC& pdc                    ) noexcept;
+	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              ) noexcept;
+	void DoDrag           ( _In_ const POINT point                ) noexcept;
+	void DoPage           ( _In_ const POINT point                ) noexcept;
+	void HighlightGripper ( _In_ const bool on ) noexcept;
+	void Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 ) noexcept;
 
-	void InternToExtern( ) {
+	void InternToExtern( ) noexcept {
 		m_externalPos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.x ) ) * static_cast<DOUBLE>( m_externalRange.cx ) / static_cast<DOUBLE>( m_range.cx ) + 0.5 ) * signum( m_pos.x );
 		m_externalPos.y = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.y ) ) * static_cast<DOUBLE>( m_externalRange.cy ) / static_cast<DOUBLE>( m_range.cy ) + 0.5 ) * signum( m_pos.y );
 		}
 
-	void ExternToIntern( ) {
+	void ExternToIntern( ) noexcept {
 		m_pos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_externalPos.x ) ) * static_cast<DOUBLE>( m_range.cx ) / static_cast<DOUBLE>( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
 		m_pos.y = static_cast<INT>( static_cast<DOUBLE>( abs( m_externalPos.y ) ) * static_cast<DOUBLE>( m_range.cy ) / static_cast<DOUBLE>( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
 		}
 
-	void InstallTimer( ) {
+	void InstallTimer( ) noexcept {
 		RemoveTimer( );
 		/*
 _AFXWIN_INLINE UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT nElapse,
@@ -85,7 +85,7 @@ _AFXWIN_INLINE UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT nElapse,
 		m_timer = temp_timer_value;
 		}
 
-	RECT GetGripperRect( ) const {
+	RECT GetGripperRect( ) const noexcept {
 		RECT rc { -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 };
 		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 		VERIFY( ::OffsetRect( &rc, m_zero.x, m_zero.y ) );

@@ -23,6 +23,10 @@ class CMainFrame;
 class CDirstatApp;
 
 // The "Document" class. Owner of the root item and various other data (see data members).
+//CDocument decls are in:
+//	C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxwin.h:5764
+//CDocument source is in:
+//	C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\doccore.cpp
 class CDirstatDoc final : public CDocument {
 protected:
 	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
@@ -38,13 +42,21 @@ protected:
 	  virtual CRuntimeClass* GetRuntimeClass() const; \
 	  static CObject* PASCAL CreateObject();
 	*/
-	DECLARE_DYNCREATE(CDirstatDoc)
+	//DECLARE_DYNCREATE(CDirstatDoc)
+
+public: 
+	static const CRuntimeClass classCDirStatDoc;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+
+	static CObject* PASCAL CreateObject();
+
+private:
+	DISALLOW_COPY_AND_ASSIGN(CDirstatDoc);
 
 public:
 
 	virtual ~CDirstatDoc( ) final;
 
-	DISALLOW_COPY_AND_ASSIGN( CDirstatDoc );
 
 	virtual void     DeleteContents        (                                                      ) override final;
 	virtual BOOL     OnNewDocument         (                                                      ) override final;
@@ -69,7 +81,7 @@ public:
 	//We need a getter (NOT public data member) because we may need to do work before accessing.
 	_Ret_notnull_ const std::vector<SExtensionRecord>* GetExtensionRecords ( );
 	
-	bool   IsRootDone    ( ) const;
+	bool   IsRootDone    ( ) const noexcept;
 
 protected:
 	
@@ -99,8 +111,20 @@ public:
 	LARGE_INTEGER                                m_searchStartTime;
 	CMainFrame*                                  m_frameptr;
 	CDirstatApp*                                 m_appptr;
-protected:
+	/*
 	DECLARE_MESSAGE_MAP()
+	--becomes--
+protected: \
+	static const AFX_MSGMAP* PASCAL GetThisMessageMap(); \
+	virtual const AFX_MSGMAP* GetMessageMap() const; \
+
+	*/
+	//DECLARE_MESSAGE_MAP()
+protected:
+	static const AFX_MSGMAP* PASCAL GetThisMessageMap();
+	virtual const AFX_MSGMAP* GetMessageMap() const;
+
+public:
 	afx_msg void OnUpdateEditCopy( _In_ CCmdUI* pCmdUI );
 	afx_msg void OnEditCopy( );
 	
@@ -114,6 +138,6 @@ public:
 	};
 
 // BUGBUG: TODO: EVIL GLOBAL! The document is needed in many places.
-extern CDirstatDoc *GetDocument();
+extern CDirstatDoc *GetDocument() noexcept;
 
 #endif

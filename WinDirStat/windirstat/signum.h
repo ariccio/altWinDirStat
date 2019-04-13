@@ -13,7 +13,7 @@ WDS_FILE_INCLUDE_MESSAGE
 //  (a): warning (C4711, (function selected for automatic inlining))
 //  (b): unnecessary code generation/unreferenced inline function removal at link time
 template<class T>
-inline INT signum( const T x ) {
+inline INT signum( const T x ) noexcept {
 	static_assert( std::is_pod<T>::value, "what the hell are you doing, trying to use a non-pod datatype??" );
 
 	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );

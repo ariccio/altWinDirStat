@@ -190,7 +190,7 @@ SExtensionRecord::SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint6
 //	}
 
 
-SExtensionRecord& SExtensionRecord::operator=( SExtensionRecord&& in ) {
+SExtensionRecord& SExtensionRecord::operator=( SExtensionRecord&& in ) noexcept {
 	files = std::move( in.files );
 	bytes = std::move( in.bytes );
 	ext = std::move( in.ext );
@@ -198,12 +198,12 @@ SExtensionRecord& SExtensionRecord::operator=( SExtensionRecord&& in ) {
 	return *this;
 	}
 
-const bool SExtensionRecord::compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const {
+const bool SExtensionRecord::compareSExtensionRecordByExtensionAlpha( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const noexcept {
 	return ( lhs.ext.compare( rhs.ext ) < 0 );
 	}
 
 //Yes, this is used!
-SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) {
+SExtensionRecord::SExtensionRecord( SExtensionRecord&& in ) noexcept {
 	ext = std::move( in.ext );
 	files = std::move( in.files );
 	bytes = std::move( in.bytes );

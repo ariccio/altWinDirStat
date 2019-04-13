@@ -26,15 +26,18 @@ class CTypeView;
 class CDirstatApp;
 
 // WDSOptionsPropertySheet. The options dialog.
-class WDSOptionsPropertySheet final : public CPropertySheet {
+struct WDSOptionsPropertySheet final : public CPropertySheet {
 	/*
 #define DECLARE_DYNAMIC(class_name) \
 public: \
 	static const CRuntimeClass class##class_name; \
 	virtual CRuntimeClass* GetRuntimeClass() const; \
 	*/
-	DECLARE_DYNAMIC(WDSOptionsPropertySheet)
-public:
+	//DECLARE_DYNAMIC(WDSOptionsPropertySheet)
+
+	static const CRuntimeClass classWDSOptionsPropertySheet;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+
 	DISALLOW_COPY_AND_ASSIGN( WDSOptionsPropertySheet );
 
 	WDSOptionsPropertySheet     (                                        ) : CPropertySheet( IDS_WINDIRSTAT_SETTINGS ) { }
@@ -43,20 +46,19 @@ public:
 	};
 
 // WDSSplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
-class WDSSplitterWnd final : public CSplitterWnd {
-public:
+struct WDSSplitterWnd final : public CSplitterWnd {
 	DISALLOW_COPY_AND_ASSIGN( WDSSplitterWnd );
 
 	WDSSplitterWnd::WDSSplitterWnd( _In_z_ PCWSTR const name );
 
-	void RestoreSplitterPos( _In_ const DOUBLE default_pos ) {
+	void RestoreSplitterPos( _In_ const DOUBLE default_pos ) noexcept {
 		SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );
 		}
 
 
 
 	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
-	void            SetSplitterPos     ( _In_ const DOUBLE pos         );
+	void            SetSplitterPos     ( _In_ const DOUBLE pos         ) noexcept;
 
 	PCWSTR const m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos = 0.5;			// Current split ratio
@@ -105,13 +107,13 @@ public:
 // CMainFrame. The main application window.
 //
 class CMainFrame final : public CFrameWnd {
+	DISALLOW_COPY_AND_ASSIGN(CMainFrame);
 public:
 	static CMainFrame* _theFrame;
 
 	//Keeping CMainFrame's constructor in the implementation file means that we don't need to anything about global_strings, in the header.
 	CMainFrame( );
 
-	DECLARE_DYNCREATE(CMainFrame)
 	/*
 #define DECLARE_DYNAMIC(class_name) \
 public: \
@@ -122,8 +124,11 @@ public: \
 	DECLARE_DYNAMIC(class_name) \
 	static CObject* PASCAL CreateObject();
 	*/
+	//DECLARE_DYNCREATE(CMainFrame)
+	static const CRuntimeClass classCMainFrame;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+	static CObject* PASCAL CreateObject() noexcept;
 
-	DISALLOW_COPY_AND_ASSIGN( CMainFrame );
 
 	_Ret_maybenull_ static CMainFrame* GetTheFrame( );
 
@@ -133,28 +138,28 @@ public: \
 	
 	
 	_At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-	void   MoveFocus                 ( _In_ const LOGICAL_FOCUS lf                                                             );
+	void   MoveFocus                 ( _In_ const LOGICAL_FOCUS lf                                                             ) noexcept;
 	
 	_At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-	void   SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf                                                             );
-	void   InitialShowWindow         (                                                                                                );
-	void   RestoreGraphView          (                                                                                                );
-	void   RestoreTypeView           (                                                                                                );
-	void   SetSelectionMessageText   (                                                                                                );
+	void   SetLogicalFocus           ( _In_ const LOGICAL_FOCUS lf                                                             ) noexcept;
+	void   InitialShowWindow         (                                                                                                ) noexcept;
+	void   RestoreGraphView          (                                                                                                ) noexcept;
+	void   RestoreTypeView           (                                                                                                ) noexcept;
+	void   SetSelectionMessageText   (                                                                                                ) noexcept;
 	
-	void   valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init );
+	void   valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) noexcept;
 
-	void   invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init );
+	void   invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) noexcept;
 
 	_Pre_satisfies_( searchTiming >= compressed_file_timing )
 	void   WriteTimeToStatusBar      ( _In_ const DOUBLE drawTiming, _In_ const DOUBLE searchTiming, _In_ const DOUBLE fileNameLength, _In_ const DOUBLE compressed_file_timing );
-	size_t getExtDataSize            (                                                                                                ) const;
+	size_t getExtDataSize            (                                                                                                ) const noexcept;
 
-	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CDirstatView* GetDirstatView   ( ) const noexcept;
 	private:
-	_Must_inspect_result_ _Ret_maybenull_ CGraphView*   GetGraphView     ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CGraphView*   GetGraphView     ( ) const noexcept;
 	public:
-	_Must_inspect_result_ _Ret_maybenull_ CTypeView*    GetTypeView      ( ) const;
+	_Must_inspect_result_ _Ret_maybenull_ CTypeView*    GetTypeView      ( ) const noexcept;
 
 	public:
 	virtual BOOL OnCreateClient    (         LPCREATESTRUCT  lpcs, CCreateContext* pContext ) override final;

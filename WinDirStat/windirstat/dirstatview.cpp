@@ -24,7 +24,7 @@ inline void trace_OnEraseBkgnd( ) {
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_LoadingPerst( ) {
+inline void trace_LoadingPerst( ) noexcept {
 	TRACE( _T( "Loading persistent attributes....\r\n" ) );
 	}
 
@@ -34,7 +34,7 @@ inline void trace_ListStyleCha( ) {
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_SelectionCha( ) {
+inline void trace_SelectionCha( ) noexcept {
 	TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
 	}
 
@@ -51,11 +51,11 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_COMMAND(ID_POPUP_TOGGLE, &( CDirstatView::OnPopupToggle ) )
 END_MESSAGE_MAP()
 
-_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) {
+_Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) noexcept {
 	return static_cast<CDirstatDoc*>( m_pDocument );
 	}
 
-void CDirstatView::OnUpdateHINT_NEWROOT( ) {
+void CDirstatView::OnUpdateHINT_NEWROOT( ) noexcept {
 	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {

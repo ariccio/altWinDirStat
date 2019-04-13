@@ -17,16 +17,16 @@ class CTreeListItem;
 class CGraphView;
 class CDirstatDoc;
 
-void trace_typeview_used_stack( );
-void trace_typeview_used_heap( );
-void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used );
-void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used );
-void trace_stack_uses_percent( _In_ const double stack_v_total );
-void trace_stack_size_alloc( _In_ const double stack_size_av );
-void trace_heap__uses_percent( _In_ const double heap__v_total );
-void trace_heap__size_alloc( _In_ const double heap__size_av );
+void trace_typeview_used_stack( ) noexcept;
+void trace_typeview_used_heap( ) noexcept;
+void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used ) noexcept;
+void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used ) noexcept;
+void trace_stack_uses_percent( _In_ const double stack_v_total ) noexcept;
+void trace_stack_size_alloc( _In_ const double stack_size_av ) noexcept;
+void trace_heap__uses_percent( _In_ const double heap__v_total ) noexcept;
+void trace_heap__size_alloc( _In_ const double heap__size_av ) noexcept;
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
-class CTreemap {
+class CTreemap final {
 public:
 	CTreemap( );
 
@@ -65,19 +65,19 @@ public:
 	~CTreemap( ) = default;
 #endif
 
-	void UpdateCushionShading      ( _In_ const bool               newVal                                   );
-	void SetOptions                ( _In_ const Treemap_Options&           options                                  );
+	void UpdateCushionShading      ( _In_ const bool               newVal                                   ) noexcept;
+	void SetOptions                ( _In_ const Treemap_Options&           options                                  ) noexcept;
 	void RecurseCheckTree          ( _In_ const CTreeListItem* const item                                     ) const;
 #ifdef DEBUG
-	void validateRectangle         ( _In_ const CTreeListItem* const child, _In_ const RECT             rc  ) const;
+	void validateRectangle         ( _In_ const CTreeListItem* const child, _In_ const RECT             rc  ) const noexcept;
 #endif
-	void compensateForGrid         ( _Inout_    RECT* const             rc,    _In_ const HDC hDC, _In_ const HDC hAttribDC ) const;
+	void compensateForGrid         ( _Inout_    RECT* const             rc,    _In_ const HDC hDC, _In_ const HDC hAttribDC ) const noexcept;
 
 	void DrawTreemap               ( _In_ const HDC hOffscreen_buffer, _Inout_    RECT* const rc, _In_ const CTreeListItem* const root,  _In_ const Treemap_Options& options, _In_ const HDC hAttribDC );
 
-	void DrawColorPreview          ( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL );
+	void DrawColorPreview          ( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF           color, _In_     const Treemap_Options* const options = NULL ) noexcept;
 
-	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeListItem* FindItemByPoint( _In_ const CTreeListItem* const root, _In_ const POINT point, _In_opt_ const CDirstatDoc* const test_doc ) const;
+	_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeListItem* FindItemByPoint( _In_ const CTreeListItem* const root, _In_ const POINT point, _In_opt_ const CDirstatDoc* const test_doc ) const noexcept;
 
 
 protected:
@@ -105,19 +105,19 @@ protected:
 
 	//SQV -> SequoiaView
 	void SQV_DrawChildren  ( _In_ const HDC hOffscreen_buffer,                       _In_ const CTreeListItem* const parent, _In_ const DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) const;
-	void RenderLeaf        ( _In_ const HDC hOffscreen_buffer,          _In_ const CTreeListItem* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const;
-	void RenderRectangle   ( _In_ const HDC  offscreen_buffer,          _In_ const RECT&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const;
+	void RenderLeaf        ( _In_ const HDC hOffscreen_buffer,          _In_ const CTreeListItem* const item,   _In_ const DOUBLE ( &surface )[ 4 ]                   ) const noexcept;
+	void RenderRectangle   ( _In_ const HDC  offscreen_buffer,          _In_ const RECT&             rc,     _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const noexcept;
 
 	//if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
 	void SQV_put_children_into_their_places( _In_ const size_t& rowBegin, _In_ const size_t& rowEnd, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::uint64_t& sumOfSizesOfChildrenInRow, _In_ const int& heightOfNewRow, _In_ const bool horizontal, _In_ const RECT& remaining, _In_ const HDC hOffscreen_buffer, _In_ const DOUBLE( &surface )[ 4 ], _In_ const DOUBLE& scaleFactor, _In_ const DOUBLE h, _In_ const int& widthOfRow ) const;
 
-	bool IsCushionShading( ) const;
+	bool IsCushionShading( ) const noexcept;
 
 private:
 
 	void DrawCushion_with_heap( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1024, SIZE_T_MAX ) const size_t vecSize, _In_ const HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
 
-	void DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const;
+	void DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const noexcept;
 
 public:
 	

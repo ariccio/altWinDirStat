@@ -36,28 +36,84 @@ protected:
 	CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT, GetDocument( ) ) {// Created by MFC only
 		m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 		}
+
+private:
 	DISALLOW_COPY_AND_ASSIGN( CDirstatView );
 
-	DECLARE_DYNCREATE( CDirstatView )
+protected:
+	/*
+	// not serializable, but dynamically constructable
+	#define DECLARE_DYNCREATE(class_name) \
+		DECLARE_DYNAMIC(class_name) \
+		static CObject* PASCAL CreateObject();
+	Sooo, DECLARE_DYNCREATE( CDirstatView )
+	--becomes--
+		DECLARE_DYNAMIC(CDirstatView) \
+		static CObject* PASCAL CreateObject();
+	--becomes--
+public: 
+	static const CRuntimeClass classCDirstatView; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \
+		static CObject* PASCAL CreateObject();
+
+	*/
+	//DECLARE_DYNCREATE( CDirstatView )
+public:
+	static const CRuntimeClass classCDirstatView;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+	static CObject* PASCAL CreateObject();
 
 public:
 
 	virtual ~CDirstatView( ) final = default;
 
-	void SysColorChanged( ) {
+	void SysColorChanged( ) noexcept {
 		m_treeListControl.SysColorChanged( );
 		}
 
 protected:
 	virtual BOOL PreCreateWindow( CREATESTRUCT& cs ) override final {
+		
+		/*
+		From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\viewcore.cpp:67:
+		BOOL CView::PreCreateWindow(CREATESTRUCT & cs)
+		{
+			ASSERT(cs.style & WS_CHILD);
+
+			if (cs.lpszClass == NULL)
+			{
+				VERIFY(AfxDeferRegisterClass(AFX_WNDFRAMEORVIEW_REG));
+				cs.lpszClass = _afxWndFrameOrView;  // COLOR_WINDOW background
+			}
+
+			if (cs.style & WS_BORDER)
+			{
+				cs.dwExStyle |= WS_EX_CLIENTEDGE;
+				cs.style &= ~WS_BORDER;
+			}
+
+			return TRUE;
+		}
+
+		*/
 		return CView::PreCreateWindow( cs );
 		}
 
 	virtual void OnInitialUpdate( ) override final {
 		/*
+		From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\viewcore.cpp:189:
 		void CView::OnInitialUpdate()
 		{
 			OnUpdate(NULL, 0, NULL);        // initial update
+		}
+
+		void CView::OnUpdate(CView* pSender, LPARAM, CObject* )
+		{
+		ASSERT(pSender != this);
+		UNUSED(pSender);     // unused in release builds
+
+		// invalidate the entire pane, erase background too
+		Invalidate(TRUE);
 		}
 		*/
 
@@ -69,6 +125,13 @@ protected:
 	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
 		ASSERT_VALID( pDC );
+
+		/*
+		from C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\viewcore.cpp:211:
+		void CView::OnDraw(CDC*)
+		{
+		}
+		*/
 		CView::OnDraw( pDC );
 		}
 	
@@ -84,7 +147,7 @@ protected:
 	*/
 
 	//Keeping GetDocument in the implementation file means that we don't need to anything about CDirstatDoc in the header.
-	_Must_inspect_result_ CDirstatDoc* GetDocument( );
+	_Must_inspect_result_ CDirstatDoc* GetDocument( ) noexcept;
 
 	virtual void OnUpdate( CView* pSender, LPARAM lHint, CObject* pHint ) override final {
 		switch ( lHint )
@@ -113,7 +176,7 @@ protected:
 		}
 
 	//Keeping OnUpdateHINT_NEWROOT in the implementation file means that we don't need to anything about CDirstatDoc in the header.
-	void OnUpdateHINT_NEWROOT( );
+	void OnUpdateHINT_NEWROOT( ) noexcept;
 
 	//Keeping OnUpdateHINT_SELECTIONCHANGED in the implementation file means that we don't need to anything about CDirstatDoc in the header.
 	void OnUpdateHINT_SELECTIONCHANGED( );
@@ -121,7 +184,7 @@ protected:
 	//Keeping OnUpdateHINT_SHOWNEWSELECTION in the implementation file means that we don't need to anything about CDirstatDoc in the header.
 	void OnUpdateHINT_SHOWNEWSELECTION( );
 
-	void OnUpdateHINT_LISTSTYLECHANGED( ) {
+	void OnUpdateHINT_LISTSTYLECHANGED( ) noexcept {
 		
 		trace_ListStyleCha( );
 		const auto Options = GetOptions( );
@@ -130,7 +193,7 @@ protected:
 		m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
 
-	void SetTreeListControlOptions( ) {
+	void SetTreeListControlOptions( ) noexcept {
 		const auto Options = GetOptions( );
 		m_treeListControl.ShowGrid            ( Options->m_listGrid             );
 		m_treeListControl.ShowStripes         ( Options->m_listStripes          );
@@ -139,7 +202,19 @@ protected:
 		}
 
 protected:
-	DECLARE_MESSAGE_MAP()
+
+	/*
+	#define DECLARE_MESSAGE_MAP() \
+	protected: \
+		static const AFX_MSGMAP* PASCAL GetThisMessageMap(); \
+		virtual const AFX_MSGMAP* GetMessageMap() const; \
+
+	*/
+	//DECLARE_MESSAGE_MAP()
+protected:
+		static const AFX_MSGMAP* PASCAL GetThisMessageMap(); \
+		virtual const AFX_MSGMAP* GetMessageMap() const; \
+
 	afx_msg void OnSize( UINT nType, INT cx, INT cy ) {
 		CWnd::OnSize( nType, cx, cy );
 		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx

@@ -785,11 +785,11 @@ CTreemap::CTreemap( ) {
 #endif
 	}
 
-void CTreemap::UpdateCushionShading( _In_ const bool newVal ) { 
+void CTreemap::UpdateCushionShading( _In_ const bool newVal ) noexcept {
 	IsCushionShading_current = newVal;
 	}
 
-void CTreemap::SetOptions( _In_ const Treemap_Options& options ) {
+void CTreemap::SetOptions( _In_ const Treemap_Options& options ) noexcept {
 	m_options = options;
 
 	// Derive normalized vector here for performance
@@ -832,7 +832,7 @@ void CTreemap::RecurseCheckTree( _In_ const CTreeListItem* const item ) const {
 
 #endif
 
-void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ const HDC hDC, _In_ const HDC hAttribDC ) const {
+void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ const HDC hDC, _In_ const HDC hAttribDC ) const noexcept {
 	if ( m_options.grid ) {
 		normalize_RECT( rc );
 		///*
@@ -940,7 +940,7 @@ void CTreemap::DrawTreemap( _In_ const HDC hOffscreen_buffer, _Inout_ RECT* cons
 	}
 
 #ifdef DEBUG
-void CTreemap::validateRectangle( _In_ const CTreeListItem* const child, _In_ const RECT rc ) const {
+void CTreemap::validateRectangle( _In_ const CTreeListItem* const child, _In_ const RECT rc ) const noexcept {
 #ifdef _DEBUG
 	RECT rcChild = child->TmiGetRectangle( );
 
@@ -966,7 +966,7 @@ void CTreemap::validateRectangle( _In_ const CTreeListItem* const child, _In_ co
 	}
 #endif
 
-_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeListItem* CTreemap::FindItemByPoint( _In_ const CTreeListItem* const item, _In_ const POINT point, _In_opt_ const CDirstatDoc* const test_doc ) const {
+_Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeListItem* CTreemap::FindItemByPoint( _In_ const CTreeListItem* const item, _In_ const POINT point, _In_opt_ const CDirstatDoc* const test_doc ) const noexcept {
 	/*
 	  In the resulting treemap, find the item below a given coordinate. Return value can be NULL - the only case that this function returns NULL is that point is not inside the rectangle of item.
 
@@ -1016,7 +1016,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeLis
 	return item;
 	}
 
-void CTreemap::DrawColorPreview( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) {
+void CTreemap::DrawColorPreview( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) noexcept {
 	// Draws a sample rectangle in the given style (for color legend)
 	if ( options != NULL ) {
 		CTreemap::SetOptions( *options );
@@ -1549,11 +1549,11 @@ void CTreemap::SQV_DrawChildren( _In_ const HDC hOffscreen_buffer, _In_ const CT
 
 	}
 
-bool CTreemap::IsCushionShading( ) const {
+bool CTreemap::IsCushionShading( ) const noexcept {
 	return m_options.ambientLight < 1.0 && m_options.height > 0.0 && m_options.scaleFactor > 0.0;
 	}
 
-void CTreemap::RenderLeaf( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const {
+void CTreemap::RenderLeaf( _In_ const HDC hOffscreen_buffer, _In_ const CTreeListItem* const item, _In_ const DOUBLE ( &surface )[ 4 ] ) const noexcept {
 	// Leaves space for grid and then calls RenderRectangle()
 	RECT rc = item->TmiGetRectangle( );
 	if ( m_options.grid ) {
@@ -1577,7 +1577,7 @@ void CTreemap::RenderLeaf( _In_ const HDC hOffscreen_buffer, _In_ const CTreeLis
 	WDS_validateRectangle_DEBUG( item, rc );
 	}
 
-void CTreemap::RenderRectangle( _In_ const HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const {
+void CTreemap::RenderRectangle( _In_ const HDC offscreen_buffer, _In_ const RECT& rc, _In_ const DOUBLE ( &surface )[ 4 ], _In_ DWORD color ) const noexcept {
 	auto brightness = m_options.brightness;
 	if ( ( color bitand COLORFLAG_MASK ) == 0 ) {
 		ASSERT( color != 0 );
@@ -1743,7 +1743,7 @@ void CTreemap::DrawCushion( _In_ const HDC offscreen_buffer, _In_ const RECT& rc
 	}
 
 #pragma warning(suppress: 6262) //Function uses '37072' bytes of stack:  exceeds /analyze:stacksize '16384'.  Consider moving some data to heap.
-void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const {
+void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _In_range_( 1, 1024 ) const size_t vecSize, _In_ HDC offscreen_buffer, const _In_ RECT& rc, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t largestIndexWritten, _In_ const DOUBLE surface_0, _In_ const DOUBLE surface_1, _In_ const DOUBLE surface_2, _In_ const DOUBLE surface_3, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB ) const noexcept {
 	ASSERT( brightness <= 1 );
 	ASSERT( brightness >= 0 );
 
@@ -1977,42 +1977,42 @@ void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 
 #ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_typeview_used_stack( ) {
+void trace_typeview_used_stack( ) noexcept {
 	TRACE( _T( "typeview used the stack\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_typeview_used_heap( ) {
+void trace_typeview_used_heap( ) noexcept {
 	TRACE( _T( "typeview used the heap\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used ) {
+void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used ) noexcept {
 	TRACE( _T( "# of DrawCushion stack uses: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used ) {
+void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used ) noexcept {
 	TRACE( _T( "# of DrawCushion heap  uses: %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_stack_uses_percent( _In_ const double stack_v_total ) {
+void trace_stack_uses_percent( _In_ const double stack_v_total ) noexcept {
 	TRACE( _T( "%% of stack  uses/total         : %f\r\n" ), stack_v_total );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_stack_size_alloc( _In_ const double stack_size_av ) {
+void trace_stack_size_alloc( _In_ const double stack_size_av ) noexcept {
 	TRACE( _T( "avg size of stack alloc(pixles): %f\r\n" ), stack_size_av );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_heap__uses_percent( _In_ const double heap__v_total ) {
+void trace_heap__uses_percent( _In_ const double heap__v_total ) noexcept {
 	TRACE( _T( "%% of heap  uses/total         : %f\r\n" ), heap__v_total );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_heap__size_alloc( _In_ const double heap__size_av ) {
+void trace_heap__size_alloc( _In_ const double heap__size_av ) noexcept {
 	TRACE( _T( "avg size of heap alloc(pixles): %f\r\n" ), heap__size_av );
 	}
 #endif

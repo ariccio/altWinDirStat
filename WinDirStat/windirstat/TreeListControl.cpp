@@ -51,7 +51,7 @@ namespace {
 
 	//Compare_FILETIME compiles to only 4 instructions, and is only called once, conditionally.
 	//passing `lhs` & `rhs` by value cause WORSE codegen!
-	inline const INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) {
+	inline const INT Compare_FILETIME( const FILETIME& lhs, const FILETIME& rhs ) noexcept {
 		//duhh, there's a win32 function for this!
 		return ::CompareFileTime( &lhs, &rhs );
 		}
@@ -236,7 +236,7 @@ E.g.:
 ||This is the indentation/boxes. Drawing all other columns is trivial.
 
 */
-bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+bool CTreeListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept {
 	const RECT& rc_const = rc;
 	ASSERT( ( focusLeft != NULL ) && ( subitem >= 0 ) );
 
@@ -321,7 +321,7 @@ void CTreeListItem::SortChildren( _In_ const CTreeListControl* const ctrl ) {
 //	return static_cast< const CItemBranch* >( this )->size_recurse( );
 //	}
 
-INT CTreeListItem::GetSortAttributes( ) const {
+INT CTreeListItem::GetSortAttributes( ) const noexcept {
 	INT ret = 0;
 
 	// We want to enforce the order RHSACE with R being the highest priority attribute and E being the lowest priority attribute.
@@ -335,7 +335,7 @@ INT CTreeListItem::GetSortAttributes( ) const {
 	}
 
 
-DOUBLE CTreeListItem::GetFraction( ) const {
+DOUBLE CTreeListItem::GetFraction( ) const noexcept {
 	const auto myParent = m_parent;
 	if ( myParent == NULL ) {
 		return static_cast<DOUBLE>( 1.0 );//root item? must be whole!
@@ -353,7 +353,7 @@ DOUBLE CTreeListItem::GetFraction( ) const {
 
 //4,294,967,295  (4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 _Ret_range_( 0, 4294967295 )
-std::uint32_t CTreeListItem::files_recurse( ) const {
+std::uint32_t CTreeListItem::files_recurse( ) const noexcept {
 	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).files_recurse( ) ), decltype( std::declval<CTreeListItem>( ).m_child_info.m_child_info_ptr->m_childCount )>::value , "The return type of CItemBranch::files_recurse needs to be fixed!!" );
 
 	if ( m_child_info.m_child_info_ptr == nullptr ) {
@@ -370,6 +370,9 @@ std::uint32_t CTreeListItem::files_recurse( ) const {
 	const auto childCount = m_child_info.m_child_info_ptr->m_childCount;
 	const auto my_m_children = m_child_info.m_child_info_ptr->m_children.get( );
 	const rsize_t stack_alloc_threshold = 128;
+
+	// 4/13/2019:
+	// 	Heh, I forgot I did this little optimization. Very clever little trick! 
 	if ( childCount < stack_alloc_threshold ) {
 		std::uint32_t child_totals[ stack_alloc_threshold ];
 		for ( size_t i = 0; i < childCount; ++i ) {
@@ -393,7 +396,7 @@ std::uint32_t CTreeListItem::files_recurse( ) const {
 
 //Sometimes I just need to COMPARE the extension with a string. So, instead of copying/screwing with string internals, I'll just return a pointer to the substring.
 _Pre_satisfies_( this->m_child_info.m_child_info_ptr == nullptr ) 
-PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const {
+PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const noexcept {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
 
 	PCWSTR const resultPtrStr = ::PathFindExtensionW( m_name );
@@ -433,7 +436,7 @@ std::vector<const CTreeListItem*> CTreeListItem::size_sorted_vector_of_children(
 	}
 
 _Ret_range_( 0, UINT64_MAX )
-std::uint64_t CTreeListItem::size_recurse( ) const {
+std::uint64_t CTreeListItem::size_recurse( ) const noexcept {
 	static_assert( std::is_same<decltype( std::declval<CTreeListItem>( ).size_recurse( ) ), decltype( std::declval<CTreeListItem>( ).m_size )>::value , "The return type of CItemBranch::size_recurse needs to be fixed!!" );
 	//ASSERT( m_size != UINT64_ERROR );
 	//if ( m_type == IT_FILE ) {
@@ -494,7 +497,7 @@ void CTreeListItem::TmiSetRectangle( _In_ const RECT& rc ) const {
 	m_rect.bottom = static_cast<short>( rc.bottom );
 	}
 
-const COLORREF CTreeListItem::Concrete_ItemTextColor( ) const {
+const COLORREF CTreeListItem::Concrete_ItemTextColor( ) const noexcept {
 	if ( m_attr.invalid ) {
 		//return GetItemTextColor( true );
 		return RGB( 0xFF, 0x00, 0x00 );
@@ -511,7 +514,7 @@ const COLORREF CTreeListItem::Concrete_ItemTextColor( ) const {
 	}
 
 
-inline INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+inline INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept {
 	if ( other == this ) {
 		return 0;
 		}
@@ -548,12 +551,12 @@ inline INT CTreeListItem::concrete_compare( _In_ const CTreeListItem* const othe
 	return m_parent->concrete_compare( other->m_parent, subitem );
 	}
 
-INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+INT CTreeListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept {
 	const auto other = static_cast<const CTreeListItem *>( baseOther );
 	return CTreeListItem::concrete_compare( other, subitem );
 	}
 
-FILETIME CTreeListItem::FILETIME_recurse( ) const {
+FILETIME CTreeListItem::FILETIME_recurse( ) const noexcept {
 	if ( m_child_info.m_child_info_ptr == nullptr ) {
 		return m_lastChange;
 		}
@@ -599,7 +602,7 @@ size_t CTreeListItem::FindSortedChild( _In_ const CTreeListItem* const child, _I
 	}
 
 _Pre_satisfies_( this->m_parent != NULL )
-bool CTreeListItem::HasSiblings( ) const {
+bool CTreeListItem::HasSiblings( ) const noexcept {
 	if ( m_parent == NULL ) {
 		return false;
 		}
@@ -836,7 +839,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_LASTCHANGE( RANGE_ENUM_COL c
 	}
 
 _Pre_satisfies_( subitem == column::COL_ATTRIBUTES ) _Success_( SUCCEEDED( return ) )
-const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -854,7 +857,7 @@ const HRESULT CTreeListItem::WriteToStackBuffer_COL_ATTRIBUTES( RANGE_ENUM_COL c
 	}
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CTreeListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CTreeListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 	ASSERT( subitem != column::COL_NAME );
 	if ( subitem == column::COL_NAME ) {
 		displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
@@ -881,7 +884,7 @@ HRESULT CTreeListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENU
 	}
 
 
-INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const {
+INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const noexcept {
 	const CTreeListItem* const other = tlib;
 	switch ( subitem ) {
 			case column::COL_NAME:
@@ -905,7 +908,7 @@ INT CTreeListItem::CompareSibling( _In_ const CTreeListItem* const tlib, _In_ _I
 		}
 	}
 
-void CTreeListItem::refresh_sizeCache( ) {
+void CTreeListItem::refresh_sizeCache( ) noexcept {
 	//if ( m_type == IT_FILE ) {
 	if ( m_child_info.m_child_info_ptr == nullptr ) {
 		//ASSERT( m_childCount == 0 );
@@ -932,6 +935,9 @@ void CTreeListItem::refresh_sizeCache( ) {
 		//ASSERT( m_child_info->m_childCount == m_childCount );
 
 		const std::uint32_t childCount = m_child_info.m_child_info_ptr->m_childCount;
+		
+		// 4/13/2019:
+		// 	Heh, I forgot I did this little optimization. Very clever little trick!
 		const rsize_t stack_alloc_threshold = 128;
 		if ( childCount < stack_alloc_threshold ) {
 			std::uint64_t child_totals[ stack_alloc_threshold ];
@@ -960,7 +966,7 @@ void CTreeListItem::refresh_sizeCache( ) {
 	}
 
 
-_Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
+_Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const noexcept {
 	const auto myLength = static_cast<DOUBLE>( m_name_length );
 	DOUBLE childrenTotal = 0;
 	//TODO: take advantage of block heap allocation in this
@@ -972,6 +978,9 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const {
 		
 		const auto childCount = m_child_info.m_child_info_ptr->m_childCount;
 		const auto my_m_children = m_child_info.m_child_info_ptr->m_children.get( );
+
+		// 4/13/2019:
+		// 	Heh, I forgot I did this little optimization. Very clever little trick!
 		const rsize_t stack_alloc_threshold = 128;
 		if ( childCount < stack_alloc_threshold ) {
 			DOUBLE children_totals[ stack_alloc_threshold ] = { 0 };
@@ -1343,7 +1352,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 	//CWnd::SetRedraw( TRUE );
 	}
 
-void CTreeListControl::InitializeNodeBitmaps( ) const {
+void CTreeListControl::InitializeNodeBitmaps( ) const noexcept {
 	
 	m_bmNodes0.Detach( );
 	m_bmNodes1.Detach( );
@@ -1504,7 +1513,7 @@ void CTreeListControl::OnSetFocus( _In_ CWnd* pOldWnd ) {
 //	InitializeNodeBitmaps( );
 //	}
 
-BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID ) {
+BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ const UINT nID ) noexcept {
 	CTreeListControl::InitializeNodeBitmaps( );
 
 	dwStyle or_eq ( LVS_OWNERDRAWFIXED bitor LVS_SINGLESEL );
@@ -1514,19 +1523,39 @@ BOOL CTreeListControl::CreateEx( _In_ const DWORD dwExStyle, _In_ DWORD dwStyle,
 
 
 _Must_inspect_result_ _Success_( return != NULL ) _Ret_maybenull_
-CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const {
+CTreeListItem* CTreeListControl::GetItem( _In_ _In_range_( 0, INT_MAX ) const int i ) const noexcept {
 	ASSERT( i >= 0 );
+	/*
+	From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxcmn.inl:
+	_AFXCMN_INLINE int CListCtrl::GetItemCount() const
+		{ ASSERT(::IsWindow(m_hWnd)); return (int) ::SendMessage(m_hWnd, LVM_GETITEMCOUNT, 0, 0L); }
+	*/
+
 	const auto itemCount = CListCtrl::GetItemCount( );
 #ifdef DEBUG
 	ASSERT( i < itemCount );
 #endif
 	if ( i < itemCount ) {
+		/*
+		From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\winctrl2.cpp:581:
+		DWORD_PTR CListCtrl::GetItemData(int nItem) const
+		{
+			ASSERT(::IsWindow(m_hWnd));
+			LVITEM lvi;
+			memset(&lvi, 0, sizeof(LVITEM));
+			lvi.iItem = nItem;
+			lvi.mask = LVIF_PARAM;
+			VERIFY(::SendMessage(m_hWnd, LVM_GETITEM, 0, (LPARAM)&lvi));
+			return lvi.lParam;
+		}
+
+		*/
 		return reinterpret_cast< CTreeListItem* >( CListCtrl::GetItemData( i ) );
 		}
 	return NULL;
 	}
 
-void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) {
+void CTreeListControl::SetRootItem( _In_opt_ const CTreeListItem* const root ) noexcept {
 	VERIFY( CListCtrl::DeleteAllItems( ) );
 	if ( root == NULL ) {
 		return;
@@ -1569,7 +1598,7 @@ int CTreeListControl::EnumNode( _In_ const CTreeListItem* const item ) const {
 	return static_cast<int>( ENUM_NODE::NODE_END );
 	}
 
-RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, _In_ HDC hDC, _Inout_ RECT& rc, _Inout_ RECT& rcRest ) const {
+RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, _In_ HDC hDC, _Inout_ RECT& rc, _Inout_ RECT& rcRest ) const noexcept {
 	//bool didBitBlt = false;
 	RECT rcPlusMinus;
 	rcRest.left += 3;
@@ -1614,7 +1643,7 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 	return rcPlusMinus;
 	}
 
-RECT CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ HDC hDC, _Inout_ RECT& rc ) const {
+RECT CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ HDC hDC, _Inout_ RECT& rc ) const noexcept {
 	//ASSERT_VALID( pdc );
 	RECT rcRest = rc;
 	

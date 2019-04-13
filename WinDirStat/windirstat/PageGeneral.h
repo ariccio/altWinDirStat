@@ -20,14 +20,26 @@ class CDirstatApp;
 
 // CPageGeneral. "Settings" property page "General".
 class CPageGeneral final : public CPropertyPage {
-	DECLARE_DYNAMIC(CPageGeneral)
+	DISALLOW_COPY_AND_ASSIGN(CPageGeneral);
+
+	/*
+	#define DECLARE_DYNAMIC(class_name) \
+	public: \
+		static const CRuntimeClass class##class_name; \
+		virtual CRuntimeClass* GetRuntimeClass() const; \
+
+	*/
+	//DECLARE_DYNAMIC(CPageGeneral)
+public:
+	static const CRuntimeClass classCPageGeneral;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+
 	enum {
 		IDD = IDD_PAGE_GENERAL
 		};
 
 public:
 
-	DISALLOW_COPY_AND_ASSIGN( CPageGeneral );
 
 	CPageGeneral( CDirstatApp* app ) : CPropertyPage( CPageGeneral::IDD ), m_followMountPoints( FALSE ), m_followJunctionPoints( FALSE ), m_humanFormat( FALSE ), m_listGrid( FALSE ), m_listStripes( FALSE ), m_listFullRowSelection( FALSE ),  m_appptr( app ) { }
 

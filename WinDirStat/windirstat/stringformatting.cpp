@@ -316,7 +316,7 @@ std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, const bool humanF
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void wds_fmt::write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) {
+void wds_fmt::write_BAD_FMT( _Out_writes_z_( 8 ) _Pre_writable_size_( 8 ) _Post_readable_size_( 8 ) PWSTR pszFMT, _Out_ rsize_t& chars_written ) noexcept {
 	pszFMT[ 0 ] = 'B';
 	pszFMT[ 1 ] = 'A';
 	pszFMT[ 2 ] = 'D';

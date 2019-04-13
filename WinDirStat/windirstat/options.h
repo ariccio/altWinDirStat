@@ -20,18 +20,18 @@ class CDirstatApp;
 
 
 namespace registry_strings {
-	_Null_terminated_ const wchar_t sectionPersistence[ ] = { _T( "persistence" ) };
-	_Null_terminated_ const wchar_t entryShowFileTypes[ ] = { _T( "showFileTypes" ) };
-	_Null_terminated_ const wchar_t entryShowStatusbar[ ] = { _T( "showStatusbar" ) };
-	_Null_terminated_ const wchar_t entryShowTreemap[ ] = { _T( "showTreemap" ) };
-	_Null_terminated_ const wchar_t sectionBarState[ ] = { _T( "persistence\\barstate" ) };
-	_Null_terminated_ const wchar_t entryConfigPositionX[ ] = { _T( "configPositionX" ) };
-	_Null_terminated_ const wchar_t entryConfigPositionY[ ] = { _T( "configPositionY" ) };
-	_Null_terminated_ const wchar_t entryConfigPage[ ] = { _T( "configPage" ) };
-	_Null_terminated_ const wchar_t entrySelectDrivesFolder[ ] = { _T( "selectDrivesFolder" ) };
-	_Null_terminated_ const wchar_t entrySelectDrivesRadio[ ] = { _T( "selectDrivesRadio" ) };
-	_Null_terminated_ const wchar_t entryShowDeleteWarning[ ] = { _T( "showDeleteWarning" ) };
-	_Null_terminated_ const wchar_t entryColumnWidthsS[ ] = { _T( "%s-columnWidths" ) };
+	_Null_terminated_ constexpr const wchar_t sectionPersistence[ ] = { L"persistence" };
+	_Null_terminated_ constexpr const wchar_t entryShowFileTypes[ ] = { L"showFileTypes" };
+	_Null_terminated_ constexpr const wchar_t entryShowStatusbar[ ] = { L"showStatusbar" };
+	_Null_terminated_ constexpr const wchar_t entryShowTreemap[ ] = { L"showTreemap" };
+	_Null_terminated_ constexpr const wchar_t sectionBarState[ ] = { L"persistence\\barstate" };
+	_Null_terminated_ constexpr const wchar_t entryConfigPositionX[ ] = { L"configPositionX" };
+	_Null_terminated_ constexpr const wchar_t entryConfigPositionY[ ] = { L"configPositionY" };
+	_Null_terminated_ constexpr const wchar_t entryConfigPage[ ] = { L"configPage" };
+	_Null_terminated_ constexpr const wchar_t entrySelectDrivesFolder[ ] = { L"selectDrivesFolder" };
+	_Null_terminated_ constexpr const wchar_t entrySelectDrivesRadio[ ] = { L"selectDrivesRadio" };
+	_Null_terminated_ constexpr const wchar_t entryShowDeleteWarning[ ] = { L"showDeleteWarning" };
+	_Null_terminated_ constexpr const wchar_t entryColumnWidthsS[ ] = { L"%s-columnWidths" };
 	}
 
 namespace helpers {
@@ -41,7 +41,7 @@ namespace helpers {
 	}
 
 #ifdef DEBUG
-void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value );
+void trace_prof_string( _In_z_ PCWSTR const section, _In_z_ PCWSTR const entry, _In_z_ PCWSTR const value ) noexcept;
 
 #endif
 
@@ -49,7 +49,7 @@ namespace {
 	
 	
 	
-	void SetProfileString( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR value ) {
+	void SetProfileString( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR value ) noexcept {
 #ifdef DEBUG
 		trace_prof_string( section, entry, value );
 #endif
@@ -63,27 +63,24 @@ namespace {
 // Can read from and write to the registry.
 namespace CRegistryUser {
 	std::wstring GetProfileString_ ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_z_ const PCWSTR defaultValue  );
-	UINT         GetProfileInt_    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const INT  defaultValue    );
-	bool         GetProfileBool    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const bool defaultValue    );
-	void         SetProfileInt     ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const INT  value           );
-	void         SetProfileBool    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const bool value           );
+	UINT         GetProfileInt_    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const INT  defaultValue    ) noexcept;
+	bool         GetProfileBool    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const bool defaultValue    ) noexcept;
+	void         SetProfileInt     ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const INT  value           ) noexcept;
+	void         SetProfileBool    ( _In_z_ const PCWSTR section, _In_z_ const PCWSTR entry, _In_   const bool value           ) noexcept;
 	};
 
 
 // CPersistence. Reads from and writes to the registry all the persistent settings like window position, column order etc.
-class CPersistence final {
-public:
-	
-	
+struct CPersistence final {
 	static void  SetDialogRectangle       ( _In_z_  const PCWSTR name,        _In_ const RECT rc                                         );
 	static void  SetMainWindowPlacement   ( _In_    const WINDOWPLACEMENT& wp                                                               );
 	static void  SetSplitterPos           ( _In_z_  const PCWSTR name,        _In_ const bool valid,             _In_ const DOUBLE userpos );
 
 	static void  GetConfigPosition        ( _Inout_ POINT* const pt                                                                              );
 	//static void  GetDialogRectangle       ( _In_z_  const PCWSTR name,        _Out_ RECT* const rc                                            );
-	static void  GetSplitterPos           ( _In_z_  const PCWSTR name,        _Out_ bool* const valid,               _Out_ DOUBLE* const userpos   );
+	static void  GetSplitterPos           ( _In_z_  const PCWSTR name,        _Out_ bool* const valid,               _Out_ DOUBLE* const userpos   ) noexcept;
 	static void  GetMainWindowPlacement   ( _Out_   WINDOWPLACEMENT* const wp                                                                     );
-	static INT   GetConfigPage            ( _In_    const INT max                                                                           );
+	static INT   GetConfigPage            ( _In_    const INT max                                                                           ) noexcept;
 	
 	
 	static void  SetShowDeleteWarning( _In_    const bool show ) {
@@ -172,7 +169,7 @@ private:
 
 // COptions. Represents all the data which can be viewed and modified in the "Configure WinDirStat" dialog.
 // COptions is a singleton.
-_Success_( return != NULL ) COptions *GetOptions();
+_Success_( return != NULL ) COptions *GetOptions() noexcept;
 
 struct COptions final {
 	COptions( ) = default;

@@ -366,7 +366,7 @@ namespace {
 CDirstatDoc* _theDocument;
 
 //evil global function!
-CDirstatDoc* GetDocument( ) {
+CDirstatDoc* GetDocument( ) noexcept {
 	ASSERT( _theDocument != NULL );
 	return _theDocument;
 	}
@@ -412,6 +412,13 @@ CDirstatDoc::~CDirstatDoc( ) {
 	_theDocument = { NULL };
 	}
 
+/*
+Default impl, C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\doccore.cpp:
+void CDocument::DeleteContents()
+{
+}
+
+*/
 void CDirstatDoc::DeleteContents( ) {
 	m_selectedItem = { NULL };
 	m_timeTextWritten = false;
@@ -601,7 +608,7 @@ bool CDirstatDoc::Work( ) {
 	return false;
 	}
 
-bool CDirstatDoc::IsRootDone( ) const {
+bool CDirstatDoc::IsRootDone( ) const noexcept {
 	if ( !m_rootItem ) {
 		return false;
 		}

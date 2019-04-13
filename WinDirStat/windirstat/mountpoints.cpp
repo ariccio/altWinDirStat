@@ -15,10 +15,10 @@ WDS_FILE_INCLUDE_MESSAGE
 
 
 namespace {
-	void FindVolumeMountPointCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolumeMountPoint ) {
+	void FindVolumeMountPointCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolumeMountPoint ) noexcept {
 		VERIFY( ::FindVolumeMountPointClose( hFindVolumeMountPoint ) );
 		}
-	BOOL FindVolumeCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolume ) {
+	BOOL FindVolumeCloseHandle( _In_ _Post_invalid_ HANDLE hFindVolume ) noexcept {
 		return ::FindVolumeClose( hFindVolume );
 		}
 	}
@@ -66,7 +66,7 @@ const bool CMountPoints::IsMountPoint( _In_ const std::wstring& path ) const {
 	return IsVolumeMountPoint( static_cast<rsize_t>( indexItem ), path );
 	}
 
-void CMountPoints::Clear( ) {
+void CMountPoints::Clear( ) noexcept {
 	for ( size_t i = 0; i < M_DRIVE_ARRAY_SIZE; ++i ) {
 		m_drive[ i ].clear( );
 		}
@@ -106,7 +106,7 @@ const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY
 	return false;
 	}
 
-void CMountPoints::GetDriveVolumes( ) {
+void CMountPoints::GetDriveVolumes( ) noexcept {
 	const rsize_t s_char_buffer_size = 5u;
 	_Null_terminated_ wchar_t small_buffer_volume_name[ s_char_buffer_size ] = { 0 };
 	const auto drives = ::GetLogicalDrives( );

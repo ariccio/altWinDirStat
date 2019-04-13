@@ -267,7 +267,7 @@ CDirstatApp::~CDirstatApp( ) {
 	}
 
 // Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) {
+_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) noexcept {
 	COLORREF x;
 	ULONG cbValue = sizeof( x );
 	ATL::CRegKey key;
@@ -282,7 +282,7 @@ _Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In
 	return clrDefault;
 	}
 
-_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize ) {
+_Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize ) noexcept {
 	const auto Memres = UpdateMemoryInfo( );
 	if ( !Memres ) {
 		wds_fmt::write_MEM_INFO_ERR( psz_formatted_usage );
@@ -293,12 +293,12 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 	rsize_t size_buff_needed = 0;
 	const HRESULT res = wds_fmt::FormatBytes( m_workingSet, &( psz_formatted_usage[ 11 ] ), ( strSize - 12 ), chars_written, size_buff_needed );
 	if ( !SUCCEEDED( res ) ) {
-		return StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", wds_fmt::FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
+		return ::StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", wds_fmt::FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}
 	return res;
 	}
 
-_Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) {
+_Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) noexcept {
 	//auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
 	PROCESS_MEMORY_COUNTERS pmc = { };
 

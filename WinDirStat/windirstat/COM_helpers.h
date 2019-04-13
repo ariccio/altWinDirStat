@@ -33,11 +33,10 @@ namespace {
 //        drop-down list, in case the calling process wants to change the items in 
 //        the list.
 //
-class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDialogControlEvents {
-	public:
+struct CFileDialogEventHandler final : public IFileDialogEvents, public IFileDialogControlEvents {
 
 	// IUnknown methods
-	IFACEMETHODIMP QueryInterface( _In_ REFIID riid, _COM_Outptr_ void** ppv ) {
+	IFACEMETHODIMP QueryInterface( _In_ REFIID riid, _COM_Outptr_ void** ppv ) override{
 
 		//#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
 		//#define QITABENTMULTI(Cthis, Ifoo, Iimpl) { &__uuidof(Ifoo), OFFSETOFCLASS(Iimpl, Cthis) }
@@ -54,12 +53,12 @@ class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDial
 		return QISearch( this, qit, riid, ppv );
 		}
 
-	IFACEMETHODIMP_( ULONG ) AddRef( ) {
+	IFACEMETHODIMP_( ULONG ) AddRef( ) override {
 #pragma warning( suppress: 4365 )
 		return InterlockedIncrement( &m_cRef );
 		}
 
-	IFACEMETHODIMP_( ULONG ) Release( ) {
+	IFACEMETHODIMP_( ULONG ) Release( ) override {
 		const auto cRef = InterlockedDecrement( &m_cRef );
 		if ( !cRef ) {
 			delete this;
@@ -70,44 +69,44 @@ class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDial
 
 	// IFileDialogEvents methods
 	//TODO: I think the MSDN sample might've done something wrong with all the S_OKs
-	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) {
+	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnFolderChange( __RPC__in_opt IFileDialog* ) {
+	IFACEMETHODIMP OnFolderChange( __RPC__in_opt IFileDialog* ) override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnFolderChanging( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem* ) {
+	IFACEMETHODIMP OnFolderChanging( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem* ) override {
 		return E_NOTIMPL;
 		}
 	IFACEMETHODIMP OnHelp( IFileDialog* ) {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnSelectionChange( __RPC__in_opt IFileDialog* ) {
+	IFACEMETHODIMP OnSelectionChange( __RPC__in_opt IFileDialog* ) override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnTypeChange( __RPC__in_opt IFileDialog* ) {
+	IFACEMETHODIMP OnTypeChange( __RPC__in_opt IFileDialog* ) override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnShareViolation( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_SHAREVIOLATION_RESPONSE* ) {
+	IFACEMETHODIMP OnShareViolation( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_SHAREVIOLATION_RESPONSE* ) override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnOverwrite( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_OVERWRITE_RESPONSE* ) {
+	IFACEMETHODIMP OnOverwrite( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_OVERWRITE_RESPONSE* ) override {
 		return E_NOTIMPL;
 		}
 
 	// IFileDialogControlEvents methods
-	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* /*pfdc*/, DWORD /*dwIDCtl*/, DWORD /*dwIDItem*/ ) {
+	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* /*pfdc*/, DWORD /*dwIDCtl*/, DWORD /*dwIDItem*/ ) override {
 		return E_NOTIMPL;
 		}
 
 
-	IFACEMETHODIMP OnButtonClicked( __RPC__in_opt IFileDialogCustomize*, DWORD ) {
+	IFACEMETHODIMP OnButtonClicked( __RPC__in_opt IFileDialogCustomize*, DWORD ) override {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnControlActivating( __RPC__in_opt IFileDialogCustomize*, DWORD ) {
+	IFACEMETHODIMP OnControlActivating( __RPC__in_opt IFileDialogCustomize*, DWORD ) override {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnCheckButtonToggled( __RPC__in_opt IFileDialogCustomize*, DWORD, BOOL ) {
+	IFACEMETHODIMP OnCheckButtonToggled( __RPC__in_opt IFileDialogCustomize*, DWORD, BOOL ) override {
 		return S_OK;
 		}
 
@@ -115,7 +114,7 @@ class CFileDialogEventHandler final : public IFileDialogEvents, public IFileDial
 
 	protected:
 
-	~CFileDialogEventHandler( ) { }
+	~CFileDialogEventHandler( ) = default;
 	long m_cRef;
 #pragma warning( suppress: 4265 )
 	};

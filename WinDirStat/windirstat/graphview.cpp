@@ -24,7 +24,7 @@ WDS_FILE_INCLUDE_MESSAGE
 namespace {
 
 	//TweakSizeOfRectangleForHightlight is called once, unconditionally.
-	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT* const rc, _Inout_ RECT* const rcClient, _In_ const bool grid ) {
+	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT* const rc, _Inout_ RECT* const rcClient, _In_ const bool grid ) noexcept {
 		if ( grid ) {
 			rc->right++;
 			rc->bottom++;
@@ -114,7 +114,7 @@ const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 	return &messageMap;
 }
 
-void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const {
+void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context, _In_ const CTreeListItem& item, _In_ const std::wstring& ext ) const noexcept {
 	const auto rc = item.m_rect;
 	if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 		return;
@@ -134,7 +134,7 @@ void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context
 	CGraphView::RecurseHighlightChildren( screen_device_context, item, ext );
 	}
 
-void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const {
+void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const noexcept {
 	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
@@ -385,7 +385,7 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	return;
 	}
 
-void CGraphView::DrawHighlights( _In_ const HDC screen_device_context ) const {
+void CGraphView::DrawHighlights( _In_ const HDC screen_device_context ) const noexcept {
 	const auto logicalFocus = m_frameptr->m_logicalFocus;
 	if ( logicalFocus == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		CGraphView::DrawSelection( screen_device_context );
@@ -422,7 +422,7 @@ void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	VERIFY( sub->TrackPopupMenu( ( TPM_LEFTALIGN bitor TPM_LEFTBUTTON ), ptscreen.x, ptscreen.y, AfxGetMainWnd( ) ) );
 	}
 
-void CGraphView::DrawHighlightExtension( _In_ const HDC screen_device_context ) const {
+void CGraphView::DrawHighlightExtension( _In_ const HDC screen_device_context ) const noexcept {
 	//WTL::CWaitCursor wc;
 
 	CPen pen( PS_SOLID, 1, GetOptions( )->m_treemapHighlightColor );
@@ -442,7 +442,7 @@ void CGraphView::DrawHighlightExtension( _In_ const HDC screen_device_context ) 
 	}
 
 
-void CGraphView::RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const {
+void CGraphView::RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const noexcept {
 	/*
 		The documentation of CDC::Rectangle() says that the width and height must be greater than 2. Experiment says that it must be greater than 1. We follow the documentation.
 		A pen and the null brush must be selected.
@@ -589,22 +589,22 @@ void CGraphView::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 
 #ifdef DEBUG
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_empty_view_graphview( ) {
+void trace_empty_view_graphview( ) noexcept {
 	TRACE( _T( "Drawing Empty view...\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_call_onidle( ) { 
+void trace_call_onidle( ) noexcept {
 	TRACE( _T( "\"[Causing] OnIdle() to be called once\"\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_mouse_left( ) {
+void trace_mouse_left( ) noexcept {
 	TRACE( _T( "Mouse has left the tree map area?\r\n" ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) {
+void trace_focused_mouspos( _In_ const LONG x, _In_ const LONG y, _In_z_ PCWSTR const path ) noexcept {
 	TRACE( _T( "focused & Mouse on tree map!(x: %ld, y: %ld) - hovering over: `%s`\r\n" ), x, y, path );
 	}
 #endif

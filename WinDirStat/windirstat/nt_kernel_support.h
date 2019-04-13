@@ -338,7 +338,7 @@ namespace NativeAPI {
 	//From `nt_kernel_stuff.hpp` in the BOOST AFIO library:
 	// Adapted from http://www.cprogramming.com/snippets/source-code/convert-ntstatus-win32-error
 	// Could use RtlNtStatusToDosError() instead
-	static inline void SetWin32LastErrorFromNtStatus( NTSTATUS ntstatus ) {
+	static inline void SetWin32LastErrorFromNtStatus( const NTSTATUS ntstatus ) noexcept {
 		DWORD br;
 		OVERLAPPED o;
 
@@ -347,7 +347,7 @@ namespace NativeAPI {
 		o.Offset = 0;
 		o.OffsetHigh = 0;
 		o.hEvent = 0;
-		GetOverlappedResult( NULL, &o, &br, FALSE );
+		::GetOverlappedResult( NULL, &o, &br, FALSE );
 		}
 
 	/*
@@ -394,58 +394,58 @@ namespace NativeAPI {
 
 
 	//modified from the boost version.
-	static inline void doinit( ) {
+	static inline void doinit( ) noexcept {
 
 		HMODULE ntdll_temp;
-		const BOOL mod_handle_res = GetModuleHandleExW( GET_MODULE_HANDLE_EX_FLAG_PIN, L"NTDLL.DLL", &ntdll_temp );
+		const BOOL mod_handle_res = ::GetModuleHandleExW( GET_MODULE_HANDLE_EX_FLAG_PIN, L"NTDLL.DLL", &ntdll_temp );
 		if ( mod_handle_res == 0 ) {
 			//failed!
-			const auto last_err = GetLastError( );
+			const auto last_err = ::GetLastError( );
 			TRACE( L"Failed to get handle to ntdll! Err: %lu\r\n", last_err );
 			displayWindowsMsgBoxWithMessage( L"Failed to get handle to ntdll!" );
 			displayWindowsMsgBoxWithError( last_err );
 			}
 		const HMODULE ntdll = ntdll_temp;
 		if ( !NtQueryInformationFile ) {
-			NtQueryInformationFile = reinterpret_cast<NtQueryInformationFile_t>( GetProcAddress( ntdll, "NtQueryInformationFile" ) );
+			NtQueryInformationFile = reinterpret_cast<NtQueryInformationFile_t>( ::GetProcAddress( ntdll, "NtQueryInformationFile" ) );
 			test_if_null_funcptr( NtQueryInformationFile, L"NtQueryInformationFile" );
 			}
 		if ( !NtQueryVolumeInformationFile ) {
-			NtQueryVolumeInformationFile = reinterpret_cast<NtQueryVolumeInformationFile_t>( GetProcAddress( ntdll, "NtQueryVolumeInformationFile" ) );
+			NtQueryVolumeInformationFile = reinterpret_cast<NtQueryVolumeInformationFile_t>( ::GetProcAddress( ntdll, "NtQueryVolumeInformationFile" ) );
 			test_if_null_funcptr( NtQueryVolumeInformationFile, L"NtQueryVolumeInformationFile" );
 			}
 		if ( !NtOpenDirectoryObject ) {
-			NtOpenDirectoryObject = reinterpret_cast<NtOpenDirectoryObject_t>( GetProcAddress( ntdll, "NtOpenDirectoryObject" ) );
+			NtOpenDirectoryObject = reinterpret_cast<NtOpenDirectoryObject_t>( ::GetProcAddress( ntdll, "NtOpenDirectoryObject" ) );
 			test_if_null_funcptr( NtOpenDirectoryObject, L"NtOpenDirectoryObject" );
 			}
 		if ( !NtOpenFile ) {
-			NtOpenFile = reinterpret_cast<NtOpenFile_t>( GetProcAddress( ntdll, "NtOpenFile" ) );
+			NtOpenFile = reinterpret_cast<NtOpenFile_t>( ::GetProcAddress( ntdll, "NtOpenFile" ) );
 			test_if_null_funcptr( NtOpenFile, L"NtOpenFile" );
 			}
 		if ( !NtCreateFile ) {
-			NtCreateFile = reinterpret_cast<NtCreateFile_t>( GetProcAddress( ntdll, "NtCreateFile" ) );
+			NtCreateFile = reinterpret_cast<NtCreateFile_t>( ::GetProcAddress( ntdll, "NtCreateFile" ) );
 			test_if_null_funcptr( NtCreateFile, L"NtCreateFile" );
 			}
 		if ( !NtClose ) {
-			NtClose = reinterpret_cast<NtClose_t>( GetProcAddress( ntdll, "NtClose" ) );
+			NtClose = reinterpret_cast<NtClose_t>( ::GetProcAddress( ntdll, "NtClose" ) );
 			test_if_null_funcptr( NtClose, L"NtClose" );
 			}
 		if ( !NtQueryDirectoryFile ) {
-			NtQueryDirectoryFile = reinterpret_cast<NtQueryDirectoryFile_t>( GetProcAddress( ntdll, "NtQueryDirectoryFile" ) );
+			NtQueryDirectoryFile = reinterpret_cast<NtQueryDirectoryFile_t>( ::GetProcAddress( ntdll, "NtQueryDirectoryFile" ) );
 			test_if_null_funcptr( NtQueryDirectoryFile, L"NtQueryDirectoryFile" );
 			}
 		if ( !NtSetInformationFile ) {
-			NtSetInformationFile = reinterpret_cast<NtSetInformationFile_t>( GetProcAddress( ntdll, "NtSetInformationFile" ) );
+			NtSetInformationFile = reinterpret_cast<NtSetInformationFile_t>( ::GetProcAddress( ntdll, "NtSetInformationFile" ) );
 			test_if_null_funcptr( NtSetInformationFile, L"NtSetInformationFile" );
 			}
 		if ( !NtWaitForSingleObject ) {
-			NtWaitForSingleObject = reinterpret_cast<NtWaitForSingleObject_t>( GetProcAddress( ntdll, "NtWaitForSingleObject" ) );
+			NtWaitForSingleObject = reinterpret_cast<NtWaitForSingleObject_t>( ::GetProcAddress( ntdll, "NtWaitForSingleObject" ) );
 			test_if_null_funcptr( NtWaitForSingleObject, L"NtWaitForSingleObject" );
 			}
 		}
 
 
-	static inline void init( ) {
+	static inline void init( ) noexcept {
 		static bool initialised = false;
 		if ( !initialised ) {
 			doinit( );

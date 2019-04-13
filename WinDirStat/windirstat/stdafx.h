@@ -47,7 +47,7 @@
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows NT 4 or later.
 
 #pragma message( "defining `_WIN32_WINNT`..." )
-
+//#define _WIN32_WINNT_WIN8                   0x0602 (C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\shared\sdkddkver.h)
 #define _WIN32_WINNT 0x0602	// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
 #else
 static_assert( _WIN32_WINNT >= 0x0600, "" );

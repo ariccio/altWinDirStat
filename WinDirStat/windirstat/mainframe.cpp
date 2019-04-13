@@ -224,7 +224,7 @@ void WDSSplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	m_userSplitterPos = m_splitterPos;
 	}
 
-void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) {
+void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 	m_splitterPos = pos;
 	RECT rcClient = { 0, 0, 0, 0 };
 
@@ -378,7 +378,7 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 	return 0;
 	}
 
-void CMainFrame::InitialShowWindow( ) {
+void CMainFrame::InitialShowWindow( ) noexcept {
 	WINDOWPLACEMENT wp = { 0 };
 	wp.length = sizeof( wp );
 	VERIFY( CWnd::GetWindowPlacement( &wp ) );
@@ -476,7 +476,7 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	return TRUE;
 	}
 
-void CMainFrame::RestoreTypeView( ) {
+void CMainFrame::RestoreTypeView( ) noexcept {
 	const auto thisTypeView = GetTypeView( );
 	if ( thisTypeView == NULL ) {
 		return;
@@ -488,7 +488,7 @@ void CMainFrame::RestoreTypeView( ) {
 	}
 
 
-void CMainFrame::RestoreGraphView( ) {
+void CMainFrame::RestoreGraphView( ) noexcept {
 	const auto thisGraphView = GetGraphView( );
 	if ( thisGraphView == NULL ) {
 		return;
@@ -533,18 +533,18 @@ void CMainFrame::RestoreGraphView( ) {
 		}
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const {
+_Must_inspect_result_ _Ret_maybenull_ CDirstatView* CMainFrame::GetDirstatView( ) const noexcept {
 	const auto pWnd = m_wndSubSplitter.GetPane( 0, 0 );
 	return static_cast<CDirstatView*>( pWnd );
 	}
 
 //cannot be defined in header.
-_Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const {
+_Must_inspect_result_ _Ret_maybenull_ CGraphView* CMainFrame::GetGraphView( ) const noexcept {
 	const auto pWnd = m_wndSplitter.GetPane( 1, 0 );
 	return static_cast<CGraphView*>( pWnd );
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) const {
+_Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) const noexcept {
 	const auto pWnd = m_wndSubSplitter.GetPane( 0, 1 );
 	return static_cast<CTypeView*>( pWnd );
 	}
@@ -571,7 +571,7 @@ void CMainFrame::OnInitMenuPopup( CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu 
 
 
 _At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-void CMainFrame::SetLogicalFocus( _In_ const LOGICAL_FOCUS lf ) {
+void CMainFrame::SetLogicalFocus( _In_ const LOGICAL_FOCUS lf ) noexcept {
 	if ( lf != m_logicalFocus ) {
 		m_logicalFocus = lf;
 		SetSelectionMessageText( );
@@ -581,7 +581,7 @@ void CMainFrame::SetLogicalFocus( _In_ const LOGICAL_FOCUS lf ) {
 		}
 	}
 _At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
-void CMainFrame::MoveFocus( _In_ const LOGICAL_FOCUS lf ) {
+void CMainFrame::MoveFocus( _In_ const LOGICAL_FOCUS lf ) noexcept {
 	if ( lf == LOGICAL_FOCUS::LF_NONE ) {
 		SetLogicalFocus( LOGICAL_FOCUS::LF_NONE );
 		m_wndDeadFocus.SetFocus( );
@@ -600,7 +600,7 @@ void CMainFrame::MoveFocus( _In_ const LOGICAL_FOCUS lf ) {
 		}
 	}
 
-size_t CMainFrame::getExtDataSize( ) const {
+size_t CMainFrame::getExtDataSize( ) const noexcept {
 	const auto Document = GetDocument( );
 	if ( Document != NULL ) {
 		return Document->GetExtensionRecords( )->size( );
@@ -608,7 +608,7 @@ size_t CMainFrame::getExtDataSize( ) const {
 	return 0;
 	}
 
-void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
+void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) noexcept {
 	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f." ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, unsigned( ext_data_size ), file_name_length, average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
@@ -625,7 +625,7 @@ void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ 
 	CFrameWnd::SetMessageText( L"Couldn't set message text, unknown error!" );
 	}
 
-void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) {
+void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) noexcept {
 	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg extension len: %.2f." ), unsigned( ext_data_size ), average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
@@ -698,7 +698,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	return;
 	}
 
-void CMainFrame::SetSelectionMessageText( ) {
+void CMainFrame::SetSelectionMessageText( ) noexcept {
 	switch ( m_logicalFocus ) {
 		case LOGICAL_FOCUS::LF_NONE:
 			return CFrameWnd::SetMessageText( m_drawTiming.c_str( ) );

@@ -78,7 +78,7 @@ void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, POINT& value ) {
 		}
 	}
 
-void CXySlider::Initialize( ) {
+void CXySlider::Initialize( ) noexcept {
 	if ( ( !m_inited ) && ( ::IsWindow( m_hWnd ) ) ) {
 		// Make size odd, so that zero lines are central
 		RECT rc = { 0, 0, 0, 0 };
@@ -106,7 +106,7 @@ void CXySlider::Initialize( ) {
 		}
 	}
 
-void CXySlider::CalcSizes( ) {
+void CXySlider::CalcSizes( ) noexcept {
 	ASSERT( ::IsWindow( m_hWnd ) );
 	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero. To get extended error information, call GetLastError."
 	VERIFY( ::GetClientRect( m_hWnd, &m_rcAll ) );
@@ -140,7 +140,7 @@ void CXySlider::CalcSizes( ) {
 	//m_range = m_radius - m_gripperRadius;
 	}
 
-void CXySlider::NotifyParent( ) const {
+void CXySlider::NotifyParent( ) const noexcept {
 	NMHDR hdr = { };
 	hdr.hwndFrom = m_hWnd;
 	hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
@@ -149,7 +149,7 @@ void CXySlider::NotifyParent( ) const {
 	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
 	}
 
-void CXySlider::PaintBackground( _In_ CDC& pdc ) {
+void CXySlider::PaintBackground( _In_ CDC& pdc ) noexcept {
 	//ASSERT_VALID( &pdc );
 	//ASSERT( pdc.m_hDC != NULL );
 
@@ -227,7 +227,7 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) {
 		}
 	}
 
-void CXySlider::PaintGripper( _In_ CDC& pdc ) {
+void CXySlider::PaintGripper( _In_ CDC& pdc ) noexcept {
 	//ASSERT_VALID( pdc );
 	RECT rc = CXySlider::GetGripperRect( );
 
@@ -264,7 +264,7 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) {
 	line_to_coord( pdc.m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.bottom, pdc.m_hAttribDC );
 	}
 
-void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
+void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) noexcept {
 	m_pos.x += cx;
 	CheckMinMax( m_pos.x, -m_range.cx, m_range.cx );
 
@@ -280,7 +280,7 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) {
 		}
 	}
 
-void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 ) {
+void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 ) noexcept {
 	POINT pt = msg.pt;
 	ASSERT( ::IsWindow( m_hWnd ) );
 	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
@@ -298,7 +298,7 @@ void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& 
 	pt0 = pt;
 	}
 
-void CXySlider::DoDrag( _In_ const POINT point ) {
+void CXySlider::DoDrag( _In_ const POINT point ) noexcept {
 	POINT pt0 = point;
 
 	CXySlider::HighlightGripper( true );
@@ -356,7 +356,7 @@ void CXySlider::DoDrag( _In_ const POINT point ) {
 	CXySlider::HighlightGripper( false );
 	}
 
-void CXySlider::DoPage( _In_ const POINT point ) {
+void CXySlider::DoPage( _In_ const POINT point ) noexcept {
 	POINT _m_zero_m_pos_scope_holder = {
 		( m_zero.x + m_pos.x ),
 		( m_zero.y + m_pos.y )
@@ -384,12 +384,12 @@ void CXySlider::DoPage( _In_ const POINT point ) {
 	CXySlider::DoMoveBy( dx, dy );
 	}
 
-void CXySlider::HighlightGripper( _In_ const bool on ) {
+void CXySlider::HighlightGripper( _In_ const bool on ) noexcept {
 	m_gripperHighlight = on;
 	VERIFY( CWnd::RedrawWindow( ) );
 	}
 
-void CXySlider::RemoveTimer( ) {
+void CXySlider::RemoveTimer( ) noexcept {
 	if ( m_timer != 0 ) {
 		ASSERT( ::IsWindow( m_hWnd ) );
 		

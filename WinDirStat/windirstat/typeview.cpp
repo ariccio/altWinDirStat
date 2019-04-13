@@ -49,7 +49,7 @@ CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
 
 //CTypeView::~CTypeView( ) { }
 
-bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const {
+bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept {
 	//ASSERT_VALID( pdc );
 	//Why are we bothering to draw this ourselves?
 	if ( subitem == column::COL_EXTENSION ) {
@@ -83,7 +83,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 
 	}
 
-void CListItem::DrawColor( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const {
+void CListItem::DrawColor( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const noexcept {
 	if ( width != NULL ) {
 		*width = 40;
 		return;
@@ -104,7 +104,7 @@ void CListItem::DrawColor( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _O
 	}
 
 _Pre_satisfies_( subitem == column::COL_BYTES ) _Success_( SUCCEEDED( return ) )
-const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -112,7 +112,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const
 	const HRESULT res = wds_fmt::FormatBytes( m_bytes, psz_text, strSize, chars_written, sizeBuffNeed );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
-		ASSERT( chars_written == wcslen( psz_text ) );
+		ASSERT( chars_written == ::wcslen( psz_text ) );
 		return res;
 		}
 	//handled in FormatBytes.
@@ -124,18 +124,18 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTES( RANGE_ENUM_COL const
 	}
 
 _Pre_satisfies_( subitem == column::COL_FILES_TYPEVIEW ) _Success_( SUCCEEDED( return ) )
-const HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_FILES_TYPEVIEW );
 	size_t chars_remaining = 0;
 
-	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%I32u", m_files );
+	const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%I32u", m_files );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
-		ASSERT( chars_written == wcslen( psz_text ) );
+		ASSERT( chars_written == ::wcslen( psz_text ) );
 		return res;
 		}
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -149,7 +149,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_
 	}
 
 _Pre_satisfies_( subitem == column::COL_DESCRIPTION ) _Success_( SUCCEEDED( return ) ) _Pre_satisfies_( strSize > 0 )
-const HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
@@ -167,18 +167,18 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_DESCRIPTION( RANGE_ENUM_COL
 	}
 
 _Pre_satisfies_( subitem == column::COL_BYTESPERCENT ) _Success_( SUCCEEDED( return ) )
-const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER( subitem );
 #endif
 	ASSERT( subitem == column::COL_BYTESPERCENT );
 	size_t chars_remaining = 0;
 	const auto theDouble = CListItem::GetBytesFraction( ) * 100;
-	const HRESULT res = StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
+	const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
-		ASSERT( chars_written == wcslen( psz_text ) );
+		ASSERT( chars_written == ::wcslen( psz_text ) );
 		return res;
 		}
 	if ( res == STRSAFE_E_INSUFFICIENT_BUFFER ) {
@@ -192,7 +192,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_CO
 	}
 
 _Must_inspect_result_ _Success_( SUCCEEDED( return ) )
-HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const {
+HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_COL subitem, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_text, _In_ const rsize_t strSize, _On_failure_( _Post_valid_ ) rsize_t& sizeBuffNeed, _Out_ rsize_t& chars_written ) const noexcept {
 	ASSERT( subitem != column::COL_NAME );
 	if ( subitem == column::COL_NAME ) {
 		displayWindowsMsgBoxWithMessage( L"GetText_WriteToStackBuffer was called for column::COL_NAME!!! This should never happen!!!!" );
@@ -216,14 +216,14 @@ HRESULT CListItem::Text_WriteToStackBuffer( RANGE_ENUM_COL const column::ENUM_CO
 	}
 	}
 
-DOUBLE CListItem::GetBytesFraction( ) const {
+DOUBLE CListItem::GetBytesFraction( ) const noexcept {
 	if ( m_list->m_rootSize == 0 ) {
 		return 0;
 		}
 	return static_cast<DOUBLE>( m_bytes ) / static_cast<DOUBLE>( m_list->m_rootSize );
 	}
 
-INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept {
 	switch ( subitem )
 	{
 		case column::COL_DESCRIPTION:
@@ -246,7 +246,7 @@ INT CListItem::concrete_compare( _In_ const CListItem* const other, RANGE_ENUM_C
 	}
 	}
 
-inline INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const {
+inline INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept {
 	if ( ( subitem == column::COL_EXTENSION ) || ( subitem == column::COL_DESCRIPTION ) ) {
 		COwnerDrawnListItem::default_compare( baseOther );
 		}
@@ -269,7 +269,7 @@ CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COw
 
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
-void CExtensionListControl::Initialize( ) {
+void CExtensionListControl::Initialize( ) noexcept {
 
 	COwnerDrawnListCtrl::SetSorting( column::COL_BYTES, false );
 
@@ -387,11 +387,11 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 #endif
 
 
-void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) {
+void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) noexcept {
 	const auto countItems = CListCtrl::GetItemCount( );
 	CWnd::SetRedraw( FALSE );
 	for ( INT i = 0; i < countItems; i++ ) {
-		if ( ( wcscmp( CExtensionListControl::GetListItem( i )->m_name, ext ) == 0 ) && ( i >= 0 ) ) {
+		if ( ( ::wcscmp( CExtensionListControl::GetListItem( i )->m_name, ext ) == 0 ) && ( i >= 0 ) ) {
 			TRACE( _T( "Selecting extension %s (item #%i)...\r\n" ), ext, i );
 			CListCtrl::SetItemState( i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );//Unreachable code?
 			CListCtrl::EnsureVisible( i, false );
@@ -402,7 +402,7 @@ void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) {
 	CWnd::SetRedraw( TRUE );
 	}
 
-_Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const {
+_Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const noexcept {
 	auto pos = CListCtrl::GetFirstSelectedItemPosition( );
 	if ( pos == NULL ) {
 		return L"";
@@ -471,7 +471,7 @@ BEGIN_MESSAGE_MAP(CTypeView, CView)
 	ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
-void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) {
+void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) noexcept {
 	auto Document = CTypeView::GetDocument( );
 
 	if ( Document != NULL ) {
@@ -501,7 +501,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	return 0;
 	}
 
-void CTypeView::OnUpdate0( ) {
+void CTypeView::OnUpdate0( ) noexcept {
 	auto theDocument = CTypeView::GetDocument( );
 	if ( theDocument != NULL ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
@@ -529,14 +529,14 @@ void CTypeView::OnUpdate0( ) {
 
 	}
 
-void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) {
+void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) noexcept {
 	auto thisOptions = GetOptions( );
 	m_extensionListControl.ShowGrid( thisOptions->m_listGrid );
 	m_extensionListControl.ShowStripes( thisOptions->m_listStripes );
 	m_extensionListControl.ShowFullRowSelection( thisOptions->m_listFullRowSelection );
 	}
 
-void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) {
+void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) noexcept {
 	CWnd::InvalidateRect( NULL );
 	m_extensionListControl.InvalidateRect( NULL );
 	m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
@@ -571,7 +571,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	}
 	}
 
-void CTypeView::SetSelection( ) {
+void CTypeView::SetSelection( ) noexcept {
 	const auto Document = CTypeView::GetDocument( );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
@@ -583,17 +583,17 @@ void CTypeView::SetSelection( ) {
 		}
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
 		PCWSTR const selectedExt = m_extensionListControl.GetSelectedExtension( );
-		if ( wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
+		if ( ::wcscmp( selectedExt, item->CStyle_GetExtensionStrPtr( ) ) != 0 ) {
 			m_extensionListControl.SelectExtension( item->CStyle_GetExtensionStrPtr( ) );
 			}
 		}
 	}
 
-_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const {// Nicht-Debugversion ist inline
+_Must_inspect_result_ _Ret_maybenull_ CDirstatDoc* CTypeView::GetDocument( ) const noexcept {// Nicht-Debugversion ist inline
 	return static_cast<CDirstatDoc*>( m_pDocument );
 	}
 
-void CTypeView::SysColorChanged( ) {
+void CTypeView::SysColorChanged( ) noexcept {
 	m_extensionListControl.SysColorChanged( );
 	}
 
@@ -617,7 +617,7 @@ void CTypeView::OnSize( UINT nType, INT cx, INT cy ) {
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-void trace_on_erase_bkgnd_typeview( ) {
+void trace_on_erase_bkgnd_typeview( ) noexcept {
 	TRACE( _T( "CTypeView::OnEraseBkgnd!\r\n" ) );
 	}
 

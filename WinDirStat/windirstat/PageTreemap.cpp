@@ -104,12 +104,12 @@ void CPageTreemap::OnOK( ) {
 	CPropertyPage::OnOK( );
 	}
 
-void CPageTreemap::ValuesAltered( _In_ const bool altered ) {
+void CPageTreemap::ValuesAltered( _In_ const bool altered ) noexcept {
 	m_altered = ( altered ? TRUE : FALSE );
 	m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
 	}
 
-void CPageTreemap::UpdateOptions( _In_ const bool save ) {
+void CPageTreemap::UpdateOptions( _In_ const bool save ) noexcept {
 	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
 	if ( save ) {
 		m_options.SetBrightnessPercent( 100 - m_nBrightness );
@@ -137,10 +137,10 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) {
 void CPageTreemap::UpdateStatics( ) {
 	int format_results[ 4 ] = { -1, -1, -1, -1 };
 	
-	format_results[ 0 ] = swprintf_s( m_sBrightness,     str_size, L"%d", ( 100 - m_nBrightness ) );
-	format_results[ 1 ] = swprintf_s( m_sCushionShading, str_size, L"%d", ( 100 - m_nCushionShading ) );
-	format_results[ 2 ] = swprintf_s( m_sHeight,         str_size, L"%d", ( ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) ) );
-	format_results[ 3 ] = swprintf_s( m_sScaleFactor,    str_size, L"%d", ( 100 - m_nScaleFactor ) );
+	format_results[ 0 ] = ::swprintf_s( m_sBrightness,     str_size, L"%d", ( 100 - m_nBrightness ) );
+	format_results[ 1 ] = ::swprintf_s( m_sCushionShading, str_size, L"%d", ( 100 - m_nCushionShading ) );
+	format_results[ 2 ] = ::swprintf_s( m_sHeight,         str_size, L"%d", ( ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) ) );
+	format_results[ 3 ] = ::swprintf_s( m_sScaleFactor,    str_size, L"%d", ( 100 - m_nScaleFactor ) );
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( rsize_t i = 0; i < 4; ++i ) {

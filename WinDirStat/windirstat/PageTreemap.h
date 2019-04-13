@@ -26,18 +26,29 @@ WDS_FILE_INCLUDE_MESSAGE
 class CDirstatApp;
 
 class CPageTreemap final : public CPropertyPage {
-	DECLARE_DYNAMIC(CPageTreemap)
+	DISALLOW_COPY_AND_ASSIGN(CPageTreemap);
+
 	enum {
 		IDD = IDD_PAGE_TREEMAP
 		};
 
+	/*
+	#define DECLARE_DYNAMIC(class_name) \
+public: \
+	static const CRuntimeClass class##class_name; \
+	virtual CRuntimeClass* GetRuntimeClass() const; \
+	*/
+	//DECLARE_DYNAMIC(CPageTreemap)
+public:
+	static const CRuntimeClass classCPageTreemap;
+	virtual CRuntimeClass* GetRuntimeClass() const;
+
 public:
 	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
 
-	DISALLOW_COPY_AND_ASSIGN( CPageTreemap );
 
 protected:
-	void UpdateOptions          ( _In_ const bool save = true    );
+	void UpdateOptions          ( _In_ const bool save = true    ) noexcept;
 	void UpdateStatics          (                           );
 	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
 	virtual BOOL OnInitDialog   (                           ) override final;
@@ -45,7 +56,7 @@ protected:
 
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
-	void OnSomethingChanged( ) {
+	void OnSomethingChanged( ) noexcept {
 		VERIFY( CWnd::UpdateData( ) );
 		VERIFY( CWnd::UpdateData( false ) );
 		SetModified( );

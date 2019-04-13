@@ -47,9 +47,9 @@ public:
 
 	
 private:
-	void Clear( );
+	void Clear( ) noexcept;
 
-	void GetDriveVolumes( );
+	void GetDriveVolumes( ) noexcept;
 
 	void GetAllMountPoints( );
 
