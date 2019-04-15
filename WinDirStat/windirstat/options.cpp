@@ -395,7 +395,7 @@ void CPersistence::GetArray( _In_ const std::wstring entry, _Out_ _Out_writes_al
 	}
 
 void CPersistence::SetRect( _In_z_ const PCWSTR entry, _In_ const RECT rc ) {
-	//CString s;
+	CString s;
 	//s.Format( _T( "%d,%d,%d,%d" ), rc.left, rc.top, rc.right, rc.bottom );
 	//LONG_MAX == 2147483647
 	//                      ^10 characters

@@ -69,13 +69,13 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #define _WIN32_IE 0x0800	// Change this to the appropriate value to target IE 5.0 or later.
 #endif
 
-#ifndef _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
-
-#pragma message( "defining `_ATL_CSTRING_EXPLICIT_CONSTRUCTORS`..." )
-
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
-
-#endif
+//#ifndef _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
+//
+//#pragma message( "defining `_ATL_CSTRING_EXPLICIT_CONSTRUCTORS`..." )
+//
+//#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
+//
+//#endif
 
 
 #ifndef _AFX_ALL_WARNINGS
@@ -233,21 +233,24 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 #include <atlbase.h>        // base ATL classes
 
-#ifdef _AFX
 
-#ifndef _WTL_NO_CSTRING
-
-#pragma message( "defining `_WTL_NO_CSTRING`..." )
-
-#define _WTL_NO_CSTRING 1
-
-#endif // _WTL_NO_CSTRING
-
-#pragma message( "defining `_CSTRING_NS`..." )
-
-#define _CSTRING_NS
-
-#endif // _AFX
+//No longer needed with WTL v10. Kept for archeological reasons.
+//#ifdef _AFX
+//
+//#ifndef _WTL_NO_CSTRING
+//
+//#pragma message( "defining `_WTL_NO_CSTRING`..." )
+//
+//#define _WTL_NO_CSTRING 1
+//
+//#endif // _WTL_NO_CSTRING
+//
+//#pragma message( "defining `_CSTRING_NS`..." )
+//
+//#define _CSTRING_NS
+//
+//
+//#endif // _AFX
 
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 #pragma warning(disable:6031) //Return value ignored: 'CoSuspendClassObjects'.
@@ -264,10 +267,19 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
 								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
 								//Code analysis is confused about pACL (access control list) in CSecurityDescriptor::AddAccessAllowedACEToACL, CSecurityDescriptor::AddAccessDeniedACEToACL, CSecurityDescriptor::Attach, CSecurityDescriptor::Attach, in file "c:\program files (x86)\microsoft visual studio 14.0\vc\atlmfc\include\atlcom.h", where it *appears* to be correct. Code analysis seems to think the writable size is only 8 bytes for some reason!
+
+//using ATL::CString = ATL::CStringT< TCHAR, StrTraitMFC< TCHAR > >;
+
+
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
 
 #include <atlwin.h>         // ATL GUI  classes
+//BUGBUG TODO evil hack, to fix warning: C:\Users\Lucius Riccio\Documents\GitHub\altWinDirStat\WinDirStat\packages\wtl.10.0.8280\lib\native\include\atlctrls.h(26) : fatal error C1189 : #error:  WTL10 requires RichEdit version 3 or higher
+#undef _RICHEDIT_VER
+#pragma message( "undefining `_RICHEDIT_VER` because WTL v10 requires RichEdit v3 or higher. This is an evil hack for now..." )
+
+
 //#include <atlframe.h>       // WTL frame window classes
 //#include <atlsplit.h>
 #include <atlctrls.h>
