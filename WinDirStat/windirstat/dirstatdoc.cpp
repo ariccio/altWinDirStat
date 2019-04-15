@@ -373,11 +373,24 @@ CDirstatDoc* GetDocument( ) noexcept {
 
 /*
 
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:598:
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:594:
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
 
 	IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
-
 	--becomes--
-
+	CObject* PASCAL class_name::CreateObject() \
+		{ return new CDirstatDoc; } \
+	IMPLEMENT_RUNTIMECLASS(CDirstatDoc, CDocument, 0xFFFF, \
+		CDirstatDoc::CreateObject, NULL)
+	--becomes--
+	AFX_COMDAT const CRuntimeClass CDirstatDoc::classCDirstatDoc = { \
+		"CDirstatDoc", sizeof(class CDirstatDoc), wSchema, pfnNew, \
+			RUNTIME_CLASS(CDocument), NULL, class_init }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(CDirstatDoc); }
 
 	CObject* PASCAL CDirstatDoc::CreateObject() \
 		{ return new CDirstatDoc; } \
@@ -397,7 +410,25 @@ CDirstatDoc* GetDocument( ) noexcept {
 
 */
 
-IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
+//IMPLEMENT_DYNCREATE(CDirstatDoc, CDocument)
+CObject* PASCAL CDirstatDoc::CreateObject() { 
+	return new CDirstatDoc;
+	}
+
+AFX_COMDAT const CRuntimeClass CDirstatDoc::classCDirstatDoc = {
+																"CDirstatDoc" /*m_lpszClassName*/,
+																sizeof(class CDirstatDoc) /*m_nObjectSize*/,
+																0xFFFF /*wSchema*/,
+																CDirstatDoc::CreateObject /*pfnNew*/,
+																(const_cast<CRuntimeClass*>(&CDocument::classCDocument)) /*RUNTIME_CLASS(CDirstatDoc)*/ /*m_pBaseClass*/,
+																NULL /*m_pNextClass*/,
+																NULL /*class_init*/
+	};
+
+CRuntimeClass* CDirstatDoc::GetRuntimeClass() const {
+	return (const_cast<CRuntimeClass*>(&CDirstatDoc::classCDirstatDoc));
+	}
+
 
 _Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
 CDirstatDoc::CDirstatDoc( ) : m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {

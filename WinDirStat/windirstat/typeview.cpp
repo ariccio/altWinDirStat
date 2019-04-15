@@ -462,7 +462,79 @@ void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE(CTypeView, CView)
+/*
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:598:
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:594:
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
+
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:707:
+#define IMPLEMENT_DYNCREATE(class_name, base_class_name) \
+	CObject* PASCAL class_name::CreateObject() \
+		{ return new class_name; } \
+	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, \
+		class_name::CreateObject, NULL)
+
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:688:
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
+		#class_name, sizeof(class class_name), wSchema, pfnNew, \
+			RUNTIME_CLASS(base_class_name), NULL, class_init }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(class_name); }
+
+
+Sooo...
+	IMPLEMENT_DYNCREATE(CTypeView, CView)
+		--becomes--
+	CObject* PASCAL CTypeView::CreateObject() \
+		{ return new CTypeView; } \
+	IMPLEMENT_RUNTIMECLASS(CTypeView, CView, 0xFFFF, CTypeView::CreateObject, NULL)
+		--becomes--
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass CTypeView::classCTypeView = { \
+		"CTypeView", sizeof(class CTypeView), 0xFFFF, CTypeView::CreateObject, \
+			RUNTIME_CLASS(CView), NULL, NULL }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(CTypeView); }
+
+And...
+	RUNTIME_CLASS(CView)
+		--becomes--
+	_RUNTIME_CLASS(CView)
+		--becomes--
+	((CRuntimeClass*)(&CView::classCView))
+
+And...
+	RUNTIME_CLASS(CTypeView)
+		--becomes--
+	_RUNTIME_CLASS(CTypeView)
+		--becomes--
+	((CRuntimeClass*)(&CTypeView::classCTypeView))
+
+
+*/
+
+//IMPLEMENT_DYNCREATE(CTypeView, CView)
+CObject* PASCAL CTypeView::CreateObject() {
+	return new CTypeView;
+	}
+
+AFX_COMDAT const CRuntimeClass CTypeView::classCTypeView = {
+	"CTypeView" /*m_lpszClassName*/,
+	sizeof(class CTypeView) /*m_nObjectSize*/,
+	0xFFFF /*wSchema*/,
+	CTypeView::CreateObject /*pfnNew*/,
+	(const_cast<CRuntimeClass*>(&CView::classCView)) /*RUNTIME_CLASS(CView)*/ /*m_pBaseClass*/,
+	NULL /*m_pNextClass*/,
+	NULL /*class_init*/
+	};
+
+CRuntimeClass* CTypeView::GetRuntimeClass() const {
+	return 	(const_cast<CRuntimeClass*>(&CTypeView::classCTypeView)) /*RUNTIME_CLASS(CTypeView)*/;
+	}
+
 
 BEGIN_MESSAGE_MAP(CTypeView, CView)
 	ON_WM_CREATE()

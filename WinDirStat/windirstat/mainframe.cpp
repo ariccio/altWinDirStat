@@ -102,13 +102,8 @@ namespace {
 
 	}
 
-IMPLEMENT_DYNAMIC( WDSOptionsPropertySheet, CPropertySheet )
-
 /*
-#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
-
-#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
-
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:688:
 #define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
 	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
 		#class_name, sizeof(class class_name), wSchema, pfnNew, \
@@ -116,10 +111,56 @@ IMPLEMENT_DYNAMIC( WDSOptionsPropertySheet, CPropertySheet )
 	CRuntimeClass* class_name::GetRuntimeClass() const \
 		{ return RUNTIME_CLASS(class_name); }
 
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:704:
 #define IMPLEMENT_DYNAMIC(class_name, base_class_name) \
 	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, NULL, NULL)
 
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:598:
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:594:
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
+
+Sooo...
+	IMPLEMENT_DYNAMIC(WDSOptionsPropertySheet, CPropertySheet)
+	--becomes--
+	IMPLEMENT_RUNTIMECLASS(WDSOptionsPropertySheet, CPropertySheet, 0xFFFF, NULL, NULL)
+	--becomes--
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass WDSOptionsPropertySheet::classWDSOptionsPropertySheet = { \
+		"WDSOptionsPropertySheet", sizeof(class WDSOptionsPropertySheet), 0xFFFF, NULL, \
+			RUNTIME_CLASS(CPropertySheet), NULL, NULL }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(WDSOptionsPropertySheet); }
+
+And...
+	RUNTIME_CLASS(CPropertySheet)
+	--becomes--
+	_RUNTIME_CLASS(CPropertySheet)
+	--becomes--
+	((CRuntimeClass*)(&CPropertySheet::classCPropertySheet))
+
+And...
+	RUNTIME_CLASS(WDSOptionsPropertySheet)
+	--becomes--
+	_RUNTIME_CLASS(WDSOptionsPropertySheet)
+	--becomes--
+	((CRuntimeClass*)(&WDSOptionsPropertySheet::classWDSOptionsPropertySheet))
 */
+//IMPLEMENT_DYNAMIC(WDSOptionsPropertySheet, CPropertySheet)
+AFX_COMDAT const CRuntimeClass WDSOptionsPropertySheet::classWDSOptionsPropertySheet = {
+		"WDSOptionsPropertySheet" /*m_lpszClassName*/,
+		sizeof(class WDSOptionsPropertySheet) /*m_nObjectSize*/,
+		0xFFFF /*wSchema*/,
+		NULL /*pfnNew*/,
+		(const_cast<CRuntimeClass*>(&CPropertySheet::classCPropertySheet)) /*RUNTIME_CLASS(CPropertySheet)*/ /*m_pBaseClass*/,
+		NULL,
+		NULL };
+
+CRuntimeClass* WDSOptionsPropertySheet::GetRuntimeClass() const {
+	return (const_cast<CRuntimeClass*>(&WDSOptionsPropertySheet::classWDSOptionsPropertySheet)); // RUNTIME_CLASS(WDSOptionsPropertySheet);
+	}
+
 
 BOOL WDSOptionsPropertySheet::OnInitDialog( ) {
 	const BOOL bResult = CPropertySheet::OnInitDialog( );
@@ -300,7 +341,81 @@ LRESULT CDeadFocusWnd::OnKeyDown( UINT /*nMsg*/, WPARAM wParam, LPARAM /*lParam*
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNCREATE( CMainFrame, CFrameWnd )
+/*
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:598:
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:594:
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
+
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:707:
+#define IMPLEMENT_DYNCREATE(class_name, base_class_name) \
+	CObject* PASCAL class_name::CreateObject() \
+		{ return new class_name; } \
+	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, \
+		class_name::CreateObject, NULL)
+
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:688:
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
+		#class_name, sizeof(class class_name), wSchema, pfnNew, \
+			RUNTIME_CLASS(base_class_name), NULL, class_init }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(class_name); }
+
+
+Sooo...
+	IMPLEMENT_DYNCREATE( CMainFrame, CFrameWnd )
+		--becomes--
+	CObject* PASCAL CMainFrame::CreateObject() \
+		{ return new CMainFrame; } \
+	IMPLEMENT_RUNTIMECLASS(CMainFrame, CFrameWnd, 0xFFFF, \
+		CMainFrame::CreateObject, NULL)
+		--becomes--
+	CObject* PASCAL CMainFrame::CreateObject() \
+		{ return new CMainFrame; } \
+	AFX_COMDAT const CRuntimeClass CMainFrame::classCMainFrame = { \
+		"CMainFrame", sizeof(class CMainFrame), 0xFFFF, CMainFrame::CreateObject, \
+			RUNTIME_CLASS(CFrameWnd), NULL, NULL }; \
+	CRuntimeClass* CMainFrame::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(CMainFrame); }
+
+And...
+	RUNTIME_CLASS(CFrameWnd)
+		--becomes--
+	_RUNTIME_CLASS(CFrameWnd)
+		--becomes--
+	((CRuntimeClass*)(&CFrameWnd::classCFrameWnd))
+
+And...
+	RUNTIME_CLASS(CMainFrame)
+		--becomes--
+	_RUNTIME_CLASS(CMainFrame)
+		--becomes--
+	((CRuntimeClass*)(&CMainFrame::classCMainFrame))
+*/
+
+//IMPLEMENT_DYNCREATE( CMainFrame, CFrameWnd )
+
+CObject* PASCAL CMainFrame::CreateObject() {
+	return new CMainFrame;
+	}
+
+AFX_COMDAT const CRuntimeClass CMainFrame::classCMainFrame = {
+	"CMainFrame" /*m_lpszClassName*/,
+	sizeof(class CMainFrame) /*m_nObjectSize*/,
+	0xFFFF /*wSchema*/,
+	CMainFrame::CreateObject /*pfnNew*/,
+	(const_cast<CRuntimeClass*>(&CFrameWnd::classCFrameWnd)) /*RUNTIME_CLASS(CFrameWnd)*/ /*m_pBaseClass*/,
+	NULL /*m_pNextClass*/,
+	NULL /*class_init*/
+	};
+
+CRuntimeClass* CMainFrame::GetRuntimeClass() const {
+	return (const_cast<CRuntimeClass*>(&CMainFrame::classCMainFrame)) /*RUNTIME_CLASS(CMainFrame)*/;
+	}
+
+
 
 BEGIN_MESSAGE_MAP( CMainFrame, CFrameWnd )
 	ON_WM_CREATE( )

@@ -63,8 +63,65 @@ namespace {
 		}
 	}
 
+/*
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:688:
+#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
+		#class_name, sizeof(class class_name), wSchema, pfnNew, \
+			RUNTIME_CLASS(base_class_name), NULL, class_init }; \
+	CRuntimeClass* class_name::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(class_name); }
 
-IMPLEMENT_DYNAMIC(CXySlider, CStatic)
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:704:
+#define IMPLEMENT_DYNAMIC(class_name, base_class_name) \
+	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, NULL, NULL)
+
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:598:
+#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+
+From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:594:
+#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
+
+Sooo...
+	IMPLEMENT_DYNAMIC(CXySlider, CStatic)
+		--becomes--
+	IMPLEMENT_RUNTIMECLASS(CXySlider, CStatic, 0xFFFF, NULL, NULL)
+		--becomes--
+IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
+	AFX_COMDAT const CRuntimeClass CXySlider::classCXySlider = { \
+		"CXySlider", sizeof(class CXySlider), wSchema, pfnNew, \
+			RUNTIME_CLASS(CStatic), NULL, class_init }; \
+	CRuntimeClass* CXySlider::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(CXySlider); }
+and...
+	RUNTIME_CLASS(CStatic)
+		--becomes--
+	_RUNTIME_CLASS(CStatic)
+		--becomes--
+	((CRuntimeClass*)(&CStatic::classCStatic))
+and...
+	RUNTIME_CLASS(CXySlider);
+		--becomes--
+	_RUNTIME_CLASS(CXySlider)
+		--becomes--
+	((CRuntimeClass*)(&CXySlider::classCXySlider))
+
+*/
+//IMPLEMENT_DYNAMIC(CXySlider, CStatic)
+//IMPLEMENT_RUNTIMECLASS(CXySlider, CStatic, 0xFFFF, NULL, NULL)
+AFX_COMDAT const CRuntimeClass CXySlider::classCXySlider = {
+	"CXySlider" /*m_lpszClassName*/,
+	sizeof(class CXySlider) /*m_nObjectSize*/,
+	0xFFFF /*wSchema*/,
+	NULL /*pfnNew*/,
+	(const_cast<CRuntimeClass*>(&CStatic::classCStatic)) /*RUNTIME_CLASS(CStatic)*/ /*m_pBaseClass*/,
+	NULL /*m_pNextClass*/,
+	NULL /*class_init*/
+	};
+
+CRuntimeClass* CXySlider::GetRuntimeClass() const {
+	return (const_cast<CRuntimeClass*>(&CXySlider::classCXySlider)); /* RUNTIME_CLASS(CXySlider);*/
+	}
 
 void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, POINT& value ) {
 	pDX->PrepareCtrl(nIDC);

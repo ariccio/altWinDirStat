@@ -45,7 +45,7 @@ protected:
 	//DECLARE_DYNCREATE(CDirstatDoc)
 
 public: 
-	static const CRuntimeClass classCDirStatDoc;
+	static const CRuntimeClass classCDirstatDoc;
 	virtual CRuntimeClass* GetRuntimeClass() const;
 
 	static CObject* PASCAL CreateObject();
