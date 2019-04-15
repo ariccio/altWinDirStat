@@ -20,7 +20,7 @@ class CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	CXySlider( ) noexcept : m_inited { false }, m_gripperHighlight { false }, m_timer { 0u } {
+	CXySlider( ) noexcept : m_inited { false }, m_timer { 0u }, m_gripperHighlight{ false } {
 		m_externalPos.x = 0;
 		m_externalPos.y = 0;
 		m_externalRange.cx = 100;
