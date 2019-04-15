@@ -397,7 +397,7 @@ And...
 
 //IMPLEMENT_DYNCREATE( CMainFrame, CFrameWnd )
 
-CObject* PASCAL CMainFrame::CreateObject() {
+CObject* PASCAL CMainFrame::CreateObject() noexcept {
 	return new CMainFrame;
 	}
 

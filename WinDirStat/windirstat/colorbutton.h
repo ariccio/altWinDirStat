@@ -13,19 +13,18 @@
 WDS_FILE_INCLUDE_MESSAGE
 
 
-
-
 #define COLBN_CHANGED	0x87	// this is a value, I hope, that is nowhere used as notification code.
 
 
 // The color preview is an own little child window of the button.
 class CPreview final : public ATL::CWindowImpl<CPreview> {
+	DISALLOW_COPY_AND_ASSIGN(CPreview);
 public:
 	COLORREF m_color = 0u;
 
-	DISALLOW_COPY_AND_ASSIGN( CPreview );
 
-	CPreview( ) noexcept = default;
+	CPreview( ) = default;
+
 	void SetColor( _In_ const COLORREF color ) noexcept {
 		m_color = color;
 		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
@@ -94,10 +93,10 @@ public:
 // In the resource editor, the button should be set to "right align text", as the color will be shown in the left third.
 // When the user chose a color, the parent is notified via WM_NOTIFY and the notification code COLBN_CHANGED.
 class CColorButton final : public CButton {
+	DISALLOW_COPY_AND_ASSIGN(CColorButton);
 public:
 
 	CColorButton( ) = default;
-	DISALLOW_COPY_AND_ASSIGN( CColorButton );
 
 	//C4820: 'CColorButton::CPreview' : '4' bytes padding added after data member 'CColorButton::CPreview::m_color'
 
@@ -173,5 +172,6 @@ _AFXWIN_INLINE void CWnd::OnEnable(BOOL)
 
 		CWnd::OnEnable( bEnable );
 		}
+
 	};
 #endif

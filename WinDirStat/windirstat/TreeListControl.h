@@ -154,7 +154,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		INT     GetSortAttributes             (                                                                   ) const noexcept;
 
-		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const;
+		INT CompareSibling                           ( _In_ const CTreeListItem* const tlib, _In_ _In_range_( 0, INT32_MAX ) const column::ENUM_COL subitem ) const noexcept;
 
 		_Pre_satisfies_( this->m_child_info.m_child_info_ptr == nullptr ) 
 		void    stdRecurseCollectExtensionData_FILE( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>* const extensionMap ) const;

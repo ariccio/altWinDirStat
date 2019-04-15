@@ -22,10 +22,10 @@ class CDirstatDoc;
 extern const UINT _WDS_nIdTreeListControl;
 extern const UINT ITEM_ROW_HEIGHT;
 
-inline void trace_OnEraseBkgnd( );
-inline void trace_LoadingPerst( );
-inline void trace_ListStyleCha( );
-inline void trace_SelectionCha( );
+inline void trace_OnEraseBkgnd( ) noexcept;
+inline void trace_LoadingPerst( ) noexcept;
+inline void trace_ListStyleCha( ) noexcept;
+inline void trace_SelectionCha( ) noexcept;
 
 // CDirstatView. The upper left view, which consists of the TreeList.
 class CDirstatView final : public CView {

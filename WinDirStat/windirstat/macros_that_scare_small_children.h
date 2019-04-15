@@ -79,8 +79,8 @@ WDS_FILE_INCLUDE_MESSAGE
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)          \
-  TypeName(const TypeName&) = delete;               \
-  TypeName& operator=(const TypeName&) = delete
+  TypeName(const TypeName&) noexcept = delete;               \
+  TypeName& operator=(const TypeName&) noexcept = delete
 #else
 #error already defined!
 #endif

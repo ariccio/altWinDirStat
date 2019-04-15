@@ -62,7 +62,7 @@ protected:
 		SetModified( );
 		}
 
-	void ValuesAltered( _In_ const bool altered = true );
+	void ValuesAltered( _In_ const bool altered = true ) noexcept;
 
 
 	Treemap_Options   m_options;	// Current options

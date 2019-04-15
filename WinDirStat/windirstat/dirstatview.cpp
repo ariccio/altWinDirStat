@@ -19,7 +19,7 @@ const UINT ITEM_ROW_HEIGHT = 20u;
 #include "dirstatdoc.h"
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_OnEraseBkgnd( ) {
+inline void trace_OnEraseBkgnd( ) noexcept {
 	TRACE( _T( "CDirstatView::OnEraseBkgnd!\r\n" ) );
 	}
 
@@ -29,7 +29,7 @@ inline void trace_LoadingPerst( ) noexcept {
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
-inline void trace_ListStyleCha( ) {
+inline void trace_ListStyleCha( ) noexcept {
 	TRACE( _T( "List style has changed, redrawing!\r\n" ) );
 	}
 

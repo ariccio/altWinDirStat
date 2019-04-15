@@ -353,7 +353,7 @@ void InitializeCriticalSection_wrapper( _Pre_invalid_ _Post_valid_ _Out_ CRITICA
 	::InitializeCriticalSection( &cs );
 	}
 
-void DeleteCriticalSection_wrapper( _Pre_valid_ _Post_invalid_ CRITICAL_SECTION& cs ) {
+void DeleteCriticalSection_wrapper( _Pre_valid_ _Post_invalid_ CRITICAL_SECTION& cs ) noexcept {
 	::DeleteCriticalSection( &cs );
 	}
 

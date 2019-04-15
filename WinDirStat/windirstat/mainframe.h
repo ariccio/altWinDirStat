@@ -18,7 +18,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "LOGICAL_FOCUS_enum.h"
 #include "macros_that_scare_small_children.h"
 
-class WDSSplitterWnd;
+struct WDSSplitterWnd;
 class CMainFrame;
 class CDirstatView;
 class CGraphView;
@@ -49,7 +49,7 @@ public: \
 struct WDSSplitterWnd final : public CSplitterWnd {
 	DISALLOW_COPY_AND_ASSIGN( WDSSplitterWnd );
 
-	WDSSplitterWnd::WDSSplitterWnd( _In_z_ PCWSTR const name );
+	WDSSplitterWnd( _In_z_ PCWSTR const name );
 
 	void RestoreSplitterPos( _In_ const DOUBLE default_pos ) noexcept {
 		SetSplitterPos( ( m_wasTrackedByUser ) ? m_userSplitterPos : default_pos );

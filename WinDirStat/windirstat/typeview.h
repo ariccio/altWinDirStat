@@ -43,7 +43,7 @@ public:
 			}
 	private:
 		//concrete_compare is called as a single line INSIDE a single line function. Let's ask for inlining.
-		inline  INT          concrete_compare ( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const;
+		inline  INT          concrete_compare ( _In_ const CListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem ) const noexcept;
 		virtual INT          Compare          ( _In_ const COwnerDrawnListItem* const other, RANGE_ENUM_COL const column::ENUM_COL subitem                               ) const noexcept override final;
 		virtual bool         DrawSubitem      ( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept override final;
 			
@@ -144,7 +144,7 @@ public: \
 public: 
 	static const CRuntimeClass classCTypeView;
 	virtual CRuntimeClass* GetRuntimeClass() const;
-	static CObject* PASCAL CreateObject() noexcept;
+	static CObject* PASCAL CreateObject();
 
 public:
 	virtual ~CTypeView( ) final = default;
