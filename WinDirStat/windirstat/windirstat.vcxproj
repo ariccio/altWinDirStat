@@ -210,7 +210,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
     </ClCompile>
@@ -258,7 +258,6 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
-      <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessToFile>false</PreprocessToFile>
       <ErrorReporting>Send</ErrorReporting>
       <OmitFramePointers>false</OmitFramePointers>
@@ -320,7 +319,7 @@
       <Optimization>Full</Optimization>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -405,7 +404,7 @@
       <Optimization>MaxSpeedHighLevel</Optimization>
       <OffloadConstructs>Optional</OffloadConstructs>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -490,7 +489,7 @@
       <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
       <Optimization>Full</Optimization>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -556,7 +555,7 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
     </ClCompile>
     <Link>
@@ -620,7 +619,7 @@
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -681,7 +680,7 @@
       <ModeOfStaticAnalysis>Full</ModeOfStaticAnalysis>
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
