@@ -42,7 +42,7 @@ namespace {
 	}
 
 #pragma warning(suppress:4355)
-CTypeView::CTypeView( ) : m_extensionListControl( this ), m_showTypes( true ) {
+CTypeView::CTypeView( ) : m_showTypes(true), m_extensionListControl( this ) {
 	m_showTypes = CPersistence::GetShowFileTypes( );
 	}
 
@@ -265,7 +265,7 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_typeView( typeView ), m_rootSize ( 0 ), m_adjustedTiming( 0 ), m_averageExtensionNameLength( ), m_exts( nullptr ), m_exts_count( 0 ) { }
+CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_rootSize ( 0 ), m_typeView(typeView), m_averageExtensionNameLength( ), m_adjustedTiming(0), m_exts_count( 0 ), m_exts(nullptr) { }
 
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().

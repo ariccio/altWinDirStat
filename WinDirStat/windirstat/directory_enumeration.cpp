@@ -878,7 +878,7 @@ _Pre_satisfies_( this->m_parent == NULL ) void CTreeListItem::AddChildren( _In_ 
 		}
 	}
 
-WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
+std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, const bool isRootRecurse ) {
 	//some sync primitive
 	//http://msdn.microsoft.com/en-us/library/ff398050.aspx
 	//ASSERT( ThisCItem->m_childCount == 0 );
@@ -948,7 +948,7 @@ WDS_DECLSPEC_NOTHROW std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListIt
 	}
 
 //sizes_to_work_on_in NEEDS to be passed as a pointer, else bad things happen!
-WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
+bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ const CDirstatApp* app, concurrency::concurrent_vector<pair_of_item_and_path>* sizes_to_work_on_in, const bool isRootRecurse ) {
 	//This is temporary.
 	UNREFERENCED_PARAMETER( isRootRecurse );
 
@@ -1026,7 +1026,7 @@ WDS_DECLSPEC_NOTHROW bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::
 	}
 
 _Success_( return < UINT64_ERROR )
-WDS_DECLSPEC_NOTHROW const std::uint64_t get_uncompressed_file_size( _In_ const CTreeListItem* const item ) {
+const std::uint64_t get_uncompressed_file_size( _In_ const CTreeListItem* const item ) {
 	const auto derived_item = static_cast< const CTreeListItem* const >( item );
 
 	if ( derived_item->m_child_info.m_child_info_ptr != nullptr ) {
