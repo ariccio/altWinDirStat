@@ -20,6 +20,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "options.h"
 #include "mainframe.h"
 #include "dirstatdoc.h"
+#include "hwnd_funcs.h"
 
 namespace {
 
@@ -217,6 +218,13 @@ inline void CGraphView::RecurseHighlightChildren( _In_ const HDC screen_device_c
 		CGraphView::RecurseHighlightExtension( screen_device_context, *( item_m_children + i ), ext );
 		}
 	}
+
+inline void CGraphView::SuspendRecalculation(const bool suspend) noexcept {
+	m_recalculationSuspended = suspend;
+	if (!suspend) {
+		hwnd::InvalidateErase(m_hWnd);
+		}
+}
 
 void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 	ASSERT_VALID( pScreen_Device_Context );

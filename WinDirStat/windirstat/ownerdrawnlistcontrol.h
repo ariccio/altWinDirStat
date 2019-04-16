@@ -22,6 +22,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "macros_that_scare_small_children.h"
 #include "signum.h"
 #include "stringformatting.h"
+#include "hwnd_funcs.h"
 
 class COwnerDrawnListItem;
 class COwnerDrawnListCtrl;
@@ -775,7 +776,7 @@ protected:
 public:
 	static const CRuntimeClass classCOwnerDrawnListCtrl;
 	virtual CRuntimeClass* GetRuntimeClass( ) const override {
-		return ((CRuntimeClass*)(&COwnerDrawnListCtrl::classCOwnerDrawnListCtrl) );
+		return (const_cast<CRuntimeClass*>(&COwnerDrawnListCtrl::classCOwnerDrawnListCtrl) );
 		}
 
 	//DECLARE_DYNAMIC(COwnerDrawnListCtrl)
@@ -1259,29 +1260,17 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 
 	void ShowFullRowSelection( _In_ const bool show ) noexcept {
 		m_showFullRowSelection = show;
-		if ( ::IsWindow( m_hWnd ) ) {
-			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
-			//InvalidateRect( NULL );
-			}
+		hwnd::InvalidateErase(m_hWnd);
 		}
 
 	void ShowGrid( _In_ const bool show ) noexcept {
 		m_showGrid = show;
-		if ( ::IsWindow( m_hWnd ) ) {
-			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
-			//InvalidateRect( NULL );
-			}
+		hwnd::InvalidateErase(m_hWnd);
 		}
 
 	void ShowStripes( _In_ const bool show ) noexcept {
 		m_showStripes = show;
-		if ( ::IsWindow( m_hWnd ) ) {
-			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
-			//InvalidateRect( NULL );
-			}
+		hwnd::InvalidateErase(m_hWnd);
 		}
 
 	COLORREF GetHighlightColor( ) const noexcept {
@@ -1700,8 +1689,11 @@ protected:
 		}
 	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
 		CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
+		
+		//TODO: re-evaluate this?
 		// Owner drawn list controls with LVS_EX_GRIDLINES don't repaint correctly when scrolled (under Windows XP). So we force a complete repaint here.
-		CWnd::InvalidateRect( NULL );
+		//CWnd::InvalidateRect( NULL );
+		hwnd::InvalidateErase(NULL);
 		}
 	afx_msg void OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
 		const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
@@ -1731,17 +1723,8 @@ protected:
 		}
 		*/
 		CWnd::Default( );
-		/*
-_AFXWIN_INLINE void CWnd::InvalidateRect(LPCRECT lpRect, BOOL bErase = 1)
-	{ ASSERT(::IsWindow(m_hWnd)); ::InvalidateRect(m_hWnd, lpRect, bErase); }
-		*/
+		hwnd::InvalidateErase(m_hWnd);
 
-		//InvalidateRect function: https://msdn.microsoft.com/en-us/library/vs/alm/dd145002.aspx
-		//The InvalidateRect function adds a rectangle to the specified window's update region. The update region represents the portion of the window's client area that must be redrawn.
-		//If the function succeeds, the return value is nonzero.
-		//If the function fails, the return value is zero.
-		ASSERT( ::IsWindow( m_hWnd ) );
-		VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
 		//CWnd::InvalidateRect( NULL );
 		ASSERT( pResult != NULL );
 		if ( pResult != NULL ) {

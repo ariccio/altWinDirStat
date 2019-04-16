@@ -10,6 +10,7 @@ WDS_FILE_INCLUDE_MESSAGE
 
 #include "colorbutton.h"
 #include "globalhelpers.h"
+#include "hwnd_funcs.h"
 
 BEGIN_MESSAGE_MAP( CColorButton, CButton )
 	ON_WM_PAINT( )
@@ -18,6 +19,10 @@ BEGIN_MESSAGE_MAP( CColorButton, CButton )
 	ON_WM_ENABLE( )
 END_MESSAGE_MAP( )
 
+void CPreview::SetColor(_In_ const COLORREF color) noexcept {
+	m_color = color;
+	hwnd::InvalidateErase(m_hWnd);
+	}
 
 LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ ) {
 	//CPaintDC dc( this );
@@ -119,4 +124,13 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	return 0;
 	}
 
+afx_msg void CColorButton::OnEnable(const BOOL bEnable) noexcept {
+	hwnd::InvalidateErase(m_preview.m_hWnd);
+	/*
+	_AFXWIN_INLINE void CWnd::OnEnable(BOOL)
+	{ Default(); }
+		*/
+
+	CWnd::OnEnable(bEnable);
+	}
 #endif

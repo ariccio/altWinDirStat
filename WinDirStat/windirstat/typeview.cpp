@@ -582,7 +582,7 @@ void CTypeView::OnUpdate0( ) noexcept {
 			m_extensionListControl.SetExtensionData( theDocument->GetExtensionRecords( ) );
 			TRACE( _T( "Finished populating extension list...\r\n" ) );
 			// If there is no vertical scroll bar, the header control doesn't repaint correctly. Don't know why. But this helps:
-			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			hwnd::InvalidateErase(m_extensionListControl.GetHeaderCtrl()->m_hWnd);
 			}
 		else {
 			m_extensionListControl.DeleteAllItems( );
@@ -590,7 +590,7 @@ void CTypeView::OnUpdate0( ) noexcept {
 		}
 	else {
 		if ( m_showTypes ) {
-			m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+			hwnd::InvalidateErase(m_extensionListControl.GetHeaderCtrl()->m_hWnd);
 			}
 		else {
 			m_extensionListControl.DeleteAllItems( );
@@ -609,9 +609,9 @@ void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) noexcept {
 	}
 
 void CTypeView::OnUpdateHINT_TREEMAPSTYLECHANGED( ) noexcept {
-	CWnd::InvalidateRect( NULL );
-	m_extensionListControl.InvalidateRect( NULL );
-	m_extensionListControl.GetHeaderCtrl( )->InvalidateRect( NULL );
+	hwnd::InvalidateErase(m_hWnd);	
+	hwnd::InvalidateErase(m_extensionListControl.m_hWnd);
+	hwnd::InvalidateErase(m_extensionListControl.GetHeaderCtrl()->m_hWnd);
 	}
 
 void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {

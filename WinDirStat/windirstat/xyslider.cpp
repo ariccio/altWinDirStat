@@ -1,9 +1,10 @@
 // XySlider.cpp	- Implementation of CXySlider
 //
 // see `file_header_text.txt` for licensing & contact info. If you can't find that file, then assume you're NOT allowed to do whatever you wanted to do.
+#pragma once
+
 #include "stdafx.h"
 
-#pragma once
 
 
 #ifndef WDS_XYSLIDER_CPP
@@ -15,7 +16,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "datastructures.h"
 #include "xyslider.h"
 #include "globalhelpers.h"
-
+#include "hwnd_funcs.h"
 
 namespace {
 	const int GRIPPER_RADIUS = 8;
@@ -478,18 +479,12 @@ LRESULT CWnd::Default( ) {
 	*/
 
 
-	ASSERT( ::IsWindow( m_hWnd ) );
-	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
-	//Invalidate( );
+	hwnd::InvalidateErase(m_hWnd);
 	}
 
 afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
 	CWnd::OnKillFocus( pNewWnd );
-	ASSERT( ::IsWindow( m_hWnd ) );
-	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
-	//Invalidate( );
+	hwnd::InvalidateErase(m_hWnd);
 	}
 
 
@@ -588,7 +583,8 @@ void CXySlider::SetPos( const POINT pt ) {
 	CXySlider::Initialize( );
 	m_externalPos = pt;
 	CXySlider::ExternToIntern( );
-	CWnd::Invalidate( );
+
+	hwnd::InvalidateErase(m_hWnd);
 	}
 
 

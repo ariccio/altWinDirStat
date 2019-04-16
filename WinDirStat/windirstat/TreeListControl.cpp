@@ -1818,7 +1818,8 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	//GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
 	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
 	ASSERT( item_count == CListCtrl::GetItemCount( ) );
-	VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
+
+	hwnd::InvalidateErase(m_hWnd);
 	CListCtrl::RedrawWindow( );
 	return true;
 	}

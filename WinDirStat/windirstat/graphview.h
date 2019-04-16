@@ -96,18 +96,7 @@ public:
 
 	DISALLOW_COPY_AND_ASSIGN( CGraphView );
 
-	void SuspendRecalculation( _In_ const bool suspend ) noexcept {
-		m_recalculationSuspended = suspend;
-		if ( !suspend ) {
-			/*
-			From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxwin2.inl:113:
-			_AFXWIN_INLINE void CWnd::Invalidate(BOOL bErase)
-				{ ASSERT(::IsWindow(m_hWnd)); ::InvalidateRect(m_hWnd, NULL, bErase); }
-
-			*/
-			CWnd::Invalidate( );
-			}
-		}
+	void SuspendRecalculation(_In_ const bool suspend) noexcept;
 
 	void DrawEmptyView( ) noexcept {
 		CClientDC dc( this );

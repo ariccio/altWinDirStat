@@ -21,22 +21,9 @@ class CPreview final : public ATL::CWindowImpl<CPreview> {
 	DISALLOW_COPY_AND_ASSIGN(CPreview);
 public:
 	COLORREF m_color = 0u;
-
-
 	CPreview( ) = default;
 
-	void SetColor( _In_ const COLORREF color ) noexcept {
-		m_color = color;
-		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
-		//If the window handle identifies an existing window, the return value is nonzero.
-		//If the window handle does not identify an existing window, the return value is zero.
-		if ( ::IsWindow( m_hWnd ) ) {
-			//InvalidateRect function: https://msdn.microsoft.com/en-us/library/dd145002.aspx
-			//Return value: If the function succeeds, the return value is nonzero.
-			//If the function fails, the return value is zero.
-			VERIFY( ::InvalidateRect( m_hWnd, NULL, TRUE ) );
-			}
-		}
+	void SetColor(_In_ const COLORREF color) noexcept;
 
 #pragma warning( push )
 #pragma warning( disable: 4365 )
@@ -51,7 +38,6 @@ public:
 
 	//Keeping OnPaint in the implementation file means that we don't need to include globalhelpers.h in the header.
 	LRESULT OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ );
-
 
 	//UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/
 	LRESULT OnLButtonDown( UINT /*nMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/ ) {
@@ -156,22 +142,7 @@ protected:
 			}
 		}
 
-	afx_msg void OnEnable( const BOOL bEnable ) {
-		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
-		//If the window handle identifies an existing window, the return value is nonzero.
-		//If the window handle does not identify an existing window, the return value is zero.
-		if ( ::IsWindow( m_preview.m_hWnd ) ) {
-
-			//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-			VERIFY( ::InvalidateRect( m_preview.m_hWnd, NULL, TRUE ) );
-			}
-		/*
-_AFXWIN_INLINE void CWnd::OnEnable(BOOL)
-	{ Default(); }
-		*/
-
-		CWnd::OnEnable( bEnable );
-		}
+	afx_msg void OnEnable(const BOOL bEnable) noexcept;
 
 	};
 #endif
