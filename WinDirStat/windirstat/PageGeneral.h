@@ -14,7 +14,7 @@
 WDS_FILE_INCLUDE_MESSAGE
 
 
-class WDSOptionsPropertySheet;
+struct WDSOptionsPropertySheet;
 class CPageGeneral;
 class CDirstatApp;
 

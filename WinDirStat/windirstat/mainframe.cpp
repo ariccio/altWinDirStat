@@ -150,7 +150,7 @@ And...
 //IMPLEMENT_DYNAMIC(WDSOptionsPropertySheet, CPropertySheet)
 AFX_COMDAT const CRuntimeClass WDSOptionsPropertySheet::classWDSOptionsPropertySheet = {
 		"WDSOptionsPropertySheet" /*m_lpszClassName*/,
-		sizeof(class WDSOptionsPropertySheet) /*m_nObjectSize*/,
+		sizeof(struct WDSOptionsPropertySheet) /*m_nObjectSize*/,
 		0xFFFF /*wSchema*/,
 		NULL /*pfnNew*/,
 		(const_cast<CRuntimeClass*>(&CPropertySheet::classCPropertySheet)) /*RUNTIME_CLASS(CPropertySheet)*/ /*m_pBaseClass*/,
@@ -447,7 +447,7 @@ CMainFrame* CMainFrame::GetTheFrame( ) {
 #pragma warning( push )
 #pragma warning( disable: 4355 )
 
-CMainFrame::CMainFrame( ) : m_wndSplitter( global_strings::main_split ), m_wndSubSplitter( global_strings::sub_split ), m_lastSearchTime( -1 ), m_logicalFocus( LOGICAL_FOCUS::LF_NONE ), m_appptr( nullptr ), m_wndDeadFocus( this ) {// Created by MFC only
+CMainFrame::CMainFrame( ) : m_wndSubSplitter( global_strings::sub_split ), m_wndSplitter(global_strings::main_split), m_logicalFocus( LOGICAL_FOCUS::LF_NONE ), m_lastSearchTime(-1), m_wndDeadFocus( this ), m_appptr(nullptr) {// Created by MFC only
 	_theFrame = this;
 	}
 #pragma warning( pop )

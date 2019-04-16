@@ -90,7 +90,7 @@ namespace {
 
 	// SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 	struct SSorting final {
-		SSorting( ) : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending1 { false }, ascending2 { true } { }
+		SSorting( ) : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending2 { true }, ascending1{ false } { }
 		_Field_range_( 0, 8 ) column::ENUM_COL  column1;
 		_Field_range_( 0, 8 ) column::ENUM_COL  column2;
 							  bool              ascending2 : 1;
@@ -779,7 +779,7 @@ public:
 		}
 
 	//DECLARE_DYNAMIC(COwnerDrawnListCtrl)
-	COwnerDrawnListCtrl ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_persistent_name( name ), m_indicatedColumn( -1 ), m_rowHeight( rowHeight ), m_showGrid( false ), m_showStripes( false ), m_showFullRowSelection( false ), m_frameptr( GetMainFrame( ) ) {
+	COwnerDrawnListCtrl ( _In_z_ PCWSTR name, _In_range_( 0, UINT_MAX ) const UINT rowHeight ) : m_frameptr( GetMainFrame( ) ), m_showGrid(false), m_showStripes(false), m_showFullRowSelection(false), m_persistent_name(name), m_rowHeight(rowHeight), m_indicatedColumn(-1) {
 		ASSERT( rowHeight > 0 );
 		COwnerDrawnListCtrl::InitializeColors( );
 		}

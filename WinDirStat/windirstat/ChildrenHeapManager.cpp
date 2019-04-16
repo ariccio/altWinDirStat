@@ -75,7 +75,7 @@ const HRESULT Children_String_Heap_Manager_Impl::copy_name_str_into_buffer( _Pre
 	}
 
 
-child_info::child_info( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) : m_name_pool { number_of_characters_needed }, m_childCount { 0u }, m_children { new CTreeListItem[ child_count ] } { }
+child_info::child_info( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) : m_name_pool { number_of_characters_needed }, m_children { new CTreeListItem[ child_count ] }, m_childCount{ 0u } { }
 
 
 child_info::~child_info( ) = default;

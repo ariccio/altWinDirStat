@@ -788,7 +788,7 @@ namespace {
 
 
 
-WDS_DECLSPEC_NOTHROW std::vector<item_and_path_t> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
+std::vector<item_and_path_t> addFiles_returnSizesToWorkOn( _Inout_ CTreeListItem* const ThisCItem, std::vector<FILEINFO>& vecFiles, const std::wstring& path ) {
 	std::vector<std::pair<CTreeListItem*, std::wstring>> sizesToWorkOn_;
 	std::sort( vecFiles.begin( ), vecFiles.end( ) );
 	//sizesToWorkOn_.reserve( vecFiles.size( ) );

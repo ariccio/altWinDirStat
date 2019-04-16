@@ -99,7 +99,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		__forceinline CTreeListItem( ) { }
 		virtual ~CTreeListItem( ) final = default;
 
-		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_lastChange( time ), m_parent( parent ), m_rect { 0, 0, 0, 0 }, m_size { std::move( size ) }, m_child_info( ) {
+		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_child_info( ), m_parent(parent), m_rect{ 0, 0, 0, 0 }, m_size{ std::move(size) }, m_lastChange(time) {
 			SetAttributes( attr );
 			m_attr.m_done = done;
 			}
