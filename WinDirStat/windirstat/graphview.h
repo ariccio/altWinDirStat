@@ -96,7 +96,7 @@ public:
 
 	DISALLOW_COPY_AND_ASSIGN( CGraphView );
 
-	void SuspendRecalculation(_In_ const bool suspend) noexcept;
+	void SuspendRecalculation(const bool suspend) noexcept;
 
 	void DrawEmptyView( ) noexcept {
 		CClientDC dc( this );

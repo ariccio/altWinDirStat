@@ -334,8 +334,8 @@ namespace {
 		//When you no longer need the pen, call the DeleteObject function to delete it.
 		const HPEN hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
 		ASSERT( hPen != NULL );
-		HPEN_wrapper pen( hPen );
-
+		//HPEN_wrapper pen( hPen );
+		HGDIOBJ_wrapper pen(hPen);
 		//CPen pen { PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) };
 		
 		ASSERT( hDC != NULL );

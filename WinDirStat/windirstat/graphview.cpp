@@ -219,7 +219,7 @@ inline void CGraphView::RecurseHighlightChildren( _In_ const HDC screen_device_c
 		}
 	}
 
-inline void CGraphView::SuspendRecalculation(const bool suspend) noexcept {
+void CGraphView::SuspendRecalculation(const bool suspend) noexcept {
 	m_recalculationSuspended = suspend;
 	if (!suspend) {
 		hwnd::InvalidateErase(m_hWnd);

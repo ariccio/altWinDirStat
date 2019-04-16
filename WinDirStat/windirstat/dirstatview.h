@@ -121,6 +121,7 @@ protected:
 		//also CDirstatView::OnUpdate?
 
 		CView::OnInitialUpdate( );
+		m_treeListControl.GetHeaderCtrl()->RedrawWindow();
 		}
 	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
@@ -133,6 +134,7 @@ protected:
 		}
 		*/
 		CView::OnDraw( pDC );
+		m_treeListControl.GetHeaderCtrl()->RedrawWindow();
 		}
 	
 	/*
@@ -248,6 +250,7 @@ protected:
 		
 		trace_LoadingPerst( );
 		m_treeListControl.OnColumnsInserted( );
+		hwnd::InvalidateErase(m_hWnd);
 		return 0;
 		}
 	afx_msg BOOL OnEraseBkgnd( CDC* pDC ) {

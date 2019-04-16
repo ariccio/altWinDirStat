@@ -84,6 +84,9 @@
     <ClCompile Include="stringformatting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hwnd_funcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorbutton.h">
@@ -171,6 +174,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stringformatting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hwnd_funcs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

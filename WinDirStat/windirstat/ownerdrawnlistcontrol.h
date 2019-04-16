@@ -118,14 +118,15 @@ namespace {
 #pragma pack(push, 1)
 #pragma message( "Whoa there! I'm changing the natural data alignment for COwnerDrawnListItem. Look for a message that says I'm restoring it!" )
 
-template<class derived_class>
-class COwnerDrawnListItemImpl {
-public:
-	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
-	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept {
-		return static_cast<derived_class*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
-		}
-	};
+//Not used yet, nopped out.
+//template<class derived_class>
+//class COwnerDrawnListItemImpl {
+//public:
+//	// Return value is true, if the item draws itself. width != NULL -> only determine width, do not draw. If focus rectangle shall not begin leftmost, set *focusLeft to the left edge of the desired focus rectangle.
+//	bool DrawSubitem_( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_ CDC& pdc, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width, _Inout_ INT* const focusLeft, _In_ const COwnerDrawnListCtrl* const list ) const noexcept {
+//		return static_cast<derived_class*>( this )->DrawSubitem( subitem, pdc, rc, state, width, focusLeft, list );
+//		}
+//	};
 
 // COwnerDrawnListItem. An item in a COwnerDrawnListCtrl. Some columns (subitems) may be owner drawn (DrawSubitem() returns true), COwnerDrawnListCtrl draws the texts (GetText()) of all others.
 // DrawLabel() draws a standard label (width image, text, selection and focus rect)
@@ -695,12 +696,37 @@ protected:
 				}
 			} );
 
+		/*
+		_AFXWIN_INLINE CBitmap::CBitmap()
+			{ }
+		From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxwin1.inl:216:
+			_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
+			{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
 		//_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
 		//{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
 
-		CBitmap bm;
-		VERIFY( bm.CreateCompatibleBitmap( pCDestinationDeviceContext, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
-		SelectObject_wrapper sobm( hInMemoryDeviceContext, bm.m_hObject );
+		*/
+		HGDIOBJ_wrapper bm( [&]() { 
+			const HBITMAP bm = ::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top));
+			if (bm == NULL) {
+				TRACE(L"CreateCompatibleBitmap failed!\r\n");
+				}
+			return bm;
+			}());
+
+		//const HBITMAP bm = ::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top));
+		//if (bm == NULL) {
+		//	TRACE(L"CreateCompatibleBitmap failed!\r\n");
+		//	}
+
+		SelectObject_wrapper sobm(hInMemoryDeviceContext, bm.m_hObject);
+
+
+		//CBitmap bm;
+		//VERIFY( bm.CreateCompatibleBitmap( pCDestinationDeviceContext, ( rcItem.right - rcItem.left ), ( rcItem.bottom - rcItem.top ) ) );
+		//SelectObject_wrapper sobm(hInMemoryDeviceContext, bm.m_hObject);
+
+
 		RECT rect_to_fill_solidly = rcItem;
 		const tagPOINT point_to_offset_by = { rcItem.left, rcItem.top };
 		VERIFY( ::OffsetRect( &rect_to_fill_solidly, -( point_to_offset_by.x ), -( point_to_offset_by.y ) ) );
@@ -1102,6 +1128,8 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 			}
 
 		COwnerDrawnListCtrl::LoadPersistentAttributes( );
+		hwnd::InvalidateErase(m_hWnd);
+
 		}
 
 	void AdjustColumnWidth( RANGE_ENUM_COL const column::ENUM_COL col ) noexcept {
@@ -1749,7 +1777,8 @@ private:
 	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ const HDC hDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf, _In_ const HDC hAttribDC ) const noexcept {
 		const HPEN hPen = ::CreatePen( PS_SOLID, 1, gridColor );
 		ASSERT( hPen != NULL );
-		HPEN_wrapper pen( hPen );
+		//HPEN_wrapper pen( hPen );
+		HGDIOBJ_wrapper pen(hPen);
 		//CPen pen( PS_SOLID, 1, gridColor );
 
 

@@ -45,7 +45,7 @@ public:
 	HGDIOBJ m_hObject;
 	};
 
-using HPEN_wrapper = HGDIOBJ_wrapper;
+//using HPEN_wrapper = HGDIOBJ_wrapper;
 
 struct CSetBkMode final {
 	_Pre_satisfies_( ( mode == OPAQUE ) || ( mode == TRANSPARENT ) )

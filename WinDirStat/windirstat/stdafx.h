@@ -159,6 +159,14 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif
 #endif
 
+//In lots of STL for no apparent reasons.
+#pragma warning(disable:4571) //catch (...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught (compiling source file graphview.cpp)
+
+
+//All over the place. Honestly, we're not handling any sensitive data, so who cares
+#pragma warning(disable: 5045) //Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
+
+
 
 //#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
 //#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
