@@ -41,7 +41,7 @@ END_MESSAGE_MAP()
 
 BOOL CPageGeneral::OnInitDialog( ) {
 	CDialog::OnInitDialog( );
-	const auto Options = GetOptions( );
+	const COptions* const Options = GetOptions( );
 	m_humanFormat          = Options->m_humanFormat;
 	m_listGrid             = Options->m_listGrid;
 	m_listStripes          = Options->m_listStripes;

@@ -219,7 +219,7 @@ void CMountPoints::GetAllMountPoints( ) {
 			uniquePath_temp += point;
 			const std::wstring uniquePath( std::move( uniquePath_temp ) );
 			_Null_terminated_ wchar_t mountedVolume_[ volumeTCHARsize ] = { 0 };
-			BOOL b2 = ::GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
+			const BOOL b2 = ::GetVolumeNameForVolumeMountPointW( uniquePath.c_str( ), mountedVolume_, volumeTCHARsize );
 			if ( !b2 ) {
 #ifdef DEBUG
 				const DWORD lastErr = ::GetLastError( );

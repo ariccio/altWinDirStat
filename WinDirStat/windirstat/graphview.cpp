@@ -25,7 +25,7 @@ WDS_FILE_INCLUDE_MESSAGE
 namespace {
 
 	//TweakSizeOfRectangleForHightlight is called once, unconditionally.
-	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT* const rc, _Inout_ RECT* const rcClient, _In_ const bool grid ) noexcept {
+	inline void TweakSizeOfRectangleForHightlight( _Inout_ RECT* const rc, _In_ const RECT* const rcClient, _In_ const bool grid ) noexcept {
 		if ( grid ) {
 			rc->right++;
 			rc->bottom++;
@@ -126,7 +126,7 @@ void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context
 		const auto extensionStrPtr = item.CStyle_GetExtensionStrPtr( );
 		const auto scmp = ::wcscmp( extensionStrPtr, ext.c_str( ) );
 		if ( scmp == 0 ) {
-			auto rcc = item.TmiGetRectangle( );
+			const RECT rcc = item.TmiGetRectangle( );
 			return CGraphView::RenderHighlightRectangle( screen_device_context, rcc );
 			}
 		return;
@@ -136,7 +136,7 @@ void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context
 	}
 
 void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const noexcept {
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
 		return;
@@ -164,7 +164,7 @@ void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const noe
 	TweakSizeOfRectangleForHightlight( &rc, &rcClient, m_treemap.m_options.grid );
 
 	SelectStockObject_wrapper sobrush( screen_device_context, NULL_BRUSH );
-	const auto Options = GetOptions( );
+	const COptions* const Options = GetOptions( );
 
 	//See also:
 	//	CreatePen function: https://msdn.microsoft.com/en-us/library/dd183509.aspx
@@ -192,7 +192,7 @@ void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, 
 		//cause_OnIdle_to_be_called_once( );
 		return;
 		}
-	const auto Options = GetOptions( );
+	const COptions* const Options = GetOptions( );
 	const auto rootItem = Document->m_rootItem.get( );
 	ASSERT( rootItem != NULL );
 	if ( rootItem == NULL ) {
@@ -228,7 +228,7 @@ void CGraphView::SuspendRecalculation(const bool suspend) noexcept {
 
 void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 	ASSERT_VALID( pScreen_Device_Context );
-	const auto aDocument = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const aDocument = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( aDocument != NULL );
 	if ( aDocument == NULL ) {
 		return;
@@ -252,7 +252,7 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 
 
 void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	//Perhaps surprisingly, Document == NULL CAN be a valid condition. We don't have to set the message to anything if there's no document.
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&]{ reset_timer_if_zero( ); } );
 	if ( Document == NULL ) {
@@ -407,7 +407,7 @@ void CGraphView::DrawHighlights( _In_ const HDC screen_device_context ) const no
 
 void CGraphView::OnContextMenu( CWnd* /*pWnd*/, CPoint ptscreen ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	if ( Document == NULL ) {
 		TRACE( _T( "User tried to open a Context Menu, but the Document is NULL. Well, they'll get what they asked for: a (NULL context) menu :)\r\n" ) );//(NULL context) menu == no context menu
 		return;
@@ -437,7 +437,7 @@ void CGraphView::DrawHighlightExtension( _In_ const HDC screen_device_context ) 
 	SelectObject_wrapper sopen( screen_device_context, pen.m_hObject );
 	SelectStockObject_wrapper sobrush( screen_device_context, NULL_BRUSH );
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );;
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	if ( Document == NULL ) {
 		ASSERT( Document != NULL );
 		return;
@@ -524,7 +524,7 @@ void CGraphView::RenderHighlightRectangle( _In_ const HDC screen_device_context,
 		//VERIFY( pdc->Rectangle( &rc ) );		// w = 3
 		}
 	else {
-		const auto Options = GetOptions( );
+		const COptions* const Options = GetOptions( );
 
 
 		///*

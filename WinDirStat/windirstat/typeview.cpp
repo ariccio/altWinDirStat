@@ -317,8 +317,8 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ _In_range_( >=
 
 void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionRecord>* extData ) {
 	VERIFY( CListCtrl::DeleteAllItems( ) );
-	LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
-	auto startTime = help_QueryPerformanceCounter( );
+	const LARGE_INTEGER frequency = help_QueryPerformanceFrequency( );
+	const LARGE_INTEGER startTime = help_QueryPerformanceCounter( );
 
 	CListCtrl::SetItemCount( static_cast<int>( extData->size( ) + 1 ) );
 	m_exts.reset( );
@@ -370,7 +370,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 		}
 
 	CWnd::SetRedraw( TRUE );
-	auto doneTime = help_QueryPerformanceCounter( );
+	const LARGE_INTEGER doneTime = help_QueryPerformanceCounter( );
 	ASSERT( frequency.QuadPart != 0 );
 	const DOUBLE adjustedTimingFrequency = ( static_cast<DOUBLE>( 1.00 ) ) / static_cast<DOUBLE>( frequency.QuadPart );
 	m_adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
@@ -408,7 +408,7 @@ _Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const noexce
 		return L"";
 		}
 	const auto i = CListCtrl::GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
-	const auto item = CExtensionListControl::GetListItem( i );
+	const CListItem* const item = CExtensionListControl::GetListItem( i );
 	return item->m_name;
 	}
 
@@ -435,7 +435,7 @@ void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
-	LPNMLISTVIEW pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	const LPNMLISTVIEW const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	if ( ( pNMLV->uNewState bitand LVIS_SELECTED ) != 0 ) {
 		m_typeView->SetHighlightExtension( CExtensionListControl::GetSelectedExtension( ) );
 		}
@@ -565,7 +565,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 	RECT rect = { 0, 0, 0, 0 };
 	VERIFY( m_extensionListControl.CreateEx( 0, LVS_SINGLESEL | LVS_OWNERDRAWFIXED | LVS_SHOWSELALWAYS | WS_CHILD | WS_VISIBLE | LVS_REPORT, rect, this, _N_ID_EXTENSION_LIST_CONTROL ) );
 	m_extensionListControl.SetExtendedStyle( m_extensionListControl.GetExtendedStyle( ) | LVS_EX_HEADERDRAGDROP );
-	auto Options = GetOptions( );
+	const COptions* const Options = GetOptions( );
 	m_extensionListControl.ShowGrid( Options->m_listGrid );
 	m_extensionListControl.ShowStripes( Options->m_listStripes );
 	m_extensionListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
@@ -602,7 +602,7 @@ void CTypeView::OnUpdate0( ) noexcept {
 	}
 
 void CTypeView::OnUpdateHINT_LISTSTYLECHANGED( ) noexcept {
-	auto thisOptions = GetOptions( );
+	const COptions* const thisOptions = GetOptions( );
 	m_extensionListControl.ShowGrid( thisOptions->m_listGrid );
 	m_extensionListControl.ShowStripes( thisOptions->m_listStripes );
 	m_extensionListControl.ShowFullRowSelection( thisOptions->m_listFullRowSelection );
@@ -644,7 +644,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	}
 
 void CTypeView::SetSelection( ) noexcept {
-	const auto Document = CTypeView::GetDocument( );
+	const CDirstatDoc* const Document = CTypeView::GetDocument( );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
 		return;

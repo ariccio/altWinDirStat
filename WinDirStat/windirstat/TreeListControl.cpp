@@ -194,8 +194,8 @@ namespace {
 		};
 
 	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
-		const auto size1 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p1 ) ) )->size_recurse( );
-		const auto size2 = ( *( reinterpret_cast< const CTreeListItem * const* const >( p2 ) ) )->size_recurse( );
+		const auto size1 = ( *( static_cast< const CTreeListItem * const* const >( p1 ) ) )->size_recurse( );
+		const auto size2 = ( *( static_cast< const CTreeListItem * const* const >( p2 ) ) )->size_recurse( );
 		return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 		}
 
@@ -1083,7 +1083,7 @@ IMPLEMENT_DYNAMIC( CTreeListControl, COwnerDrawnListCtrl )
 _Pre_satisfies_( ( parent + 1 ) < index ) _Ret_range_( -1, INT_MAX ) 
 int CTreeListControl::collapse_parent_plus_one_through_index( _In_ const CTreeListItem* thisPath, const int index, _In_range_( 0, INT_MAX ) const int parent ) {
 	for ( int k = ( parent + 1 ); k < index; k++ ) {
-		const auto item_at_k = CTreeListControl::GetItem( k );
+		const CTreeListItem* const item_at_k = CTreeListControl::GetItem( k );
 		if ( item_at_k == NULL ) {
 			abort( );//Should never fail, so long as k is less than CListCtrl::GetItemCount( ) 
 			}
@@ -1135,7 +1135,7 @@ void CTreeListControl::expand_item_then_scroll_to_it( _In_ const CTreeListItem* 
 	CWnd::SetRedraw( FALSE );
 	CTreeListControl::expand_item_no_scroll_then_doWhateverJDoes( pathZero, index );
 	ASSERT( index >= 0 );
-	const auto item_at_index = CTreeListControl::GetItem( index );
+	const CTreeListItem* const item_at_index = CTreeListControl::GetItem( index );
 	ASSERT( item_at_index != NULL );
 	if ( item_at_index != NULL ) {
 		CTreeListControl::adjustColumnSize( item_at_index );
@@ -1436,7 +1436,7 @@ void CTreeListControl::handle_OnContextMenu( CPoint pt ) const {
 		return;
 		}
 
-	const auto item = CTreeListControl::GetItem( i );
+	const CTreeListItem* const item = CTreeListControl::GetItem( i );
 	const auto thisHeader = CListCtrl::GetHeaderCtrl( );
 	const auto rc = COwnerDrawnListCtrl::GetWholeSubitemRect( i, 0, thisHeader->m_hWnd );
 	if ( item == NULL ) {
@@ -1686,7 +1686,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 
 	WTL::CPoint pt = ( point - temp );
 
-	const auto item = CTreeListControl::GetItem( i );
+	const CTreeListItem* const item = CTreeListControl::GetItem( i );
 
 	m_lButtonDownItem = i;
 	
@@ -1722,7 +1722,7 @@ void CTreeListControl::OnLButtonDblClk( UINT nFlags, CPoint point ) {
 	}
 
 void CTreeListControl::ToggleExpansion( _In_ _In_range_( 0, INT_MAX ) const INT i ) {
-	const auto item_at_i = GetItem( i );
+	const CTreeListItem* const item_at_i = GetItem( i );
 	ASSERT( item_at_i != NULL );
 	if ( item_at_i == NULL ) {
 		TRACE( _T( "Can't toggle the expansion of a NULL item!! ( item # %i )\r\n" ), i );
@@ -1748,7 +1748,7 @@ int CTreeListControl::countItemsToDelete( _In_ const CTreeListItem* const item, 
 	const auto itemCount = CListCtrl::GetItemCount( );
 	const auto count_to_start_at = ( i + 1 );
 	for ( int k = count_to_start_at; k < itemCount; k++ ) {
-		const auto child = CTreeListControl::GetItem( k );
+		const CTreeListItem* const child = CTreeListControl::GetItem( k );
 		ASSERT( child != NULL );
 		if ( child != NULL ) {
 			if ( child->GetIndent( ) <= item->GetIndent( ) ) {
@@ -1829,7 +1829,7 @@ bool CTreeListControl::SelectedItemCanToggle( ) const {
 	if ( i == -1 ) {
 		return false;
 		}
-	const auto item = CTreeListControl::GetItem( i );
+	const CTreeListItem* const item = CTreeListControl::GetItem( i );
 	ASSERT( item != NULL );
 	if ( ( item != NULL ) && ( item->m_child_info.m_child_info_ptr != nullptr ) ) {
 		//ASSERT( ( item->m_childCount > 0 ) == ( item->m_child_info->m_childCount > 0 ) );
@@ -2067,7 +2067,7 @@ void CTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	return CTreeListControl::handle_remaining_keys( nChar, nRepCnt, nFlags );
 	}
 
-_Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ CTreeListItem* const child, _In_ const bool isDone ) {
+_Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const CTreeListItem* const parent, _In_ const CTreeListItem* const child, _In_ const bool isDone ) {
 	if ( parent == NULL ) {
 		ASSERT( m_pDocument == GetDocument( ) );
 		if ( m_pDocument == GetDocument( ) ) {

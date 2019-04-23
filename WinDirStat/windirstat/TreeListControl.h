@@ -325,7 +325,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 				int  EnumNode                                  ( _In_     const CTreeListItem* const item ) const;
 				void SetRootItem                               ( _In_opt_ const CTreeListItem* const root ) noexcept;
 		_Pre_satisfies_( !isDone )
-				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent,   _In_ CTreeListItem* const child, _In_ const bool isDone );
+				void OnChildAdded                              ( _In_opt_ const CTreeListItem* const parent,   _In_ const CTreeListItem* const child, _In_ const bool isDone );
 				INT  find_item_then_show_first_try_failed      ( _In_     const CTreeListItem* const path,     _In_ const int i );
 				void find_item_then_show                       ( _In_     const CTreeListItem* const path,     _In_ const int i, int& parent, _In_ const bool showWholePath, _In_ const CTreeListItem* const target_in_path );
 				void expand_item_then_scroll_to_it             ( _In_     const CTreeListItem* const pathZero,      _In_range_( 0, INT_MAX ) const int index, _In_ const bool showWholePath );

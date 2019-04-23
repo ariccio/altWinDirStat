@@ -305,7 +305,7 @@ std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, const bool humanF
 	const rsize_t strSize = 21;
 	_Null_terminated_ wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 	rsize_t chars_written = 0;
-	auto res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
+	const HRESULT res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );
 	if ( SUCCEEDED( res ) ) {
 		return psz_formatted_longlong;
 		}

@@ -131,7 +131,7 @@ _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) noexcept {
 	}
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) noexcept {
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {
 		return;
@@ -145,7 +145,7 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) noexcept {
 	}
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {
 		TRACE( _T( "Document is NULL, CDirstatView::OnUpdateHINT_SELECTIONCHANGED can't do jack shit.\r\n" ) );
@@ -165,7 +165,7 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
-	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
+	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );//The document is NULL??!? WTF
 	if ( Document == NULL ) {
 		return;
@@ -183,7 +183,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 
 
 void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
-	const auto pNMLV = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
+	const LPNMLISTVIEW const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	//( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );//WTF
 	ASSERT( pResult != NULL );
 	if ( pResult != NULL ) {
@@ -198,7 +198,11 @@ void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
 		}
 	// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
 	const bool selected = ( ( m_treeListControl.GetItemState( pNMLV->iItem, LVIS_SELECTED ) & LVIS_SELECTED ) != 0 );
-	const auto item = static_cast< CTreeListItem * >( m_treeListControl.GetItem( pNMLV->iItem ) );
+	
+	//BUGBUG why?
+	//const CTreeListItem* const item = static_cast< CTreeListItem* >( m_treeListControl.GetItem( pNMLV->iItem ) );
+	const CTreeListItem* const item = m_treeListControl.GetItem(pNMLV->iItem);
+	
 	ASSERT( item != NULL );//We got a NULL item??!? WTF
 	if ( item == NULL ) {
 		return;

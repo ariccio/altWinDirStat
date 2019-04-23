@@ -123,7 +123,7 @@ SetProcessMitigationPolicy(
 	void enable_heap_security_crash_on_corruption( ) {
 
 		//If the function succeeds, the return value is nonzero.
-		BOOL heap_set_info_result = ::HeapSetInformation( NULL, HeapEnableTerminationOnCorruption, NULL, 0u );
+		const BOOL heap_set_info_result = ::HeapSetInformation( NULL, HeapEnableTerminationOnCorruption, NULL, 0u );
 		if ( heap_set_info_result == 0 ) {
 			TRACE( _T( "HeapSetInformation failed!\r\n" ) );
 			}
@@ -408,7 +408,7 @@ void CDirstatApp::OnFileOpenLight( ) {
 	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
 	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
-	auto resDoModal = bob.DoModal( );
+	const INT_PTR resDoModal = bob.DoModal( );
 	if ( resDoModal == IDOK ) {
 		PCWSTR const m_folder_name_heap( bob.GetFolderPath( ) );
 		if ( wcslen( m_folder_name_heap ) > 0 ) {

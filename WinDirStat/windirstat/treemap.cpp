@@ -584,7 +584,7 @@ namespace {
 			}
 		}
 
-	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) DOUBLE* const sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
+	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );

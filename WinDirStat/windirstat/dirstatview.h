@@ -189,14 +189,14 @@ protected:
 	void OnUpdateHINT_LISTSTYLECHANGED( ) noexcept {
 		
 		trace_ListStyleCha( );
-		const auto Options = GetOptions( );
+		const COptions* const Options = GetOptions( );
 		m_treeListControl.ShowGrid( Options->m_listGrid );
 		m_treeListControl.ShowStripes( Options->m_listStripes );
 		m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );
 		}
 
 	void SetTreeListControlOptions( ) noexcept {
-		const auto Options = GetOptions( );
+		const COptions* const Options = GetOptions( );
 		m_treeListControl.ShowGrid            ( Options->m_listGrid             );
 		m_treeListControl.ShowStripes         ( Options->m_listStripes          );
 		m_treeListControl.ShowFullRowSelection( Options->m_listFullRowSelection );

@@ -1706,7 +1706,7 @@ protected:
 		//WTL::CWaitCursor wc;
 		ASSERT( pNMHDR != NULL );
 		if ( pNMHDR != NULL ) {
-			auto phdr = reinterpret_cast< LPNMHEADER >( pNMHDR );
+			const LPNMHEADER const phdr = reinterpret_cast< const LPNMHEADER >( pNMHDR );
 			const INT subitem = phdr->iItem;
 			COwnerDrawnListCtrl::AdjustColumnWidth( static_cast<column::ENUM_COL>( subitem ) );
 			}
@@ -1724,7 +1724,7 @@ protected:
 		hwnd::InvalidateErase(NULL);
 		}
 	afx_msg void OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
-		const auto phdr = reinterpret_cast<LPNMHEADERW>(pNMHDR);
+		const LPNMHEADERW const phdr = reinterpret_cast<const LPNMHEADERW>(pNMHDR);
 		*pResult = 0;
 		const auto col = static_cast<column::ENUM_COL>( phdr->iItem );
 		if ( col == m_sorting.column1 ) {
@@ -2113,7 +2113,7 @@ private:
 		auto di = reinterpret_cast< NMLVDISPINFOW* >( pNMHDR );
 		*pResult = 0;
 		ASSERT( di->item.iItem <= CListCtrl::GetItemCount( ) );
-		auto item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
+		const COwnerDrawnListItem* const item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
 		ASSERT( item != NULL );
 		if ( item == NULL ) {
 			return;

@@ -88,7 +88,7 @@ BOOL CPageTreemap::OnInitDialog( ) {
 	//m_lightSource.SetRange( CSize { 400, 400 } );
 	m_lightSource.m_externalRange = WTL::CSize { 400, 400 };
 	
-	const auto Options = GetOptions( );
+	const COptions* const Options = GetOptions( );
 	m_options = Options->m_treemapOptions;
 	m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
 

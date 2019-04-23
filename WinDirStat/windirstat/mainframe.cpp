@@ -552,8 +552,8 @@ void CMainFrame::OnDestroy( ) {
 	auto wp = zero_init_struct<WINDOWPLACEMENT>( );
 	CWnd::GetWindowPlacement( &wp );
 	CPersistence::SetMainWindowPlacement( wp );
-	const auto TypeView = GetTypeView( );
-	const auto GraphView = GetGraphView( );
+	const CTypeView* const TypeView = GetTypeView( );
+	const CGraphView* const GraphView = GetGraphView( );
 	if ( TypeView != NULL ) {
 		CPersistence::SetShowFileTypes( TypeView->m_showTypes );
 		}
@@ -773,7 +773,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 
 	DOUBLE populateTiming_scopeholder = -1;
 	DOUBLE averageExtLeng_scopeholder = -1;
-	const auto TypeView = GetTypeView( );
+	const CTypeView* const TypeView = GetTypeView( );
 	if ( TypeView != NULL ) {
 		populateTiming_scopeholder = TypeView->m_extensionListControl.m_adjustedTiming;
 		averageExtLeng_scopeholder = TypeView->m_extensionListControl.m_averageExtensionNameLength;
@@ -819,7 +819,7 @@ void CMainFrame::SetSelectionMessageText( ) noexcept {
 			return CFrameWnd::SetMessageText( m_drawTiming.c_str( ) );
 		case LOGICAL_FOCUS::LF_DIRECTORYLIST:
 			{
-			const auto Document = GetDocument( );
+			const CDirstatDoc* const Document = GetDocument( );
 			ASSERT( Document != NULL );
 			if ( Document == NULL ) {
 				CFrameWnd::SetMessageText( _T( "No document?" ) );
@@ -867,7 +867,7 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 	}
 
 void CMainFrame::OnUpdateViewShowtreemap( CCmdUI *pCmdUI ) {
-	const auto GraphView = GetGraphView( );
+	const CGraphView* const GraphView = GetGraphView( );
 	ASSERT( GraphView != NULL );
 	if ( GraphView == NULL ) {
 		return;
@@ -890,7 +890,7 @@ void CMainFrame::OnViewShowtreemap( ) {
 	}
 
 void CMainFrame::OnUpdateViewShowfiletypes( CCmdUI *pCmdUI ) {
-	const auto TypeView = GetTypeView( );
+	const CTypeView* const TypeView = GetTypeView( );
 	ASSERT( TypeView != NULL );
 	if ( TypeView == NULL ) {
 		return;
@@ -908,7 +908,7 @@ void CMainFrame::OnViewShowGrid( ) {
 	}
 
 void CMainFrame::OnUpdateViewShowGrid( CCmdUI *pCmdUI ) {
-	const auto Options = GetOptions( );
+	const COptions* const Options = GetOptions( );
 	if ( Options == NULL ) {
 		return;
 		}

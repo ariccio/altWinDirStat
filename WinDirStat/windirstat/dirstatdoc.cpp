@@ -125,7 +125,7 @@ namespace {
 
 	_Success_( return > 32 ) INT_PTR ShellExecuteWithAssocDialog( _In_ const HWND hwnd, _In_ std::wstring filename ) {
 		//WTL::CWaitCursor wc;
-		auto u = reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
+		const INT_PTR u = reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
 		if ( u == SE_ERR_NOASSOC ) {
 			// Q192352
 			const rsize_t dir_buf_size = MAX_PATH;
@@ -611,9 +611,9 @@ bool CDirstatDoc::Work( ) {
 			path = L"\\\\?\\" + path;
 			TRACE( _T( "path fixed as: %s\r\n" ), path.c_str( ) );
 			}
-		const auto thisApp = m_appptr;
+		const CDirstatApp* const thisApp = m_appptr;
 		
-		auto timing_and_elevate = DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
+		const std::pair<DOUBLE, bool> timing_and_elevate = DoSomeWorkShim( m_rootItem.get( ), std::move( path ), thisApp, true );
 		m_compressed_file_timing = timing_and_elevate.first;
 		const bool should_we_elevate = timing_and_elevate.second;
 		ASSERT( m_rootItem->m_attr.m_done );

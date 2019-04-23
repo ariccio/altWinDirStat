@@ -45,7 +45,7 @@ namespace {
 		//FILEINFO& operator=( const FILEINFO& in ) = delete;
 		DISALLOW_COPY_AND_ASSIGN( FILEINFO );
 
-		FILEINFO& operator=( FILEINFO&& in ) {
+		FILEINFO& operator=( FILEINFO&& in ) noexcept {
 			length = std::move( in.length );
 			lastWriteTime = std::move( in.lastWriteTime );
 			attributes = std::move( in.attributes );
@@ -54,7 +54,7 @@ namespace {
 			}
 
 
-		FILEINFO( FILEINFO&& in ) {
+		FILEINFO( FILEINFO&& in ) noexcept {
 			length = std::move( in.length );
 			lastWriteTime = std::move( in.lastWriteTime );
 			attributes = std::move( in.attributes );
@@ -101,7 +101,7 @@ namespace {
 
 	struct DIRINFO final {
 		DIRINFO( ) { }
-		DIRINFO( DIRINFO&& in ) {
+		DIRINFO( DIRINFO&& in ) noexcept {
 			length = std::move( in.length );
 			lastWriteTime = std::move( in.lastWriteTime );
 			attributes = std::move( in.attributes );
@@ -1027,7 +1027,11 @@ bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ co
 
 _Success_( return < UINT64_ERROR )
 const std::uint64_t get_uncompressed_file_size( _In_ const CTreeListItem* const item ) {
-	const auto derived_item = static_cast< const CTreeListItem* const >( item );
+	
+	//WTF BUGBUG why?
+	//const auto derived_item = static_cast< const CTreeListItem* const >( item );
+	const CTreeListItem* const derived_item = item;
+
 
 	if ( derived_item->m_child_info.m_child_info_ptr != nullptr ) {
 		TRACE( _T( "It looks like item `%s` has children, we can skip querying compressed file size.\r\n" ), derived_item->GetPath( ).c_str( ) );
