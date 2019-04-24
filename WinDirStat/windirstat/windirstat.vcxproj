@@ -213,6 +213,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -263,6 +264,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -320,6 +322,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -405,6 +408,7 @@
       <OffloadConstructs>Optional</OffloadConstructs>
       <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -490,6 +494,7 @@
       <Optimization>Full</Optimization>
       <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -557,6 +562,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>false</TreatWarningAsError>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -620,6 +626,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -681,6 +688,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

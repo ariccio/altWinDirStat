@@ -133,7 +133,7 @@ public: \
 	_Ret_maybenull_ static CMainFrame* GetTheFrame( );
 
 	virtual ~CMainFrame( ) final {
-		_theFrame = { NULL };
+		_theFrame = { nullptr };
 		}
 	
 	

@@ -29,7 +29,7 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	PAINTSTRUCT ps = { 0 };
 
 	HDC hDC = ATL::CWindow::BeginPaint( &ps );
-	ASSERT( hDC != NULL );
+	ASSERT( hDC != nullptr);
 
 	RECT rc;
 

@@ -79,7 +79,7 @@ _AFXWIN_INLINE UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT nElapse,
 		//If [SetTimer] fails to create a timer, the return value is zero. To get extended error information, call GetLastError.
 		//m_timer = SetTimer( 4711, 500, NULL );
 
-		const auto temp_timer_value = ::SetTimer( m_hWnd, 4711u, 500u, NULL );
+		const auto temp_timer_value = ::SetTimer( m_hWnd, 4711u, 500u, nullptr );
 		//TODO: check this value!
 		ASSERT( temp_timer_value != 0 );
 		m_timer = temp_timer_value;

@@ -119,7 +119,7 @@ void CMountPoints::GetDriveVolumes( ) noexcept {
 		if ( ( drives bitand mask ) != 0 ) {
 			const auto swps = swprintf_s( small_buffer_volume_name, L"%c:\\", ( i + _T( 'A' ) ) );
 			if ( swps == -1 ) {
-				::MessageBoxW( NULL, L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)", L"Error", MB_OK );
+				::MessageBoxW( nullptr, L"unexpected error in CMountPoints::GetDriveVolumes!!(aborting)", L"Error", MB_OK );
 				std::terminate( );
 				}
 			ASSERT( wcslen( small_buffer_volume_name ) < 5 );
@@ -164,7 +164,7 @@ void CMountPoints::GetAllMountPoints( ) {
 
 		DWORD sysflags;
 		_Null_terminated_ wchar_t fsname_[ volumeTCHARsize ] = { 0 };
-		const BOOL b = ::GetVolumeInformationW( volume, NULL, 0, NULL, NULL, &sysflags, fsname_, volumeTCHARsize );
+		const BOOL b = ::GetVolumeInformationW( volume, nullptr, 0, nullptr, nullptr, &sysflags, fsname_, volumeTCHARsize );
 		if ( !b ) {
 #ifdef DEBUG
 			const DWORD lastErr = ::GetLastError( );

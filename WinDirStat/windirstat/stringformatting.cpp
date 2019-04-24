@@ -62,7 +62,7 @@ namespace {
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	_Success_( SUCCEEDED( return ) ) inline HRESULT CStyle_FormatDouble( _In_ const DOUBLE d, WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_double, _In_range_( 17, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) {
 		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, NULL, &chars_remaining, 0, L"%.1f", d );
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_double, strSize, nullptr, &chars_remaining, 0, L"%.1f", d );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
@@ -95,7 +95,7 @@ namespace {
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_B( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B ) {
 		size_t remaining_chars = 0;
-		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
+		const HRESULT res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, nullptr, &remaining_chars, 0, L"%i Bytes", static_cast<INT>( B ) );
 		ASSERT( SUCCEEDED( res ) );
 		if ( SUCCEEDED( res ) ) {
 			ASSERT( strSize >= remaining_chars );
@@ -127,7 +127,7 @@ namespace {
 		
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s KB", buffer );
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, nullptr, &chars_remaining, 0, L"%s KB", buffer );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
@@ -163,7 +163,7 @@ namespace {
 		
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s MB", buffer );
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, nullptr, &chars_remaining, 0, L"%s MB", buffer );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
@@ -197,7 +197,7 @@ namespace {
 		
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s GB", buffer );
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, nullptr, &chars_remaining, 0, L"%s GB", buffer );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );
@@ -230,7 +230,7 @@ namespace {
 			}
 		ASSERT( wcslen( buffer ) == buffer_chars_written );
 		rsize_t chars_remaining = 0;
-		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, NULL, &chars_remaining, 0, L"%s TB", buffer );
+		const HRESULT fmt_res = StringCchPrintfExW( psz_formatted_LONGLONG_HUMAN, strSize, nullptr, &chars_remaining, 0, L"%s TB", buffer );
 		ASSERT( SUCCEEDED( fmt_res ) );
 		if ( SUCCEEDED( fmt_res ) ) {
 			chars_written = ( strSize - chars_remaining );

@@ -105,8 +105,8 @@ AFX_COMDAT const CRuntimeClass CDirstatView::classCDirstatView = {
 	0xFFFF /*wSchema*/,
 	CDirstatView::CreateObject /*pfnNew*/,
 	(const_cast<CRuntimeClass*>(&CView::classCView)) /*RUNTIME_CLASS(CView)*/ /*m_pBaseClass*/,
-	NULL /*m_pNextClass*/,
-	NULL /*class_init*/
+	nullptr /*m_pNextClass*/,
+	nullptr /*class_init*/
 	};
 
 CRuntimeClass* CDirstatView::GetRuntimeClass() const {
@@ -132,12 +132,12 @@ _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) noexcept {
 
 void CDirstatView::OnUpdateHINT_NEWROOT( ) noexcept {
 	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
-	ASSERT( Document != NULL );//The document is NULL??!? WTF
-	if ( Document == NULL ) {
+	ASSERT( Document != nullptr );//The document is NULL??!? WTF
+	if ( Document == nullptr ) {
 		return;
 		}
 	const auto newRootItem = Document->m_rootItem.get( );
-	if ( newRootItem != NULL ) {
+	if ( newRootItem != nullptr ) {
 		m_treeListControl.SetRootItem( newRootItem );
 		VERIFY( m_treeListControl.RedrawItems( 0, m_treeListControl.GetItemCount( ) - 1 ) );
 		return;
@@ -146,16 +146,16 @@ void CDirstatView::OnUpdateHINT_NEWROOT( ) noexcept {
 
 void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
-	ASSERT( Document != NULL );//The document is NULL??!? WTF
-	if ( Document == NULL ) {
+	ASSERT( Document != nullptr );//The document is NULL??!? WTF
+	if ( Document == nullptr ) {
 		TRACE( _T( "Document is NULL, CDirstatView::OnUpdateHINT_SELECTIONCHANGED can't do jack shit.\r\n" ) );
 		return;
 		}
 	trace_SelectionCha( );
 		
 	const auto Selection = Document->m_selectedItem;
-	ASSERT( Selection != NULL );
-	if ( Selection == NULL ) {
+	ASSERT( Selection != nullptr );
+	if ( Selection == nullptr) {
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
 		return;
 		}
@@ -166,13 +166,13 @@ void CDirstatView::OnUpdateHINT_SELECTIONCHANGED( ) {
 
 void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
-	ASSERT( Document != NULL );//The document is NULL??!? WTF
-	if ( Document == NULL ) {
+	ASSERT( Document != nullptr );//The document is NULL??!? WTF
+	if ( Document == nullptr ) {
 		return;
 		}
 	const auto Selection = Document->m_selectedItem;
-	ASSERT( Selection != NULL );
-	if ( Selection == NULL ) {
+	ASSERT( Selection != nullptr );
+	if ( Selection == nullptr ) {
 		TRACE( _T( "I was told that the selection changed, but found a NULL selection. I can neither select nor show NULL - What would that even mean??\r\n" ) );
 		return;
 		}
@@ -185,8 +185,8 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
 	const LPNMLISTVIEW const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	//( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );//WTF
-	ASSERT( pResult != NULL );
-	if ( pResult != NULL ) {
+	ASSERT( pResult != nullptr );
+	if ( pResult != nullptr ) {
 		*pResult = 0;
 		}
 	if ( ( pNMLV->uChanged & LVIF_STATE ) == 0 ) {
@@ -203,14 +203,14 @@ void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
 	//const CTreeListItem* const item = static_cast< CTreeListItem* >( m_treeListControl.GetItem( pNMLV->iItem ) );
 	const CTreeListItem* const item = m_treeListControl.GetItem(pNMLV->iItem);
 	
-	ASSERT( item != NULL );//We got a NULL item??!? WTF
-	if ( item == NULL ) {
+	ASSERT( item != nullptr );//We got a NULL item??!? WTF
+	if ( item == nullptr ) {
 		return;
 		}
 	if ( selected ) {
 		const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
-		ASSERT( Document != NULL );
-		if ( Document == NULL ) {
+		ASSERT( Document != nullptr );
+		if ( Document == nullptr ) {
 			TRACE( _T( "I'm told that the selection has changed in a NULL document?!?? This can't be right.\r\n" ) );
 			return;
 			}

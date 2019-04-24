@@ -553,7 +553,7 @@ _Success_( SUCCEEDED( return ) )
 const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {
 	ASSERT( new_name_length < UINT16_MAX );
 	new_name_ptr = new wchar_t[ new_name_length + 2u ];
-	PWSTR pszend = NULL;
+	PWSTR pszend = nullptr;
 	rsize_t chars_remaining = new_name_length;
 	const HRESULT res = ::StringCchCopyExW( new_name_ptr, ( new_name_length + 1u ), name.c_str( ), &pszend, &chars_remaining, 0 );
 	ASSERT( SUCCEEDED( res ) );
@@ -605,7 +605,7 @@ const LARGE_INTEGER help_QueryPerformanceCounter( ) noexcept {
 	const BOOL behavedWell = ::QueryPerformanceCounter( &doneTime );
 	ASSERT( behavedWell );
 	if ( !behavedWell ) {
-		::MessageBoxW( NULL, L"QueryPerformanceCounter failed!!", L"ERROR!", MB_OK );
+		::MessageBoxW( nullptr, L"QueryPerformanceCounter failed!!", L"ERROR!", MB_OK );
 		doneTime.QuadPart = -1;
 		}
 	return doneTime;
@@ -629,7 +629,7 @@ static_assert( SUCCEEDED( S_OK ), "CStyle_GetLastErrorAsFormattedMessage doesn't
 _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_error, _In_range_( 128, 32767 ) const rsize_t strSize, _Out_ rsize_t& chars_written, const DWORD error ) noexcept {
 	//const auto err = GetLastError( );
 	const auto err = error;
-	const auto ret = ::FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), NULL );
+	const auto ret = ::FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), psz_formatted_error, static_cast<DWORD>( strSize ), nullptr );
 	if ( ret != 0 ) {
 		chars_written = ret;
 		return S_OK;
@@ -718,7 +718,7 @@ void displayWindowsMsgBoxWithError( const DWORD error ) noexcept {
 	const HRESULT err_res = CStyle_GetLastErrorAsFormattedMessage( err_msg, err_msg_size, chars_written, error );
 	ASSERT( SUCCEEDED( err_res ) );
 	if ( SUCCEEDED( err_res ) ) {
-		::MessageBoxW( NULL, err_msg, L"Error", MB_OK );
+		::MessageBoxW( nullptr, err_msg, L"Error", MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg );
 		return;
 		}
@@ -730,12 +730,12 @@ void displayWindowsMsgBoxWithError( const DWORD error ) noexcept {
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );
 	ASSERT( SUCCEEDED( err_res_2 ) );
 	if ( SUCCEEDED( err_res_2 ) ) {
-		::MessageBoxW( NULL, err_msg_2, L"Error", MB_OK );
+		::MessageBoxW( nullptr, err_msg_2, L"Error", MB_OK );
 		TRACE( _T( "Error: %s\r\n" ), err_msg_2 );
 		return;
 		}
 	TRACE( _T( "Error while getting error message!\r\n" ), err_msg_2 );
-	::MessageBoxW( NULL, L"Error while getting error message!\r\n", TEXT( "Error" ), MB_OK );
+	::MessageBoxW( nullptr, L"Error while getting error message!\r\n", TEXT( "Error" ), MB_OK );
 	}
 
 //This is an error handling function, and is intended to be called rarely!
@@ -753,14 +753,14 @@ void displayWindowsMsgBoxWithMessage( const std::string message ) {
 	//auto convert_obj = stdext::cvt::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>, wchar_t>( );
 
 	//const auto new_wide_str = convert_obj.from_bytes( message );
-	::MessageBoxA( NULL, message.c_str( ), "Error", MB_OK | MB_ICONINFORMATION );
+	::MessageBoxA( nullptr, message.c_str( ), "Error", MB_OK | MB_ICONINFORMATION );
 	TRACE( _T( "Error: %S\r\n" ), message.c_str( ) );
 	}
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
 void displayWindowsMsgBoxWithMessage( PCWSTR const message ) noexcept {
-	::MessageBoxW( NULL, message, L"Error", MB_OK );
+	::MessageBoxW( nullptr, message, L"Error", MB_OK );
 	TRACE( _T( "Error: %s\r\n" ), message );
 	}
 

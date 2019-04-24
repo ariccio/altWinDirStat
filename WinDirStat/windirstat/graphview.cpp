@@ -64,7 +64,7 @@ CGraphView::CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( tr
 	}
 
 
-AFX_COMDAT const CRuntimeClass CGraphView::classCGraphView = { "CGraphView", sizeof( class CGraphView ), 0xFFFF, &( CGraphView::CreateObject ), const_cast<CRuntimeClass*>( &CView::classCView ), NULL, NULL };
+AFX_COMDAT const CRuntimeClass CGraphView::classCGraphView = { "CGraphView", sizeof( class CGraphView ), 0xFFFF, &( CGraphView::CreateObject ), const_cast<CRuntimeClass*>( &CView::classCView ), nullptr, nullptr };
 
 const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 	typedef CGraphView ThisClass;
@@ -137,12 +137,12 @@ void CGraphView::RecurseHighlightExtension( _In_ const HDC screen_device_context
 
 void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const noexcept {
 	const CDirstatDoc* const Document = static_cast<CDirstatDoc*>( m_pDocument );
-	ASSERT( Document != NULL );
-	if ( Document == NULL ) {
+	ASSERT( Document != nullptr);
+	if ( Document == nullptr) {
 		return;
 		}
 	const auto item = Document->m_selectedItem;
-	if ( item == NULL ) {//no selection to draw.
+	if ( item == nullptr) {//no selection to draw.
 		return;
 		}
 	RECT rcClient = { 0 };
@@ -285,12 +285,12 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 	*/
 
 	const CTreeListItem* const item = m_treemap.FindItemByPoint( root, point, NULL );
-	if ( item == NULL ) {
+	if ( item == nullptr ) {
 		TRACE( _T( "There's nothing with a path, therefore nothing for which we can set the message text.\r\n" ) );
 		return;
 		}
-	ASSERT( m_frameptr != NULL );
-	if ( m_frameptr == NULL ) {
+	ASSERT( m_frameptr != nullptr );
+	if ( m_frameptr == nullptr ) {
 		return;
 		}
 #ifdef DEBUG
@@ -304,22 +304,22 @@ void CGraphView::OnMouseMove( UINT /*nFlags*/, CPoint point ) {
 
 
 void CGraphView::OnSetFocus( CWnd* /*pOldWnd*/ ) {
-	ASSERT( m_frameptr != NULL );
-	if ( m_frameptr == NULL ) {
+	ASSERT( m_frameptr != nullptr );
+	if ( m_frameptr == nullptr ) {
 		return;
 		}
 	const auto DirstatView = m_frameptr->GetDirstatView( );
-	ASSERT( DirstatView != NULL );
-	if ( DirstatView == NULL ) {
+	ASSERT( DirstatView != nullptr );
+	if ( DirstatView == nullptr ) {
 		return;
 		}
 
 	//TODO: BUGBUG: WTF IS THIS??!?
 	auto junk = DirstatView->SetFocus( );
-	if ( junk != NULL ) {
-		junk = { NULL };//Don't use return CWnd* right now.
+	if ( junk != nullptr ) {
+		junk = { nullptr };//Don't use return CWnd* right now.
 		}
-	else if ( junk == NULL ) {
+	else if ( junk == nullptr ) {
 		TRACE( _T( "I'm told I set focus to NULL. That's weird.\r\n" ) );
 		}
 	}
@@ -359,13 +359,13 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//auto Document = static_cast< CDirstatDoc* >( m_pDocument );
 	const auto Document = static_cast<CDirstatDoc*>( m_pDocument );
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [=]{ CWnd::OnLButtonDown( nFlags, point ); } );
-	if ( Document == NULL ) {
+	if ( Document == nullptr ) {
 		TRACE( _T( "User clicked on nothing. User CAN click on nothing. That's a sane case.\r\n" ) );
 		//return CView::OnLButtonDown( nFlags, point );
 		return;
 		}
 	const auto root = Document->m_rootItem.get( );
-	if ( root == NULL ) {
+	if ( root == nullptr ) {
 		//return CView::OnLButtonDown( nFlags, point );
 		return;
 		}
@@ -383,12 +383,12 @@ void CGraphView::OnLButtonDown( UINT nFlags, CPoint point ) {
 		}
 
 	const CTreeListItem* const item = m_treemap.FindItemByPoint( root, point, Document );
-	if ( item == NULL ) {
+	if ( item == nullptr ) {
 		//return CView::OnLButtonDown( nFlags, point );
 		return;
 		}
 	Document->SetSelection( *item );
-	Document->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
+	Document->UpdateAllViews( nullptr, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
 	//CView::OnLButtonDown( nFlags, point );
 	return;
 	}

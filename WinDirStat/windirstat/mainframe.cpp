@@ -152,10 +152,10 @@ AFX_COMDAT const CRuntimeClass WDSOptionsPropertySheet::classWDSOptionsPropertyS
 		"WDSOptionsPropertySheet" /*m_lpszClassName*/,
 		sizeof(struct WDSOptionsPropertySheet) /*m_nObjectSize*/,
 		0xFFFF /*wSchema*/,
-		NULL /*pfnNew*/,
+		nullptr /*pfnNew*/,
 		(const_cast<CRuntimeClass*>(&CPropertySheet::classCPropertySheet)) /*RUNTIME_CLASS(CPropertySheet)*/ /*m_pBaseClass*/,
-		NULL,
-		NULL };
+		nullptr,
+		nullptr };
 
 CRuntimeClass* WDSOptionsPropertySheet::GetRuntimeClass() const {
 	return (const_cast<CRuntimeClass*>(&WDSOptionsPropertySheet::classWDSOptionsPropertySheet)); // RUNTIME_CLASS(WDSOptionsPropertySheet);
@@ -287,8 +287,8 @@ void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 	auto splitter_persist = WDS_SCOPEGUARD_INSTANCE( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
 
 	if ( CSplitterWnd::GetColumnCount( ) > 1 ) {
-		ASSERT( m_pColInfo != NULL );
-		if ( m_pColInfo == NULL ) {
+		ASSERT( m_pColInfo != nullptr );
+		if ( m_pColInfo == nullptr ) {
 			return;
 			}
 		const auto cxLeft = static_cast< INT >( pos * ( rcClient.right - rcClient.left ) );
@@ -299,8 +299,8 @@ void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 			}
 		return;
 		}
-	ASSERT( m_pRowInfo != NULL );
-	if ( m_pRowInfo == NULL ) {
+	ASSERT( m_pRowInfo != nullptr );
+	if ( m_pRowInfo == nullptr ) {
 		return;
 		}
 	const auto cyUpper = static_cast< INT >( pos * ( rcClient.bottom - rcClient.top ) );
@@ -407,8 +407,8 @@ AFX_COMDAT const CRuntimeClass CMainFrame::classCMainFrame = {
 	0xFFFF /*wSchema*/,
 	CMainFrame::CreateObject /*pfnNew*/,
 	(const_cast<CRuntimeClass*>(&CFrameWnd::classCFrameWnd)) /*RUNTIME_CLASS(CFrameWnd)*/ /*m_pBaseClass*/,
-	NULL /*m_pNextClass*/,
-	NULL /*class_init*/
+	nullptr /*m_pNextClass*/,
+	nullptr /*class_init*/
 	};
 
 CRuntimeClass* CMainFrame::GetRuntimeClass() const {
@@ -472,7 +472,7 @@ INT CMainFrame::OnCreate( const LPCREATESTRUCT lpCreateStruct ) {
 
 	RECT rc = { 0, 0, 0, 0 };
 
-	m_wndDeadFocus.Create( m_hWnd, rc, _T( "_deadfocus" ), WS_CHILD, 0, dead_focus_wnd::IDC_DEADFOCUS, NULL );
+	m_wndDeadFocus.Create( m_hWnd, rc, _T( "_deadfocus" ), WS_CHILD, 0, dead_focus_wnd::IDC_DEADFOCUS, nullptr );
 	//m_wndDeadFocus.Create( this );
 
 	CFrameWnd::EnableDocking( CBRS_ALIGN_ANY );
@@ -554,10 +554,10 @@ void CMainFrame::OnDestroy( ) {
 	CPersistence::SetMainWindowPlacement( wp );
 	const CTypeView* const TypeView = GetTypeView( );
 	const CGraphView* const GraphView = GetGraphView( );
-	if ( TypeView != NULL ) {
+	if ( TypeView != nullptr ) {
 		CPersistence::SetShowFileTypes( TypeView->m_showTypes );
 		}
-	if ( GraphView != NULL ) {
+	if ( GraphView != nullptr ) {
 		CPersistence::SetShowTreemap( GraphView->m_showTreemap );
 		}
 	CFrameWnd::OnDestroy( );
@@ -582,10 +582,10 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 
 	const auto TypeView = GetTypeView( );
 	const auto GraphView = GetGraphView( );
-	if ( TypeView != NULL ) {
+	if ( TypeView != nullptr ) {
 		TypeView->ShowTypes( CPersistence::GetShowFileTypes( ) );
 		}
-	if ( GraphView != NULL ) {
+	if ( GraphView != nullptr ) {
 		GraphView->m_showTreemap = CPersistence::GetShowTreemap( );
 		}
 	return TRUE;
@@ -593,7 +593,7 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 
 void CMainFrame::RestoreTypeView( ) noexcept {
 	const auto thisTypeView = GetTypeView( );
-	if ( thisTypeView == NULL ) {
+	if ( thisTypeView == nullptr ) {
 		return;
 		}
 	if ( thisTypeView->m_showTypes ) {
@@ -605,7 +605,7 @@ void CMainFrame::RestoreTypeView( ) noexcept {
 
 void CMainFrame::RestoreGraphView( ) noexcept {
 	const auto thisGraphView = GetGraphView( );
-	if ( thisGraphView == NULL ) {
+	if ( thisGraphView == nullptr ) {
 		return;
 		}
 	if ( !( thisGraphView->m_showTreemap ) ) {
@@ -666,7 +666,7 @@ _Must_inspect_result_ _Ret_maybenull_ CTypeView* CMainFrame::GetTypeView( ) cons
 
 LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
 	const auto GraphView = GetGraphView( );
-	if ( GraphView != NULL ) {
+	if ( GraphView != nullptr ) {
 		GraphView->SuspendRecalculation( true );
 		}
 	return 0;
@@ -674,7 +674,7 @@ LRESULT CMainFrame::OnEnterSizeMove( const WPARAM, const LPARAM ) {
 
 LRESULT CMainFrame::OnExitSizeMove( const WPARAM, const LPARAM ) {
 	const auto GraphView = GetGraphView( );
-	if ( GraphView != NULL ) {
+	if ( GraphView != nullptr ) {
 		GraphView->SuspendRecalculation( false );
 		}
 	return 0;
@@ -692,7 +692,7 @@ void CMainFrame::SetLogicalFocus( _In_ const LOGICAL_FOCUS lf ) noexcept {
 		SetSelectionMessageText( );
 
 		//reinterpret_cast< CDocument* >( GetDocument( ) )->UpdateAllViews( NULL, HINT_SELECTIONSTYLECHANGED );
-		GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
+		GetDocument( )->UpdateAllViews( nullptr, UpdateAllViews_ENUM::HINT_SELECTIONSTYLECHANGED );
 		}
 	}
 _At_( lf, _Pre_satisfies_( ( lf == LOGICAL_FOCUS::LF_NONE ) || ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) || ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) ) )
@@ -703,13 +703,13 @@ void CMainFrame::MoveFocus( _In_ const LOGICAL_FOCUS lf ) noexcept {
 		}
 	else if ( lf == LOGICAL_FOCUS::LF_DIRECTORYLIST ) {
 		const auto DirstatView = GetDirstatView( );
-		if ( DirstatView != NULL ) {
+		if ( DirstatView != nullptr ) {
 			DirstatView->SetFocus( );
 			}
 		}
 	else if ( lf == LOGICAL_FOCUS::LF_EXTENSIONLIST ) {
 		const auto TypeView = GetTypeView( );
-		if ( TypeView != NULL ) {
+		if ( TypeView != nullptr ) {
 			TypeView->SetFocus( );
 			}
 		}
@@ -717,7 +717,7 @@ void CMainFrame::MoveFocus( _In_ const LOGICAL_FOCUS lf ) noexcept {
 
 size_t CMainFrame::getExtDataSize( ) const noexcept {
 	const auto Document = GetDocument( );
-	if ( Document != NULL ) {
+	if ( Document != nullptr ) {
 		return Document->GetExtensionRecords( )->size( );
 		}
 	return 0;
@@ -774,7 +774,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	DOUBLE populateTiming_scopeholder = -1;
 	DOUBLE averageExtLeng_scopeholder = -1;
 	const CTypeView* const TypeView = GetTypeView( );
-	if ( TypeView != NULL ) {
+	if ( TypeView != nullptr ) {
 		populateTiming_scopeholder = TypeView->m_extensionListControl.m_adjustedTiming;
 		averageExtLeng_scopeholder = TypeView->m_extensionListControl.m_averageExtensionNameLength;
 		}
@@ -820,13 +820,13 @@ void CMainFrame::SetSelectionMessageText( ) noexcept {
 		case LOGICAL_FOCUS::LF_DIRECTORYLIST:
 			{
 			const CDirstatDoc* const Document = GetDocument( );
-			ASSERT( Document != NULL );
-			if ( Document == NULL ) {
+			ASSERT( Document != nullptr );
+			if ( Document == nullptr ) {
 				CFrameWnd::SetMessageText( _T( "No document?" ) );
 				return;
 				}
 			const auto Selection = Document->m_selectedItem;
-			if ( Selection == NULL ) {
+			if ( Selection == nullptr ) {
 				CFrameWnd::SetMessageText( m_drawTiming.c_str( ) );
 				return;
 				}
@@ -868,8 +868,8 @@ void CMainFrame::OnSize( const UINT nType, const INT cx, const INT cy ) {
 
 void CMainFrame::OnUpdateViewShowtreemap( CCmdUI *pCmdUI ) {
 	const CGraphView* const GraphView = GetGraphView( );
-	ASSERT( GraphView != NULL );
-	if ( GraphView == NULL ) {
+	ASSERT( GraphView != nullptr );
+	if ( GraphView == nullptr ) {
 		return;
 		}
 	pCmdUI->SetCheck( GraphView->m_showTreemap );
@@ -877,8 +877,8 @@ void CMainFrame::OnUpdateViewShowtreemap( CCmdUI *pCmdUI ) {
 
 void CMainFrame::OnViewShowtreemap( ) {
 	const auto thisGraphView = GetGraphView( );
-	ASSERT( thisGraphView != NULL );
-	if ( thisGraphView == NULL ) {
+	ASSERT( thisGraphView != nullptr );
+	if ( thisGraphView == nullptr ) {
 		return;
 		}
 	thisGraphView->m_showTreemap = !thisGraphView->m_showTreemap;
@@ -891,8 +891,8 @@ void CMainFrame::OnViewShowtreemap( ) {
 
 void CMainFrame::OnUpdateViewShowfiletypes( CCmdUI *pCmdUI ) {
 	const CTypeView* const TypeView = GetTypeView( );
-	ASSERT( TypeView != NULL );
-	if ( TypeView == NULL ) {
+	ASSERT( TypeView != nullptr );
+	if ( TypeView == nullptr ) {
 		return;
 		}
 	pCmdUI->SetCheck( TypeView->m_showTypes );
@@ -900,16 +900,16 @@ void CMainFrame::OnUpdateViewShowfiletypes( CCmdUI *pCmdUI ) {
 
 void CMainFrame::OnViewShowGrid( ) {
 	const auto Options = GetOptions( );
-	if ( Options == NULL ) {
+	if ( Options == nullptr ) {
 		return;
 		}
 	Options->m_treemapOptions.grid = ( !( Options->m_treemapOptions.grid ) );
-	GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED );
+	GetDocument( )->UpdateAllViews( nullptr, UpdateAllViews_ENUM::HINT_TREEMAPSTYLECHANGED );
 	}
 
 void CMainFrame::OnUpdateViewShowGrid( CCmdUI *pCmdUI ) {
 	const COptions* const Options = GetOptions( );
-	if ( Options == NULL ) {
+	if ( Options == nullptr ) {
 		return;
 		}
 	pCmdUI->SetCheck( Options->m_treemapOptions.grid ? 1 : 0 );
@@ -917,8 +917,8 @@ void CMainFrame::OnUpdateViewShowGrid( CCmdUI *pCmdUI ) {
 
 void CMainFrame::OnViewShowfiletypes( ) {
 	const auto thisTypeView = GetTypeView( );
-	ASSERT( thisTypeView != NULL );
-	if ( thisTypeView == NULL ) {
+	ASSERT( thisTypeView != nullptr );
+	if ( thisTypeView == nullptr ) {
 		return;
 		}
 	thisTypeView->ShowTypes( !thisTypeView->m_showTypes );
@@ -946,14 +946,14 @@ void CMainFrame::OnConfigure( ) {
 void CMainFrame::OnSysColorChange( ) {
 	CFrameWnd::OnSysColorChange( );
 	const auto DirstatView = GetDirstatView( );
-	ASSERT( DirstatView != NULL );
-	if ( DirstatView != NULL ) {
+	ASSERT( DirstatView != nullptr );
+	if ( DirstatView != nullptr ) {
 		DirstatView->SysColorChanged( );
 		}
 	
 	const auto TypeView = GetTypeView( );
-	ASSERT( TypeView != NULL );
-	if ( TypeView != NULL ) {
+	ASSERT( TypeView != nullptr );
+	if ( TypeView != nullptr ) {
 		TypeView->SysColorChanged( );
 		}
 	

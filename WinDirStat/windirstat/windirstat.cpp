@@ -425,7 +425,7 @@ BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {
 	const auto ramDiff = ( ::GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate );
 	auto doc = GetDocument( );
 	
-	if ( doc != NULL ) {
+	if ( doc != nullptr ) {
 		if ( !doc->Work( ) ) {
 			//ASSERT( doc->m_workingItem != NULL );
 			more = TRUE;

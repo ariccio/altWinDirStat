@@ -708,7 +708,7 @@ protected:
 		*/
 		HGDIOBJ_wrapper bm( [&]() { 
 			const HBITMAP bm = ::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top));
-			if (bm == NULL) {
+			if ( bm == nullptr ) {
 				TRACE(L"CreateCompatibleBitmap failed!\r\n");
 				}
 			return bm;
@@ -1140,7 +1140,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		for ( INT i = 0; i < itemCount; i++ ) {
 			ASSERT( itemCount == GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) );
 			const auto item = COwnerDrawnListCtrl::GetItem( i );
-			if ( item == NULL ) {
+			if ( item == nullptr ) {
 				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::AdjustColumnWidth - item == NULL (aborting)" );
 				std::terminate( );
 				//`/analyze` is confused.
@@ -1276,7 +1276,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		if ( i < itemCount ) {
 			return reinterpret_cast< COwnerDrawnListItem* >( CListCtrl::GetItemData( i ) );
 			}
-		return NULL;
+		return nullptr;
 		}
 
 	void SetSorting( RANGE_ENUM_COL const column::ENUM_COL sortColumn, _In_ const bool ascending ) noexcept {
@@ -1598,7 +1598,7 @@ private:
 protected:
 	_Success_( return >= 0 ) _Ret_range_( 0, INT_MAX ) _On_failure_( _Ret_range_( -1, -1 ) )
 	INT GetSubItemWidth( _In_ const COwnerDrawnListItem* const item, _In_ _In_range_( 0, INT_MAX ) const column::ENUM_COL subitem ) const noexcept {
-		if ( item == NULL ) {
+		if ( item == nullptr ) {
 			return -1;
 			}
 		
@@ -1704,14 +1704,14 @@ protected:
 		}
 	afx_msg void OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
 		//WTL::CWaitCursor wc;
-		ASSERT( pNMHDR != NULL );
-		if ( pNMHDR != NULL ) {
-			const LPNMHEADER const phdr = reinterpret_cast< const LPNMHEADER >( pNMHDR );
+		ASSERT( pNMHDR != nullptr );
+		if ( pNMHDR != nullptr ) {
+			const NMHEADER* const phdr = reinterpret_cast< const LPNMHEADER >( pNMHDR );
 			const INT subitem = phdr->iItem;
 			COwnerDrawnListCtrl::AdjustColumnWidth( static_cast<column::ENUM_COL>( subitem ) );
 			}
-		ASSERT( pResult != NULL );
-		if ( pResult != NULL ) {
+		ASSERT( pResult != nullptr );
+		if ( pResult != nullptr ) {
 			*pResult = 0;
 			}
 		}
@@ -1724,7 +1724,7 @@ protected:
 		hwnd::InvalidateErase(NULL);
 		}
 	afx_msg void OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
-		const LPNMHEADERW const phdr = reinterpret_cast<const LPNMHEADERW>(pNMHDR);
+		const NMHEADERW* const phdr = reinterpret_cast<const LPNMHEADERW>(pNMHDR);
 		*pResult = 0;
 		const auto col = static_cast<column::ENUM_COL>( phdr->iItem );
 		if ( col == m_sorting.column1 ) {
@@ -2114,8 +2114,8 @@ private:
 		*pResult = 0;
 		ASSERT( di->item.iItem <= CListCtrl::GetItemCount( ) );
 		const COwnerDrawnListItem* const item = reinterpret_cast<COwnerDrawnListItem*>( di->item.lParam );
-		ASSERT( item != NULL );
-		if ( item == NULL ) {
+		ASSERT( item != nullptr );
+		if ( item == nullptr ) {
 			return;
 			}
 		if ( ( di->item.mask bitand LVIF_TEXT ) == 0 ) {
@@ -2128,7 +2128,7 @@ private:
 				}
 			//Just copy name into buffer. No formatting required!
 			size_t chars_remaining = 0;
-			const HRESULT res_1 = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, NULL, &chars_remaining, 0 );
+			const HRESULT res_1 = StringCchCopyExW( di->item.pszText, static_cast< rsize_t >( di->item.cchTextMax ), item->m_name, nullptr, &chars_remaining, 0 );
 			ASSERT( SUCCEEDED( res_1 ) );
 			if ( SUCCEEDED( res_1 ) ) {
 				return;

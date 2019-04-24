@@ -18,14 +18,14 @@ WDS_FILE_INCLUDE_MESSAGE
 //Keeping OnOpenAFolder in the implementation file means that we don't need to include ScopeGuard.h in the header.
 std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
 	IFileDialog* file_dialog = nullptr;
-	const HRESULT create_file_dialog_result = ::CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &file_dialog ) );
+	const HRESULT create_file_dialog_result = ::CoCreateInstance( CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS( &file_dialog ) );
 	if ( !SUCCEEDED( create_file_dialog_result ) ) {
 		TRACE( _T( "create_file_dialog_result-> FAILED!\r\n" ) );
 		return L"";
 		}
 	auto file_dialog_guard = WDS_SCOPEGUARD_INSTANCE( [ &] { file_dialog->Release( ); } );
 
-	IFileDialogEvents* file_dialog_event = NULL;
+	IFileDialogEvents* file_dialog_event = nullptr;
 	const HRESULT dialog_event_handler_create_instance_result = CFileDialogEventHandler_CreateInstance( IID_PPV_ARGS( &file_dialog_event ) );
 	if ( !SUCCEEDED( dialog_event_handler_create_instance_result ) ) {
 		TRACE( _T( "CFileDialogEventHandler_CreateInstance-> FAILED!\r\n" ) );
@@ -77,7 +77,7 @@ std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
 	//	return;
 	//	}
 
-	const HRESULT file_dialog_show_dialog_result = file_dialog->Show( NULL );
+	const HRESULT file_dialog_show_dialog_result = file_dialog->Show( nullptr );
 	if ( !SUCCEEDED( file_dialog_show_dialog_result ) ) {
 		TRACE( _T( "file_dialog->Show FAILED!\r\n" ) );
 		return L"";
@@ -118,7 +118,7 @@ std::wstring OnOpenAFolder( HWND /*hWnd*/ ) {
 
 //https://code.msdn.microsoft.com/CppShellCommonFileDialog-17b20409/sourcecode?fileId=52757&pathId=1435971692
 const HRESULT CFileDialogEventHandler_CreateInstance( _In_ REFIID riid, _COM_Outptr_ void** ppv ) {
-	*ppv = NULL;
+	*ppv = nullptr;
 	auto pFileDialogEventHandler = new CFileDialogEventHandler( );
 	const HRESULT file_dialog_event_handler_query_interface_result = pFileDialogEventHandler->QueryInterface( riid, ppv );
 	pFileDialogEventHandler->Release( );

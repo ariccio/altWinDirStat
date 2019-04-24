@@ -23,22 +23,22 @@ namespace {
 
 	void move_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
 		//pdc.MoveTo( rc.left,  m_zero.y ); <---Not handling the return value means that WE DO NOT care about the previous "current position", thus the fourth parameter to MoveToEx should be NULL.
-		ASSERT( hDC != NULL );
+		ASSERT( hDC != nullptr );
 		if ( hDC != hAttribDC ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, NULL ) );
+			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, nullptr ) );
 			}
-		if ( hAttribDC != NULL ) {
+		if ( hAttribDC != nullptr ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, nullptr ) );
 			}
 		}
 	
 	void line_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
-		ASSERT( hDC != NULL );
-		if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+		ASSERT( hDC != nullptr );
+		if ( ( hAttribDC != nullptr ) && ( hDC != hAttribDC ) ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, nullptr ) );
 			}
 
 		//If [LineTo] succeeds, the return value is nonzero. If [LineTo] fails, the return value is zero.
@@ -114,10 +114,10 @@ AFX_COMDAT const CRuntimeClass CXySlider::classCXySlider = {
 	"CXySlider" /*m_lpszClassName*/,
 	sizeof(class CXySlider) /*m_nObjectSize*/,
 	0xFFFF /*wSchema*/,
-	NULL /*pfnNew*/,
+	nullptr  /*pfnNew*/,
 	(const_cast<CRuntimeClass*>(&CStatic::classCStatic)) /*RUNTIME_CLASS(CStatic)*/ /*m_pBaseClass*/,
-	NULL /*m_pNextClass*/,
-	NULL /*class_init*/
+	nullptr  /*m_pNextClass*/,
+	nullptr  /*class_init*/
 	};
 
 CRuntimeClass* CXySlider::GetRuntimeClass() const {
@@ -389,7 +389,7 @@ void CXySlider::DoDrag( _In_ const POINT point ) noexcept {
 	CWnd::SetCapture( );
 	do {
 		MSG msg;
-		if ( !::GetMessageW( &msg, NULL, 0, 0 ) ) {
+		if ( !::GetMessageW( &msg, nullptr, 0, 0 ) ) {
 			break;
 			}
 

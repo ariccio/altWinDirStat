@@ -31,12 +31,14 @@ void hwnd::InvalidateErase(_In_opt_ const HWND hWnd) noexcept {
 	//InvalidateRect function: https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-invalidaterect
 	//[hWnd is a handle] to the window whose update region has changed.
 	//	If this parameter is NULL, the system invalidates and redraws all windows, not just the windows for this application, and sends the WM_ERASEBKGND and WM_NCPAINT messages before the function returns. Setting this parameter to NULL is not recommended.
-
+	if (hWnd == nullptr) {
+		TRACE(L"Setting hWnd to NULL is not recommended.\r\n");
+		}
 
 	//The InvalidateRect function adds a rectangle to the specified window's update region. The update region represents the portion of the window's client area that must be redrawn.
 	//If the function succeeds, the return value is nonzero.
 	//If the function fails, the return value is zero.
-	const BOOL invalidate_result = ::InvalidateRect(hWnd, NULL, TRUE);
+	const BOOL invalidate_result = ::InvalidateRect(hWnd, nullptr, TRUE);
 	if (!invalidate_result) {
 		TRACE(L"InvalidateRect on `%p` failed!\r\n", hWnd);
 		std::terminate( );

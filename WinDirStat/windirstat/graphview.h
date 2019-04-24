@@ -137,7 +137,7 @@ protected:
 		}
 
 	void Inactivate( ) noexcept {
-		if ( m_bitmap.m_hObject != NULL ) {
+		if ( m_bitmap.m_hObject != nullptr ) {
 			m_dimmed.Detach( );
 			VERIFY( m_dimmed.Attach( m_bitmap.Detach( ) ) );
 			m_dimmedSize = m_size;
@@ -149,15 +149,15 @@ protected:
 #ifdef DEBUG
 			trace_mouse_left( );
 #endif
-			m_timer = SetTimer( 4711, 100, NULL );//TODO: figure out what the hell this does.//if value is increased ( argument 2 ), program execution will take longer to reach `TRACE( _T( "Mouse has left the tree map area!\r\n" ) );` after mouse has left tree map area.
+			m_timer = SetTimer( 4711, 100, nullptr);//TODO: figure out what the hell this does.//if value is increased ( argument 2 ), program execution will take longer to reach `TRACE( _T( "Mouse has left the tree map area!\r\n" ) );` after mouse has left tree map area.
 			}
 		}
 
 	void EmptyView( ) noexcept {
-		if ( m_bitmap.m_hObject != NULL ) {
+		if ( m_bitmap.m_hObject != nullptr ) {
 			m_bitmap.DeleteObject( );
 			}
-		if ( m_dimmed.m_hObject != NULL ) {
+		if ( m_dimmed.m_hObject != nullptr ) {
 			m_dimmed.DeleteObject( );
 			}
 		}
@@ -196,7 +196,7 @@ protected:
 		//To get extended error information, call GetLastError.
 		VERIFY( ::GetClientRect( m_hWnd, &rc ) );
 
-		if ( m_dimmed.m_hObject == NULL ) {
+		if ( m_dimmed.m_hObject == nullptr ) {
 			//return pScreen_Device_Context->FillSolidRect( &rc, gray );
 			fill_solid_RECT( pScreen_Device_Context->m_hDC, &rc, gray );
 			return;

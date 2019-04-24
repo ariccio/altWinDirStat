@@ -26,7 +26,7 @@ const HRESULT Children_String_Heap_Manager_Impl::copy_name_str_into_buffer( _Pre
 	
 	ASSERT( m_buffer_filled < m_buffer_size );
 
-	PWSTR pszend = NULL;
+	PWSTR pszend = nullptr;
 
 	//god this is ugly.
 	const rsize_t buffer_space_remaining = ( m_buffer_size - m_buffer_filled );
@@ -35,7 +35,7 @@ const HRESULT Children_String_Heap_Manager_Impl::copy_name_str_into_buffer( _Pre
 
 	//rsize_t chars_remaining = buffer_space_remaining;
 	//TODO: replace with StringCchCopyNEx, for speed.
-	const HRESULT res = StringCchCopyExW( new_name_ptr, buffer_space_remaining, name.c_str( ), &pszend, NULL, 0 );
+	const HRESULT res = StringCchCopyExW( new_name_ptr, buffer_space_remaining, name.c_str( ), &pszend, nullptr, 0 );
 	
 	//ASSERT( m_buffer_filled < m_buffer_size );
 	ASSERT( SUCCEEDED( res ) );
@@ -75,7 +75,7 @@ const HRESULT Children_String_Heap_Manager_Impl::copy_name_str_into_buffer( _Pre
 	}
 
 
-child_info::child_info( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) : m_name_pool { number_of_characters_needed }, m_children { new CTreeListItem[ child_count ] }, m_childCount{ 0u } { }
+child_info::child_info( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) : m_children { new CTreeListItem[ child_count ] }, m_name_pool{ number_of_characters_needed }, m_childCount{ 0u } { }
 
 
 child_info::~child_info( ) = default;

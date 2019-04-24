@@ -242,7 +242,7 @@ namespace {
 			return 0;
 			}
 		const auto childAtIPlusOne = parent_vector_of_children[ i + 1 ];
-		if ( childAtIPlusOne == NULL ) {
+		if ( childAtIPlusOne == nullptr ) {
 			return 0;
 			}
 		if ( sizes->count( i + 1 ) == 0 ) {
@@ -362,14 +362,14 @@ namespace {
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
 			//If the function succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero.
-			VERIFY( ::MoveToEx( hDC, rc->right - 1, rc->top, NULL ) );
+			VERIFY( ::MoveToEx( hDC, rc->right - 1, rc->top, nullptr ) );
 			}
-		if ( hAttribDC != NULL ) {
+		if ( hAttribDC != nullptr ) {
 			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
 			//If the function succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc->right - 1, rc->top, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc->right - 1, rc->top, nullptr ) );
 			}
 		//        pdc->MoveTo( rc->right - 1, rc->top );
 
@@ -385,12 +385,12 @@ namespace {
 			return ::LineTo(m_hDC, x, y);
 		}
 		*/
-		if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+		if ( ( hAttribDC != nullptr ) && ( hDC != hAttribDC ) ) {
 			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
 			//If the function succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc->right - 1, rc->bottom, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc->right - 1, rc->bottom, nullptr ) );
 			}
 		//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
 		//The LineTo function draws a line from the current position up to, but not including, the specified point.
@@ -421,15 +421,15 @@ namespace {
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
 			//If the function succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero.
-			VERIFY( ::MoveToEx( hDC, rc->left, rc->bottom - 1, NULL ) );
+			VERIFY( ::MoveToEx( hDC, rc->left, rc->bottom - 1, nullptr ) );
 			}
 
-		if ( hAttribDC != NULL ) {
+		if ( hAttribDC != nullptr ) {
 			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
 			//If the function succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc->left, rc->bottom - 1, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc->left, rc->bottom - 1, nullptr ) );
 			}
 		//        pdc->MoveTo( rc->left,      rc->bottom - 1 );
 		
@@ -445,12 +445,12 @@ namespace {
 			return ::LineTo(m_hDC, x, y);
 		}
 		*/
-		if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
+		if ( ( hAttribDC != nullptr ) && ( hDC != hAttribDC ) ) {
 			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
 			//If the function succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc->right, rc->bottom - 1, NULL ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc->right, rc->bottom - 1, nullptr ) );
 			}
 		//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
 		//The LineTo function draws a line from the current position up to, but not including, the specified point.
@@ -714,7 +714,7 @@ namespace {
 	void i_less_than_children_per_row( _In_ const size_t i, _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _In_ const size_t c ) {
 		if ( i < childrenPerRow[ row ] ) {
 			const auto childAtC = parent_vector_of_children.at( c );
-			if ( childAtC != NULL ) {
+			if ( childAtC != nullptr ) {
 				RECT rc { -1, -1, -1, -1 };
 				childAtC->TmiSetRectangle( rc );
 				}
@@ -877,8 +877,8 @@ void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ const HDC hDC, _I
 
 void CTreemap::DrawTreemap( _In_ const HDC hOffscreen_buffer, _Inout_ RECT* const rc, _In_ const CTreeListItem* const root, _In_ const Treemap_Options& options, _In_ const HDC hAttribDC ) {
 	ASSERT( ( ( rc->bottom - rc->top ) + ( rc->right - rc->left ) ) > 0 );
-	ASSERT( root != NULL );
-	if ( root == NULL ) {//should never happen! Ever!
+	ASSERT( root != nullptr );
+	if ( root == nullptr ) {//should never happen! Ever!
 		return;
 		}
 
@@ -981,7 +981,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeLis
 	normalize_RECT( &rc );
 
 	if (!::PtInRect( &rc, point ) ) {
-		return NULL;
+		return nullptr;
 		}
 
 
@@ -1000,14 +1000,14 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeLis
 		const auto child = item_vector_of_children.at( i );
 		ASSERT( item->m_child_info.m_child_info_ptr != nullptr );
 		ASSERT( item->m_child_info.m_child_info_ptr->m_children != nullptr );
-		ASSERT( child != NULL );
+		ASSERT( child != nullptr );
 		const RECT child_rect = child->TmiGetRectangle( );
 		if ( ::PtInRect( &child_rect, point ) ) {
 			WDS_validateRectangle_DEBUG( child, rc );
 
 			TRACE( _T( "Point {%ld, %ld} inside child: %s\r\n" ), point.x, point.y, child->m_name );
 			const auto ret = CTreemap::FindItemByPoint( child, point, test_doc );
-			if ( ret != NULL ) {
+			if ( ret != nullptr ) {
 				WDS_validateRectangle_DEBUG( child, rc );
 				return ret;
 				}
@@ -1018,7 +1018,7 @@ _Success_( return != NULL ) _Ret_maybenull_ _Must_inspect_result_ const CTreeLis
 
 void CTreemap::DrawColorPreview( _In_ HDC hDC, _In_ const RECT rc, _In_ const COLORREF color, _In_ const Treemap_Options* const options ) noexcept {
 	// Draws a sample rectangle in the given style (for color legend)
-	if ( options != NULL ) {
+	if ( options != nullptr ) {
 		CTreemap::SetOptions( *options );
 		}
 
@@ -1893,7 +1893,7 @@ void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex 
 		{ return Attach(::CreateCompatibleDC(pDC->GetSafeHdc())); }
 	*/
 	HDC hTempDeviceContextMemory = ::CreateCompatibleDC( offscreen_buffer );
-	if ( hTempDeviceContextMemory == NULL ) {
+	if ( hTempDeviceContextMemory == nullptr ) {
 		std::terminate( );
 		}
 

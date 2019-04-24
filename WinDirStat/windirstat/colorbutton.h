@@ -91,7 +91,7 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnPaint( ) {
-		if ( m_preview.m_hWnd == NULL ) {
+		if ( m_preview.m_hWnd == nullptr) {
 			RECT rc = { 0 };
 			//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
 			//Return value: If the function succeeds, the return value is nonzero.
@@ -106,7 +106,7 @@ protected:
 			//If the function fails, the return value is zero.
 			VERIFY( ::InflateRect( &rc, -4, -4 ) );
 
-			VERIFY( m_preview.Create( m_hWnd, rc, _T( "" ), WS_CHILD | WS_VISIBLE, 0, 4711, NULL ) );
+			VERIFY( m_preview.Create( m_hWnd, rc, _T( "" ), WS_CHILD | WS_VISIBLE, 0, 4711, nullptr) );
 
 			VERIFY( CWnd::ModifyStyle( 0, WS_CLIPCHILDREN ) );
 			}

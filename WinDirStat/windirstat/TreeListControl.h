@@ -161,7 +161,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 
 		void    stdRecurseCollectExtensionData( _Inout_    std::unordered_map<std::wstring, minimal_SExtensionRecord>* const extensionMap ) const;
 
-		_Success_( return != NULL ) _Must_inspect_result_ _Ret_maybenull_ 
+		_Success_( return != nullptr ) _Must_inspect_result_ _Ret_maybenull_
 		const CTreeListItem* GetSortedChild   ( _In_ const size_t i                             ) const;
 
 		_Success_( return < child_count ) _Pre_satisfies_( child_count > 0 )
@@ -202,13 +202,13 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
 		void SortChildren                       ( _In_ const CTreeListControl* const ctrl );
 
-		_Pre_satisfies_( this->m_parent != NULL )
+		_Pre_satisfies_( this->m_parent != nullptr)
 		bool  HasSiblings                       (                                           ) const noexcept;
 		
 		void childNotNull( _In_ const CTreeListItem* const aTreeListChild, const size_t i );
 		
 		bool HasChildren ( ) const noexcept {
-			return ( m_child_info.m_child_info_ptr != NULL );
+			return ( m_child_info.m_child_info_ptr != nullptr);
 			}
 		
 		_Pre_satisfies_( this->m_vi._Mypair._Myval2 != nullptr )
@@ -295,7 +295,7 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 			*/
 			ASSERT( i < CListCtrl::GetItemCount( ) );
 			auto const anItem = GetItem( i );
-			if ( anItem != NULL ) {
+			if ( anItem != nullptr ) {
 				anItem->SetExpanded( false );
 				anItem->SetVisible( false );
 				anItem->m_vi.reset( );

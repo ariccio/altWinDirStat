@@ -21,7 +21,7 @@ SelectObject_wrapper::SelectObject_wrapper( _In_ const HDC hDC, _In_ const HGDIO
 	//If an error occurs and the selected object is not a region, the return value is NULL.
 	//Otherwise, it is HGDI_ERROR.
 	m_pOldObject = ::SelectObject( m_hDC, hObject );
-	if ( m_pOldObject == NULL ) {
+	if ( m_pOldObject == nullptr) {
 		std::terminate( );
 		}
 	if ( m_pOldObject == HGDI_ERROR ) {
@@ -39,7 +39,7 @@ SelectObject_wrapper::~SelectObject_wrapper( ) {
 	//If an error occurs and the selected object is not a region, the return value is NULL.
 	//Otherwise, it is HGDI_ERROR.
 	const HGDIOBJ retval = ::SelectObject( m_hDC, m_pOldObject );
-	if ( retval == NULL ) {
+	if ( retval == nullptr) {
 		std::terminate( );
 		}
 	if ( retval == HGDI_ERROR ) {
@@ -49,7 +49,7 @@ SelectObject_wrapper::~SelectObject_wrapper( ) {
 
 
 SelectStockObject_wrapper::SelectStockObject_wrapper( _In_ HDC hDC, _In_ _In_range_( 0, 16 ) const INT nIndex ) : m_hDC { hDC } {
-	if ( m_hDC == NULL ) {
+	if ( m_hDC == nullptr) {
 		std::terminate( );
 		}
 
@@ -58,7 +58,7 @@ SelectStockObject_wrapper::SelectStockObject_wrapper( _In_ HDC hDC, _In_ _In_ran
 	//If the function fails, the return value is NULL.
 	//It is not necessary (but it is not harmful) to delete stock objects by calling DeleteObject.
 	HGDIOBJ hStockObj = ::GetStockObject( nIndex );
-	if ( hStockObj == NULL ) {
+	if ( hStockObj == nullptr) {
 		std::terminate( );
 		}
 
@@ -86,7 +86,7 @@ SelectStockObject_wrapper::~SelectStockObject_wrapper( ) {
 	//If an error occurs and the selected object is not a region, the return value is NULL.
 	//Otherwise, it is HGDI_ERROR.
 	const auto retval = ::SelectObject( m_hDC, m_pOldObject );
-	if ( retval == NULL ) {
+	if ( retval == nullptr) {
 		std::terminate( );
 		}
 	if ( retval == HGDI_ERROR ) {
@@ -95,7 +95,7 @@ SelectStockObject_wrapper::~SelectStockObject_wrapper( ) {
 	}
 
 HGDIOBJ_wrapper::HGDIOBJ_wrapper( _In_ HGDIOBJ hObject ) : m_hObject( hObject ) {
-	ASSERT( hObject != NULL );
+	ASSERT( hObject != nullptr);
 	}
 
 _At_( this->m_hObject, _Post_ptr_invalid_ )
@@ -115,7 +115,7 @@ HGDIOBJ_wrapper::~HGDIOBJ_wrapper( ) {
 
 _Pre_satisfies_( ( mode == OPAQUE) || ( mode == TRANSPARENT ) )
 CSetBkMode::CSetBkMode( _In_ HDC hDC, _In_ const INT mode ) : m_hDC { hDC } {
-	if ( hDC == NULL ) {
+	if ( hDC == nullptr) {
 		std::terminate( );
 		}
 
@@ -128,7 +128,7 @@ CSetBkMode::CSetBkMode( _In_ HDC hDC, _In_ const INT mode ) : m_hDC { hDC } {
 	}
 
 CSetBkMode::~CSetBkMode( ) {
-	if ( m_hDC == NULL ) {
+	if ( m_hDC == nullptr) {
 		std::terminate( );
 		}
 	ASSERT( m_oldMode != 0 );
@@ -172,7 +172,7 @@ CSetTextColor::~CSetTextColor( ) {
 
 
 
-SExtensionRecord::SExtensionRecord( ) : files { 0u }, color { 0u }, bytes { 0u } { }
+SExtensionRecord::SExtensionRecord( ) : files { 0u }, bytes { 0u }, color{ 0u } { }
 
 SExtensionRecord::SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
 

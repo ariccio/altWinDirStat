@@ -29,7 +29,7 @@ class CDirstatApp;
 //	C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\doccore.cpp
 class CDirstatDoc final : public CDocument {
 protected:
-	_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
+	_Pre_satisfies_( _theDocument == nullptr ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
 	
 	/*
 	DECLARE_DYNCREATE(CDirstatDoc)

@@ -165,7 +165,7 @@ namespace {
 		}
 
 	void check8Dot3NameCreationAndNotifyUser( ) {
-		HKEY keyHandle = { NULL };
+		HKEY keyHandle = { nullptr };
 
 		const auto res_1 = ::RegOpenKeyExW( HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem", NULL, KEY_READ, &keyHandle );
 
@@ -180,7 +180,7 @@ namespace {
 			
 		DWORD bufferSize = sizeof( data );
 			
-		const auto res_2 = ::RegQueryValueExW( keyHandle, L"NtfsDisable8dot3NameCreation", NULL, &valueType, &data[0], &bufferSize );
+		const auto res_2 = ::RegQueryValueExW( keyHandle, L"NtfsDisable8dot3NameCreation", nullptr, &valueType, &data[0], &bufferSize );
 
 		if ( res_2 != ERROR_SUCCESS ) {
 			if ( res_2 == ERROR_MORE_DATA ) {
@@ -200,17 +200,17 @@ namespace {
 		*/
 		if ( value == 0 ) {
 			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_all_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-			::MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			::MessageBoxW(nullptr, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 
 		if ( value == 2 ) {
 			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_per_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-			::MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			::MessageBoxW(nullptr, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 
 		if ( value == 3 ) {
 			std::wstring message = std::wstring( global_strings::eight_dot_three_gen_notif1 ) + std::wstring( global_strings::eight_dot_three_sys_volume ) + std::wstring( global_strings::eight_dot_three_gen_notif2 );
-			::MessageBoxW( NULL, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
+			::MessageBoxW(nullptr, message.c_str( ), global_strings::gen_performance_warning, MB_ICONWARNING );
 			}
 		}
 
@@ -273,7 +273,7 @@ namespace {
 		}
 
 	void convert_vector_of_extension_records_to_map( _In_ const std::vector<SExtensionRecord>* const records, _Inout_ std::unordered_map<std::wstring, COLORREF>* const color_map ) {
-		if ( records != NULL ) {
+		if ( records != nullptr) {
 			color_map->reserve( records->size( ) );
 			for ( const auto& aRecord : ( *records ) ) {
 				(*color_map)[ aRecord.ext ] = aRecord.color;
@@ -291,14 +291,14 @@ namespace {
 		//To get extended error information, call GetLastError.
 
 		const HGLOBAL handle_globally_allocated_memory = ::GlobalAlloc( GMEM_MOVEABLE bitand GMEM_ZEROINIT, strSizeInBytes );
-		if ( handle_globally_allocated_memory == NULL ) {
+		if ( handle_globally_allocated_memory == nullptr) {
 			displayWindowsMsgBoxWithMessage( global_strings::global_alloc_failed );
 			TRACE( L"%s\r\n", global_strings::global_alloc_failed );
 			return;
 			}
 
 		const auto lp = ::GlobalLock( handle_globally_allocated_memory );
-		if ( lp == NULL ) {
+		if ( lp == nullptr) {
 			displayWindowsMsgBoxWithMessage( L"GlobalLock failed!" );
 			//GlobalFree function: https://msdn.microsoft.com/en-us/library/windows/desktop/aa366579.aspx
 			//If the function succeeds, the return value is NULL.
@@ -324,7 +324,7 @@ namespace {
 			//If the memory object is unlocked after decrementing the lock count, the function returns zero and GetLastError returns NO_ERROR.
 			//If the function fails, the return value is zero and GetLastError returns a value other than NO_ERROR.
 			const BOOL unlock_res = ::GlobalUnlock( handle_globally_allocated_memory );
-			strP = NULL;
+			strP = nullptr;
 			if ( unlock_res == 0 ) {
 	#ifdef DEBUG
 				const auto last_err = ::GetLastError( );
@@ -353,7 +353,7 @@ namespace {
 		//If the function succeeds, the return value is the handle to the data.
 		//If the function fails, the return value is NULL.
 		//To get extended error information, call GetLastError.
-		if ( NULL == ::SetClipboardData( uFormat, handle_globally_allocated_memory ) ) {
+		if (nullptr == ::SetClipboardData( uFormat, handle_globally_allocated_memory ) ) {
 			displayWindowsMsgBoxWithMessage( global_strings::cannot_set_clipboard_data );
 			TRACE( L"%s\r\n", global_strings::cannot_set_clipboard_data );
 			return;
@@ -367,7 +367,7 @@ CDirstatDoc* _theDocument;
 
 //evil global function!
 CDirstatDoc* GetDocument( ) noexcept {
-	ASSERT( _theDocument != NULL );
+	ASSERT( _theDocument != nullptr);
 	return _theDocument;
 	}
 
@@ -421,8 +421,8 @@ AFX_COMDAT const CRuntimeClass CDirstatDoc::classCDirstatDoc = {
 																0xFFFF /*wSchema*/,
 																CDirstatDoc::CreateObject /*pfnNew*/,
 																(const_cast<CRuntimeClass*>(&CDocument::classCDocument)) /*RUNTIME_CLASS(CDirstatDoc)*/ /*m_pBaseClass*/,
-																NULL /*m_pNextClass*/,
-																NULL /*class_init*/
+																nullptr /*m_pNextClass*/,
+																nullptr /*class_init*/
 	};
 
 CRuntimeClass* CDirstatDoc::GetRuntimeClass() const {
@@ -430,9 +430,9 @@ CRuntimeClass* CDirstatDoc::GetRuntimeClass() const {
 	}
 
 
-_Pre_satisfies_( _theDocument == NULL ) _Post_satisfies_( _theDocument == this )
+_Pre_satisfies_( _theDocument == nullptr) _Post_satisfies_( _theDocument == this )
 CDirstatDoc::CDirstatDoc( ) : m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
-	ASSERT( _theDocument == NULL );
+	ASSERT( _theDocument == nullptr);
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
 	m_searchStartTime.QuadPart = 0;
@@ -440,7 +440,7 @@ CDirstatDoc::CDirstatDoc( ) : m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( )
 	}
 
 CDirstatDoc::~CDirstatDoc( ) {
-	_theDocument = { NULL };
+	_theDocument = { nullptr };
 	}
 
 /*
@@ -451,7 +451,7 @@ void CDocument::DeleteContents()
 
 */
 void CDirstatDoc::DeleteContents( ) {
-	m_selectedItem = { NULL };
+	m_selectedItem = { nullptr };
 	m_timeTextWritten = false;
 	m_rootItem.reset( );
 	m_name_pool.reset( nullptr );
@@ -461,16 +461,16 @@ BOOL CDirstatDoc::OnNewDocument( ) {
 	if ( !CDocument::OnNewDocument( ) ) {
 		return FALSE;
 		}
-	if ( m_frameptr != NULL ) {
+	if ( m_frameptr != nullptr ) {
 		const auto DirstatView = m_frameptr->GetDirstatView( );
-		if ( DirstatView != NULL ) {
+		if ( DirstatView != nullptr ) {
 			if ( DirstatView->m_treeListControl.m_pDocument != this ) {
 				DirstatView->m_treeListControl.m_pDocument = this;
 				}
 			}
 		}
 	TRACE( _T( "New document...\r\n" ) );
-	CDocument::UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
+	CDocument::UpdateAllViews( nullptr, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return TRUE;
 	}
 
@@ -503,9 +503,9 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	TRACE( _T( "Opening new document, path: %s\r\n" ), pszPathName );
 	VERIFY( CDocument::OnNewDocument( ) ); // --> DeleteContents()
 	const std::wstring spec( pszPathName );
-	if ( m_frameptr != NULL ) {
+	if ( m_frameptr != nullptr ) {
 		const auto DirstatView = m_frameptr->GetDirstatView( );
-		if ( DirstatView != NULL ) {
+		if ( DirstatView != nullptr ) {
 			if ( DirstatView->m_treeListControl.m_pDocument != this ) {
 				DirstatView->m_treeListControl.m_pDocument = this;
 				}
@@ -526,7 +526,7 @@ BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
 	m_frameptr->m_wndSubSplitter.SetSplitterPos( 1.0 );
 	
 	
-	CDocument::UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NEWROOT );
+	CDocument::UpdateAllViews( nullptr, UpdateAllViews_ENUM::HINT_NEWROOT );
 	return true;
 	}
 
@@ -564,7 +564,7 @@ void CDirstatDoc::SortTreeList( ) {
 	ASSERT( m_rootItem != NULL );
 	
 	const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
-	if ( DirStatView != NULL ) {
+	if ( DirStatView != nullptr ) {
 		m_rootItem->SortChildren( &( DirStatView->m_treeListControl ) );
 		DirStatView->m_treeListControl.Sort( );//awkward, roundabout way of sorting. TOTALLY breaks encapsulation. Deal with it.
 		}
@@ -579,7 +579,7 @@ bool CDirstatDoc::OnWorkFinished( ) {
 	const auto doneTime = help_QueryPerformanceCounter( );
 	const DOUBLE AdjustedTimerFrequency = ( static_cast<DOUBLE>( 1 ) ) / static_cast<DOUBLE>( help_QueryPerformanceFrequency( ).QuadPart );
 			
-	CDocument::UpdateAllViews( NULL );
+	CDocument::UpdateAllViews( nullptr );
 	if ( doneTime.QuadPart != 0 ) {
 		m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
 		}
@@ -623,8 +623,8 @@ bool CDirstatDoc::Work( ) {
 
 		const auto res = CDirstatDoc::OnWorkFinished( );
 		const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
-		ASSERT( DirStatView != NULL );
-		if ( DirStatView == NULL ) {
+		ASSERT( DirStatView != nullptr );
+		if ( DirStatView == nullptr ) {
 			displayWindowsMsgBoxWithMessage( L"DirStatView is NULL!!! this should never happen!!" );
 			std::terminate( );
 			return false;//so analyze understands.
@@ -720,12 +720,12 @@ void CDirstatDoc::OnUpdateFileOpenLight( CCmdUI *pCmdUI ) {
 
 
 void CDirstatDoc::OnUpdateEditCopy( _In_ CCmdUI* pCmdUI ) {
-	pCmdUI->Enable( m_selectedItem != NULL );
+	pCmdUI->Enable( m_selectedItem != nullptr );
 	}
 
 void CDirstatDoc::OnEditCopy( ) {
 	TRACE( _T( "User chose 'Edit'->'Copy'!\r\n") );
-	if ( m_selectedItem == NULL ) {
+	if ( m_selectedItem == nullptr ) {
 		TRACE( _T( "You tried to copy nothing! What does that even mean?\r\n" ) );
 		return;
 		}

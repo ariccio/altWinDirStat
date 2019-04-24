@@ -74,7 +74,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 		CListItem::DrawColor( hDC, rc, state, width );
 		return true;
 		}	
-	if ( width == NULL ) {
+	if ( width == nullptr ) {
 		return false;
 		}
 	//Should never happen?
@@ -84,7 +84,7 @@ bool CListItem::DrawSubitem( RANGE_ENUM_COL const column::ENUM_COL subitem, _In_
 	}
 
 void CListItem::DrawColor( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* width ) const noexcept {
-	if ( width != NULL ) {
+	if ( width != nullptr ) {
 		*width = 40;
 		return;
 		}
@@ -131,7 +131,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_FILES_TYPEVIEW( RANGE_ENUM_
 	ASSERT( subitem == column::COL_FILES_TYPEVIEW );
 	size_t chars_remaining = 0;
 
-	const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%I32u", m_files );
+	const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, nullptr, &chars_remaining, 0, L"%I32u", m_files );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
@@ -174,7 +174,7 @@ const HRESULT CListItem::Text_WriteToStackBuffer_COL_BYTESPERCENT( RANGE_ENUM_CO
 	ASSERT( subitem == column::COL_BYTESPERCENT );
 	size_t chars_remaining = 0;
 	const auto theDouble = CListItem::GetBytesFraction( ) * 100;
-	const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, NULL, &chars_remaining, 0, L"%.1f%%", theDouble );
+	const HRESULT res = ::StringCchPrintfExW( psz_text, strSize, nullptr, &chars_remaining, 0, L"%.1f%%", theDouble );
 	ASSERT( SUCCEEDED( res ) );
 	if ( SUCCEEDED( res ) ) {
 		chars_written = ( strSize - chars_remaining );
@@ -265,7 +265,7 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
-CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_rootSize ( 0 ), m_typeView(typeView), m_averageExtensionNameLength( ), m_adjustedTiming(0), m_exts_count( 0 ), m_exts(nullptr) { }
+CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_averageExtensionNameLength( ), m_rootSize (0), m_adjustedTiming(0), m_exts_count( 0 ), m_exts(nullptr), m_typeView(typeView) { }
 
 
 // As we will not receive WM_CREATE, we must do initialization in this extra method. The counterpart is OnDestroy().
@@ -297,7 +297,7 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ _In_range_( >=
 	ASSERT( i >= 0 );
 	const auto ret = reinterpret_cast< CListItem* > ( CListCtrl::GetItemData( i ) );
 	
-	if ( ret != NULL ) {
+	if ( ret != nullptr) {
 		return ret;
 		}
 	ASSERT( false );
@@ -404,7 +404,7 @@ void CExtensionListControl::SelectExtension( _In_z_ PCWSTR const ext ) noexcept 
 
 _Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const noexcept {
 	auto pos = CListCtrl::GetFirstSelectedItemPosition( );
-	if ( pos == NULL ) {
+	if ( pos == nullptr) {
 		return L"";
 		}
 	const auto i = CListCtrl::GetNextSelectedItem( pos );//SIX CYCLES PER INSTRUCTION!!!!
@@ -413,14 +413,14 @@ _Ret_z_ PCWSTR const CExtensionListControl::GetSelectedExtension( ) const noexce
 	}
 
 void CExtensionListControl::OnLvnDeleteitem( NMHDR *pNMHDR, LRESULT *pResult ) {
-	ASSERT( pNMHDR != NULL );
-	ASSERT( pResult != NULL );
-	if ( pNMHDR != NULL ) {
+	ASSERT( pNMHDR != nullptr );
+	ASSERT( pResult != nullptr );
+	if ( pNMHDR != nullptr ) {
 		auto lv = reinterpret_cast< LPNMLISTVIEW >( pNMHDR );
 		lv->lParam = { NULL };
 		}
 
-	if ( pResult != NULL ) {
+	if ( pResult != nullptr ) {
 		*pResult = 0;
 		}
 	}
@@ -444,7 +444,7 @@ void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) 
 
 void CExtensionListControl::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags ) {
 	if ( nChar == VK_TAB ) {
-		if ( m_frameptr->GetDirstatView( ) != NULL ) {
+		if ( m_frameptr->GetDirstatView( ) != nullptr) {
 			TRACE( _T( "TAB pressed! Focusing on directory list!\r\n" ) );
 			m_frameptr->MoveFocus( LOGICAL_FOCUS::LF_DIRECTORYLIST );
 			}
@@ -527,8 +527,8 @@ AFX_COMDAT const CRuntimeClass CTypeView::classCTypeView = {
 	0xFFFF /*wSchema*/,
 	CTypeView::CreateObject /*pfnNew*/,
 	(const_cast<CRuntimeClass*>(&CView::classCView)) /*RUNTIME_CLASS(CView)*/ /*m_pBaseClass*/,
-	NULL /*m_pNextClass*/,
-	NULL /*class_init*/
+	nullptr  /*m_pNextClass*/,
+	nullptr  /*class_init*/
 	};
 
 CRuntimeClass* CTypeView::GetRuntimeClass() const {
@@ -546,7 +546,7 @@ END_MESSAGE_MAP()
 void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) noexcept {
 	auto Document = CTypeView::GetDocument( );
 
-	if ( Document != NULL ) {
+	if ( Document != nullptr ) {
 		Document->SetHighlightExtension( ext );
 		
 		if ( GetFocus( ) == &m_extensionListControl ) {
@@ -554,7 +554,7 @@ void CTypeView::SetHighlightExtension( _In_ const std::wstring ext ) noexcept {
 			TRACE( _T( "Highlighted extension %s\r\n" ), ext.c_str( ) );
 			}
 		}
-	ASSERT( Document != NULL );
+	ASSERT( Document != nullptr );
 	}
 
 INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
@@ -575,7 +575,7 @@ INT CTypeView::OnCreate( LPCREATESTRUCT lpCreateStruct ) {
 
 void CTypeView::OnUpdate0( ) noexcept {
 	auto theDocument = CTypeView::GetDocument( );
-	if ( theDocument != NULL ) {
+	if ( theDocument != nullptr ) {
 		if ( m_showTypes && theDocument->IsRootDone( ) ) {
 			m_extensionListControl.m_rootSize = theDocument->m_rootItem->size_recurse( );
 			TRACE( _T( "Populating extension list...\r\n" ) );
@@ -645,12 +645,12 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 
 void CTypeView::SetSelection( ) noexcept {
 	const CDirstatDoc* const Document = CTypeView::GetDocument( );
-	ASSERT( Document != NULL );
-	if ( Document == NULL ) {
+	ASSERT( Document != nullptr );
+	if ( Document == nullptr ) {
 		return;
 		}
 	const auto item = Document->m_selectedItem;
-	if ( item == NULL ) {
+	if ( item == nullptr ) {
 		return;
 		}
 	if ( item->m_child_info.m_child_info_ptr == nullptr ) {
