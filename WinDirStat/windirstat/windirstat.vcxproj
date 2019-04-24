@@ -134,13 +134,13 @@
     <IntDir>Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
-    <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
-    <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,7 +156,7 @@
     <IntDir>Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
-    <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_Release|Win32'">
@@ -164,7 +164,7 @@
     <IntDir>Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
-    <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -176,13 +176,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_SSA|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
-    <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Intel_Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <EmbedManifest>false</EmbedManifest>
-    <CodeAnalysisRuleSet>..\WinDirStat.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -213,7 +213,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -264,7 +264,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -322,7 +322,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -408,7 +408,7 @@
       <OffloadConstructs>Optional</OffloadConstructs>
       <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -494,7 +494,7 @@
       <Optimization>Full</Optimization>
       <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -562,7 +562,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <TreatWarningAsError>false</TreatWarningAsError>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -626,7 +626,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -688,7 +688,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <DisableSpecificWarnings>26401;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26401;26485;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
