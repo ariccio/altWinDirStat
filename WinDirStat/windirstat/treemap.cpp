@@ -1898,10 +1898,7 @@ void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex 
 		}
 
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] {
-		const BOOL deleted = ::DeleteDC( hTempDeviceContextMemory );
-		if ( deleted == 0 ) {
-			std::terminate( );
-			}
+		gdi::DeleteDeviceContext(hTempDeviceContextMemory);
 		} );
 
 	//VERIFY( tempDCmem.CreateCompatibleDC( &offscreen_buffer ) );

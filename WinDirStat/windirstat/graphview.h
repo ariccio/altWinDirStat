@@ -14,7 +14,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "datastructures.h"
 
 #include "macros_that_scare_small_children.h"
-//#include "ScopeGuard.h"
+#include "ScopeGuard.h"
 #include "treemap.h"
 //#include "options.h"
 //#include "dirstatdoc.h"
@@ -50,6 +50,7 @@ public:
 protected:
 	CTreemap          m_treemap;				// Treemap generator
 	CBitmap           m_bitmap;				// Cached view. If m_hObject is NULL, the view must be recalculated.
+	//HBITMAP           m_bitmapC;
 	SIZE              m_dimmedSize = { };			// Size of bitmap m_dimmed
 	CBitmap           m_dimmed;				// Dimmed view. Used during refresh to avoid the ooops-effect.
 	UINT_PTR          m_timer = 0u;				// We need a timer to realize when the mouse left our window.
@@ -100,7 +101,7 @@ public:
 
 	void DrawEmptyView( ) noexcept {
 		CClientDC dc( this );
-		DrawEmptyView( &dc );
+		DrawEmptyView( dc.m_hDC );
 		}
 
 protected:
@@ -176,7 +177,7 @@ public:
 	void RenderHighlightRectangle( _In_ const HDC screen_device_context, _In_ RECT rc_ ) const noexcept;
 
 protected:
-	void DrawEmptyView( _In_ CDC* const pScreen_Device_Context ) noexcept {
+	void DrawEmptyView( _In_ const HDC Screen_Device_Context ) noexcept {
 #ifdef DEBUG
 		trace_empty_view_graphview( );
 #endif
@@ -198,26 +199,33 @@ protected:
 
 		if ( m_dimmed.m_hObject == nullptr ) {
 			//return pScreen_Device_Context->FillSolidRect( &rc, gray );
-			fill_solid_RECT( pScreen_Device_Context->m_hDC, &rc, gray );
+			fill_solid_RECT( Screen_Device_Context, &rc, gray );
 			return;
 			}
-		CDC offscreen_buffer;
-		VERIFY( offscreen_buffer.CreateCompatibleDC( pScreen_Device_Context ) );
-		SelectObject_wrapper sobmp( offscreen_buffer.m_hDC, m_dimmed.m_hObject );
-		VERIFY( pScreen_Device_Context->BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
+		//CDC offscreen_buffer;
+		//VERIFY( offscreen_buffer.CreateCompatibleDC( pScreen_Device_Context ) );
+		
+		const HDC offscreen_buffer = gdi::CreateCompatibleDeviceContext( Screen_Device_Context );
+		auto guard = WDS_SCOPEGUARD_INSTANCE([&] {
+			gdi::DeleteDeviceContext(offscreen_buffer);
+			});
+		SelectObject_wrapper sobmp( offscreen_buffer, m_dimmed.m_hObject );
+
+		VERIFY(::BitBlt(Screen_Device_Context, rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, offscreen_buffer, 0, 0, SRCCOPY));
+		//VERIFY( pScreen_Device_Context->BitBlt( rc.left, rc.top, m_dimmedSize.cx, m_dimmedSize.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
 
 		if ( ( rc.right - rc.left ) > m_dimmedSize.cx ) {
 			RECT r = rc;
 			r.left = r.left + m_dimmedSize.cx;
 			//pScreen_Device_Context->FillSolidRect( &r, gray );
-			fill_solid_RECT( pScreen_Device_Context->m_hDC, &r, gray );
+			fill_solid_RECT( Screen_Device_Context, &r, gray );
 			}
 
 		if ( ( rc.bottom - rc.top ) > m_dimmedSize.cy ) {
 			RECT r = rc;
 			r.top = r.top + m_dimmedSize.cy;
 			//pScreen_Device_Context->FillSolidRect( &r, gray );
-			fill_solid_RECT( pScreen_Device_Context->m_hDC, &r, gray );
+			fill_solid_RECT( Screen_Device_Context, &r, gray );
 			}
 		//VERIFY( dcmem.DeleteDC( ) );
 		}
@@ -231,10 +239,10 @@ protected:
 
 	void DrawSelection( _In_ const HDC screen_device_context ) const noexcept;
 	
-	void DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc );
+	void DoDraw( _Inout_ RECT* const rc, _In_ HDC const offscreen_buffer_device_context, _In_ HDC const offscreen_buffer_attribute_device_context) noexcept;
 	
 	
-	void DrawViewNotEmpty( _In_ CDC* const Screen_Device_Context ) noexcept {
+	void DrawViewNotEmpty( _In_ const HDC Screen_Device_Context ) noexcept {
 		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
 		//If the window handle identifies an existing window, the return value is nonzero.
 		//If the window handle does not identify an existing window, the return value is zero.
@@ -249,17 +257,44 @@ protected:
 		//To get extended error information, call GetLastError.
 		VERIFY( ::GetClientRect( m_hWnd, &rc ) );
 
-		CDC offscreen_buffer;
-		VERIFY( offscreen_buffer.CreateCompatibleDC( Screen_Device_Context ) );
+		//CDC offscreen_buffer;
+		//VERIFY( offscreen_buffer.CreateCompatibleDC( Screen_Device_Context ) );
+		const HDC offscreen_buffer = gdi::CreateCompatibleDeviceContext( Screen_Device_Context );
+		auto guard = WDS_SCOPEGUARD_INSTANCE([&] {
+			gdi::DeleteDeviceContext(offscreen_buffer);
+			});
 
 		if ( !CGraphView::IsDrawn( ) ) {
-			DoDraw( Screen_Device_Context, &offscreen_buffer, &rc );
+			/*
+			From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afxwin1.inl:216:
+				_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
+				{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
+			//_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
+			//{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
+			*/
+
+			VERIFY(m_bitmap.Attach(gdi::CreateCompatibleBitmap(Screen_Device_Context, m_size.cx, m_size.cy)));
+			//VERIFY(m_bitmap.CreateCompatibleBitmap(Screen_Device_Context, m_size.cx, m_size.cy));
+
+
+			// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+			// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+			//ASSERT(offscreen_buffer.m_hDC == offscreen_buffer.m_hAttribDC);
+			DoDraw( &rc, offscreen_buffer, offscreen_buffer);
 			}
 
-		SelectObject_wrapper sobmp2( offscreen_buffer.m_hDC, m_bitmap.m_hObject );
-		VERIFY( Screen_Device_Context->BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
+		SelectObject_wrapper sobmp2( offscreen_buffer, m_bitmap.m_hObject );
+		/*
+		_AFXWIN_INLINE BOOL CDC::BitBlt(int x, int y, int nWidth, int nHeight, CDC* pSrcDC,
+			int xSrc, int ySrc, DWORD dwRop)
+			{ ASSERT(m_hDC != NULL); return ::BitBlt(m_hDC, x, y, nWidth, nHeight,
+				pSrcDC->GetSafeHdc(), xSrc, ySrc, dwRop); }
 
-		DrawHighlights( Screen_Device_Context->m_hDC );
+		*/
+		VERIFY(::BitBlt(Screen_Device_Context, 0, 0, m_size.cx, m_size.cy, offscreen_buffer, 0, 0, SRCCOPY));
+		//VERIFY( Screen_Device_Context->BitBlt( 0, 0, m_size.cx, m_size.cy, &offscreen_buffer, 0, 0, SRCCOPY ) );
+
+		DrawHighlights( Screen_Device_Context);
 		//VERIFY( dcmem.DeleteDC( ) );
 		}
 

@@ -33,7 +33,7 @@ public:
 	CTreeListControl m_treeListControl;	// The tree list
 
 protected:
-	CDirstatView( ) : m_treeListControl( ITEM_ROW_HEIGHT, GetDocument( ) ) {// Created by MFC only
+	CDirstatView( ) noexcept : m_treeListControl( ITEM_ROW_HEIGHT, GetDocument( ) ) {// Created by MFC only
 		m_treeListControl.SetSorting( column::COL_SUBTREETOTAL, false );
 		}
 
@@ -115,12 +115,18 @@ protected:
 		// invalidate the entire pane, erase background too
 		Invalidate(TRUE);
 		}
+		_AFXWIN_INLINE void CWnd::Invalidate(BOOL bErase)
+			{ ASSERT(::IsWindow(m_hWnd)); ::InvalidateRect(m_hWnd, NULL, bErase); }
 		*/
 
 		//OnUpdate(NULL, 0, NULL) calls CGraphView::OnUpdate
 		//also CDirstatView::OnUpdate?
 
-		CView::OnInitialUpdate( );
+		//CView::OnInitialUpdate( );
+		//CView::OnUpdate(nullptr, 0, nullptr);
+		//CWnd::Invalidate(TRUE);
+		//ASSERT(::IsWindow(m_hWnd));
+		hwnd::InvalidateErase(m_hWnd);
 		m_treeListControl.GetHeaderCtrl()->RedrawWindow();
 		}
 	//Called by CView::OnPaint
@@ -133,7 +139,7 @@ protected:
 		{
 		}
 		*/
-		CView::OnDraw( pDC );
+		//CView::OnDraw( pDC );
 		m_treeListControl.GetHeaderCtrl()->RedrawWindow();
 		}
 	

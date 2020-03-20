@@ -57,7 +57,7 @@ SelectStockObject_wrapper::SelectStockObject_wrapper( _In_ HDC hDC, _In_ _In_ran
 	//If the function succeeds, the return value is a handle to the requested logical object.
 	//If the function fails, the return value is NULL.
 	//It is not necessary (but it is not harmful) to delete stock objects by calling DeleteObject.
-	HGDIOBJ hStockObj = ::GetStockObject( nIndex );
+	const HGDIOBJ hStockObj = ::GetStockObject( nIndex );
 	if ( hStockObj == nullptr) {
 		std::terminate( );
 		}
@@ -167,9 +167,6 @@ CSetTextColor::~CSetTextColor( ) {
 		}
 	//m_pdc->SetTextColor( m_oldColor );
 	}
-
-
-
 
 
 SExtensionRecord::SExtensionRecord( ) : files { 0u }, bytes { 0u }, color{ 0u } { }

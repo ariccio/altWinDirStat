@@ -233,7 +233,12 @@ struct Treemap_Options final {
 	void SetLightSourcePoint   ( const POINT  pt  ) noexcept;
 	};
 
+namespace gdi {
+	HDC CreateCompatibleDeviceContext( _In_ HDC hDC );
+	void DeleteDeviceContext( _In_ _Post_ptr_invalid_ HDC hDC );
 
+	HBITMAP CreateCompatibleBitmap(_In_ HDC hDC, int cx, int cy);
+}
 
 static constexpr const Treemap_Options _defaultOptions = { Treemap_STYLE::KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 

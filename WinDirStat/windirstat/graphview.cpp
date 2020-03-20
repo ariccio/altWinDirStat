@@ -179,13 +179,19 @@ void CGraphView::DrawSelection( _In_ const HDC screen_device_context ) const noe
 	}
 
 
-void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, _Inout_ RECT* const rc ) {
+void CGraphView::DoDraw( _Inout_ RECT* const rc, _In_ HDC const offscreen_buffer_device_context, _In_ HDC const offscreen_buffer_attribute_device_context ) noexcept {
 	//WTL::CWaitCursor wc;
 
-	VERIFY( m_bitmap.CreateCompatibleBitmap( pDC, m_size.cx, m_size.cy ) );
+	//HGDIOBJ_wrapper compatibleBitmap([&]() {
+		//if (bm == nullptr) {
+		//	TRACE(L"CreateCompatibleBitmap failed!\r\n");
+		//}
+		//return bm;
+		//	}());
+
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { CGraphView::cause_OnIdle_to_be_called_once( ); } );
 
-	SelectObject_wrapper sobmp( offscreen_buffer->m_hDC, m_bitmap.m_hObject );
+	SelectObject_wrapper sobmp( offscreen_buffer_device_context, m_bitmap.m_hObject );
 	const CDirstatDoc* const Document = static_cast<const CDirstatDoc*>( m_pDocument );
 	ASSERT( Document != NULL );
 	if ( Document == NULL ) {
@@ -199,7 +205,7 @@ void CGraphView::DoDraw( _In_ CDC* const pDC, _In_ CDC* const offscreen_buffer, 
 		//cause_OnIdle_to_be_called_once( );
 		return;
 		}
-	m_treemap.DrawTreemap( offscreen_buffer->m_hDC, rc, rootItem, Options->m_treemapOptions, offscreen_buffer->m_hAttribDC );
+	m_treemap.DrawTreemap( offscreen_buffer_device_context, rc, rootItem, Options->m_treemapOptions, offscreen_buffer_attribute_device_context );
 #ifdef _DEBUG
 	m_treemap.RecurseCheckTree( rootItem );
 #endif
@@ -245,9 +251,9 @@ void CGraphView::OnDraw( CDC* pScreen_Device_Context ) {
 		}
 	if ( m_recalculationSuspended || ( !m_showTreemap ) ) {
 		// TODO: draw something interesting, e.g. outline of the first level.
-		return CGraphView::DrawEmptyView( pScreen_Device_Context );
+		return CGraphView::DrawEmptyView( pScreen_Device_Context->m_hDC );
 		}
-	CGraphView::DrawViewNotEmpty( pScreen_Device_Context );
+	CGraphView::DrawViewNotEmpty( pScreen_Device_Context->m_hDC );
 	}
 
 

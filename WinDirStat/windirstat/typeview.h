@@ -188,7 +188,7 @@ protected:
 	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
 		ASSERT_VALID( pDC );
-		CView::OnDraw( pDC );
+		//CView::OnDraw( pDC );
 		}
 
 	void SetSelection( ) noexcept;

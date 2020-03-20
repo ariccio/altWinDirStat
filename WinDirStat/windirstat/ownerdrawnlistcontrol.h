@@ -681,19 +681,11 @@ protected:
 		//We recommend that you call DeleteDC to delete the DC.
 		//However, you can also call DeleteObject with the HDC to delete the DC.
 		ASSERT( pDestinationDrawItemStruct->hDC == pCDestinationDeviceContext->m_hDC );
-		HDC hInMemoryDeviceContext = ::CreateCompatibleDC( pDestinationDrawItemStruct->hDC );
-		if ( hInMemoryDeviceContext == NULL ) {
-			std::terminate( );
-			abort( );
-			}
+		const HDC hInMemoryDeviceContext = gdi::CreateCompatibleDeviceContext( pDestinationDrawItemStruct->hDC );
+		
+
 		auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { 
-			//DeleteDC function: https://msdn.microsoft.com/en-us/library/dd183533.aspx
-			//If the function succeeds, the return value is nonzero.
-			//If the function fails, the return value is zero.
-			const BOOL deleted = ::DeleteDC( hInMemoryDeviceContext );
-			if ( deleted == 0 ) {
-				std::terminate( );
-				}
+			gdi::DeleteDeviceContext( hInMemoryDeviceContext );
 			} );
 
 		/*
@@ -704,15 +696,18 @@ protected:
 			{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
 		//_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
 		//{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
-
 		*/
-		HGDIOBJ_wrapper bm( [&]() { 
-			const HBITMAP bm = ::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top));
-			if ( bm == nullptr ) {
-				TRACE(L"CreateCompatibleBitmap failed!\r\n");
-				}
-			return bm;
-			}());
+
+		//HGDIOBJ_wrapper bm( [&]() { 
+		//	const HBITMAP bm = ::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top));
+		//	if ( bm == nullptr ) {
+		//		TRACE(L"CreateCompatibleBitmap failed!\r\n");
+		//		}
+		//	return bm;
+		//	}());
+		
+		HGDIOBJ_wrapper bm(gdi::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top)));
+
 
 		//const HBITMAP bm = ::CreateCompatibleBitmap(pCDestinationDeviceContext->m_hDC, (rcItem.right - rcItem.left), (rcItem.bottom - rcItem.top));
 		//if (bm == NULL) {
