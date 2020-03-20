@@ -18,19 +18,29 @@ WDS_FILE_INCLUDE_MESSAGE
 //#include "ownerdrawnlistcontrol.h"
 //#include "TreeListControl.h"
 #include "typeview.h"
-
 #include "dirstatview.h"
-
 #include "globalhelpers.h"
-
 #include "windirstat.h" //for m_appptr; this header ALSO `#include "mountpoints.h"`s, to prevent the need for PIMPL in CDirstatApp.
-
 #include "mainframe.h"
-
 #include "directory_enumeration.h"
 
 namespace {
-	const COLORREF _cushionColors[] = {
+	//const constexpr COLORREF _cushionColors[] = {
+	//	RGB(0, 0, 255),
+	//	RGB(255, 0, 0),
+	//	RGB(0, 255, 0),
+	//	RGB(0, 255, 255),
+	//	RGB(255, 0, 255),
+	//	RGB(255, 255, 0),
+	//	RGB(150, 150, 255),
+	//	RGB(255, 150, 150),
+	//	RGB(150, 255, 150),
+	//	RGB(150, 255, 255),
+	//	RGB(255, 150, 255),
+	//	RGB(255, 255, 150),
+	//	RGB(255, 255, 255)
+	//};
+	const constexpr COLORREF defaultColors[] = {
 		RGB(0, 0, 255),
 		RGB(255, 0, 0),
 		RGB(0, 255, 0),
@@ -46,7 +56,8 @@ namespace {
 		RGB(255, 255, 255)
 	};
 
-	void failed_to_open_clipboard( ) {
+
+	void failed_to_open_clipboard( ) noexcept {
 		displayWindowsMsgBoxWithError( );
 		displayWindowsMsgBoxWithMessage( L"Cannot open the clipboard." );
 		TRACE( _T( "Cannot open the clipboard!\r\n" ) );
@@ -56,7 +67,7 @@ namespace {
 		public:
 		DISALLOW_COPY_AND_ASSIGN( Clipboard_wrapper );
 
-		Clipboard_wrapper( const HWND hWnd, const bool empty ) : m_open {
+		Clipboard_wrapper( const HWND hWnd, const bool empty ) noexcept : m_open {
 																		//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
 																		//If the window handle identifies an existing window, the return value is nonzero.
 																		//If the window handle does not identify an existing window, the return value is zero.
@@ -100,7 +111,6 @@ namespace {
 
 	rsize_t GetDefaultPaletteAsArray( _Out_ _Pre_writable_size_( 13 ) _Post_readable_size_( return ) COLORREF( &colorArray )[ 13 ] ) {
 		rsize_t i = 0;
-		const COLORREF defaultColors[ ] = { RGB( 0, 0, 255 ), RGB( 255, 0, 0 ), RGB( 0, 255, 0 ), RGB( 0, 255, 255 ), RGB( 255, 0, 255 ), RGB( 255, 255, 0 ), RGB( 150, 150, 255 ), RGB( 255, 150, 150 ), RGB( 150, 255, 150 ), RGB( 150, 255, 255 ), RGB( 255, 150, 255 ), RGB( 255, 255, 150 ), RGB( 255, 255, 255 ) };
 		TRACE( _T( "\r\n\r\nGenerating brizght colors from default colors......\r\n" ) );
 		//Not vectorized: 1304, loop includes assignments of different sizes
 		for ( i = 0; i < 13; ++i ) {
@@ -255,7 +265,7 @@ namespace {
 
 	//Yes, used
 	struct s_compareSExtensionRecordByBytes final {
-		bool operator()( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const { return ( lhs.bytes < rhs.bytes ); }
+		bool operator() ( const SExtensionRecord& lhs, const SExtensionRecord& rhs ) const noexcept { return ( lhs.bytes < rhs.bytes ); }
 		};
 
 
@@ -415,7 +425,7 @@ CObject* PASCAL CDirstatDoc::CreateObject() {
 	return new CDirstatDoc;
 	}
 
-AFX_COMDAT const CRuntimeClass CDirstatDoc::classCDirstatDoc = {
+AFX_COMDAT const constexpr CRuntimeClass CDirstatDoc::classCDirstatDoc = {
 																"CDirstatDoc" /*m_lpszClassName*/,
 																sizeof(class CDirstatDoc) /*m_nObjectSize*/,
 																0xFFFF /*wSchema*/,
@@ -431,7 +441,7 @@ CRuntimeClass* CDirstatDoc::GetRuntimeClass() const {
 
 
 _Pre_satisfies_( _theDocument == nullptr) _Post_satisfies_( _theDocument == this )
-CDirstatDoc::CDirstatDoc( ) : m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
+CDirstatDoc::CDirstatDoc( ) noexcept : m_frameptr( GetMainFrame( ) ), m_appptr( GetApp( ) ) {
 	ASSERT( _theDocument == nullptr);
 	_theDocument               = this;
 	TRACE( _T( "_theDocument has been set to %p\r\n" ), _theDocument );
@@ -450,14 +460,14 @@ void CDocument::DeleteContents()
 }
 
 */
-void CDirstatDoc::DeleteContents( ) {
+void CDirstatDoc::DeleteContents( ) noexcept {
 	m_selectedItem = { nullptr };
 	m_timeTextWritten = false;
 	m_rootItem.reset( );
 	m_name_pool.reset( nullptr );
 	}
 
-BOOL CDirstatDoc::OnNewDocument( ) {
+BOOL CDirstatDoc::OnNewDocument( ) noexcept {
 	if ( !CDocument::OnNewDocument( ) ) {
 		return FALSE;
 		}
@@ -493,7 +503,7 @@ void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
 		displayWindowsMsgBoxWithMessage( root_folder );
 		}
-	m_rootItem = std::make_unique<CTreeListItem>( UINT64_ERROR, t, 0, false, reinterpret_cast<CTreeListItem*>( NULL ), new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
+	m_rootItem = std::make_unique<CTreeListItem>( UINT64_ERROR, t, 0, false, nullptr, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
 	}
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {
@@ -549,7 +559,7 @@ COLORREF CDirstatDoc::GetCushionColor( _In_z_ PCWSTR const ext ) {
 		}
 	TRACE( _T( "Extension %s not in rebuilt colorMap!\r\n" ), ext );
 	ASSERT( false );
-	return static_cast<COLORREF>( 0 );
+	return static_cast<COLORREF>( 0u );
 	}
 
 //We need a getter (NOT public data member) because we may need to do work before accessing.
@@ -560,7 +570,7 @@ _Ret_notnull_ const std::vector<SExtensionRecord>* CDirstatDoc::GetExtensionReco
  	return &m_extensionRecords;
 	}
 
-void CDirstatDoc::SortTreeList( ) {
+void CDirstatDoc::SortTreeList( ) noexcept {
 	ASSERT( m_rootItem != NULL );
 	
 	const auto DirStatView = ( m_frameptr->GetDirstatView( ) );
@@ -570,7 +580,7 @@ void CDirstatDoc::SortTreeList( ) {
 		}
 	}
 
-bool CDirstatDoc::OnWorkFinished( ) {
+bool CDirstatDoc::OnWorkFinished( ) noexcept {
 	TRACE( _T( "Finished walking tree...\r\n" ) );
 	m_extensionDataValid = false;
 
@@ -646,12 +656,12 @@ bool CDirstatDoc::IsRootDone( ) const noexcept {
 	return m_rootItem->m_attr.m_done;
 	}
 
-void CDirstatDoc::SetSelection( _In_ const CTreeListItem& item ) {
+void CDirstatDoc::SetSelection( _In_ const CTreeListItem& item ) noexcept {
 	m_selectedItem = const_cast< CTreeListItem* >( &item );
 	m_frameptr->SetSelectionMessageText( );
 	}
 
-void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) {
+void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) noexcept {
 	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
 	m_highlightExtension = std::move( ext );
 	m_frameptr->SetSelectionMessageText( );

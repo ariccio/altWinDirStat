@@ -36,7 +36,7 @@ namespace {
 struct CFileDialogEventHandler final : public IFileDialogEvents, public IFileDialogControlEvents {
 
 	// IUnknown methods
-	IFACEMETHODIMP QueryInterface( _In_ REFIID riid, _COM_Outptr_ void** ppv ) override{
+	IFACEMETHODIMP QueryInterface( _In_ REFIID riid, _COM_Outptr_ void** ppv ) noexcept override {
 
 		//#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
 		//#define QITABENTMULTI(Cthis, Ifoo, Iimpl) { &__uuidof(Ifoo), OFFSETOFCLASS(Iimpl, Cthis) }
@@ -53,12 +53,12 @@ struct CFileDialogEventHandler final : public IFileDialogEvents, public IFileDia
 		return QISearch( this, qit, riid, ppv );
 		}
 
-	IFACEMETHODIMP_( ULONG ) AddRef( ) override {
+	IFACEMETHODIMP_( ULONG ) AddRef( ) noexcept override {
 #pragma warning( suppress: 4365 )
 		return InterlockedIncrement( &m_cRef );
 		}
 
-	IFACEMETHODIMP_( ULONG ) Release( ) override {
+	IFACEMETHODIMP_( ULONG ) Release( ) noexcept override {
 		const auto cRef = InterlockedDecrement( &m_cRef );
 		if ( !cRef ) {
 			delete this;
@@ -69,48 +69,48 @@ struct CFileDialogEventHandler final : public IFileDialogEvents, public IFileDia
 
 	// IFileDialogEvents methods
 	//TODO: I think the MSDN sample might've done something wrong with all the S_OKs
-	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) override {
+	IFACEMETHODIMP OnFileOk( __RPC__in_opt IFileDialog* ) noexcept override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnFolderChange( __RPC__in_opt IFileDialog* ) override {
+	IFACEMETHODIMP OnFolderChange( __RPC__in_opt IFileDialog* ) noexcept override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnFolderChanging( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem* ) override {
+	IFACEMETHODIMP OnFolderChanging( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem* ) noexcept override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnHelp( IFileDialog* ) {
+	IFACEMETHODIMP OnHelp( IFileDialog* ) noexcept {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnSelectionChange( __RPC__in_opt IFileDialog* ) override {
+	IFACEMETHODIMP OnSelectionChange( __RPC__in_opt IFileDialog* ) noexcept override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnTypeChange( __RPC__in_opt IFileDialog* ) override {
+	IFACEMETHODIMP OnTypeChange( __RPC__in_opt IFileDialog* ) noexcept override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnShareViolation( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_SHAREVIOLATION_RESPONSE* ) override {
+	IFACEMETHODIMP OnShareViolation( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_SHAREVIOLATION_RESPONSE* ) noexcept override {
 		return E_NOTIMPL;
 		}
-	IFACEMETHODIMP OnOverwrite( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_OVERWRITE_RESPONSE* ) override {
+	IFACEMETHODIMP OnOverwrite( __RPC__in_opt IFileDialog*, __RPC__in_opt IShellItem*, __RPC__out FDE_OVERWRITE_RESPONSE* ) noexcept override {
 		return E_NOTIMPL;
 		}
 
 	// IFileDialogControlEvents methods
-	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* /*pfdc*/, DWORD /*dwIDCtl*/, DWORD /*dwIDItem*/ ) override {
+	IFACEMETHODIMP OnItemSelected( __RPC__in_opt IFileDialogCustomize* /*pfdc*/, DWORD /*dwIDCtl*/, DWORD /*dwIDItem*/ ) noexcept override {
 		return E_NOTIMPL;
 		}
 
 
-	IFACEMETHODIMP OnButtonClicked( __RPC__in_opt IFileDialogCustomize*, DWORD ) override {
+	IFACEMETHODIMP OnButtonClicked( __RPC__in_opt IFileDialogCustomize*, DWORD ) noexcept override {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnControlActivating( __RPC__in_opt IFileDialogCustomize*, DWORD ) override {
+	IFACEMETHODIMP OnControlActivating( __RPC__in_opt IFileDialogCustomize*, DWORD ) noexcept override {
 		return S_OK;
 		}
-	IFACEMETHODIMP OnCheckButtonToggled( __RPC__in_opt IFileDialogCustomize*, DWORD, BOOL ) override {
+	IFACEMETHODIMP OnCheckButtonToggled( __RPC__in_opt IFileDialogCustomize*, DWORD, BOOL ) noexcept override {
 		return S_OK;
 		}
 
-	CFileDialogEventHandler( ) : m_cRef { 1 } { }
+	CFileDialogEventHandler( ) noexcept : m_cRef { 1 } { }
 
 	protected:
 

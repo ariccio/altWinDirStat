@@ -127,7 +127,9 @@ protected:
 		//CWnd::Invalidate(TRUE);
 		//ASSERT(::IsWindow(m_hWnd));
 		hwnd::InvalidateErase(m_hWnd);
-		m_treeListControl.GetHeaderCtrl()->RedrawWindow();
+		
+		//m_treeListControl.GetHeaderCtrl()->RedrawWindow();
+		hwnd::RedrawWindow(m_treeListControl.GetHeaderCtrl()->m_hWnd);
 		}
 	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
@@ -140,7 +142,8 @@ protected:
 		}
 		*/
 		//CView::OnDraw( pDC );
-		m_treeListControl.GetHeaderCtrl()->RedrawWindow();
+		//m_treeListControl.GetHeaderCtrl()->RedrawWindow();
+		hwnd::RedrawWindow(m_treeListControl.GetHeaderCtrl()->m_hWnd);
 		}
 	
 	/*
@@ -170,7 +173,8 @@ protected:
 				return OnUpdateHINT_SHOWNEWSELECTION( );
 
 			case UpdateAllViews_ENUM::HINT_REDRAWWINDOW:
-				VERIFY( m_treeListControl.RedrawWindow( ) );
+				//VERIFY( m_treeListControl.RedrawWindow( ) );
+				hwnd::RedrawWindow(m_treeListControl.m_hWnd);
 				break;
 
 			case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:

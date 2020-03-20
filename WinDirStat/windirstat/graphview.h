@@ -113,8 +113,25 @@ protected:
 		VERIFY( ::GetClassInfoW( ::AfxGetInstanceHandle( ), cs.lpszClass, &wc ) );
 		wc.hbrBackground = { NULL };
 		wc.lpszClassName = _T( "windirstat_graphview_class" );
-		cs.lpszClass = reinterpret_cast<PCWSTR>( ::RegisterClassW( &wc ) );
-	
+		//RegisterClassW function: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassw
+		//If the function succeeds, the return value is a class atom that uniquely identifies the class being registered. 
+		//If the function fails, the return value is zero. To get extended error information, call GetLastError.
+		const ATOM register_class_result = ::RegisterClassW(&wc);
+		if (register_class_result == 0) {
+			displayWindowsMsgBoxWithError();
+			std::terminate();
+		}
+
+		//A pointer to a null-terminated string or is an atom.
+			//If this parameter is an atom, it must be a class atom created by a previous call to the RegisterClass or RegisterClassEx function.
+			//The atom must be in the low-order word of lpszClassName; the high-order word must be zero.
+
+		//If lpszClassName is a string, it specifies the window class name.
+			//The class name can be any name registered with RegisterClass or RegisterClassEx, or any of the predefined control - class names.
+		cs.lpszClass = reinterpret_cast<PCWSTR>( register_class_result );
+		ASSERT(HIWORD(cs.lpszClass) == 0);
+		TRACE(L"RegisterClassW result: %u\r\n", static_cast<unsigned>(register_class_result));
+
 		return TRUE;
 
 		}
@@ -168,7 +185,14 @@ protected:
 #ifdef DEBUG
 		trace_call_onidle( );
 #endif
-		PostAppMessageW( ::GetCurrentThreadId( ), WM_NULL, 0, 0 );
+		//PostThreadMessageW function: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postthreadmessagew
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero. To get extended error information, call GetLastError. GetLastError returns ERROR_INVALID_THREAD_ID if idThread is not a valid thread identifier, or if the thread specified by idThread does not have a message queue. GetLastError returns ERROR_NOT_ENOUGH_QUOTA when the message limit is hit.
+		const BOOL post_message_response = ::PostThreadMessageW( ::GetCurrentThreadId( ), WM_NULL, 0, 0 );
+		if (post_message_response == 0) {
+			displayWindowsMsgBoxWithError();
+			std::terminate();
+		}
 		}
 
 public:

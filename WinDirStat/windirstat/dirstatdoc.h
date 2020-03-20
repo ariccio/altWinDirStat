@@ -29,7 +29,7 @@ class CDirstatApp;
 //	C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\doccore.cpp
 class CDirstatDoc final : public CDocument {
 protected:
-	_Pre_satisfies_( _theDocument == nullptr ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( );	// Created by MFC only
+	_Pre_satisfies_( _theDocument == nullptr ) _Post_satisfies_( _theDocument == this ) CDirstatDoc( ) noexcept;	// Created by MFC only
 	
 	/*
 	DECLARE_DYNCREATE(CDirstatDoc)
@@ -58,24 +58,24 @@ public:
 	virtual ~CDirstatDoc( ) final;
 
 
-	virtual void     DeleteContents        (                                                      ) override final;
-	virtual BOOL     OnNewDocument         (                                                      ) override final;
+	virtual void     DeleteContents        (                                                      ) noexcept override final;
+	virtual BOOL     OnNewDocument         (                                                      ) noexcept override final;
 
 #pragma warning(disable:4373)//Previous versions of MSVC violated the standard.//MSVC bitches nonstop if we DO NOT disable.
 	virtual BOOL     OnOpenDocument        ( _In_z_     PCWSTR const pszPathName                      ) override final;
 	COLORREF         GetCushionColor       ( _In_z_     PCWSTR const ext                              );
 	
 	bool Work                              ( ); // return: true if done.
-	bool OnWorkFinished                    ( );
+	bool OnWorkFinished                    ( ) noexcept;
 	
 	_Pre_satisfies_( item.m_child_info.m_child_info_ptr == nullptr )
 	void OpenItem ( _In_     const CTreeListItem& item                                                  );
 
-	void SetSelection ( _In_ const CTreeListItem& item );
+	void SetSelection ( _In_ const CTreeListItem& item ) noexcept;
 
 
-	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   );
-	void SortTreeList                      ( );	
+	void SetHighlightExtension             ( _In_ const std::wstring       ext                                                   ) noexcept;
+	void SortTreeList                      ( ) noexcept;
 
 
 	//We need a getter (NOT public data member) because we may need to do work before accessing.
