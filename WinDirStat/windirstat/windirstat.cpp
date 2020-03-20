@@ -98,7 +98,7 @@ SetProcessMitigationPolicy(
 		}
 
 	std::wstring get_last_error_no_newline( _In_z_ PCWSTR const mitigation_specific_error_message ) {
-		const rsize_t str_buff_size = 256u;
+		constexpr const rsize_t str_buff_size = 256u;
 		wchar_t str_err_buff[ str_buff_size ] = { 0 };
 		rsize_t chars_written_1 = 0u;
 		const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( str_err_buff, str_buff_size, chars_written_1 );
@@ -405,7 +405,7 @@ void CDirstatApp::OnFileOpen( ) {
 	}
 
 void CDirstatApp::OnFileOpenLight( ) {
-	const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
+	constexpr const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
 	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
 	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
 	const INT_PTR resDoModal = bob.DoModal( );

@@ -38,7 +38,7 @@ WDS_FILE_INCLUDE_MESSAGE
 
 
 namespace {
-	const UINT _N_ID_EXTENSION_LIST_CONTROL = 4711u;
+	constexpr const UINT _N_ID_EXTENSION_LIST_CONTROL = 4711u;
 	}
 
 #pragma warning(suppress:4355)
@@ -435,7 +435,7 @@ void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
 	}
 
 void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
-	const LPNMLISTVIEW const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
+	const NMLISTVIEW* const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	if ( ( pNMLV->uNewState bitand LVIS_SELECTED ) != 0 ) {
 		m_typeView->SetHighlightExtension( CExtensionListControl::GetSelectedExtension( ) );
 		}

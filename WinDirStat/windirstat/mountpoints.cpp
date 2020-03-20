@@ -31,7 +31,7 @@ const bool CMountPoints::IsVolume( _In_ const std::wstring& path ) const {
 	ASSERT( ( path.at( 1 )  == L':' ) );
 
 	const auto pathAtZero = ::towlower( path[ 0 ] );
-	const auto weirdAss_a = _T( 'a' );
+	constexpr const auto weirdAss_a = _T( 'a' );
 	const auto indexItem  = pathAtZero - weirdAss_a;
 	//return IsVolumeMountPoint( indexItem, path );
 	ASSERT( indexItem < M_DRIVE_ARRAY_SIZE );
@@ -55,7 +55,7 @@ const bool CMountPoints::IsMountPoint( _In_ const std::wstring& path ) const {
 	ASSERT( ( path.length( ) >= 3 ) && ( path.at( 1 )  == L':' ) && ( path.at( 2 )  == L'\\' ) );
 
 	const std::wint_t pathAtZero = ::towlower( path[ 0 ] );
-	const wchar_t weirdAss_a = L'a';
+	constexpr const wchar_t weirdAss_a = L'a';
 	if( weirdAss_a > pathAtZero ){
 		std::terminate();
 		}
@@ -107,14 +107,14 @@ const bool CMountPoints::IsVolumeMountPoint( _In_ _In_range_( 0, ( M_DRIVE_ARRAY
 	}
 
 void CMountPoints::GetDriveVolumes( ) noexcept {
-	const rsize_t s_char_buffer_size = 5u;
+	constexpr const rsize_t s_char_buffer_size = 5u;
 	_Null_terminated_ wchar_t small_buffer_volume_name[ s_char_buffer_size ] = { 0 };
 	const auto drives = ::GetLogicalDrives( );
 	DWORD mask = 0x00000001;
 
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for ( INT i = 0; i < static_cast<INT>( M_DRIVE_ARRAY_SIZE ); i++, mask <<= 1 ) {
-		const rsize_t larger_buffer_size = MAX_PATH;
+		constexpr const rsize_t larger_buffer_size = MAX_PATH;
 		_Null_terminated_ wchar_t volume_[ larger_buffer_size ] = { 0 };
 		if ( ( drives bitand mask ) != 0 ) {
 			const auto swps = swprintf_s( small_buffer_volume_name, L"%c:\\", ( i + _T( 'A' ) ) );
@@ -137,7 +137,7 @@ void CMountPoints::GetDriveVolumes( ) noexcept {
 
 
 void CMountPoints::GetAllMountPoints( ) {
-	const rsize_t volumeTCHARsize = MAX_PATH;
+	constexpr const rsize_t volumeTCHARsize = MAX_PATH;
 	_Null_terminated_ wchar_t volume[ volumeTCHARsize ] = { 0 };
 	const HANDLE hvol = ::FindFirstVolumeW( volume, volumeTCHARsize );
 	if ( hvol == INVALID_HANDLE_VALUE ) {
@@ -146,7 +146,7 @@ void CMountPoints::GetAllMountPoints( ) {
 		const DWORD lastErr = ::GetLastError( );
 		TRACE( _T( "FindFirstVolumeW failed, error: `%lu`.\r\n" ), lastErr, volume );
 
-		const rsize_t err_buf_size = 1024u;
+		constexpr const rsize_t err_buf_size = 1024u;
 		wchar_t err_buff[ err_buf_size ] = { 0 };
 		rsize_t chars_written_unused = 0u;
 		const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
@@ -170,7 +170,7 @@ void CMountPoints::GetAllMountPoints( ) {
 			const DWORD lastErr = ::GetLastError( );
 			TRACE( _T( "GetVolumeInformationW failed, error: `%lu`. File system (%s) is not ready?\r\n" ), lastErr, volume );
 
-			const rsize_t err_buf_size = 1024u;
+			constexpr const rsize_t err_buf_size = 1024u;
 			wchar_t err_buff[ err_buf_size ] = { 0 };
 			rsize_t chars_written_unused = 0u;
 			const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
@@ -198,7 +198,7 @@ void CMountPoints::GetAllMountPoints( ) {
 			const DWORD lastErr = ::GetLastError( );
 			TRACE( _T( "FindFirstVolumeMountPointW failed, error: `%lu`. No volume mnt pts on (%s)?\r\n" ), lastErr, volume );
 
-			const rsize_t err_buf_size = 1024u;
+			constexpr const rsize_t err_buf_size = 1024u;
 			wchar_t err_buff[ err_buf_size ] = { 0 };
 			rsize_t chars_written_unused = 0u;
 			const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );
@@ -225,7 +225,7 @@ void CMountPoints::GetAllMountPoints( ) {
 				const DWORD lastErr = ::GetLastError( );
 				TRACE( _T( "GetVolumeNameForVolumeMountPoint(%s) failed, error: `%lu`.\r\n" ), uniquePath.c_str( ), lastErr );
 
-				const rsize_t err_buf_size = 1024u;
+				constexpr const rsize_t err_buf_size = 1024u;
 				wchar_t err_buff[ err_buf_size ] = { 0 };
 				rsize_t chars_written_unused = 0u;
 				const HRESULT err_fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buf_size, chars_written_unused, lastErr );

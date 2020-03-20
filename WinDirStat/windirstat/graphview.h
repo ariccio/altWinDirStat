@@ -205,7 +205,7 @@ protected:
 #ifdef DEBUG
 		trace_empty_view_graphview( );
 #endif
-		const COLORREF gray = RGB( 160, 160, 160 );
+		constexpr const COLORREF gray = RGB( 160, 160, 160 );
 		CGraphView::Inactivate( );
 
 		RECT rc = { 0 };

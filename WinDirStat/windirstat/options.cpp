@@ -131,7 +131,7 @@ namespace {
 		};
 
 	void SanifyRect( _Inout_ RECT* const rc ) noexcept {
-		const INT visible = 30;
+		constexpr const INT visible = 30;
 		normalize_RECT( rc );
 
 		RECT rcDesktop_temp = { 0, 0, 0, 0 };
@@ -323,7 +323,7 @@ void CPersistence::SetArray( _In_ const std::wstring entry, _In_ _In_reads_( arr
 	if ( entry.length( ) == 0 ) {
 		return;
 		}
-	const rsize_t int_buf_size = 11u;
+	constexpr const rsize_t int_buf_size = 11u;
 	_Null_terminated_ wchar_t int_buf[ int_buf_size ] = { 0 };
 	std::wstring value;
 	
@@ -408,7 +408,7 @@ void CPersistence::SetRect( _In_z_ const PCWSTR entry, _In_ const RECT rc ) {
 	// `%d,%d,%d,%d`  -> max ( 15 * 4 characters )
 	//             ^ok, technically it's ( ( 15 * 4 ) -1 ) characters, but overshooting won't hurt. We need space for the null terminator!
 	//( 15 * 4 ) -> 60 characters
-	const rsize_t buffer_size = 64u;
+	constexpr const rsize_t buffer_size = 64u;
 	_Null_terminated_ wchar_t buffer_rect[ buffer_size ] = { 0 };
 	const HRESULT fmt_res = StringCchPrintfW( buffer_rect, buffer_size, L"%d,%d,%d,%d", rc.left, rc.top, rc.right, rc.bottom );
 	if ( SUCCEEDED( fmt_res ) ) {
@@ -619,7 +619,7 @@ std::wstring CRegistryUser::GetProfileString_( _In_z_ const PCWSTR section, _In_
 	//const PCWSTR reg_key_str = GetApp( )->m_pszRegistryKey;
 	const HKEY   reg_sec_key = GetApp( )->GetSectionKey( section );
 	_Const_ DWORD dwType = REG_SZ;
-	const rsize_t buffer_size = 512u;
+	constexpr const rsize_t buffer_size = 512u;
 	BYTE registry_data_buffer[ buffer_size ] = { 0 };
 	static_assert( sizeof( registry_data_buffer ) == ( sizeof( BYTE ) * buffer_size ), "" );
 	DWORD buffer_size_byte_count = sizeof( registry_data_buffer );

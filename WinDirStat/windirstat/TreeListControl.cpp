@@ -33,11 +33,11 @@ WDS_FILE_INCLUDE_MESSAGE
 
 namespace {
 
-	const LONG NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
-	const LONG INDENT_WIDTH = 18;
-	const LONG HOTNODE_CX = 9;		// Size and position of the +/- buttons
-	const LONG HOTNODE_CY = 9;
-	const LONG HOTNODE_X = 0;
+	constexpr const LONG NODE_WIDTH = 15;		// Width of a node within IDB_NODES 
+	constexpr const LONG INDENT_WIDTH = 18;
+	constexpr const LONG HOTNODE_CX = 9;		// Size and position of the +/- buttons
+	constexpr const LONG HOTNODE_CY = 9;
+	constexpr const LONG HOTNODE_X = 0;
 
 	std::vector<const CTreeListItem *> buildVectorOfPaths( _In_ const CTreeListItem* item ) {
 		std::vector<const CTreeListItem *> path;
@@ -369,7 +369,7 @@ std::uint32_t CTreeListItem::files_recurse( ) const noexcept {
 
 	const auto childCount = m_child_info.m_child_info_ptr->m_childCount;
 	const auto my_m_children = m_child_info.m_child_info_ptr->m_children.get( );
-	const rsize_t stack_alloc_threshold = 128;
+	constexpr const rsize_t stack_alloc_threshold = 128;
 
 	// 4/13/2019:
 	// 	Heh, I forgot I did this little optimization. Very clever little trick! 
@@ -938,7 +938,7 @@ void CTreeListItem::refresh_sizeCache( ) noexcept {
 		
 		// 4/13/2019:
 		// 	Heh, I forgot I did this little optimization. Very clever little trick!
-		const rsize_t stack_alloc_threshold = 128;
+		constexpr const rsize_t stack_alloc_threshold = 128;
 		if ( childCount < stack_alloc_threshold ) {
 			std::uint64_t child_totals[ stack_alloc_threshold ];
 			for ( size_t i = 0; i < childCount; ++i ) {
@@ -981,7 +981,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const noexcep
 
 		// 4/13/2019:
 		// 	Heh, I forgot I did this little optimization. Very clever little trick!
-		const rsize_t stack_alloc_threshold = 128;
+		constexpr const rsize_t stack_alloc_threshold = 128;
 		if ( childCount < stack_alloc_threshold ) {
 			DOUBLE children_totals[ stack_alloc_threshold ] = { 0 };
 			for ( size_t i = 0; i < childCount; ++i ) {
@@ -1180,7 +1180,7 @@ void CTreeListControl::find_item_then_show( _In_ const CTreeListItem* const path
 		OutputDebugString( _T( "found!\r\n" ) );
 #endif
 		//if we've found the item, then we should close anything that we opened in the process?
-		TRACE( _T( "\t\tposition in list view: %I64d, index: %i\r\n" ), std::int64_t( i ), index );
+		TRACE( _T( "\t\tposition in list view: %I64d, index: %i\r\n" ), static_cast<std::int64_t>( i ), index );
 		TRACE( _T( "Collapsing items [%i, %i). Item count: %i\r\n" ), ( parent + 1 ), index, CListCtrl::GetItemCount( ) );
 		index = CTreeListControl::collapse_parent_plus_one_through_index( path, index, parent );
 		TRACE( _T( "NEW item count %i\r\n" ), CListCtrl::GetItemCount( ) );
@@ -1333,7 +1333,7 @@ void CTreeListControl::SelectAndShowItem( _In_ const CTreeListItem* const item, 
 #ifdef DEBUG
 	for ( size_t inner = 0; inner < path.size( ); ++inner ) {
 		ASSERT( path.at( inner )->m_name != NULL );
-		TRACE( _T( "path component %I64u: `%s` (%p)\r\n" ), std::uint64_t( inner ), path.at( inner )->m_name, path.at( inner ) );
+		TRACE( _T( "path component %I64u: `%s` (%p)\r\n" ), static_cast<std::uint64_t>( inner ), path.at( inner )->m_name, path.at( inner ) );
 		}
 #endif
 
@@ -1467,7 +1467,7 @@ void CTreeListControl::handle_OnContextMenu( CPoint pt ) const {
 	tp.rcExclude.left = desktop.left;
 	tp.rcExclude.right = desktop.right;
 
-	const INT overlap = 2;	// a little vertical overlapping
+	constexpr const INT overlap = 2;	// a little vertical overlapping
 	tp.rcExclude.top += overlap;
 	tp.rcExclude.bottom -= overlap;
 
@@ -1684,7 +1684,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//given point == { 200, 89 };
 	//pt == { 200, 5 };
 
-	WTL::CPoint pt = ( point - temp );
+	WTL::CPoint const pt = ( point - temp );
 
 	const CTreeListItem* const item = CTreeListControl::GetItem( i );
 
@@ -1788,7 +1788,7 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	for ( INT m = 0; m < todelete; m++ ) {
 		
 #ifdef DEBUG
-		const auto local_var = CTreeListControl::GetItem( item_number_to_delete );
+		const CTreeListItem* const local_var = CTreeListControl::GetItem( item_number_to_delete );
 		ASSERT( local_var != NULL );
 		if ( local_var != NULL ) {
 			ASSERT( item_number_to_delete == COwnerDrawnListCtrl::FindListItem( local_var ) );

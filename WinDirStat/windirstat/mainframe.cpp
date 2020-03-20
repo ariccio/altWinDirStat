@@ -54,7 +54,7 @@ namespace {
 		VERIFY( status_bar->SetIndicators( indicators_array, count ) );
 		}
 
-	const rsize_t debug_str_size = 100u;
+	constexpr const rsize_t debug_str_size = 100u;
 	
 	void debug_output_searching_time( _In_ const double searchingTime ) {
 		if ( searchingTime == DBL_MAX ) {
@@ -181,7 +181,7 @@ BOOL WDSOptionsPropertySheet::OnInitDialog( ) {
 	WTL::CPoint pt = CRect( rc ).TopLeft( );
 	
 	CPersistence::GetConfigPosition( &pt );
-	CRect rc2( pt, CRect( rc ).Size( ) );
+	const CRect rc2( pt, CRect( rc ).Size( ) );
 
 	ASSERT( m_pCtrlSite == NULL );
 
@@ -724,7 +724,7 @@ size_t CMainFrame::getExtDataSize( ) const noexcept {
 	}
 
 void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ const double draw_timing, _In_ const double average_extension_length, _In_ const double enum_timing, _In_ const double compressed_file_timing, _In_ const double total_time, _In_ const rsize_t ext_data_size, _In_ const double file_name_length, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) noexcept {
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %u. Avg name len: %.2f. Avg extension len: %.2f." ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, unsigned( ext_data_size ), file_name_length, average_extension_length );
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "File enumeration took %.3f sec. NTFS compressed file size processing took: %.3f sec. Drawing took %.3f sec. Populating 'file types' took %.3f sec. Total: %.4f sec. # file types: %I64u. Avg name len: %.2f. Avg extension len: %.2f." ), enum_timing, compressed_file_timing, draw_timing, populate_timing, total_time, static_cast<std::uint64_t>( ext_data_size ), file_name_length, average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		CFrameWnd::SetMessageText( buffer_ptr );
@@ -741,7 +741,7 @@ void CMainFrame::valid_timing_to_write( _In_ const double populate_timing, _In_ 
 	}
 
 void CMainFrame::invalid_timing_to_write( _In_ const double average_extension_length, _In_ const rsize_t ext_data_size, _Out_ _Post_z_ _Pre_writable_size_( buffer_size_init ) PWSTR buffer_ptr, const rsize_t buffer_size_init ) noexcept {
-	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %u. Avg extension len: %.2f." ), unsigned( ext_data_size ), average_extension_length );
+	const HRESULT fmt_res = StringCchPrintfW( buffer_ptr, buffer_size_init, _T( "I had trouble with QueryPerformanceCounter, and can't provide timing. # file types: %I64u. Avg extension len: %.2f." ), static_cast<std::uint64_t>( ext_data_size ), average_extension_length );
 	ASSERT( SUCCEEDED( fmt_res ) );
 	if ( SUCCEEDED( fmt_res ) ) {
 		CFrameWnd::SetMessageText( buffer_ptr );
@@ -764,7 +764,7 @@ void CMainFrame::WriteTimeToStatusBar( _In_ const double drawTiming, _In_ const 
 	  Negative values are assumed to be erroneous.
 	*/
 	ASSERT( searchTiming >= compressed_file_timing );
-	const rsize_t buffer_size_init = 512u;
+	constexpr const rsize_t buffer_size_init = 512u;
 
 	//TODO: why are we using heap here?
 	std::unique_ptr<_Null_terminated_ wchar_t[ ]> buffer_uniq_ptr = std::make_unique<_Null_terminated_ wchar_t[ ]>( buffer_size_init );
@@ -841,7 +841,7 @@ void CMainFrame::SetSelectionMessageText( ) noexcept {
 
 void CMainFrame::OnUpdateMemoryUsage( CCmdUI *pCmdUI ) {
 	pCmdUI->Enable( true );
-	const rsize_t ramUsageStrBufferSize = 50;
+	constexpr const rsize_t ramUsageStrBufferSize = 50;
 	_Null_terminated_ wchar_t ramUsageStr[ ramUsageStrBufferSize ] = { 0 };
 	const HRESULT res = m_appptr->GetCurrentProcessMemoryInfo( ramUsageStr, ramUsageStrBufferSize );
 	if ( !SUCCEEDED( res ) ) {

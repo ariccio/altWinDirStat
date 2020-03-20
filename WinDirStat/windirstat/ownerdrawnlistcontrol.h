@@ -730,7 +730,7 @@ protected:
 
 		const bool drawFocus = ( pDestinationDrawItemStruct->itemState bitand ODS_FOCUS ) != 0 && HasFocus( ) && bIsFullRowSelection; //partially vectorized
 
-		const rsize_t stack_array_size = 12;
+		constexpr const rsize_t stack_array_size = 12;
 		static_assert( stack_array_size > column::COL_ATTRIBUTES, "we're gonna need a bigger array!" );
 
 		//std::vector<INT> order_temp;
@@ -818,7 +818,7 @@ public:
 		const auto itemCount_default_type = GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd );
 
 		const auto itemCount = static_cast<size_t>( itemCount_default_type );
-		const rsize_t countArray = 10;
+		constexpr const rsize_t countArray = 10;
 
 		//void handle_countArray_too_small( _In_ const rsize_t, _In_ const size_t itemCount )
 
@@ -958,7 +958,7 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 		}
 
 	void SavePersistentAttributes( ) noexcept {
-		const rsize_t col_array_size = 128;
+		constexpr const rsize_t col_array_size = 128;
 		int col_array[ col_array_size ] = { 0 };
 
 		//const auto itemCount = CListCtrl::GetHeaderCtrl( )->GetItemCount( );
@@ -1009,7 +1009,7 @@ BOOL CListCtrl::SetColumnOrderArray(int iCount, LPINT piArray)
 		CHeaderCtrl* const thisHeaderCtrl = CListCtrl::GetHeaderCtrl( );
 
 		//http://msdn.microsoft.com/en-us/library/windows/desktop/bb775247(v=vs.85).aspx specifies 260
-		const rsize_t text_char_count = 260u;
+		constexpr const rsize_t text_char_count = 260u;
 
 
 		_Null_terminated_ wchar_t text_buffer_1[ text_char_count ] = { 0 };
@@ -1134,7 +1134,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		const auto itemCount = GetItemCount_HDM_GETITEMCOUNT( m_hWnd );
 		for ( INT i = 0; i < itemCount; i++ ) {
 			ASSERT( itemCount == GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) );
-			const auto item = COwnerDrawnListCtrl::GetItem( i );
+			const COwnerDrawnListItem* const item = COwnerDrawnListCtrl::GetItem( i );
 			if ( item == nullptr ) {
 				displayWindowsMsgBoxWithMessage( L"Error in COwnerDrawnListCtrl::AdjustColumnWidth - item == NULL (aborting)" );
 				std::terminate( );
@@ -1388,7 +1388,7 @@ public:
 protected:
 	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( subitem != column::COL_NAME )
 	HRESULT drawSubItem_stackbuffer( _In_ const COwnerDrawnListItem* const item, _In_ RECT& rcText, const int& align, _In_ _In_range_( 1, 6 ) const column::ENUM_COL subitem, _In_ HDC hDC, _On_failure_( _Post_valid_ ) rsize_t& sizeNeeded ) const noexcept {
-		const rsize_t subitem_text_size = 128;
+		constexpr const rsize_t subitem_text_size = 128;
 		_Null_terminated_ wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		//rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
@@ -1400,7 +1400,7 @@ protected:
 			return res;
 			}
 		if ( ( MAX_PATH * 2 ) > sizeNeeded ) {
-			const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
+			constexpr const rsize_t subitem_text_size_2 = ( MAX_PATH * 2 );
 			_Null_terminated_ wchar_t psz_subitem_formatted_text_2[ subitem_text_size_2 ] = { 0 };
 			rsize_t chars_written_2 = 0;
 			ASSERT( subitem != column::COL_NAME );
@@ -1456,8 +1456,8 @@ protected:
 		// I try to find a good contrast to COLOR_WINDOW (usually white or light grey).
 		// This is a result of experiments. 
 
-		const DOUBLE diff      = 0.07;		// Try to alter the brightness by diff.
-		const DOUBLE threshold = 1.04;	// If result would be brighter, make color darker.
+		constexpr const DOUBLE diff      = 0.07;		// Try to alter the brightness by diff.
+		constexpr const DOUBLE threshold = 1.04;	// If result would be brighter, make color darker.
 		m_windowColor          = ::GetSysColor( COLOR_WINDOW );
 
 		auto b = CColorSpace::GetColorBrightness( m_windowColor );
@@ -1561,7 +1561,7 @@ private:
 			return COwnerDrawnListCtrl::GetWidthFastPath( item, subitem, thisHeaderCtrl, rc, hDC );
 			}
 
-		const rsize_t subitem_text_size = 128;
+		constexpr const rsize_t subitem_text_size = 128;
 		_Null_terminated_ wchar_t psz_subitem_formatted_text[ subitem_text_size ] = { 0 };
 		rsize_t sizeNeeded = 0;
 		rsize_t chars_written = 0;
@@ -1898,7 +1898,7 @@ private:
 			}
 		// else: if we did the same thing as in OnColumnsCreated(), we get repaint problems.
 
-		const COLORREF gridColor = RGB( 212, 208, 200 );
+		constexpr const COLORREF gridColor = RGB( 212, 208, 200 );
 
 		RECT rcClient;
 		CWnd::GetClientRect( &rcClient );
@@ -1943,7 +1943,7 @@ private:
 
 		fill_solid_RECT( hDC, &rcBetween, gridColor );
 
-		const rsize_t column_buf_size = 10;
+		constexpr const rsize_t column_buf_size = 10;
 	
 		const auto header_ctrl_item_count = header_ctrl->GetItemCount( );
 		

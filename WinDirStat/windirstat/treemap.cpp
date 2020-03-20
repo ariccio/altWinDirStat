@@ -38,8 +38,8 @@ WDS_FILE_INCLUDE_MESSAGE
 //#define DRAW_CUSHION_INDEX_ADJ ( index_of_this_row_0_in_array + ix )
 
 namespace {
-	const DWORD COLORFLAG_DARKER = 0x01000000;
-	const DWORD COLORFLAG_MASK   = 0x03000000;
+	constexpr const DWORD COLORFLAG_DARKER = 0x01000000;
+	constexpr const DWORD COLORFLAG_MASK   = 0x03000000;
 
 	inline void SetPixelsShim( CDC& pdc, _In_ const int x, _In_ const int y, _In_ const COLORREF color ) {
 		pdc.SetPixelV( x, y, color );
@@ -723,7 +723,7 @@ namespace {
 
 	//compares against a constant when lastChild passed by reference! When passed by value, it generates `test    cl, cl` for `if ( horizontalRows )`
 	inline DOUBLE KDS_gen_width( _In_ const bool horizontalRows, _In_ const CTreeListItem* const parent ) {
-		const DOUBLE width = 1.0;
+		constexpr const DOUBLE width = 1.0;
 		const RECT parent_rect = parent->TmiGetRectangle( );
 		const auto rect_width  = ( parent_rect.right - parent_rect.left );
 		const auto rect_height = ( parent_rect.bottom - parent_rect.top );
@@ -898,7 +898,7 @@ void CTreemap::DrawTreemap( _In_ const HDC hOffscreen_buffer, _Inout_ RECT* cons
 	normalize_RECT( rc );
 
 	if ( root->size_recurse( ) > 0 ) {
-		DOUBLE surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
+		DOUBLE const surface[ 4 ] = { 0.00, 0.00, 0.00, 0.00 };
 
 		root->TmiSetRectangle( *rc );
 		CTreemap::RecurseDrawGraph( hOffscreen_buffer, root, rc, true, surface, m_options.height );
@@ -1233,13 +1233,13 @@ void CTreemap::KDS_DrawChildren( _In_ const HDC hOffscreen_buffer, _In_ const CT
 
 DOUBLE CTreemap::KDS_CalcNextRow( _In_ const CTreeListItem* const parent, _In_ _In_range_( 0, INT_MAX ) const size_t nextChild, _In_ _In_range_( 0, 32767 ) const DOUBLE width, _Out_ size_t* const childrenUsed, _Inout_ std::vector<DOUBLE>* const childWidth, const std::uint64_t parentSize ) const {
 	size_t i = 0;
-	static const double _minProportion = 0.4;
+	constexpr static const double _minProportion = 0.4;
 	ASSERT( _minProportion < 1 );
 	//ASSERT( nextChild < parent->m_childCount );
 	ASSERT( width >= 1.0 );
 
 #ifdef DEBUG
-	auto parentSizeRecurse = parent->size_recurse( );
+	auto const parentSizeRecurse = parent->size_recurse( );
 	ASSERT( parentSizeRecurse == parentSize );
 #endif
 
@@ -1750,7 +1750,7 @@ void CTreemap::DrawCushion_with_stack( _In_ const size_t loop_rect_start_outer, 
 	ASSERT( vecSize >= 1 );
 	ASSERT( vecSize <= 1024 );
 	
-	const rsize_t stack_buffer_array_size = 1024;
+	constexpr const rsize_t stack_buffer_array_size = 1024;
 	ASSERT( largestIndexWritten < stack_buffer_array_size );
 	DOUBLE nx_array[ stack_buffer_array_size ];
 	DOUBLE ny_array[ stack_buffer_array_size ];
@@ -1985,12 +1985,12 @@ void trace_typeview_used_heap( ) noexcept {
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_draw_cushion_stack_uses( _In_ const rsize_t num_times_stack_used ) noexcept {
-	TRACE( _T( "# of DrawCushion stack uses: %I64u\r\n" ), std::uint64_t( num_times_stack_used ) );
+	TRACE( _T( "# of DrawCushion stack uses: %I64u\r\n" ), static_cast<std::uint64_t>( num_times_stack_used ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.
 void trace_draw_cushion_heap__uses( _In_ const rsize_t num_times_heap__used ) noexcept {
-	TRACE( _T( "# of DrawCushion heap  uses: %I64u\r\n" ), std::uint64_t( num_times_heap__used ) );
+	TRACE( _T( "# of DrawCushion heap  uses: %I64u\r\n" ), static_cast<std::uint64_t>( num_times_heap__used ) );
 	}
 
 //this function exists for the singular purpose of tracing to console, as doing so from a .cpp is cleaner.

@@ -35,7 +35,7 @@ namespace {
 		{
 			const auto rest = static_cast<INT>( n % 1000 );
 			n /= 1000;
-			const rsize_t tempBuf_size = 10u;
+			constexpr const rsize_t tempBuf_size = 10u;
 			_Null_terminated_ wchar_t tempBuf[ tempBuf_size ] = { 0 };
 			if ( n > 0 ) {
 				const HRESULT fmt_res = StringCchPrintfW( tempBuf, tempBuf_size, L",%03d", rest );
@@ -113,7 +113,7 @@ namespace {
 
 	_Success_( SUCCEEDED( return ) ) _Pre_satisfies_( chars_written == 0 )
 	HRESULT CStyle_FormatLongLongHuman_KB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE B, _In_ const DOUBLE KB ) {
-		const rsize_t number_formatted_buffer_size = 19;
+		constexpr const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( KB + B / WDS_INT_BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
@@ -149,7 +149,7 @@ namespace {
 		}
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_MB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 23, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE KB, _In_ const DOUBLE MB ) {
-		const rsize_t number_formatted_buffer_size = 19;
+		constexpr const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( MB + KB / WDS_INT_BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
@@ -183,7 +183,7 @@ namespace {
 		}
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_GB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE MB, _In_ const DOUBLE GB ) {
-		const rsize_t number_formatted_buffer_size = 19;
+		constexpr const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( GB + MB / WDS_INT_BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
@@ -217,7 +217,7 @@ namespace {
 		}
 
 	_Success_( SUCCEEDED( return ) ) HRESULT CStyle_FormatLongLongHuman_TB( WDS_WRITES_TO_STACK( strSize, chars_written ) PWSTR psz_formatted_LONGLONG_HUMAN, _In_range_( 8, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written, _In_ const DOUBLE GB, _In_ const DOUBLE TB ) {
-		const rsize_t number_formatted_buffer_size = 19;
+		constexpr const rsize_t number_formatted_buffer_size = 19;
 		_Null_terminated_ wchar_t buffer[ number_formatted_buffer_size ] = { 0 };
 		rsize_t buffer_chars_written = 0;
 		const HRESULT res = CStyle_FormatDouble( TB + GB / WDS_INT_BASE, buffer, number_formatted_buffer_size, buffer_chars_written );
@@ -302,7 +302,7 @@ std::wstring wds_fmt::FormatBytes( _In_ const std::uint64_t n, const bool humanF
 		}
 	ASSERT( humanFormat );
 	//MAX value of a std::uint64_t is 20 digits
-	const rsize_t strSize = 21;
+	constexpr const rsize_t strSize = 21;
 	_Null_terminated_ wchar_t psz_formatted_longlong[ strSize ] = { 0 };
 	rsize_t chars_written = 0;
 	const HRESULT res = CStyle_FormatLongLongHuman( n, psz_formatted_longlong, strSize, chars_written );

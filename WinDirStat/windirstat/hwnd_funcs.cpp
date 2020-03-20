@@ -45,7 +45,7 @@ void hwnd::InvalidateErase(_In_opt_ const HWND hWnd) noexcept {
 		}
 	}
 
-void hwnd::RedrawWindow(const HWND hWnd) noexcept {
+void hwnd::RedrawWindow(_In_ const HWND hWnd) noexcept {
 	//	BOOL RedrawWindow(LPCRECT lpRectUpdate = NULL,
 	//		CRgn* prgnUpdate = NULL,
 	//		UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);

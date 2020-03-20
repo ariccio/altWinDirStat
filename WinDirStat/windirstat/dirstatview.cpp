@@ -185,7 +185,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 
 
 void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
-	const LPNMLISTVIEW const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
+	const NMLISTVIEW* const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	//( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );//WTF
 	ASSERT( pResult != nullptr );
 	if ( pResult != nullptr ) {

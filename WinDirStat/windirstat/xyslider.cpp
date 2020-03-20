@@ -19,7 +19,7 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "hwnd_funcs.h"
 
 namespace {
-	const int GRIPPER_RADIUS = 8;
+	constexpr const int GRIPPER_RADIUS = 8;
 
 	void move_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
 		//pdc.MoveTo( rc.left,  m_zero.y ); <---Not handling the return value means that WE DO NOT care about the previous "current position", thus the fourth parameter to MoveToEx should be NULL.
@@ -384,7 +384,7 @@ void CXySlider::DoDrag( _In_ const POINT point ) noexcept {
 		( m_zero.y + m_range.cy + inGripper.cy )
 		};
 
-	const POINT ptMax = ptMax_holder;
+	POINT ptMax = ptMax_holder;
 
 	CWnd::SetCapture( );
 	do {

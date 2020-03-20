@@ -138,7 +138,7 @@ namespace {
 		const INT_PTR u = reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, NULL, filename.c_str( ), NULL, NULL, SW_SHOWNORMAL ) );
 		if ( u == SE_ERR_NOASSOC ) {
 			// Q192352
-			const rsize_t dir_buf_size = MAX_PATH;
+			constexpr const rsize_t dir_buf_size = MAX_PATH;
 			_Null_terminated_ wchar_t dir_buf[ MAX_PATH ] = { 0 };
 			std::wstring parameters_filename( L"shell32.dll,OpenAs_RunDLL " + std::move( filename ) );
 

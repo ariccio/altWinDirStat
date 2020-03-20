@@ -172,8 +172,8 @@ namespace column {
 
 
 
-const UINT GENERAL_INDENT   = 5;
-const LONG NODE_HEIGHT = 24;	// Height of IDB_NODES
+constexpr const UINT GENERAL_INDENT   = 5;
+constexpr const LONG NODE_HEIGHT = 24;	// Height of IDB_NODES
 
 //typedef std::shared_ptr<std::tuple<std::shared_ptr<promise<std::pair<std::vector<directory_entry>, bool>>>, std::unique_ptr<windows_nt_kernel::FILE_ID_FULL_DIR_INFORMATION[]>, async_enumerate_op_req>> enumerate_state_t;
 

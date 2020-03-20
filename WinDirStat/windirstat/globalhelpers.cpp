@@ -514,7 +514,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( con
 	//	Convert number to string, unformatted
 	//	Pass THAT string to GetNumberFormatEx
 
-	const rsize_t bufSize = 66;
+	constexpr const rsize_t bufSize = 66;
 	_Null_terminated_ wchar_t number_str_buffer[ bufSize ] = { 0 };
 	
 	convert_number_to_string( bufSize, number_str_buffer, number );
@@ -637,7 +637,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT CStyle_GetLastErrorAsFormattedMessage( 
 	const DWORD error_err = ::GetLastError( );
 	TRACE( _T( "FormatMessageW failed with error code: `%lu`!!\r\n" ), error_err );
 	
-	const rsize_t err_msg_buff_size = 512;
+	constexpr const rsize_t err_msg_buff_size = 512;
 	_Null_terminated_ char err_msg_buff[ err_msg_buff_size ] = { 0 };
 	const HRESULT output_error_message_format_result = StringCchPrintfA( err_msg_buff, err_msg_buff_size, "WDS: FormatMessageW failed with error code: `%lu`!!\r\n", error_err );
 	if ( SUCCEEDED( output_error_message_format_result ) ) {
@@ -711,7 +711,7 @@ void wds_fmt::write_bad_fmt_msg( _Out_writes_z_( 41 ) _Pre_writable_size_( 42 ) 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
 void displayWindowsMsgBoxWithError( const DWORD error ) noexcept {
-	const rsize_t err_msg_size = 1024u;
+	constexpr const rsize_t err_msg_size = 1024u;
 	_Null_terminated_ wchar_t err_msg[ err_msg_size ] = { 0 };
 	rsize_t chars_written = 0;
 
@@ -724,7 +724,7 @@ void displayWindowsMsgBoxWithError( const DWORD error ) noexcept {
 		}
 	TRACE( _T( "First attempt to get last error as a formatted message FAILED!\r\n" ) );
 
-	const rsize_t err_msg_size_2 = 4096u;
+	constexpr const rsize_t err_msg_size_2 = 4096u;
 	_Null_terminated_ wchar_t err_msg_2[ err_msg_size_2 ] = { 0 };
 	rsize_t chars_written_2 = 0;
 	const HRESULT err_res_2 = CStyle_GetLastErrorAsFormattedMessage( err_msg_2, err_msg_size_2, chars_written_2, error );

@@ -69,7 +69,7 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	const BOOL window_info_res = ::GetWindowInfo( parent, &window_info );
 	if ( window_info_res == 0 ) {
 		const DWORD err = ::GetLastError( );
-		TRACE( _T( "GetWindowInfo failed! Error: %u\r\n" ), unsigned( err ) );
+		TRACE( _T( "GetWindowInfo failed! Error: %u\r\n" ), static_cast<unsigned>( err ) );
 		displayWindowsMsgBoxWithError( err );
 		const auto color = color_scope_holder;
 

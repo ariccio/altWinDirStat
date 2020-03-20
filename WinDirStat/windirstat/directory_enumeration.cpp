@@ -268,7 +268,7 @@ namespace {
 
 	__forceinline WDS_DECLSPEC_NOTHROW void GetCompressedFileSize_failure_logger( const std::wstring& path, const ULARGE_INTEGER ret, const DWORD last_err ) {
 #ifdef DEBUG
-		const rsize_t error_message_buffer_size = 128;
+		constexpr const rsize_t error_message_buffer_size = 128;
 		_Null_terminated_ wchar_t error_message_buffer[ error_message_buffer_size ] = { 0 };
 		rsize_t chars_written = 0;
 		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( error_message_buffer, error_message_buffer_size, chars_written, last_err );
@@ -327,7 +327,7 @@ namespace {
 			const DWORD last_err = ::GetLastError( );
 			TRACE( L"Fallback method for \"file\" `%s` failed!, Error: %lu\r\n", path.c_str( ), last_err );
 			
-			const rsize_t err_buff_size = 512u;
+			constexpr const rsize_t err_buff_size = 512u;
 			wchar_t err_buff[ err_buff_size ] = { 0 };
 			rsize_t unused_chars_written;
 			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
@@ -363,7 +363,7 @@ namespace {
 			const DWORD last_err = ::GetLastError( );
 			TRACE( L"Failed to open \"file\" `%s`, Error: %lu\r\n", path.c_str( ), last_err );
 			
-			const rsize_t err_buff_size = 512u;
+			constexpr const rsize_t err_buff_size = 512u;
 			wchar_t err_buff[ err_buff_size ] = { 0 };
 			rsize_t unused_chars_written;
 			const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
@@ -389,7 +389,7 @@ namespace {
 	void get_file_information_by_handle_failure( const std::wstring& path ) {
 		const DWORD last_err = ::GetLastError( );
 		TRACE( L"Failed to get file information by handle for \"file\": `%s`, Error: %lu\r\n", path.c_str( ), last_err );
-		const rsize_t err_buff_size = 512u;
+		constexpr const rsize_t err_buff_size = 512u;
 		wchar_t err_buff[ err_buff_size ] = { 0 };
 		rsize_t unused_chars_written;
 		const HRESULT fmt_res = CStyle_GetLastErrorAsFormattedMessage( err_buff, err_buff_size, unused_chars_written, last_err );
@@ -420,7 +420,7 @@ namespace {
 			close_handle( special_file_handle );
 			} );
 
-		const rsize_t file_full_dir_info_size_with_name = ( sizeof( FILE_FULL_DIR_INFO ) + ( sizeof( std::declval<FILE_FULL_DIR_INFO>( ).FileName[ 0 ] ) * MAX_PATH ) );
+		constexpr const rsize_t file_full_dir_info_size_with_name = ( sizeof( FILE_FULL_DIR_INFO ) + ( sizeof( std::declval<FILE_FULL_DIR_INFO>( ).FileName[ 0 ] ) * MAX_PATH ) );
 		
 		//DO NOT ACCESS DIRECTLY!
 		char file_full_dir_info_buffer[ file_full_dir_info_size_with_name ] = { 0 };
@@ -563,7 +563,7 @@ namespace {
 	WDS_DECLSPEC_NOTHROW void size_workers( _In_ concurrency::concurrent_vector<pair_of_item_and_path>* sizes ) {
 		//std::vector<std::pair<CItemBranch*, std::future<std::uint64_t>>> sizesToWorkOn_;
 		std::vector<concurrency::task<void>> sizesToWorkOn_;
-		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), std::uint64_t( sizes->size( ) ) );
+		TRACE( _T( "need to get the compressed size for %I64u files!\r\n" ), static_cast<std::uint64_t>( sizes->size( ) ) );
 		sizesToWorkOn_.reserve( sizes->size( ) + 1 );
 		const auto number_sizes = sizes->size( );
 		for ( size_t i = 0; i < number_sizes; ++i ) {
@@ -737,7 +737,7 @@ namespace {
 			if ( inside_assert ) {
 				return UINT64_ERROR;
 				}
-			const rsize_t str_size = 128u;
+			constexpr const rsize_t str_size = 128u;
 			wchar_t str_buff[ str_size ] = { 0 };
 			rsize_t chars_written = 0;
 			const auto last_error = GetLastError( );
@@ -909,7 +909,7 @@ std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, 
 	const auto qpf = help_QueryPerformanceFrequency( );
 
 	const auto timing = ( static_cast<double>( qpc_2.QuadPart - qpc_1.QuadPart ) * ( static_cast<double>( 1.0 ) / static_cast<double>( qpf.QuadPart ) ) );
-	const rsize_t debug_buf_size = 96;
+	constexpr const rsize_t debug_buf_size = 96;
 	_Null_terminated_ wchar_t debug_buf[ debug_buf_size ] = { 0 };
 	const auto debug_buf_res_1 = _snwprintf_s( debug_buf, debug_buf_size, _TRUNCATE, L"WDS: enum timing: %f\r\n", timing );
 	ASSERT( debug_buf_res_1 != -1 );
