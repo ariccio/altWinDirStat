@@ -179,23 +179,6 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	TRACE( _T( "New item selected! item: %s\r\n" ), Selection->GetPath( ).c_str( ) );
 	m_treeListControl.SelectAndShowItem( Selection, true );
 
-	//	BOOL RedrawWindow(LPCRECT lpRectUpdate = NULL,
-	//		CRgn* prgnUpdate = NULL,
-	//		UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
-	/*
-	_AFXWIN_INLINE BOOL CWnd::RedrawWindow(LPCRECT lpRectUpdate, CRgn* prgnUpdate,
-	UINT flags)
-	{ ASSERT(::IsWindow(m_hWnd)); return ::RedrawWindow(m_hWnd, lpRectUpdate, (HRGN)prgnUpdate->GetSafeHandle(), flags); }
-	*/
-	ASSERT(::IsWindow(m_hWnd));
-	//RedrawWindow function: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-redrawwindow
-	//If the function succeeds, the return value is nonzero.
-	//If the function fails, the return value is zero.
-	constexpr const UINT mfc_default_flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE;
-	const BOOL redraw_success = ::RedrawWindow(m_hWnd, NULL, NULL, mfc_default_flags);
-	if (redraw_success == 0) {
-		std::terminate();
-	}
 	hwnd::RedrawWindow(m_hWnd);
 	//CWnd::RedrawWindow( );
 	}

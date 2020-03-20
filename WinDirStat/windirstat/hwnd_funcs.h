@@ -13,6 +13,7 @@ WDS_FILE_INCLUDE_MESSAGE
 namespace hwnd {
 	//CWnd::Invalidate():
 	void InvalidateErase(_In_opt_ const HWND hWnd) noexcept;
+	void RedrawWindow(_In_ const HWND hWnd) noexcept;
 	}
 
 

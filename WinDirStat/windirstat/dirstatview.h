@@ -175,7 +175,19 @@ protected:
 
 			case UpdateAllViews_ENUM::HINT_LISTSTYLECHANGED:
 				return OnUpdateHINT_LISTSTYLECHANGED( );
+
 			case 0:
+				/*
+				void CView::OnUpdate(CView* pSender, LPARAM, CObject* )
+				{
+				ASSERT(pSender != this);
+				UNUSED(pSender);     // unused in release builds
+
+				// invalidate the entire pane, erase background too
+				Invalidate(TRUE);
+				}
+
+				*/
 				return CView::OnUpdate( pSender, lHint, pHint );
 
 			default:
@@ -234,10 +246,37 @@ protected:
 			//If [MoveWindow] succeeds, the return value is nonzero.
 			//If the function fails, the return value is zero. To get extended error information, call GetLastError.
 			VERIFY( ::MoveWindow( m_treeListControl.m_hWnd, rc.left, rc.top, ( rc.right - rc.left ), ( rc.bottom - rc.top ), TRUE ) );
-			m_treeListControl.RedrawWindow( );
+			//m_treeListControl.RedrawWindow( );
+			hwnd::RedrawWindow(m_treeListControl.m_hWnd);
 			}
 		}
 	afx_msg INT OnCreate( LPCREATESTRUCT lpCreateStruct ) {
+		/*
+		int CView::OnCreate(LPCREATESTRUCT lpcs)
+		{
+			if (CWnd::OnCreate(lpcs) == -1)
+				return -1;
+
+			// if ok, wire in the current document
+			ASSERT(m_pDocument == NULL);
+			CCreateContext* pContext = (CCreateContext*)lpcs->lpCreateParams;
+
+			// A view should be created in a given context!
+			if (pContext != NULL && pContext->m_pCurrentDoc != NULL)
+			{
+				pContext->m_pCurrentDoc->AddView(this);
+				ASSERT(m_pDocument != NULL);
+			}
+			else
+			{
+				TRACE(traceAppMsg, 0, "Warning: Creating a pane with no CDocument.\n");
+			}
+
+			return 0;   // ok
+		}
+		_AFXWIN_INLINE int CWnd::OnCreate(LPCREATESTRUCT)
+			{ return (int)Default(); }
+		*/
 		if ( CView::OnCreate( lpCreateStruct ) == -1 ){
 			return -1;
 			}
@@ -245,13 +284,13 @@ protected:
 		VERIFY( m_treeListControl.CreateEx( 0, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _WDS_nIdTreeListControl ) );
 		m_treeListControl.AddExtendedStyle( LVS_EX_HEADERDRAGDROP );
 		SetTreeListControlOptions( );
-		m_treeListControl.InsertColumn( column::COL_NAME,         _T( "Name" ),                   LVCFMT_LEFT,  200, column::COL_NAME );
-		m_treeListControl.InsertColumn( column::COL_PERCENTAGE,   _T( "Percentage" ),             LVCFMT_RIGHT,  55, column::COL_PERCENTAGE );
-		m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL, _T( "Size" ),                   LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL );
-		m_treeListControl.InsertColumn( column::COL_ITEMS,        _T( "Items" ),                  LVCFMT_RIGHT,  55, column::COL_ITEMS );
-		m_treeListControl.InsertColumn( column::COL_NTCOMPRESS,   _T( "NTFS compression ratio" ), LVCFMT_RIGHT, 100, column::COL_NTCOMPRESS );
-		m_treeListControl.InsertColumn( column::COL_LASTCHANGE,   _T( "Last Change" ),            LVCFMT_LEFT,  120, column::COL_LASTCHANGE );
-		m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,   _T( "Attributes" ),             LVCFMT_LEFT,   50, column::COL_ATTRIBUTES );
+		VERIFY(m_treeListControl.InsertColumn( column::COL_NAME,         _T( "Name" ),                   LVCFMT_LEFT,  200, column::COL_NAME ) != -1);
+		VERIFY(m_treeListControl.InsertColumn( column::COL_PERCENTAGE,   _T( "Percentage" ),             LVCFMT_RIGHT,  55, column::COL_PERCENTAGE ) != -1);
+		VERIFY(m_treeListControl.InsertColumn( column::COL_SUBTREETOTAL, _T( "Size" ),                   LVCFMT_RIGHT,  90, column::COL_SUBTREETOTAL ) != -1);
+		VERIFY(m_treeListControl.InsertColumn( column::COL_ITEMS,        _T( "Items" ),                  LVCFMT_RIGHT,  55, column::COL_ITEMS ) != -1);
+		VERIFY(m_treeListControl.InsertColumn( column::COL_NTCOMPRESS,   _T( "NTFS compression ratio" ), LVCFMT_RIGHT, 100, column::COL_NTCOMPRESS ) != -1);
+		VERIFY(m_treeListControl.InsertColumn( column::COL_LASTCHANGE,   _T( "Last Change" ),            LVCFMT_LEFT,  120, column::COL_LASTCHANGE ) != -1);
+		VERIFY(m_treeListControl.InsertColumn( column::COL_ATTRIBUTES,   _T( "Attributes" ),             LVCFMT_LEFT,   50, column::COL_ATTRIBUTES ) != -1);
 
 		
 		trace_LoadingPerst( );
