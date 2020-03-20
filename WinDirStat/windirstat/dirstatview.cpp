@@ -196,6 +196,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	if (redraw_success == 0) {
 		std::terminate();
 	}
+	hwnd::RedrawWindow(m_hWnd);
 	//CWnd::RedrawWindow( );
 	}
 

@@ -63,7 +63,6 @@ void hwnd::RedrawWindow(const HWND hWnd) noexcept {
 	if (redraw_success == 0) {
 		std::terminate();
 		}
-
 	}
 
 
