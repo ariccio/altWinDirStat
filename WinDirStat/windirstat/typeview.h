@@ -30,7 +30,7 @@ void trace_on_erase_bkgnd_typeview( ) noexcept;
 class CListItem final : public COwnerDrawnListItem {
 	DISALLOW_COPY_AND_ASSIGN(CListItem);
 public:
-		CListItem( ) : m_list( NULL ) { }
+		CListItem( ) noexcept  : m_list( NULL ) { }
 		CListItem ( _In_ CExtensionListControl* const list, _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ COLORREF color_in, _In_z_ PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_list(list), m_files(std::move(files_in)), m_bytes(std::move(bytes_in)), color(std::move(color_in)) { }
 		
 		CListItem( CListItem&& in ) = delete;
@@ -127,7 +127,7 @@ class CTypeView final : public CView {
 	DISALLOW_COPY_AND_ASSIGN(CTypeView);
 
 protected:
-	CTypeView( );
+	CTypeView( ) noexcept;
 	
 	/*
 	#define DECLARE_DYNCREATE(class_name) \

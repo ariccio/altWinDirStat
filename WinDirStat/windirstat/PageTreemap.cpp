@@ -18,7 +18,7 @@ WDS_FILE_INCLUDE_MESSAGE
 //#include "windirstat.h"
 
 namespace {
-	const int CPageTreemap_maxHeight = 200;
+	constexpr const int CPageTreemap_maxHeight = 200;
 	}
 
 

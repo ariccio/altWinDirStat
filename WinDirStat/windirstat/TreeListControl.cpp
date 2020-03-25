@@ -193,7 +193,7 @@ namespace {
 		const CTreeListControl* const ctrl;
 		};
 
-	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) {
+	INT __cdecl CItem_compareBySize( _In_ _Points_to_data_ const void* const p1, _In_ _Points_to_data_ const void* const p2 ) noexcept {
 		const auto size1 = ( *( static_cast< const CTreeListItem * const* const >( p1 ) ) )->size_recurse( );
 		const auto size2 = ( *( static_cast< const CTreeListItem * const* const >( p2 ) ) )->size_recurse( );
 		return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)

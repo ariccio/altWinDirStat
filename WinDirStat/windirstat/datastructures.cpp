@@ -133,9 +133,12 @@ CSetBkMode::~CSetBkMode( ) {
 		}
 	ASSERT( m_oldMode != 0 );
 	//SetBkMode function: https://msdn.microsoft.com/en-us/library/dd162965.aspx
-	//If the function succeeds, the return value specifies the previous background mode.
-	//If the function fails, the return value is zero.
-	VERIFY( ::SetBkMode( m_hDC, m_oldMode ) );
+	//If [SetBkMode] succeeds, the return value specifies the previous background mode.
+	//If [SetBkMode] fails, the return value is zero.
+	const int setBKModeResult = ::SetBkMode( m_hDC, m_oldMode );
+	if (setBKModeResult == 0) {
+		std::terminate();
+	}
 	//m_pdc->SetBkMode( m_oldMode );
 	}
 
@@ -147,8 +150,8 @@ CSetTextColor::CSetTextColor( _In_ HDC hDC, _In_ const COLORREF color ) : m_hDC 
 	//m_oldColor = pdc.SetTextColor( color );
 	
 	//SetTextColor function: https://msdn.microsoft.com/en-us/library/dd145093.aspx
-	//If the function succeeds, the return value is a color reference for the previous text color as a COLORREF value.
-	//If the function fails, the return value is CLR_INVALID.
+	//If [SetTextColor] succeeds, the return value is a color reference for the previous text color as a COLORREF value.
+	//If [SetTextColor] fails, the return value is CLR_INVALID.
 	m_oldColor = ::SetTextColor( hDC, color );
 	ASSERT( m_oldColor != CLR_INVALID );
 	}
@@ -171,7 +174,7 @@ CSetTextColor::~CSetTextColor( ) {
 
 SExtensionRecord::SExtensionRecord( ) : files { 0u }, bytes { 0u }, color{ 0u } { }
 
-SExtensionRecord::SExtensionRecord( _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in ) : files { std::move( files_in ) }, bytes { std::move( bytes_in ) }, ext( std::move( ext_in ) ) { }
+SExtensionRecord::SExtensionRecord(_In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ std::wstring ext_in) : files{ std::move(files_in) }, bytes{ std::move(bytes_in) }, ext(std::move(ext_in)), color{ 0u } { }
 
 //SExtensionRecord::SExtensionRecord( const SExtensionRecord& in ) {
 //	/*

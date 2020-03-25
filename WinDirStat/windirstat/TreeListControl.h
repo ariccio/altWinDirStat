@@ -42,7 +42,7 @@ struct attribs final {
 
 
 struct VISIBLEINFO final {
-	__forceinline VISIBLEINFO( ) : indent( 0 ), isExpanded { false }, ntfs_compression_ratio { 0.0 } { }
+	__forceinline VISIBLEINFO( ) noexcept : indent( 0 ), isExpanded { false }, ntfs_compression_ratio { 0.0 } { }
 	__forceinline ~VISIBLEINFO( ) = default;
 
 	                          SRECT                        rcPlusMinus;     // Coordinates of the little +/- rectangle, relative to the upper left corner of the item.
@@ -96,7 +96,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 			}
 
 		//default constructor DOES NOT initialize jack shit.
-		__forceinline CTreeListItem( ) { }
+		__forceinline CTreeListItem( ) noexcept { }
 		virtual ~CTreeListItem( ) final = default;
 
 		CTreeListItem( const std::uint64_t size, const FILETIME time, const DWORD attr, const bool done, _In_ CTreeListItem* const parent, _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_child_info( ), m_parent(parent), m_rect{ 0, 0, 0, 0 }, m_size{ std::move(size) }, m_lastChange(time) {

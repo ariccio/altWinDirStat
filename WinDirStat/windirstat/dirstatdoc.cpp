@@ -503,7 +503,7 @@ void CDirstatDoc::buildDriveItems( _In_z_ PCWSTR const pszPathName ) {
 		displayWindowsMsgBoxWithMessage( L"Failed to allocate & copy name str! (CDirstatDoc::buildDriveItems)(aborting!)" );
 		displayWindowsMsgBoxWithMessage( root_folder );
 		}
-	m_rootItem = std::make_unique<CTreeListItem>( UINT64_ERROR, t, 0, false, nullptr, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
+	m_rootItem = std::make_unique<CTreeListItem>( UINT64_ERROR, t, 0u, false, nullptr, new_name_ptr, static_cast<std::uint16_t>( new_name_length ) );
 	}
 
 BOOL CDirstatDoc::OnOpenDocument( _In_z_ PCWSTR const pszPathName ) {

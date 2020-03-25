@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 #include "macros_that_scare_small_children.h"
+#include "hwnd_funcs.h"
 
 #ifndef WDS_COLORBUTTON_H
 #define WDS_COLORBUTTON_H
@@ -60,7 +61,8 @@ public:
 		//ScreenToClient function: https://msdn.microsoft.com/en-us/library/dd162952.aspx
 		//If the function succeeds, the return value is nonzero.
 		//If the function fails, the return value is zero.
-		VERIFY( ::ScreenToClient( this_parent, &point ) );
+		//VERIFY( ::ScreenToClient( this_parent, &point ) );
+		hwnd::ScreenToClient(this_parent, &point);
 
 		TRACE( _T( "User clicked x:%ld, y:%ld! Sending WM_LBUTTONDOWN!\r\n" ), point.x, point.y );
 

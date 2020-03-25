@@ -311,7 +311,7 @@ protected:
 	afx_msg void OnDestroy( ) {
 		CView::OnDestroy( );
 		}
-	afx_msg void OnSetFocus( CWnd* pOldWnd ) {
+	afx_msg void OnSetFocus( CWnd* const pOldWnd ) {
 		UNREFERENCED_PARAMETER( pOldWnd );
 		m_treeListControl.SetFocus( );
 		}

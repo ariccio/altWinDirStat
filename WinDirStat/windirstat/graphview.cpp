@@ -64,7 +64,15 @@ CGraphView::CGraphView( ) : m_recalculationSuspended( false ), m_showTreemap( tr
 	}
 
 
-AFX_COMDAT const CRuntimeClass CGraphView::classCGraphView = { "CGraphView", sizeof( class CGraphView ), 0xFFFF, &( CGraphView::CreateObject ), const_cast<CRuntimeClass*>( &CView::classCView ), nullptr, nullptr };
+AFX_COMDAT const CRuntimeClass CGraphView::classCGraphView = {
+	"CGraphView",
+	sizeof( class CGraphView ),
+	0xFFFF,
+	&( CGraphView::CreateObject ),
+	const_cast<CRuntimeClass*>( &CView::classCView ),
+	nullptr,
+	nullptr
+	};
 
 const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 	typedef CGraphView ThisClass;
@@ -108,7 +116,7 @@ const AFX_MSGMAP* PASCAL CGraphView::GetThisMessageMap( ) {
 		{
 			0, 0, 0, 0,
 			AfxSig_end,
-			(AFX_PMSG)(0)
+			nullptr
 		}
 	};
 	static const AFX_MSGMAP messageMap = { &TheBaseClass::GetThisMessageMap, &_messageEntries[ 0 ] };

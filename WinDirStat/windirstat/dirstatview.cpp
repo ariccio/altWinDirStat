@@ -11,6 +11,8 @@
 
 WDS_FILE_INCLUDE_MESSAGE
 
+
+//DO NOT MAKE THESE CONSTEXPR, VS2019 lies.
 const UINT _WDS_nIdTreeListControl = 4711u;
 const UINT ITEM_ROW_HEIGHT = 20u;
 
@@ -184,7 +186,7 @@ void CDirstatView::OnUpdateHINT_SHOWNEWSELECTION( ) {
 	}
 
 
-void CDirstatView::OnLvnItemchanged( NMHDR* pNMHDR, LRESULT* pResult ) {
+void CDirstatView::OnLvnItemchanged( NMHDR* const pNMHDR, LRESULT* const pResult ) {
 	const NMLISTVIEW* const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	//( pResult != NULL ) ? ( *pResult = 0 ) : ASSERT( false );//WTF
 	ASSERT( pResult != nullptr );

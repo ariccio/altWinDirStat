@@ -44,7 +44,7 @@ public:
 	virtual CRuntimeClass* GetRuntimeClass() const;
 
 public:
-	CPageTreemap( ) : CPropertyPage( CPageTreemap::IDD ) { }
+	CPageTreemap( ) noexcept : CPropertyPage( CPageTreemap::IDD ) { }
 
 
 protected:

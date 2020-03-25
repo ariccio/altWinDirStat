@@ -42,7 +42,7 @@ namespace {
 	}
 
 #pragma warning(suppress:4355)
-CTypeView::CTypeView( ) : m_showTypes(true), m_extensionListControl( this ) {
+CTypeView::CTypeView( ) noexcept : m_showTypes(true), m_extensionListControl( this ) {
 	m_showTypes = CPersistence::GetShowFileTypes( );
 	}
 
@@ -305,7 +305,7 @@ _Ret_notnull_ CListItem* CExtensionListControl::GetListItem( _In_ _In_range_( >=
 	std::terminate( );
 
 	//Shut the compiler up. This code SHOULD NEVER execute, but if execution DOES get here, we'll purposely crash.
-	( ( CListItem* )( 0 ) )->m_name;
+	//( ( CListItem* )( 0 ) )->m_name;
 	}
 
 
@@ -429,12 +429,12 @@ void CExtensionListControl::MeasureItem( PMEASUREITEMSTRUCT mis ) {
 	mis->itemHeight = m_rowHeight;
 	}
 
-void CExtensionListControl::OnSetFocus( CWnd* pOldWnd ) {
+void CExtensionListControl::OnSetFocus( CWnd* const pOldWnd ) {
 	COwnerDrawnListCtrl::OnSetFocus( pOldWnd );
 	m_frameptr->SetLogicalFocus( LOGICAL_FOCUS::LF_EXTENSIONLIST );
 	}
 
-void CExtensionListControl::OnLvnItemchanged( NMHDR *pNMHDR, LRESULT *pResult ) {
+void CExtensionListControl::OnLvnItemchanged( NMHDR *const pNMHDR, LRESULT *const pResult ) {
 	const NMLISTVIEW* const pNMLV = reinterpret_cast< const LPNMLISTVIEW >( pNMHDR );
 	if ( ( pNMLV->uNewState bitand LVIS_SELECTED ) != 0 ) {
 		m_typeView->SetHighlightExtension( CExtensionListControl::GetSelectedExtension( ) );
@@ -671,7 +671,7 @@ void CTypeView::SysColorChanged( ) noexcept {
 
 
 
-void CTypeView::OnSetFocus( CWnd* pOldWnd ) {
+void CTypeView::OnSetFocus( CWnd* const pOldWnd ) {
 	UNREFERENCED_PARAMETER( pOldWnd );
 	m_extensionListControl.SetFocus( );
 	}

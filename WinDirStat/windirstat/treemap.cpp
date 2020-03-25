@@ -46,28 +46,28 @@ namespace {
 		}
 	
 	//if we pass by reference, compiler DOES NOT INLINE!
-	inline const double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const RECT remaining ) {
+	inline const constexpr double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const RECT remaining ) noexcept {
 		ASSERT( ( remaining.right - remaining.left ) != 0 );
 		ASSERT( ( remaining.bottom - remaining.top ) != 0 );
 		return ( ( double ) remainingSize / ( remaining.right - remaining.left ) / ( remaining.bottom - remaining.top ) );
 		}
 
-	inline const bool is_horizontal( _In_ const RECT remaining ) {
+	inline const constexpr bool is_horizontal( _In_ const RECT remaining ) noexcept {
 		return ( ( remaining.right - remaining.left ) >= ( remaining.bottom - remaining.top ) );
 		}
 
-	inline const double gen_ss( _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin ) {
+	inline const constexpr double gen_ss( _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin ) noexcept {
 		return ( ( ( double ) sumOfSizesOfChildrenInRow + rmin ) * ( ( double ) sumOfSizesOfChildrenInRow + rmin ) );
 		}
 
-	inline const double gen_nextworst( _In_ const double ratio1, _In_ const double ratio2 ) {
+	inline const constexpr double gen_nextworst( _In_ const double ratio1, _In_ const double ratio2 ) noexcept {
 		if ( ratio1 > ratio2 ) {
 			return ratio1;
 			}
 		return ratio2;
 		}
 
-	inline const double improved_gen_nextworst( _In_ const double hh, _In_ const std::uint64_t maximumSizeOfChildrenInRow, _In_ const std::uint64_t rmin, _In_ const std::uint64_t sumOfSizesOfChildrenInRow ) {
+	inline const constexpr double improved_gen_nextworst( _In_ const double hh, _In_ const std::uint64_t maximumSizeOfChildrenInRow, _In_ const std::uint64_t rmin, _In_ const std::uint64_t sumOfSizesOfChildrenInRow ) noexcept {
 		// Calculate the worst ratio in virtual row.
 		// Formula taken from the "Squarified Treemaps" paper. ('stm.pdf')
 		// (http://http://www.win.tue.nl/~vanwijk/)
@@ -95,7 +95,7 @@ namespace {
 		}
 
 	//if we pass horizontal by reference, compiler produces `cmp    BYTE PTR [r15], 0` for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-	inline void adjust_rect_if_horizontal( _In_ const bool horizontal, _Inout_ RECT* const rc, _In_ const int begin, _In_ const int end ) {
+	inline void constexpr adjust_rect_if_horizontal( _In_ const bool horizontal, _Inout_ RECT* const rc, _In_ const int begin, _In_ const int end ) noexcept {
 		if ( horizontal ) {
 			rc->top = begin;
 			rc->bottom = end;
@@ -105,14 +105,14 @@ namespace {
 		rc->right = end;
 		}
 	
-	inline const int gen_height_of_new_row( _In_ const bool horizontal, _In_ const RECT remaining ) {
+	inline const constexpr int gen_height_of_new_row( _In_ const bool horizontal, _In_ const RECT remaining ) noexcept {
 #ifdef GRAPH_LAYOUT_DEBUG
 		TRACE( _T( "Placing rows %s...\r\n" ), ( ( horizontal ) ? L"horizontally" : L"vertically" ) );
 #endif
 		return ( horizontal ? ( remaining.bottom - remaining.top ) : ( remaining.right - remaining.left ) );
 		}
 
-	inline void fixup_width_of_row( _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize, _Inout_ int& widthOfRow ) {
+	inline constexpr void fixup_width_of_row( _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize, _Inout_ int& widthOfRow ) noexcept {
 		if ( sumOfSizesOfChildrenInRow < remainingSize ) {
 			//highest precedence is 1
 			//C-Style type cast has precedence  3, right to left
@@ -169,20 +169,20 @@ namespace {
 
 		}
 
-	inline const double gen_fEnd( _In_ const double fBegin, _In_ const double fraction, _In_ const int heightOfNewRow ) {
+	inline const constexpr double gen_fEnd( _In_ const double fBegin, _In_ const double fraction, _In_ const int heightOfNewRow ) noexcept {
 		return ( fBegin + fraction * heightOfNewRow );
 		}
 
-	inline const double fixup_frac_scope_holder( _In_ const std::uint64_t sizes_at_i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow ) {
+	inline const constexpr double fixup_frac_scope_holder( _In_ const std::uint64_t sizes_at_i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow ) noexcept {
 		return ( ( double ) ( sizes_at_i ) / sumOfSizesOfChildrenInRow );
 		}
 
-	inline const bool gen_last_child( _In_ const size_t i, _In_ const size_t rowEnd, _In_ const std::uint64_t childAtIPlusOne_size ) {
+	inline const constexpr bool gen_last_child( _In_ const size_t i, _In_ const size_t rowEnd, _In_ const std::uint64_t childAtIPlusOne_size ) noexcept {
 		return ( i == rowEnd - 1 || childAtIPlusOne_size == 0 );
 		}
 
 	//if we pass horizontal by reference, compiler produces [horrible pointer code] for `if ( horizontal )`, pass by value generates `test    r15b, r15b`
-	inline void Put_next_row_into_the_rest_of_rectangle( _In_ const bool horizontal, _Inout_ RECT* const remaining, _In_ const int widthOfRow ) {
+	inline constexpr void Put_next_row_into_the_rest_of_rectangle( _In_ const bool horizontal, _Inout_ RECT* const remaining, _In_ const int widthOfRow ) noexcept {
 		if ( horizontal ) {
 			remaining->left += widthOfRow;
 			return;
@@ -191,7 +191,7 @@ namespace {
 		}
 
 	//passing widthOfRow by value generates much better code!
-	inline const double build_children_rectangle( _In_ const RECT remaining, _Out_ RECT* const rc, _In_ const bool horizontal, _In_ const int widthOfRow ) {
+	inline const constexpr double build_children_rectangle( _In_ const RECT remaining, _Out_ RECT* const rc, _In_ const bool horizontal, _In_ const int widthOfRow ) noexcept {
 		if ( horizontal ) {
 			rc->left  =   remaining.left;
 			rc->right = ( remaining.left + widthOfRow );
@@ -202,7 +202,7 @@ namespace {
 		return remaining.left;
 		}
 
-	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _In_ const int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
+	inline const int if_last_child_end_scope_holder( _In_ const size_t i, _In_ const bool horizontal, _In_ const RECT remaining, _In_ const int heightOfNewRow, _In_ const int& end_scope_holder, _In_ const bool lastChild, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) noexcept {
 		if ( lastChild ) {
 #ifdef GRAPH_LAYOUT_DEBUG
 			if ( ( i + 1 ) < rowEnd ) {
@@ -226,7 +226,7 @@ namespace {
 		}
 
 	_Success_( return < UINT64_MAX )
-	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const size_t i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const CTreeListItem* const child_at_I ) {
+	const double child_at_i_fraction( _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const size_t i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const CTreeListItem* const child_at_I ) noexcept {
 		//double fraction_scope_holder = DBL_MAX;
 		if ( sizes->count( i ) == 0 ) {
 			(*sizes)[ i ] = child_at_I->size_recurse( );
@@ -237,7 +237,7 @@ namespace {
 		}
 
 	//passing by reference: `cmp    r14, QWORD PTR [r12]` for `if ( ( i + 1 ) < rowEnd )`,
-	inline const std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) {
+	inline const constexpr std::uint64_t if_i_plus_one_less_than_rowEnd( _In_ const size_t rowEnd, _In_ const size_t i, _Inout_ std::map<std::uint64_t, std::uint64_t>* const sizes, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children ) noexcept {
 		if ( ( i + 1 ) >= rowEnd ) {
 			return 0;
 			}
@@ -254,7 +254,7 @@ namespace {
 		}
 
 #ifdef DEBUG
-	inline void assert_children_rect_smaller_than_parent_rect( const CRect& rc, const RECT& remaining ) {
+	inline constexpr void assert_children_rect_smaller_than_parent_rect( const CRect& rc, const RECT& remaining ) noexcept {
 		ASSERT( rc.left <= rc.right );
 		ASSERT( rc.top <= rc.bottom );
 
@@ -265,17 +265,17 @@ namespace {
 		}
 #endif
 
-	inline const double gen_hh_size_pixel_scalefactor( _In_ const int heightOfNewRow, _In_ const double sizePerSquarePixel_scaleFactor ) {
+	inline const constexpr double gen_hh_size_pixel_scalefactor( _In_ const int heightOfNewRow, _In_ const double sizePerSquarePixel_scaleFactor ) noexcept {
 		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
 		}
 
-	inline void add_child_rowEnd_to_row( _Inout_ std::uint64_t* const sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t* const rowEnd, _Inout_ double* const worst, _In_ const double nextWorst ) {
+	inline constexpr void add_child_rowEnd_to_row( _Inout_ std::uint64_t* const sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t* const rowEnd, _Inout_ double* const worst, _In_ const double nextWorst ) noexcept {
 		(*sumOfSizesOfChildrenInRow) += rmin;
 		(*rowEnd)++;
 		(*worst) = nextWorst;
 		}
 
-	inline const int gen_width_of_row( _In_ const bool horizontal, _In_ const CRect& remaining, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize ) {
+	inline const constexpr int gen_width_of_row( _In_ const bool horizontal, _In_ const CRect& remaining, _In_ const std::uint64_t sumOfSizesOfChildrenInRow, _In_ const std::uint64_t remainingSize ) noexcept {
 		// Width of row
 		int widthOfRow = ( horizontal ? remaining.Width( ) : remaining.Height( ) );
 		ASSERT( widthOfRow > 0 );
@@ -462,21 +462,21 @@ namespace {
 
 		}
 
-	inline const bool zero_size_rect( _In_ const RECT rc ) {
+	inline const constexpr bool zero_size_rect( _In_ const RECT rc ) noexcept {
 		if ( ( rc.right - rc.left ) <= 0 || ( rc.bottom - rc.top ) <= 0 ) {
 			return true;
 			}
 		return false;
 		}
 
-	inline const bool zero_size_rect( _In_ const RECT* const rc ) {
+	inline const constexpr bool zero_size_rect( _In_ const RECT* const rc ) noexcept {
 		if ( ( rc->right - rc->left ) <= 0 || ( rc->bottom - rc->top ) <= 0 ) {
 			return true;
 			}
 		return false;
 		}
 
-	inline const bool zero_size_width_or_height_rect( _In_ const RECT rc ) {
+	inline const constexpr bool zero_size_width_or_height_rect( _In_ const RECT rc ) noexcept {
 		ASSERT( ( rc.right - rc.left ) >= 0 );
 		ASSERT( ( rc.bottom - rc.top ) >= 0 );
 		if ( ( rc.right - rc.left ) == 0 ) {
@@ -490,11 +490,11 @@ namespace {
 		ASSERT( !zero_size_rect( rc ) );
 		return false;
 		}
-	inline const bool zero_size_width_or_height_rect( _In_ const RECT* const rc ) {
+	inline const constexpr bool zero_size_width_or_height_rect( _In_ const RECT* const rc ) noexcept {
 		return zero_size_width_or_height_rect( *rc );
 		}
 
-	inline const int gen_bottom( _In_ const double fBottom, _In_ const std::vector<double>& rows, _In_ const bool horizontalRows, _In_ const RECT rc, _In_ const size_t row ) {
+	inline const int gen_bottom( _In_ const double fBottom, _In_ const std::vector<double>& rows, _In_ const bool horizontalRows, _In_ const RECT rc, _In_ const size_t row ) noexcept {
 		//int( fBottom ) truncation is required here
 		const int bottom = int( fBottom );
 		if ( row == rows.size( ) - 1 ) {
@@ -504,7 +504,7 @@ namespace {
 		}
 
 	//compares against a constant when lastChild passed by reference! When passed by value, it generates `test    cl, cl` for `if ( lastChild )`
-	inline const int gen_right( _In_ const bool lastChild, _In_ const double fRight, _In_ const RECT rc, _In_ const bool horizontalRows ) {
+	inline const constexpr int gen_right( _In_ const bool lastChild, _In_ const double fRight, _In_ const RECT rc, _In_ const bool horizontalRows ) noexcept {
 		const int right = int( fRight );
 
 		if ( lastChild ) {
@@ -513,7 +513,7 @@ namespace {
 		return right;
 		}
 	
-	const RECT build_rc_child( _In_ const double left, _In_ const bool horizontalRows, _In_ const int bottom, _In_ const double top, _In_ const bool lastChild, _In_ const double fRight, _In_ const RECT rc ) {
+	const constexpr RECT build_rc_child( _In_ const double left, _In_ const bool horizontalRows, _In_ const int bottom, _In_ const double top, _In_ const bool lastChild, _In_ const double fRight, _In_ const RECT rc ) noexcept {
 		const int right = gen_right( lastChild, fRight, rc, horizontalRows );
 		RECT rcChild = { 0, 0, 0, 0 };
 		if ( horizontalRows ) {
@@ -539,7 +539,7 @@ namespace {
 		return rcChild;
 		}
 
-	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_nx_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_0, _In_ const double surface_2, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const nx_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -552,7 +552,7 @@ namespace {
 			}
 		}
 
-	inline void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_ny_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ const double surface_1, _In_ const double surface_3, _Out_ _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const ny_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -566,7 +566,7 @@ namespace {
 			}
 		}
 
-	inline void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _Pre_writable_size_( vecSize ) DOUBLE* const sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) {
+	inline void fill_sqrt_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _Pre_writable_size_( vecSize ) DOUBLE* const sqrt_array, _In_ const size_t loop_rect__end__inner, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -584,7 +584,7 @@ namespace {
 			}
 		}
 
-	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) {
+	inline void fill_cosa_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const ny_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const nx_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const sqrt_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const cosa_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE m_Lx, _In_ const DOUBLE m_Ly, _In_ const DOUBLE m_Lz, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -604,7 +604,7 @@ namespace {
 			}
 		}
 
-	inline void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) {
+	inline void fill_pixel_double_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t inner_stride, _In_ const size_t loop_rect_start_inner, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const cosa_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_double_array, _In_ const size_t loop_rect__end__inner, _In_ const DOUBLE Is, _In_ const DOUBLE Ia, _In_ _In_range_( 0, 1 ) const DOUBLE brightness, _In_ const size_t vecSize ) noexcept {
 		const auto brightness_adjusted_forPALETTE_BRIGHTNESS = ( brightness / PALETTE_BRIGHTNESS );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			UNREFERENCED_PARAMETER( vecSize );
@@ -633,7 +633,7 @@ namespace {
 			}
 		}
 
-	inline void clamp_color_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _Pre_writable_size_( vecSize ) _Inout_updates_( vecSize ) DOUBLE* const pixel_color_array, _In_ const size_t vecSize ) {
+	inline void clamp_color_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _Pre_writable_size_( vecSize ) _Inout_updates_( vecSize ) DOUBLE* const pixel_color_array, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -658,7 +658,7 @@ namespace {
 	//Generalized version of fill_R_array, fill_G_array, & fill_B_array.
 	//color_component_constant replaces colR, colG, colB.
 	//pixel_color_component_array replaces pixel_R_array, pixel_G_array, pixel_B_array.
-	inline void fill_color_component_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE color_component_constant, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_color_component_array, _In_ const size_t vecSize ) {
+	inline void fill_color_component_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE color_component_constant, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_color_component_array, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -671,7 +671,7 @@ namespace {
 			}
 		}
 
-	inline void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_B_array, _In_ const size_t vecSize ) {
+	inline void fill_R_G_B_arrays( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_double_array, _In_ const DOUBLE colR, _In_ const DOUBLE colG, _In_ const DOUBLE colB, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_R_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_G_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) DOUBLE* const pixel_B_array, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		//split for performance, measured performance improvement due to improved cache locality.
 		
@@ -689,7 +689,7 @@ namespace {
 		}
 
 	//Pack the 3 arrays of color values (Red, Green, and Blue) into a single array of COLORREFs
-	inline void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* const pixles, _In_ const size_t vecSize ) {
+	inline void fill_pixles_array( _In_ const size_t loop_rect_start_outer, _In_ const size_t loop_rect__end__outer, _In_ const size_t loop_rect_start_inner, _In_ const size_t loop_rect__end__inner, _In_ const size_t inner_stride, _In_ const size_t offset, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_R_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_G_array, _In_ _Pre_readable_size_( vecSize ) _In_reads_( vecSize ) const DOUBLE* const pixel_B_array, _Pre_writable_size_( vecSize ) _Out_writes_( vecSize ) COLORREF* const pixles, _In_ const size_t vecSize ) noexcept {
 		UNREFERENCED_PARAMETER( vecSize );
 		for ( auto iy = loop_rect_start_outer; iy < loop_rect__end__outer; iy++ ) {
 			const auto index_of_this_row_0_in_array = ( ( iy * inner_stride ) - offset );
@@ -711,7 +711,7 @@ namespace {
 		}
 
 
-	void i_less_than_children_per_row( _In_ const size_t i, _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _In_ const size_t c ) {
+	void i_less_than_children_per_row( _In_ const size_t i, _In_ const std::vector<size_t>& childrenPerRow, _In_ _In_range_( 0, SIZE_T_MAX ) const size_t row, _In_ const std::vector<const CTreeListItem*>& parent_vector_of_children, _In_ const size_t c ) noexcept {
 		if ( i < childrenPerRow[ row ] ) {
 			const auto childAtC = parent_vector_of_children.at( c );
 			if ( childAtC != nullptr ) {
@@ -722,7 +722,7 @@ namespace {
 		}
 
 	//compares against a constant when lastChild passed by reference! When passed by value, it generates `test    cl, cl` for `if ( horizontalRows )`
-	inline DOUBLE KDS_gen_width( _In_ const bool horizontalRows, _In_ const CTreeListItem* const parent ) {
+	inline DOUBLE KDS_gen_width( _In_ const bool horizontalRows, _In_ const CTreeListItem* const parent ) noexcept {
 		constexpr const DOUBLE width = 1.0;
 		const RECT parent_rect = parent->TmiGetRectangle( );
 		const auto rect_width  = ( parent_rect.right - parent_rect.left );
@@ -740,7 +740,7 @@ namespace {
 		}
 
 	_Pre_satisfies_( parent->m_child_info.m_child_info_ptr != NULL )
-	bool zero_size_parent( _Inout_ std::vector<double>* const rows, _Inout_ std::vector<size_t>* const childrenPerRow, _Inout_ std::vector<double>* const childWidth, _In_ const CTreeListItem* const parent, _In_ const std::uint64_t parentSize ) {
+		bool zero_size_parent( _Inout_ std::vector<double>* const rows, _Inout_ std::vector<size_t>* const childrenPerRow, _Inout_ std::vector<double>* const childWidth, _In_ const CTreeListItem* const parent, _In_ const std::uint64_t parentSize ) noexcept {
 		ASSERT( parent->m_child_info.m_child_info_ptr != nullptr );
 		if ( parentSize == 0 ) {
 			rows->emplace_back( 1.0 );
@@ -755,7 +755,7 @@ namespace {
 		}
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
-	inline void AddRidge_( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) {
+	inline constexpr void AddRidge_( _In_ const RECT& rc, _Inout_ DOUBLE ( &surface )[ 4 ], _In_ const DOUBLE h ) noexcept {
 		const auto width = ( rc.right - rc.left );
 		const auto height = ( rc.bottom - rc.top );
 	
@@ -776,7 +776,7 @@ namespace {
 
 	}
 
-CTreemap::CTreemap( ) {
+CTreemap::CTreemap( ) noexcept {
 	CTreemap::SetOptions( _defaultOptions );
 	IsCushionShading_current = CTreemap::IsCushionShading( );
 #ifdef GRAPH_LAYOUT_DEBUG

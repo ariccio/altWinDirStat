@@ -68,12 +68,18 @@ struct SimpleClientDeviceContext {
 
 		ASSERT(hWnd == NULL || ::IsWindow(hWnd));
 		m_hWnd = hWnd;
+		//GetDC function: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdc
+		// If the function succeeds, the return value is a handle to the DC for the specified window's client area.
+		// If the function fails, the return value is NULL.
 		m_hDC = ::GetDC( m_hWnd );
 		if ( m_hDC == NULL ) {
 			std::terminate( );
 			}
 		}
 	~SimpleClientDeviceContext( ) {
+		// ReleaseDC function: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-releasedc
+		// The return value indicates whether the DC was released. If the DC was released, the return value is 1.
+		// If the DC was not released, the return value is zero.
 		::ReleaseDC( m_hWnd, m_hDC );
 		}
 	};
@@ -81,7 +87,7 @@ struct SimpleClientDeviceContext {
 
 namespace CColorSpace {
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
-	_Ret_range_( 0, 1 ) static DOUBLE GetColorBrightness( _In_ const COLORREF color ) noexcept {
+	_Ret_range_( 0, 1 ) static constexpr DOUBLE GetColorBrightness( _In_ const COLORREF color ) noexcept {
 		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
 		}
 
@@ -91,7 +97,7 @@ namespace {
 
 	// SSorting. A sorting specification. We sort by column1, and if two items equal in column1, we sort them by column2.
 	struct SSorting final {
-		SSorting( ) : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending2 { true }, ascending1{ false } { }
+		SSorting( ) noexcept : column1 { column::COL_NAME }, column2 { column::COL_NAME }, ascending2 { true }, ascending1{ false } { }
 		_Field_range_( 0, 8 ) column::ENUM_COL  column1;
 		_Field_range_( 0, 8 ) column::ENUM_COL  column2;
 							  bool              ascending2 : 1;
@@ -1682,7 +1688,7 @@ protected:
 				{ WM_VSCROLL,                0u,                                                            0u, 0u, AfxSig_vwwW,     static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(UINT, UINT, CScrollBar*)>(&COwnerDrawnListCtrl::OnVScroll)))   },
 				{ WM_SHOWWINDOW,             0u,                                                            0u, 0u, AfxSig_vbw,      static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(BOOL, UINT)>(&COwnerDrawnListCtrl::OnShowWindow)))             },
 				{ WM_DESTROY,                0u,                                                            0u, 0u, AfxSig_vv,       static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(void)>(&COwnerDrawnListCtrl::OnDestroy)))                      },
-				{ 0u, 0u, 0u, 0u, AfxSig_end, (AFX_PMSG)( 0 )                             }
+				{ 0u, 0u, 0u, 0u, AfxSig_end, nullptr                             }
 				};
 		static const AFX_MSGMAP messageMap = { &CListCtrl::GetThisMessageMap, &_messageEntries[0] };
 		return &messageMap;
@@ -1697,7 +1703,7 @@ protected:
 		COwnerDrawnListCtrl::handle_EraseBkgnd( pDC->m_hDC, pDC->m_hAttribDC );
 		return true;
 		}
-	afx_msg void OnHdnDividerdblclick( NMHDR *pNMHDR, LRESULT *pResult ) {
+	afx_msg void OnHdnDividerdblclick( NMHDR *const pNMHDR, LRESULT *const pResult ) {
 		//WTL::CWaitCursor wc;
 		ASSERT( pNMHDR != nullptr );
 		if ( pNMHDR != nullptr ) {
@@ -1710,7 +1716,7 @@ protected:
 			*pResult = 0;
 			}
 		}
-	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar ) {
+	afx_msg void OnVScroll( UINT nSBCode, UINT nPos, CScrollBar* const pScrollBar ) {
 		CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
 		
 		//TODO: re-evaluate this?
@@ -1718,7 +1724,7 @@ protected:
 		//CWnd::InvalidateRect( NULL );
 		hwnd::InvalidateErase(NULL);
 		}
-	afx_msg void OnHdnItemclick( NMHDR* pNMHDR, LRESULT* pResult ) {
+	afx_msg void OnHdnItemclick( NMHDR* const pNMHDR, LRESULT* const pResult ) {
 		const NMHEADERW* const phdr = reinterpret_cast<const LPNMHEADERW>(pNMHDR);
 		*pResult = 0;
 		const auto col = static_cast<column::ENUM_COL>( phdr->iItem );
@@ -1731,10 +1737,10 @@ protected:
 			}
 		COwnerDrawnListCtrl::SortItems( );
 		}
-	afx_msg void OnHdnItemdblclick( NMHDR* pNMHDR, LRESULT* pResult ) {
+	afx_msg void OnHdnItemdblclick( NMHDR* const pNMHDR, LRESULT* const pResult ) {
 		COwnerDrawnListCtrl::OnHdnItemclick( pNMHDR, pResult );
 		}
-	afx_msg void OnHdnItemchanging( NMHDR *pNMHDR, LRESULT *pResult ) {
+	afx_msg void OnHdnItemchanging( NMHDR *const pNMHDR, LRESULT *const pResult ) {
 		UNREFERENCED_PARAMETER( pNMHDR );
 		/*
 		LRESULT CWnd::Default()
@@ -2306,7 +2312,7 @@ private:
 		sizeof(class COwnerDrawnListCtrl),
 		0xFFFF,
 		NULL,
-		((CRuntimeClass*)(&CListCtrl::classCListCtrl)),
+		const_cast<CRuntimeClass*>(&CListCtrl::classCListCtrl),
 		NULL,
 		NULL
 	};

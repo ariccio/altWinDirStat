@@ -574,7 +574,7 @@ const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_
 
 //This is an error handling function, and is intended to be called rarely!
 __declspec(noinline)
-void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) {
+void unexpected_strsafe_invalid_parameter_handler( _In_z_ PCSTR const strsafe_func_name, _In_z_ PCSTR const file_name_in, _In_z_ PCSTR const func_name_in, _In_ _In_range_( 0, INT_MAX ) const int line_number_in ) noexcept {
 	std::string err_str( strsafe_func_name );
 	err_str += " returned STRSAFE_E_INVALID_PARAMETER, in: file `";
 	err_str += file_name_in;
@@ -1259,8 +1259,8 @@ const int SRECT::Height( ) const noexcept {
 
 HDC gdi::CreateCompatibleDeviceContext(_In_ const HDC hDC) {
 	//CreateCompatibleDC function: https://msdn.microsoft.com/en-us/library/dd183489.aspx
-	//If the function succeeds, the return value is the handle to a memory DC.
-	//If the function fails, the return value is NULL.
+	//If [CreateCompatibleDC] succeeds, the return value is the handle to a memory DC.
+	//If [CreateCompatibleDC] fails, the return value is NULL.
 
 	//When you no longer need the memory DC, call the DeleteDC function.
 	//We recommend that you call DeleteDC to delete the DC.
@@ -1270,7 +1270,6 @@ HDC gdi::CreateCompatibleDeviceContext(_In_ const HDC hDC) {
 	if (newHDC == NULL) {
 		TRACE(L"CreateCompatibleDeviceContext failed!\r\n");
 		std::terminate();
-		abort();
 	}
 
 	return newHDC;
@@ -1278,8 +1277,8 @@ HDC gdi::CreateCompatibleDeviceContext(_In_ const HDC hDC) {
 
 void gdi::DeleteDeviceContext(_In_ _Post_ptr_invalid_ HDC hDC) {
 	//DeleteDC function: https://msdn.microsoft.com/en-us/library/dd183533.aspx
-	//If the function succeeds, the return value is nonzero.
-	//If the function fails, the return value is zero.
+	//If [DeleteDC] succeeds, the return value is nonzero.
+	//If [DeleteDC] fails, the return value is zero.
 
 	const BOOL deleted = ::DeleteDC(hDC);
 	if (deleted == 0) {
@@ -1288,7 +1287,7 @@ void gdi::DeleteDeviceContext(_In_ _Post_ptr_invalid_ HDC hDC) {
 		}
 	}
 
-HBITMAP gdi::CreateCompatibleBitmap(HDC hDC, int cx, int cy) {
+HBITMAP gdi::CreateCompatibleBitmap(_In_ HDC hDC, int cx, int cy) {
 	//CreateCompatibleBitmap function: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createcompatiblebitmap
 	//If the function succeeds, the return value is a handle to the compatible bitmap (DDB).
 	//If the function fails, the return value is NULL.

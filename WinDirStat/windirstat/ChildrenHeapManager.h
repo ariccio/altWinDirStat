@@ -101,7 +101,7 @@ struct child_info_block_manager final {
 	child_info* m_child_info_ptr;
 	child_info_block_manager( ) noexcept : m_child_info_ptr( nullptr ) { }
 	child_info_block_manager( _In_ const rsize_t number_of_characters_needed, _In_ const rsize_t child_count ) {
-		const rsize_t size_of_a_single_struct_in_bytes = sizeof( child_info );
+		constexpr const rsize_t size_of_a_single_struct_in_bytes = sizeof( child_info );
 		const rsize_t character_bytes_needed = ( number_of_characters_needed * sizeof( wchar_t ) );
 		
 		//maybe /analyze thinks we will overflow?

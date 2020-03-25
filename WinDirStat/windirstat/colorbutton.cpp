@@ -21,7 +21,7 @@ END_MESSAGE_MAP( )
 
 void CPreview::SetColor(_In_ const COLORREF color) noexcept {
 	m_color = color;
-	hwnd::InvalidateErase(m_hWnd);
+	hwnd::InvalidateErase(m_hWnd, false, __FUNCTION__);
 	}
 
 LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/ ) {

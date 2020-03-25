@@ -28,7 +28,7 @@ void trace_heap__size_alloc( _In_ const double heap__size_av ) noexcept;
 // CTreemap. Can create a treemap. Knows 2 squarification methods: KDirStat-like, SequoiaView-like.
 class CTreemap final {
 public:
-	CTreemap( );
+	CTreemap( ) noexcept;
 
 #ifdef DEBUG
 	~CTreemap( ) {
@@ -66,8 +66,8 @@ public:
 #endif
 
 	void UpdateCushionShading      ( _In_ const bool               newVal                                   ) noexcept;
-	void SetOptions                ( _In_ const Treemap_Options&           options                                  ) noexcept;
-	void RecurseCheckTree          ( _In_ const CTreeListItem* const item                                     ) const;
+	void SetOptions                ( _In_ const Treemap_Options&           options                          ) noexcept;
+	void RecurseCheckTree          ( _In_ const CTreeListItem* const item                                   ) const;
 #ifdef DEBUG
 	void validateRectangle         ( _In_ const CTreeListItem* const child, _In_ const RECT             rc  ) const noexcept;
 #endif

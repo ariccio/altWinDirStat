@@ -25,7 +25,7 @@ CDirstatApp* GetApp( );
 // CDirstatApp. The MFC application object. Knows about RAM Usage, Mount points, Help files and the CMyImageList.
 class CDirstatApp final : public CWinApp {
 public:
-	CDirstatApp( );
+	CDirstatApp( ) noexcept;
 	virtual ~CDirstatApp( ) final;
 
 	CDirstatApp& operator=( const CDirstatApp& in ) = delete;

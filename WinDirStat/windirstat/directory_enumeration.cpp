@@ -154,7 +154,7 @@ WDS_DECLSPEC_NOTHROW void FindFilesLoop( _Inout_ std::vector<FILEINFO>& files, _
 										fData.ftLastWriteTime,
 										fData.dwFileAttributes,
 										fData.cFileName,
-										std::move( alt_path_this_dir )
+										alt_path_this_dir
 										);
 			}
 		else {
@@ -524,11 +524,11 @@ namespace {
 
 
 	WDS_DECLSPEC_NOTHROW void compose_compressed_file_size_and_fixup_child( CTreeListItem* const child, const std::wstring path ) {
-		const auto size_child = GetCompressedFileSize_filename( path );
+		const std::uint64_t size_child = GetCompressedFileSize_filename( path );
 		if ( size_child != UINT64_MAX ) {
 			ASSERT( child != NULL );
 			if ( child != NULL ) {
-				child->m_size = std::move( size_child );
+				child->m_size = size_child;
 				}
 			}
 		else {

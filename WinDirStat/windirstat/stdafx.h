@@ -272,6 +272,29 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
 								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
 								//Code analysis is confused about pACL (access control list) in CSecurityDescriptor::AddAccessAllowedACEToACL, CSecurityDescriptor::AddAccessDeniedACEToACL, CSecurityDescriptor::Attach, CSecurityDescriptor::Attach, in file "c:\program files (x86)\microsoft visual studio 14.0\vc\atlmfc\include\atlcom.h", where it *appears* to be correct. Code analysis seems to think the writable size is only 8 bytes for some reason!
+#pragma warning(disable:6011) //Warning	C6011	Dereferencing NULL pointer 'pBitmapInfoHeader'.
+#pragma warning(disable:28182) //Warning	C28182	Dereferencing NULL pointer. 'pParam1' contains the same NULL value as 'lParam1' did.
+#pragma warning(disable:26496) //The variable 'clr' is assigned only once, mark it as const (con.4)
+#pragma warning(disable:26481) //Don't use pointer arithmetic. Use span instead (bounds.1).
+#pragma warning(disable:26409) //Avoid calling newand delete explicitly, use std::make_unique<T> instead (r.11).
+#pragma warning(disable:26433) //Function 'WTL::CShellFileDialogImpl<WTL::CShellFileOpenDialog>::[IFileDialogEvents]::OnFolderChanging' should be marked with 'override' (c.128).
+#pragma warning(disable:26434) //Function 'CTreeListControl::OnLButtonDblClk' hides a non - virtual function 'CWnd::OnLButtonDblClk' (c.128).
+#pragma warning(disable:26440) //Function 'WTL::CCommonDialogImplBase::StartWindowProc' can be declared 'noexcept' (f.6).
+#pragma warning(disable:5204) //'CAnimationTimerEventHandler': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly	windirstat
+#pragma warning(disable:4668) //'_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif' (compiling source file directory_enumeration.cpp)
+#pragma warning(disable:26493) //Don't use C-style casts (type.4).
+
+
+
+
+
+
+
+
+
+
+
+
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
 

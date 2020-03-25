@@ -129,10 +129,10 @@ void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, POINT& value ) {
 	HWND hWndCtrl;
 	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
 	if ( pDX->m_bSaveAndValidate ) {
-		::SendMessageW( hWndCtrl, XY_GETPOS, 0, ( LPARAM ) &value );
+		::SendMessageW( hWndCtrl, XY_GETPOS, 0, reinterpret_cast<LPARAM>(&value) );
 		}
 	else {
-		::SendMessageW( hWndCtrl, XY_SETPOS, 0, ( LPARAM ) &value );
+		::SendMessageW( hWndCtrl, XY_SETPOS, 0, reinterpret_cast<LPARAM>(&value) );
 		}
 	}
 
@@ -201,10 +201,19 @@ void CXySlider::CalcSizes( ) noexcept {
 void CXySlider::NotifyParent( ) const noexcept {
 	NMHDR hdr = { };
 	hdr.hwndFrom = m_hWnd;
+
+	/*
+	Maybe:
+	int GetDlgCtrlID() const throw()
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return ::GetDlgCtrlID(m_hWnd);
+	}
+	*/
 	hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
 	hdr.code     = XYSLIDER_CHANGED;
 	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
-	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), ( LPARAM ) &hdr );
+	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>(&hdr) );
 	}
 
 void CXySlider::PaintBackground( _In_ CDC& pdc ) noexcept {
@@ -340,9 +349,8 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) noexcept {
 
 void CXySlider::Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 ) noexcept {
 	POINT pt = msg.pt;
-	ASSERT( ::IsWindow( m_hWnd ) );
-	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-	VERIFY( ::ScreenToClient( m_hWnd, &pt ) );
+	//VERIFY( ::ScreenToClient( m_hWnd, &pt ) );
+	hwnd::ScreenToClient(m_hWnd, &pt);
 	//ScreenToClient( &pt );
 
 	CheckMinMax( pt.x, ptMin.x, ptMax.x );
@@ -568,10 +576,8 @@ void CXySlider::OnTimer( UINT_PTR /*nIDEvent*/ ) {
 	VERIFY( ::GetCursorPos( &point ) );
 	ASSERT( ::IsWindow( m_hWnd ) );
 	
-	//ScreenToClient function: https://msdn.microsoft.com/en-us/library/dd162952.aspx
-	//"Return value: If [ScreenToClient] succeeds, the return value is nonzero.
-	//If [ScreenToClient] fails, the return value is zero."
-	VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+	//VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+	hwnd::ScreenToClient(m_hWnd, &point);
 
 	const RECT rc = CXySlider::GetGripperRect( );
 	if ( !::PtInRect( &rc, point ) ) {
