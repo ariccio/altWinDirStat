@@ -21,8 +21,52 @@ namespace {
 	constexpr const int CPageTreemap_maxHeight = 200;
 	}
 
+/*
+#define IMPLEMENT_DYNAMIC(class_name, base_class_name) \
+	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, NULL, NULL)
 
-IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
+	becomes
+
+	#define IMPLEMENT_DYNAMIC(CPageTreemap, CPropertyPage) \
+	IMPLEMENT_RUNTIMECLASS(CPageTreemap, CPropertyPage, 0xFFFF, NULL, NULL)
+
+	becomes
+
+	#define IMPLEMENT_RUNTIMECLASS(CPageTreemap, CPropertyPage, 0xFFFF, NULL, NULL) \
+	AFX_COMDAT const CRuntimeClass CPageTreemap::class##CPageTreemap = { \
+		"CPageTreemap", sizeof(class class_name), 0xFFFF, NULL, \
+			RUNTIME_CLASS(CPropertyPage), NULL, NULL }; \
+	CRuntimeClass* CPageTreemap::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(CPageTreemap); }
+
+and this:
+	AFX_COMDAT const CRuntimeClass CPageTreemap::class##CPageTreemap = { \
+		"CPageTreemap", sizeof(class class_name), 0xFFFF, NULL, \
+			RUNTIME_CLASS(CPropertyPage), NULL, NULL }; \
+	CRuntimeClass* CPageTreemap::GetRuntimeClass() const \
+		{ return RUNTIME_CLASS(CPageTreemap); }
+
+		becomes
+
+	AFX_COMDAT const CRuntimeClass CPageTreemap::class##CPageTreemap = { \
+		"CPageTreemap", sizeof(class class_name), 0xFFFF, NULL, \
+			((CRuntimeClass*)(&CPropertyPage::classCPropertyPage), NULL, NULL }; \
+	CRuntimeClass* CPageTreemap::GetRuntimeClass() const \
+		{ return (CRuntimeClass*)(&CPageTreemap::classCPageTreemap); }
+
+		#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
+
+
+
+*/
+//IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
+AFX_COMDAT const CRuntimeClass CPageTreemap::classCPageTreemap = {
+	"CPageTreemap", sizeof(class CPageTreemap), 0xFFFF, NULL, const_cast<CRuntimeClass*>(&CPropertyPage::classCPropertyPage), NULL, NULL
+	};
+CRuntimeClass* CPageTreemap::GetRuntimeClass() const {
+	return const_cast<CRuntimeClass*>(&CPageTreemap::classCPageTreemap);
+	}
+
 
 void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 	CWnd::DoDataExchange( pDX );

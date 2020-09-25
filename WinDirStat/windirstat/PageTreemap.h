@@ -68,6 +68,8 @@ protected:
 	Treemap_Options   m_options;	// Current options
 	Treemap_Options   m_undo;	    // Valid, if m_altered = false
 
+
+	//TODO: I think this is actually a bug that it's never initialized.
 	BOOL              m_altered;	// Values have been altered. Button reads "Reset to defaults".
 	BOOL              m_grid;
 
@@ -92,8 +94,14 @@ protected:
 
 	_Field_range_( 0,   2 ) INT     m_style;
 	_Field_range_( 0, 100 ) INT     m_nBrightness;
+
+	//TODO: m_nCushionShading is never explicitly initialized.
 	_Field_range_( 0, 100 ) INT     m_nCushionShading;
+
+	//TODO: m_nHeight is never explicitly initialized.
 	_Field_range_( 0, 100 ) INT     m_nHeight;
+
+	//TODO: m_nScaleFactor is never explicitly initialized.
 							//C4820: 'CPageTreemap' : '4' bytes padding added after data member 'CPageTreemap::m_nScaleFactor'
 	_Field_range_( 0, 100 ) INT     m_nScaleFactor;
 
