@@ -141,6 +141,7 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	ValuesAltered(true); // m_undo is invalid
 
 	m_brightness.SetPageSize(10);
+	m_brightness.SetRange(0, 100);
 	//m_brightness.Attach(GetDlgItem(IDC_BRIGHTNESS));
 
 	m_cushionShading.SetPageSize(10);
