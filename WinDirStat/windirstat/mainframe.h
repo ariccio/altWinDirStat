@@ -45,6 +45,9 @@ public: \
 	virtual BOOL OnCommand    ( _In_ WPARAM wParam, _In_ LPARAM lParam ) override final;
 	};
 
+
+
+
 // WDSSplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
 struct WDSSplitterWnd final : public CSplitterWnd {
 	DISALLOW_COPY_AND_ASSIGN( WDSSplitterWnd );

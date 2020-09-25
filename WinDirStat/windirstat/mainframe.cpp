@@ -937,12 +937,19 @@ void CMainFrame::OnConfigure( ) {
 	CPageGeneral  general( m_appptr );
 	CPageTreemap  treemap;
 
+
 	sheet.AddPage( &general );
 	sheet.AddPage( &treemap );
 
 	sheet.DoModal( );
 	const auto Options = GetOptions( );
 	Options->SaveToRegistry( );
+
+	WTL::CPropertySheet WTL_settings_sheet(L"WTL property sheet testing");
+	WTLTreemapPage WTL_treemap_page;
+	WTL_settings_sheet.AddPage(WTL_treemap_page);
+	WTL_settings_sheet.DoModal(m_hWnd);
+
 	}
 
 void CMainFrame::OnSysColorChange( ) {
