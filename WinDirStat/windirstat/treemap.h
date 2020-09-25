@@ -32,8 +32,8 @@ public:
 
 #ifdef DEBUG
 	~CTreemap( ) {
-		const double stack_v_total = ( static_cast< double >( num_times_stack_used ) / static_cast< double >( num_times_heap__used + num_times_stack_used ) );
-		const double heap__v_total = ( static_cast< double >( num_times_heap__used ) / static_cast< double >( num_times_heap__used + num_times_stack_used ) );
+		const double stack_v_total = ( static_cast< double >( num_times_stack_used ) / static_cast< double >( static_cast<uint64_t>(num_times_heap__used) + static_cast<uint64_t>(num_times_stack_used) ) );
+		const double heap__v_total = ( static_cast< double >( num_times_heap__used ) / static_cast< double >(static_cast<uint64_t>(num_times_heap__used) + static_cast<uint64_t>(num_times_stack_used) ) );
 		const double stack_size_av = ( ( num_times_stack_used != 0 ) ? ( static_cast< double >( total_size_stack_vector ) / static_cast< double >( num_times_stack_used ) ) : 0 );
 		const double heap__size_av = ( ( num_times_heap__used != 0 ) ? ( static_cast< double >( total_size_heap__vector ) / static_cast< double >( num_times_heap__used ) ) : 0 );
 

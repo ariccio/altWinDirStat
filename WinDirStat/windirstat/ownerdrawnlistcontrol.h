@@ -88,7 +88,7 @@ struct SimpleClientDeviceContext {
 namespace CColorSpace {
 	// Returns the brightness of color. Brightness is a value between 0 and 1.0.
 	_Ret_range_( 0, 1 ) static constexpr DOUBLE GetColorBrightness( _In_ const COLORREF color ) noexcept {
-		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0 / 3.0;
+		return ( GetRValue( color ) + GetGValue( color ) + GetBValue( color ) ) / 255.0f / 3.0f;
 		}
 
 	}
@@ -1333,7 +1333,7 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 		if ( itemPos >= 0 ) {
 			return COwnerDrawnListCtrl::IsItemStripeColor( static_cast<UINT>( itemPos ) );
 			}
-		return COLORREF( 0 );
+		return static_cast<COLORREF>( 0 );
 		}
 	bool HasFocus( ) const noexcept {
 		return ::GetFocus( ) == m_hWnd;

@@ -199,7 +199,7 @@ namespace {
 
 	//_In_range_ upper bound is totally arbitrary! Lower bound is enough for WRITE_BAD_FMT
 	void ensure_valid_return_date( _In_ const int gdfres, _In_ _In_ _In_range_( 24, 2048 ) const rsize_t strSize, _In_ const SYSTEMTIME system_time, _Inout_ PWSTR psz_formatted_datetime ) {
-		if ( ( gdfres + 1 ) >= static_cast< std::int64_t >( strSize ) ) {
+		if ( ( static_cast<std::int64_t>(gdfres) + 1 ) >= static_cast< std::int64_t >( strSize ) ) {
 			displayWindowsMsgBoxWithMessage( L"Error in ensure_valid_return_date!(aborting)" );
 			std::wstring err_str( L"DEBUGGING INFO: strSize: " );
 			err_str += std::to_wstring( strSize );
@@ -223,7 +223,7 @@ namespace {
 		}
 
 	void ensure_valid_return_time( const int gtfres, const rsize_t strSize, _Inout_ PWSTR psz_formatted_datetime ) {
-		if ( ( gtfres + 1 ) >= static_cast< std::int64_t >( strSize ) ) {
+		if ( ( static_cast<std::int64_t>( gtfres ) + 1 ) >= static_cast< std::int64_t >( strSize ) ) {
 			displayWindowsMsgBoxWithMessage( L"Error in ensure_valid_return_time!(aborting)" );
 			std::wstring err_str( L"DEBUGGING INFO: strSize: " );
 			err_str += std::to_wstring( strSize );
@@ -912,7 +912,7 @@ bool Compare_FILETIME_eq( const FILETIME& t1, const FILETIME& t2 ) noexcept {
 
 
 void NormalizeColor( _Inout_ _Out_range_(0, 255) INT& red, _Inout_ _Out_range_(0, 255) INT& green, _Inout_ _Out_range_(0, 255) INT& blue ) noexcept {
-	ASSERT( red + green + blue <= 3 * COLOR_MAX_VALUE );
+	ASSERT( static_cast<std::int64_t>(red) + static_cast<std::int64_t>(green) + static_cast<std::int64_t>(blue) <= static_cast<std::int64_t>(3) * COLOR_MAX_VALUE );
 	if ( red > 255 ) {
 #ifdef COLOR_DEBUGGING
 		TRACE( _T( "Distributing red...\r\n" ) );
@@ -956,7 +956,7 @@ COLORREF CColorSpace::MakeBrightColor( _In_ const COLORREF color, _In_ _In_range
 #endif
 
 
-	ASSERT( ( std::lrint( dred * int( COLOR_MAX_VALUE ) ) ) == ( std::lrint( dred * COLOR_MAX_VALUE ) ) );
+	ASSERT( ( std::lrint( dred * static_cast<int>( COLOR_MAX_VALUE ) ) ) == ( std::lrint( dred * COLOR_MAX_VALUE ) ) );
 
 	INT red   = std::lrint( dred   * COLOR_MAX_VALUE );
 	INT green = std::lrint( dgreen * COLOR_MAX_VALUE );

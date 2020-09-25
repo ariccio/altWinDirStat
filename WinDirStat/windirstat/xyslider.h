@@ -20,7 +20,7 @@ class CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
 
 public:
-	CXySlider( ) noexcept : m_inited { false }, m_timer { 0u }, m_gripperHighlight{ false } {
+	CXySlider( ) noexcept : m_gripperHighlight{ false } {
 		m_externalPos.x = 0;
 		m_externalPos.y = 0;
 		m_externalRange.cx = 100;
@@ -94,7 +94,7 @@ _AFXWIN_INLINE UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT nElapse,
 		}
 
 	//C4820: 'CXySlider' : '3' bytes padding added after data member 'CXySlider::m_inited'
-	bool     m_inited;
+	bool     m_inited = false;
 public:
 	// These are in external scale
 	SIZE          m_externalRange;
@@ -107,16 +107,16 @@ protected:
 	POINT         m_pos;	// relative to m_zero
 
 	// Constants (in pixels)
-	RECT          m_rcAll;
-	RECT          m_rcInner;
-	POINT         m_zero;
+	RECT          m_rcAll = { 0 };
+	RECT          m_rcInner = { 0 };
+	POINT         m_zero = { 0 };
 	SIZE          m_radius;
 	//C4820: 'CXySlider' : '4' bytes padding added after data member 'CXySlider::m_gripperRadius'
 	SIZE          m_gripperRadius;
 
-	UINT_PTR m_timer;
+	UINT_PTR m_timer = { 0u };
 	//C4820: 'CXySlider' : '7' bytes padding added after data member 'CXySlider::m_gripperHighlight'
-	bool     m_gripperHighlight;
+	bool     m_gripperHighlight = false;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnDestroy( ) {

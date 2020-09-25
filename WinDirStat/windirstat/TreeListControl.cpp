@@ -997,7 +997,7 @@ _Ret_range_( 0, 33000 ) DOUBLE CTreeListItem::averageNameLength( ) const noexcep
 				childrenTotal += ( my_m_children + i )->averageNameLength( );
 				}
 			}
-		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( childCount + 1u );
+		return ( childrenTotal + myLength ) / static_cast<DOUBLE>( static_cast<uint64_t>( childCount ) + 1u );
 		}
 	//ASSERT( m_childCount == 0 );
 	return myLength;

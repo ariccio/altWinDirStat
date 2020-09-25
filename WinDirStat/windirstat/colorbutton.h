@@ -22,9 +22,15 @@ class CPreview final : public ATL::CWindowImpl<CPreview> {
 	DISALLOW_COPY_AND_ASSIGN(CPreview);
 public:
 	COLORREF m_color = 0u;
-	CPreview( ) = default;
+	CPreview() {
+
+	}
 
 	void SetColor(_In_ const COLORREF color) noexcept;
+
+
+	// ya know, I bet there's a way to do message maps with variadic templates.
+	// http://imadiversion.co.uk/2016/12/03/window-message-dispatch-c-17-refactor/ is one such neat example, but I'm not sure it's the cleanest or fastest way to do it.
 
 #pragma warning( push )
 #pragma warning( disable: 4365 )
@@ -108,6 +114,52 @@ protected:
 			//If the function fails, the return value is zero.
 			VERIFY( ::InflateRect( &rc, -4, -4 ) );
 
+
+			/*
+			// from: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\atlmfc\include\atlwin.h:3602
+			template <class TBase, class TWinTraits>
+			HWND CWindowImplBaseT< TBase, TWinTraits >::Create(
+				_In_opt_ HWND hWndParent,
+				_In_ _U_RECT rect,
+				_In_z_ LPCTSTR szWindowName,
+				_In_ DWORD dwStyle,
+				_In_ DWORD dwExStyle,
+				_In_ _U_MENUorID MenuOrID,
+				_In_ ATOM atom,
+				_In_opt_ LPVOID lpCreateParam)
+			{
+				ATLASSUME(this->m_hWnd == NULL);
+
+				// Allocate the thunk structure here, where we can fail gracefully.
+				BOOL result = this->m_thunk.Init(NULL,NULL);
+				if (result == FALSE) {
+					SetLastError(ERROR_OUTOFMEMORY);
+					return NULL;
+				}
+
+				if(atom == 0)
+					return NULL;
+
+				_AtlWinModule.AddCreateWndData(&this->m_thunk.cd, this);
+
+				if(MenuOrID.m_hMenu == NULL && (dwStyle & WS_CHILD))
+					MenuOrID.m_hMenu = (HMENU)(UINT_PTR)this;
+				if(rect.m_lpRect == NULL)
+					rect.m_lpRect = &TBase::rcDefault;
+
+				HWND hWnd = ::CreateWindowEx(dwExStyle, MAKEINTATOM(atom), szWindowName,
+					dwStyle, rect.m_lpRect->left, rect.m_lpRect->top, rect.m_lpRect->right - rect.m_lpRect->left,
+					rect.m_lpRect->bottom - rect.m_lpRect->top, hWndParent, MenuOrID.m_hMenu,
+					_AtlBaseModule.GetModuleInstance(), lpCreateParam);
+
+				ATLASSUME(this->m_hWnd == hWnd);
+
+				return hWnd;
+			}
+
+			*/
+
+			// TODO: 4711 is an ATOM here, used for ID elsewhere.
 			VERIFY( m_preview.Create( m_hWnd, rc, _T( "" ), WS_CHILD | WS_VISIBLE, 0, 4711, nullptr) );
 
 			VERIFY( CWnd::ModifyStyle( 0, WS_CLIPCHILDREN ) );

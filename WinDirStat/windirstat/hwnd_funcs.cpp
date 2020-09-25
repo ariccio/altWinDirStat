@@ -5,9 +5,19 @@
 
 #include "stdafx.h"
 #include "hwnd_funcs.h"
+#include "globalhelpers.h"
 
 #ifndef WDS_HWND_FUNCS_CPP
 WDS_FILE_INCLUDE_MESSAGE
+
+namespace {
+	[[noreturn]] void should_never_happen_endpaint() noexcept {
+		// EndPaint function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
+		// The return value is always nonzero.
+		displayWindowsMsgBoxWithMessage(L"The return value for EndPaint should always be nonzero. You've hit a point in the program where somehow, EndPaint returned zero. This is undefined state. Bye bye, program will terminate now.\r\n");
+		std::terminate();
+	}
+}
 
 
 // Sometimes, we don't care.
@@ -91,7 +101,61 @@ void hwnd::ScreenToClient(_In_ const HWND hWnd, _Inout_ POINT* const point) noex
 		}
 	}
 
+void hwnd::EndPaint(_In_ const HWND hWnd, _In_ const PAINTSTRUCT& ps) noexcept {
+	/*
+	from: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\atlmfc\include\atlwin.h:1184
+	void EndPaint(_In_ LPPAINTSTRUCT lpPaint) throw()
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		::EndPaint(m_hWnd, lpPaint);
+	}
+	*/
+	const BOOL is_window = ::IsWindow(hWnd);
+	if (!is_window) {
+		TRACE(L"EndPaint called on invalid window HWND: `%p`!\r\n", hWnd);
+		std::terminate();
+		}
 
+
+	// EndPaint function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
+	// The EndPaint function marks the end of painting in the specified window.
+	// This function is required for each call to the BeginPaint function, but only after painting is complete.
+	// The return value is always nonzero.
+	const BOOL end_paint_result = ::EndPaint(hWnd, &ps);
+	if (end_paint_result == 0) {
+		TRACE(L"This shouldn't happpen if Microsoft is correct about their own documentation.\r\n");
+		should_never_happen_endpaint();
+		}
+
+	}
+
+HDC hwnd::BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept {
+	/*
+	from: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\atlmfc\include\atlwin.h:1178	
+	HDC BeginPaint(_Out_ LPPAINTSTRUCT lpPaint) throw()
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return ::BeginPaint(m_hWnd, lpPaint);
+	}
+
+	*/
+	const BOOL is_window = ::IsWindow(hWnd);
+	if (!is_window) {
+		TRACE(L"BeginPaint called on invalid window HWND: `%p`!\r\n", hWnd);
+		std::terminate();
+		}
+
+	// BeginPaint function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-beginpaint
+	// The BeginPaint function prepares the specified window for painting and fills a PAINTSTRUCT structure with information about the painting.
+	// If the function succeeds, the return value is the handle to a display device context for the specified window.
+	// If the function fails, the return value is NULL, indicating that no display device context is available.
+	const HDC hDC = ::BeginPaint(hWnd, pPaint);
+	if (hDC == NULL) {
+		TRACE(L"BeginPaint says no display device contexts are available (by returning a NULL HDC). This means there's probably something very wrong with your computer.");
+		std::terminate();
+	}
+	return hDC;
+	}
 
 #endif
 

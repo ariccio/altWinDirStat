@@ -250,7 +250,8 @@ void WDSSplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 		CSplitterWnd::GetColumnInfo( 0, cxLeft, dummy );
 
 		if ( ( rcClient.right - rcClient.left ) > 0 ) {
-			m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( rcClient.right - rcClient.left );
+			m_splitterPos = static_cast< DOUBLE >( cxLeft ) / static_cast< DOUBLE >( 
+				static_cast<std::int64_t>( rcClient.right ) - static_cast<std::int64_t>( rcClient.left ) );
 			}
 		m_wasTrackedByUser = true;
 		m_userSplitterPos = m_splitterPos;
@@ -259,7 +260,8 @@ void WDSSplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	INT cyUpper = 0;
 	CSplitterWnd::GetRowInfo( 0, cyUpper, dummy );
 	if ( ( rcClient.bottom - rcClient.top ) > 0 ) {
-		m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( rcClient.bottom - rcClient.top );
+		m_splitterPos = static_cast< DOUBLE >( cyUpper ) / static_cast< DOUBLE >( 
+			static_cast<std::int64_t>( rcClient.bottom ) - static_cast<std::int64_t>( rcClient.top ) );
 		}
 	m_wasTrackedByUser = true;
 	m_userSplitterPos = m_splitterPos;
@@ -291,7 +293,7 @@ void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 		if ( m_pColInfo == nullptr ) {
 			return;
 			}
-		const auto cxLeft = static_cast< INT >( pos * ( rcClient.right - rcClient.left ) );
+		const auto cxLeft = static_cast< INT >( pos * ( static_cast<std::int64_t>(rcClient.right) - static_cast<std::int64_t>(rcClient.left) ) );
 		if ( cxLeft >= 0 ) {
 			CSplitterWnd::SetColumnInfo( 0, cxLeft, 0 );
 			CSplitterWnd::RecalcLayout( );
@@ -303,7 +305,7 @@ void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 	if ( m_pRowInfo == nullptr ) {
 		return;
 		}
-	const auto cyUpper = static_cast< INT >( pos * ( rcClient.bottom - rcClient.top ) );
+	const auto cyUpper = static_cast< INT >( pos * (static_cast<std::int64_t>(rcClient.bottom) - static_cast<std::int64_t>(rcClient.top) ) );
 	if ( cyUpper >= 0 ) {
 		CSplitterWnd::SetRowInfo( 0, cyUpper, 0 );
 		CSplitterWnd::RecalcLayout( );

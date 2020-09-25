@@ -245,9 +245,9 @@ namespace {
 		if ( childAtIPlusOne == nullptr ) {
 			return 0;
 			}
-		if ( sizes->count( i + 1 ) == 0 ) {
+		if ( sizes->count( static_cast<std::uint64_t>( i ) + 1 ) == 0 ) {
 			const auto recurse_size = childAtIPlusOne->size_recurse( );
-			(*sizes)[ i + 1 ] = recurse_size;
+			(*sizes)[ static_cast<std::uint64_t>( i ) + 1 ] = recurse_size;
 			return recurse_size;
 			}
 		return childAtIPlusOne->size_recurse( );
@@ -266,7 +266,7 @@ namespace {
 #endif
 
 	inline const constexpr double gen_hh_size_pixel_scalefactor( _In_ const int heightOfNewRow, _In_ const double sizePerSquarePixel_scaleFactor ) noexcept {
-		return ( ( heightOfNewRow * heightOfNewRow ) * sizePerSquarePixel_scaleFactor );
+		return ( ( static_cast<int64_t>( heightOfNewRow ) * static_cast<int64_t>( heightOfNewRow ) ) * sizePerSquarePixel_scaleFactor );
 		}
 
 	inline constexpr void add_child_rowEnd_to_row( _Inout_ std::uint64_t* const sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t* const rowEnd, _Inout_ double* const worst, _In_ const double nextWorst ) noexcept {
@@ -796,7 +796,7 @@ void CTreemap::SetOptions( _In_ const Treemap_Options& options ) noexcept {
 	const DOUBLE lx = m_options.lightSourceX;// negative = left
 	const DOUBLE ly = m_options.lightSourceY;// negative = top
 
-	const DOUBLE len = ::sqrt( lx*lx + ly*ly + 10*10 );
+	const DOUBLE len = ::sqrt( lx*lx + ly*ly + 10i64 * 10i64 );
 	m_Lx = lx / len;
 	m_Ly = ly / len;
 	m_Lz = 10 / len;

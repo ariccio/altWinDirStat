@@ -444,8 +444,8 @@ void CXySlider::DoPage( _In_ const POINT point ) noexcept {
 
 	const auto len = ::sqrt( static_cast<DOUBLE>( sz.cx ) * static_cast<DOUBLE>( sz.cx ) + static_cast<DOUBLE>( sz.cy ) * static_cast<DOUBLE>( sz.cy ) );
 
-	const auto dx = static_cast<INT>( 10 * sz.cx / len );
-	const auto dy = static_cast<INT>( 10 * sz.cy / len );
+	const auto dx = static_cast<INT>( 10 * static_cast<std::int64_t>(sz.cx) / len );
+	const auto dy = static_cast<INT>( 10 * static_cast<std::int64_t>(sz.cy) / len );
 
 	CXySlider::DoMoveBy( dx, dy );
 	}

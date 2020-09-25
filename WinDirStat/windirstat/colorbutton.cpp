@@ -28,8 +28,10 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	//CPaintDC dc( this );
 	PAINTSTRUCT ps = { 0 };
 
-	HDC hDC = ATL::CWindow::BeginPaint( &ps );
-	ASSERT( hDC != nullptr);
+	//HDC hDC = ATL::CWindow::BeginPaint( &ps );
+	HDC hDC = hwnd::BeginPaint(m_hWnd, &ps);
+
+	//ASSERT( hDC != nullptr);
 
 	RECT rc;
 
@@ -89,7 +91,19 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 		fill_solid_RECT( hDC, &rc, color );
 
-		ATL::CWindow::EndPaint( &ps );
+		//ATL::CWindow::EndPaint(&ps);
+		/*
+		from: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.26.28801\atlmfc\include\atlwin.h:1184
+		void EndPaint(_In_ LPPAINTSTRUCT lpPaint) throw()
+		{
+			ATLASSERT(::IsWindow(m_hWnd));
+			::EndPaint(m_hWnd, lpPaint);
+		}
+		*/
+		//ASSERT(::IsWindow(m_hWnd));
+		//::EndPaint(m_hWnd, &ps);
+
+		hwnd::EndPaint(m_hWnd, ps);
 		return 0;
 		}
 
@@ -120,7 +134,8 @@ LRESULT CPreview::OnPaint( UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	fill_solid_RECT( hDC, &rc, color );
 
-	EndPaint( &ps );
+	//ATL::CWindow::EndPaint( &ps );
+	hwnd::EndPaint(m_hWnd, ps);
 	return 0;
 	}
 

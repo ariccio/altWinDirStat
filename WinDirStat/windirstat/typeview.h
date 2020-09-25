@@ -30,7 +30,7 @@ void trace_on_erase_bkgnd_typeview( ) noexcept;
 class CListItem final : public COwnerDrawnListItem {
 	DISALLOW_COPY_AND_ASSIGN(CListItem);
 public:
-		CListItem( ) noexcept  : m_list( NULL ) { }
+		CListItem( ) noexcept = default;
 		CListItem ( _In_ CExtensionListControl* const list, _In_ std::uint32_t files_in, _In_ std::uint64_t bytes_in, _In_ COLORREF color_in, _In_z_ PCWSTR const name, const std::uint16_t length ) : COwnerDrawnListItem( name, length ), m_list(list), m_files(std::move(files_in)), m_bytes(std::move(bytes_in)), color(std::move(color_in)) { }
 		
 		CListItem( CListItem&& in ) = delete;
@@ -65,12 +65,12 @@ public:
 			    void         DrawColor        ( _In_ HDC hDC, _In_ RECT rc, _In_ const UINT state, _Out_opt_ INT* const width ) const noexcept;
 			    DOUBLE       GetBytesFraction (                                                                                 ) const noexcept;
 	private:
-		const CExtensionListControl* m_list;
+		const CExtensionListControl* m_list  = nullptr;
 		_Field_range_( 0, 4294967295 )
-		      std::uint32_t          m_files;//save 4 bytes :)
+		      std::uint32_t          m_files =  { 0 };//save 4 bytes :)
 		_Field_range_( 0, 18446744073709551615 )
-		      std::uint64_t          m_bytes;
-		      COLORREF               color;
+		      std::uint64_t          m_bytes = { 0 };
+		      COLORREF               color   = { 0 };
 
 	};
 

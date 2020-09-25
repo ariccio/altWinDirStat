@@ -241,7 +241,7 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		                               attribs                          m_attr;
 									   //'CTreeListItem' : '7' bytes padding added after data member 'CTreeListItem::m_attr'
 		                               child_info_block_manager         m_child_info;
-		                         const CTreeListItem*                   m_parent;
+		                         const CTreeListItem*                   m_parent = nullptr;
 		                       mutable std::unique_ptr<VISIBLEINFO>     m_vi = nullptr; // Data needed to display the item.
 		                       mutable SRECT                            m_rect;         // Finally, this is our coordinates in the Treemap view. (For GraphView)
 		
@@ -249,8 +249,8 @@ class CTreeListItem final : public COwnerDrawnListItem {
 		//4,294,967,295 ( 4294967295 ) is the maximum number of files in an NTFS filesystem according to http://technet.microsoft.com/en-us/library/cc781134(v=ws.10).aspx
 		//We can exploit this fact to use a 4-byte unsigned integer for the size of the array, which saves us 4 bytes on 64-bit architectures!
 		//18446744073709551615 is the maximum theoretical size of an NTFS file according to http://blogs.msdn.com/b/oldnewthing/archive/2007/12/04/6648243.aspx
-		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size;                // OwnSize
-		                               FILETIME                         m_lastChange;          // Last modification time OF SUBTREE
+		_Field_range_( 0, 18446744073709551615 ) std::uint64_t          m_size = UINT64_ERROR;                // OwnSize
+		                               FILETIME                         m_lastChange = { 0 };          // Last modification time OF SUBTREE
 
 	};
 
@@ -369,9 +369,9 @@ class CTreeListControl final : public COwnerDrawnListCtrl {
 
 	   mutable CBitmap           m_bmNodes0;                   // The bitmaps needed to draw the treecontrol-like branches
 	   mutable CBitmap           m_bmNodes1;                   // The same bitmaps with stripe-background color
-			   INT               m_lButtonDownItem;            // Set in OnLButtonDown(). -1 if not item hit.
+			   INT               m_lButtonDownItem = { -1 };            // Set in OnLButtonDown(). -1 if not item hit.
 			   //C4820: 'CTreeListControl' : '3' bytes padding added after data member 'CTreeListControl::m_lButtonDownOnPlusMinusRect'
-			   bool              m_lButtonDownOnPlusMinusRect; // Set in OnLButtonDown(). True, if plus-minus-rect hit.
+			   bool              m_lButtonDownOnPlusMinusRect = { false }; // Set in OnLButtonDown(). True, if plus-minus-rect hit.
 
 	public:
 			   CDirstatDoc*      m_pDocument;
