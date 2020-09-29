@@ -157,5 +157,26 @@ HDC hwnd::BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept {
 	return hDC;
 	}
 
+HWND hwnd::GetDlgItem(const HWND hWnd, const int nIDDlgItem) noexcept {
+
+	// GetDlgItem function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdlgitem
+	// If the function succeeds, the return value is the window handle of the specified control.
+	// If the function fails, the return value is NULL, indicating an invalid dialog box handle or a nonexistent control. To get extended error information, call GetLastError.
+	const BOOL is_window = ::IsWindow(hWnd);
+	if (!is_window) {
+		TRACE(L"GetDlgItem called on invalid window HWND: `%p`!\r\n", hWnd);
+		std::terminate();
+	}
+	const HWND dlgItem = ::GetDlgItem(hWnd, nIDDlgItem);
+	if (nullptr == dlgItem) {
+		TRACE(L"GetDlgItem returned an invalid handle.\r\n");
+		displayWindowsMsgBoxWithMessage(L"GetDlgItem returned NULL, indicating an invalid dialog box handle or a nonexistent control.");
+		displayWindowsMsgBoxWithError();
+		std::terminate();
+		}
+	
+	return dlgItem;
+	}
+
 #endif
 

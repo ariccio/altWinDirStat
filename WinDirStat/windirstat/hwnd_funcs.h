@@ -17,6 +17,7 @@ namespace hwnd {
 	void ScreenToClient(_In_ const HWND hWnd, _Inout_ POINT* point) noexcept;
 	void EndPaint(_In_ const HWND hWnd, _In_ const PAINTSTRUCT& ps) noexcept;
 	HDC BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept;
+	HWND GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept;
 	}
 
 

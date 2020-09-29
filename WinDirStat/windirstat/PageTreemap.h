@@ -25,6 +25,11 @@ WDS_FILE_INCLUDE_MESSAGE
 
 class CDirstatApp;
 
+//struct TrackbarDDX : public WTL::CTrackBarCtrl, WTL::CWinDataExchange<TrackbarDDX> {
+//	
+//};
+
+
 struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, public WTL::CWinDataExchange<WTLTreemapPage> {
 
 	DISALLOW_COPY_AND_ASSIGN(WTLTreemapPage);
@@ -33,7 +38,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		IDD = IDD_PAGE_TREEMAP
 		};
 
-	WTLTreemapPage() : m_resetButton(this, 1) {
+	WTLTreemapPage() : m_resetButton(this, 1), m_brightness(this, 2), m_cushionShading(this, 3), m_height(this, 4), m_scaleFactor(this, 5) {
 		}
 
 	BEGIN_MSG_MAP_EX(WTLTreemapPage)
@@ -41,17 +46,22 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		CHAIN_MSG_MAP(WTL::CPropertyPageImpl<WTLTreemapPage>)
 		MSG_WM_VSCROLL(OnVScroll)
 		MSG_WM_NOTIFY(onWM_NOTIFY)
+		MESSAGE_HANDLER_EX(BN_CLICKED, OnMessageHandlerEX)
 		ALT_MSG_MAP(1)
 			MSG_WM_SETCURSOR(OnSetCursor_Reset)
+		ALT_MSG_MAP(2)
+		ALT_MSG_MAP(3)
+		ALT_MSG_MAP(4)
+		ALT_MSG_MAP(5)
 	END_MSG_MAP()
 
 	BEGIN_DDX_MAP()
 		DDX_CONTROL(IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor)
 		DDX_CONTROL(IDC_TREEMAPGRIDCOLOR, m_gridColor)
-		DDX_CONTROL_HANDLE(IDC_BRIGHTNESS, m_brightness)
-		DDX_CONTROL_HANDLE(IDC_CUSHIONSHADING, m_cushionShading)
-		DDX_CONTROL_HANDLE(IDC_HEIGHT, m_height)
-		DDX_CONTROL_HANDLE(IDC_SCALEFACTOR, m_scaleFactor)
+		DDX_CONTROL(IDC_BRIGHTNESS, m_brightness)
+		DDX_CONTROL(IDC_CUSHIONSHADING, m_cushionShading)
+		DDX_CONTROL(IDC_HEIGHT, m_height)
+		DDX_CONTROL(IDC_SCALEFACTOR, m_scaleFactor)
 		//DDX_CONTROL_HANDLE(IDC_LIGHTSOURCE, m_lightSource)
 		DDX_CONTROL(IDC_RESET, m_resetButton)
 		DDX_RADIO(IDC_KDIRSTAT, m_style)
@@ -71,6 +81,8 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	void UpdateOptions          (_In_ const bool save = true) noexcept;
 	void UpdateStatics          ();
 
+
+	LRESULT OnMessageHandlerEX(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg);
 
 	BOOL OnInitDialog(const HWND focus, const LPARAM lparam);
@@ -93,15 +105,15 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 
 	BOOL              m_altered = FALSE;	// Values have been altered. Button reads "Reset to defaults".
-	BOOL              m_grid;
+	BOOL              m_grid = FALSE;
 
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;
 
-	WTL::CTrackBarCtrl       m_brightness;
-	WTL::CTrackBarCtrl       m_cushionShading;
-	WTL::CTrackBarCtrl       m_height;
-	WTL::CTrackBarCtrl       m_scaleFactor;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_brightness;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_cushionShading;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_height;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_scaleFactor;
 
 	//CXySlider         m_lightSource;
 	//POINT             m_ptLightSource;
@@ -114,18 +126,15 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	_Field_z_               wchar_t m_sHeight[str_size] = {};
 	_Field_z_               wchar_t m_sScaleFactor[str_size] = {};
 
-	_Field_range_(0, 2) INT       m_style;
-	_Field_range_(0, 100) INT     m_nBrightness;
+	_Field_range_(0, 2) INT       m_style = 0;
+	_Field_range_(0, 100) INT     m_nBrightness = 0;
 
-	//TODO: m_nCushionShading is never explicitly initialized.
-	_Field_range_(0, 100) INT     m_nCushionShading;
+	_Field_range_(0, 100) INT     m_nCushionShading = 0;
 
-	//TODO: m_nHeight is never explicitly initialized.
-	_Field_range_(0, 100) INT     m_nHeight;
+	_Field_range_(0, 100) INT     m_nHeight = 0;
 
-	//TODO: m_nScaleFactor is never explicitly initialized.
 							//C4820: 'CPageTreemap' : '4' bytes padding added after data member 'CPageTreemap::m_nScaleFactor'
-	_Field_range_(0, 100) INT     m_nScaleFactor;
+	_Field_range_(0, 100) INT     m_nScaleFactor = 0;
 
 	};
 

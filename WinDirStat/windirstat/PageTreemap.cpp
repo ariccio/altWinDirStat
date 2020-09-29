@@ -126,22 +126,26 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	
 #pragma push_macro("SubclassWindow")
 #undef SubclassWindow
-	m_resetButton.SubclassWindow(GetDlgItem(IDC_RESET));
-	m_cushionShading.Attach(GetDlgItem(IDC_CUSHIONSHADING));
-	m_brightness.Attach(GetDlgItem(IDC_BRIGHTNESS));
-	m_height.Attach(GetDlgItem(IDC_HEIGHT));
-	m_scaleFactor.Attach(GetDlgItem(IDC_HEIGHT));
+	m_resetButton.SubclassWindow(hwnd::GetDlgItem(m_hWnd, IDC_RESET));
+	//m_cushionShading.Attach(hwnd::GetDlgItem(m_hWnd, IDC_CUSHIONSHADING));
+	//m_brightness.Attach(hwnd::GetDlgItem(m_hWnd, IDC_BRIGHTNESS));
+	//m_height.Attach(hwnd::GetDlgItem(m_hWnd, IDC_HEIGHT));
+	//m_scaleFactor.Attach(hwnd::GetDlgItem(m_hWnd, IDC_HEIGHT));
 	
 
-	m_highlightColor.SubclassWindow(GetDlgItem(IDC_TREEMAPHIGHLIGHTCOLOR));
+	m_highlightColor.SubclassWindow(hwnd::GetDlgItem(m_hWnd, IDC_TREEMAPHIGHLIGHTCOLOR));
 	//m_highlightColor.Attach(GetDlgItem(IDC_TREEMAPHIGHLIGHTCOLOR));
 	//m_gridColor.Attach(GetDlgItem(IDC_TREEMAPGRIDCOLOR));
-	m_gridColor.SubclassWindow(GetDlgItem(IDC_TREEMAPGRIDCOLOR));
+	m_gridColor.SubclassWindow(hwnd::GetDlgItem(m_hWnd, IDC_TREEMAPGRIDCOLOR));
 #pragma pop_macro("SubclassWindow")
+
+	//VERIFY(DoDataExchange(true));
+
 	ValuesAltered(true); // m_undo is invalid
 
 	m_brightness.SetPageSize(10);
 	m_brightness.SetRange(0, 100);
+	
 	//m_brightness.Attach(GetDlgItem(IDC_BRIGHTNESS));
 
 	m_cushionShading.SetPageSize(10);
@@ -155,6 +159,7 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	m_options = Options->m_treemapOptions;
 	m_highlightColor.m_preview.SetColor(Options->m_treemapHighlightColor);
 	VERIFY(DoDataExchange(false));
+	UpdateOptions(false);
 	return TRUE;
 }
 
@@ -224,6 +229,7 @@ void WTLTreemapPage::UpdateOptions(_In_ const bool save) noexcept {
 		m_options.style = ((m_style == 0) ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle);
 		m_options.grid = ((m_grid == FALSE) ? false : true);
 		m_options.gridColor = m_gridColor.m_preview.m_color;
+
 	}
 	else {
 		m_nBrightness = (100 - m_options.GetBrightnessPercent());
@@ -336,8 +342,8 @@ LRESULT WTLTreemapPage::OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UI
 	}
 
 void WTLTreemapPage::OnSomethingChanged() noexcept {
-	//VERIFY(DoDataExchange(true));
-	VERIFY(DoDataExchange(false));
+	VERIFY(DoDataExchange(true));
+	//VERIFY(DoDataExchange(false));
 	SetModified();
 	UpdateStatics();
 	UpdateOptions();
@@ -347,9 +353,26 @@ void WTLTreemapPage::OnSomethingChanged() noexcept {
 void WTLTreemapPage::OnVScroll(UINT nSBCode, UINT nPos, HWND pScrollBar) {
 	if (nSBCode == TB_THUMBTRACK) {
 		TRACE(L"%u\r\n", nPos);
-	}
-	OnSomethingChanged();
+		if (pScrollBar == m_brightness.m_hWnd) {
+			m_brightness.SetPos(nPos);
+			OnSomethingChanged();
+			}
+		else if (pScrollBar == m_cushionShading.m_hWnd) {
+			m_cushionShading.SetPos(nPos);
+			OnSomethingChanged();
+			}
+		else if (pScrollBar == m_height.m_hWnd) {
+			m_height.SetPos(nPos);
+			OnSomethingChanged();
+			}
+		else if (pScrollBar == m_scaleFactor.m_hWnd) {
+			m_scaleFactor.SetPos(nPos);
+			OnSomethingChanged();
+			}
+		}
+	//OnSomethingChanged();
 	ValuesAltered();
+	//WTL::CTrackBarCtrl::
 	}
 
 
@@ -366,6 +389,9 @@ void WTLTreemapPage::OnColorChangedTreemapHighlight(const NMHDR*) noexcept {
 LRESULT WTLTreemapPage::onWM_NOTIFY(const int wParam, const NMHDR* const lParam) {
 	const NMHDR* const notify_message_header = lParam;
 
+	if (notify_message_header->code == COLBN_CHANGED) {
+		__debugbreak();
+		}
 	//break to look for COLBN_CHANGED (0x87)
 	if (IDC_TREEMAPGRIDCOLOR == notify_message_header->idFrom) {
 		OnColorChangedTreemapGrid(notify_message_header);
@@ -377,8 +403,15 @@ LRESULT WTLTreemapPage::onWM_NOTIFY(const int wParam, const NMHDR* const lParam)
 		}
 	return FALSE;
 	}
+
+
+
+LRESULT WTLTreemapPage::OnMessageHandlerEX(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+	return FALSE;
+}
+
 #else
 
 #endif
-
 
