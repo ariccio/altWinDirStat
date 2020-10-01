@@ -38,8 +38,13 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		IDD = IDD_PAGE_TREEMAP
 		};
 
-	WTLTreemapPage() : m_resetButton(this, 1), m_brightness(this, 2), m_cushionShading(this, 3), m_height(this, 4), m_scaleFactor(this, 5) {
+	//WTLTreemapPage() : m_resetButton(this, 1), m_brightness(this, 2), m_cushionShading(this, 3), m_height(this, 4), m_scaleFactor(this, 5) {
+	//	}
+
+	WTLTreemapPage() : m_resetButton(this, 1) {
 		}
+
+	//WTLTreemapPage() = default;
 
 	BEGIN_MSG_MAP_EX(WTLTreemapPage)
 		MSG_WM_INITDIALOG(OnInitDialog)
@@ -55,13 +60,13 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		ALT_MSG_MAP(5)
 	END_MSG_MAP()
 
-	BEGIN_DDX_MAP()
+	BEGIN_DDX_MAP(WTLTreemapPage)
 		DDX_CONTROL(IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor)
 		DDX_CONTROL(IDC_TREEMAPGRIDCOLOR, m_gridColor)
-		DDX_CONTROL(IDC_BRIGHTNESS, m_brightness)
-		DDX_CONTROL(IDC_CUSHIONSHADING, m_cushionShading)
-		DDX_CONTROL(IDC_HEIGHT, m_height)
-		DDX_CONTROL(IDC_SCALEFACTOR, m_scaleFactor)
+		//DDX_CONTROL(IDC_BRIGHTNESS, m_brightness)
+		//DDX_CONTROL(IDC_CUSHIONSHADING, m_cushionShading)
+		//DDX_CONTROL(IDC_HEIGHT, m_height)
+		//DDX_CONTROL(IDC_SCALEFACTOR, m_scaleFactor)
 		//DDX_CONTROL_HANDLE(IDC_LIGHTSOURCE, m_lightSource)
 		DDX_CONTROL(IDC_RESET, m_resetButton)
 		DDX_RADIO(IDC_KDIRSTAT, m_style)
@@ -89,9 +94,13 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 	void ValuesAltered(_In_ const bool altered = true) noexcept;
 	int OnApply();
+	
+	//Note to self: WTL defines nPos as an int here!?
+	void setPosition(int nPos, HWND /*pScrollBar*/);
 
-
-	void OnVScroll(UINT nSBCode, UINT nPos, HWND /*pScrollBar*/);
+	//Note to self: WTL defines nPos as a short!?
+	//Also note to self, WTL defines nSBcode as an int
+	void OnVScroll(int nSBCode, short nPos, HWND /*pScrollBar*/);
 	void OnSomethingChanged() noexcept;
 
 
@@ -99,6 +108,11 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 	void OnColorChangedTreemapGrid(const NMHDR*) noexcept;
 	void OnColorChangedTreemapHighlight(const NMHDR*) noexcept;
+
+
+
+	void debugDataExchangeMembers() const noexcept;
+	void debugSliderPosition() const noexcept;
 
 	Treemap_Options   m_options;	// Current options
 	Treemap_Options   m_undo;	    // Valid, if m_altered = false
@@ -110,10 +124,10 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;
 
-	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_brightness;
-	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_cushionShading;
-	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_height;
-	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_scaleFactor;
+	WTL::CTrackBarCtrl       m_brightness;
+	WTL::CTrackBarCtrl       m_cushionShading;
+	WTL::CTrackBarCtrl       m_height;
+	WTL::CTrackBarCtrl       m_scaleFactor;
 
 	//CXySlider         m_lightSource;
 	//POINT             m_ptLightSource;

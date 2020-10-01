@@ -344,7 +344,7 @@ const double QPC_timer::total_time_elapsed( ) const noexcept {
 	static_assert( std::is_same<std::int64_t, LONGLONG>::value, "difference is wrong!" );
 	const auto difference = ( m_end - m_start );
 	const DOUBLE adjustedTimingFrequency = ( static_cast< DOUBLE >( 1.00 ) ) / static_cast< DOUBLE >( m_frequency );
-	const auto total_time = ( difference * adjustedTimingFrequency );
+	const auto total_time = ( static_cast<DOUBLE>( difference ) * adjustedTimingFrequency );
 	return total_time;
 	}
 

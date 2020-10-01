@@ -41,9 +41,9 @@ namespace {
 	constexpr const DWORD COLORFLAG_DARKER = 0x01000000;
 	constexpr const DWORD COLORFLAG_MASK   = 0x03000000;
 
-	inline void SetPixelsShim( CDC& pdc, _In_ const int x, _In_ const int y, _In_ const COLORREF color ) {
-		pdc.SetPixelV( x, y, color );
-		}
+	//inline void SetPixelsShim( CDC& pdc, _In_ const int x, _In_ const int y, _In_ const COLORREF color ) {
+	//	pdc.SetPixelV( x, y, color );
+	//	}
 	
 	//if we pass by reference, compiler DOES NOT INLINE!
 	inline const constexpr double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const RECT remaining ) noexcept {
@@ -164,7 +164,7 @@ namespace {
 			TRACE( _T( "sumOfSizesOfChildrenInRow: %llu, remainingSize: %llu, sumOfSizesOfChildrenInRow / remainingSize: %f\r\n" ), sumOfSizesOfChildrenInRow, remainingSize, ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) );
 			TRACE( _T( "width of row before truncation: %f\r\n" ), static_cast<double>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow ) );
 #endif
-			widthOfRow = static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / remainingSize ) * widthOfRow );
+			widthOfRow = static_cast<int>( ( static_cast<double>( sumOfSizesOfChildrenInRow ) / static_cast<double>(remainingSize) ) * widthOfRow );
 			}
 
 		}
@@ -174,7 +174,7 @@ namespace {
 		}
 
 	inline const constexpr double fixup_frac_scope_holder( _In_ const std::uint64_t sizes_at_i, _In_ const std::uint64_t sumOfSizesOfChildrenInRow ) noexcept {
-		return ( ( double ) ( sizes_at_i ) / sumOfSizesOfChildrenInRow );
+		return ( ( double ) ( sizes_at_i ) / static_cast<double>(sumOfSizesOfChildrenInRow) );
 		}
 
 	inline const constexpr bool gen_last_child( _In_ const size_t i, _In_ const size_t rowEnd, _In_ const std::uint64_t childAtIPlusOne_size ) noexcept {
@@ -266,7 +266,7 @@ namespace {
 #endif
 
 	inline const constexpr double gen_hh_size_pixel_scalefactor( _In_ const int heightOfNewRow, _In_ const double sizePerSquarePixel_scaleFactor ) noexcept {
-		return ( ( static_cast<int64_t>( heightOfNewRow ) * static_cast<int64_t>( heightOfNewRow ) ) * sizePerSquarePixel_scaleFactor );
+		return ( static_cast<double>( static_cast<int64_t>( heightOfNewRow ) * static_cast<int64_t>( heightOfNewRow ) ) * sizePerSquarePixel_scaleFactor );
 		}
 
 	inline constexpr void add_child_rowEnd_to_row( _Inout_ std::uint64_t* const sumOfSizesOfChildrenInRow, _In_ const std::uint64_t rmin, _Inout_ size_t* const rowEnd, _Inout_ double* const worst, _In_ const double nextWorst ) noexcept {
@@ -1955,6 +1955,8 @@ void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex 
 
 
 #ifdef GRAPH_LAYOUT_DEBUG
+// none of this will actually work if I turn it on.
+// TODO: remove.
 void CTreemap::debugSetPixel( CDC& pdc, int x, int y, COLORREF c ) const {
 	++numCalls;
 	//This function detects drawing collisions!

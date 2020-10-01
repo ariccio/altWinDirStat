@@ -19,6 +19,15 @@ WDS_FILE_INCLUDE_MESSAGE
 
 namespace {
 	constexpr const int CPageTreemap_maxHeight = 200;
+
+	template<typename slidT>
+	void initSlid(slidT slid, const int minimum, const int maximum, const int ticFreq, const int lineSize, const int pageSize, const int initValue) noexcept {
+		slid.SetRange(minimum, maximum);
+		slid.SetPageSize(pageSize);
+		slid.SetTicFreq(ticFreq);
+		slid.SetLineSize(lineSize);
+		slid.SetPos(initValue);
+		}
 	}
 
 /*
@@ -123,7 +132,8 @@ END_MESSAGE_MAP()
 //The dialog box procedure should return TRUE to direct the system to set the keyboard focus to the control specified by wParam.
 //Otherwise, it should return FALSE to prevent the system from setting the default keyboard focus.
 BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
-	
+	TRACE(L"Initialize WTL dialog\r\n-------\r\n");
+	debugDataExchangeMembers();
 #pragma push_macro("SubclassWindow")
 #undef SubclassWindow
 	m_resetButton.SubclassWindow(hwnd::GetDlgItem(m_hWnd, IDC_RESET));
@@ -139,27 +149,39 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	m_gridColor.SubclassWindow(hwnd::GetDlgItem(m_hWnd, IDC_TREEMAPGRIDCOLOR));
 #pragma pop_macro("SubclassWindow")
 
-	//VERIFY(DoDataExchange(true));
-
-	ValuesAltered(true); // m_undo is invalid
-
-	m_brightness.SetPageSize(10);
-	m_brightness.SetRange(0, 100);
-	
-	//m_brightness.Attach(GetDlgItem(IDC_BRIGHTNESS));
-
-	m_cushionShading.SetPageSize(10);
-	m_height.SetRange(0, CPageTreemap_maxHeight, true);
-	m_height.SetPageSize(CPageTreemap_maxHeight / 10);
-	m_scaleFactor.SetPageSize(10);
-	//m_lightSource.SetRange( CSize { 400, 400 } );
-	//m_lightSource.m_externalRange = WTL::CSize{ 400, 400 };
+	VERIFY(DoDataExchange(DDX_LOAD));
 
 	const COptions* const Options = GetOptions();
 	m_options = Options->m_treemapOptions;
+
+	debugDataExchangeMembers();
+	//debugSliderPosition();
+	m_brightness = GetDlgItem(IDC_BRIGHTNESS);
+	initSlid(m_brightness, 0, 100, 1, 1, 10, 100 - m_options.brightness);
+
+	m_cushionShading = GetDlgItem(IDC_CUSHIONSHADING);
+	initSlid(m_cushionShading, 0, 100, 1, 1, 10, m_options.GetAmbientLightPercent());
+
+	m_height = GetDlgItem(IDC_HEIGHT);
+	initSlid(m_height, 0, CPageTreemap_maxHeight, 1, 1, CPageTreemap_maxHeight / 10, (CPageTreemap_maxHeight - m_options.GetHeightPercent()));
+	//m_height.SetRange(0, CPageTreemap_maxHeight, true);
+	//m_height.SetPageSize(CPageTreemap_maxHeight / 10);
+
+	m_scaleFactor = GetDlgItem(IDC_SCALEFACTOR);
+	initSlid(m_scaleFactor, 0, 100, 1, 1, 10, (100 - m_options.GetScaleFactorPercent()));
+	//m_lightSource.SetRange( CSize { 400, 400 } );
+	//m_lightSource.m_externalRange = WTL::CSize{ 400, 400 };
+
+	//m_highlightColor.Attach(GetDlgItem(IDC_TREEMAPHIGHLIGHTCOLOR));
 	m_highlightColor.m_preview.SetColor(Options->m_treemapHighlightColor);
-	VERIFY(DoDataExchange(false));
+
+	//must DDX_LOAD after UpdateOptions(false)
 	UpdateOptions(false);
+	VERIFY(DoDataExchange(DDX_LOAD));
+	debugDataExchangeMembers();
+	debugSliderPosition();
+	TRACE(L"initialization complete\r\n-------\r\n");
+	ValuesAltered(true); // m_undo is invalid
 	return TRUE;
 }
 
@@ -167,7 +189,6 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 
 BOOL CPageTreemap::OnInitDialog( ) {
 	VERIFY( CDialog::OnInitDialog( ) );
-
 	ValuesAltered( ); // m_undo is invalid
 
 	m_brightness.SetPageSize( 10 );
@@ -195,7 +216,7 @@ void CPageTreemap::OnOK( ) {
 	}
 
 int WTLTreemapPage::OnApply() {
-	const BOOL result = DoDataExchange(TRUE);
+	const BOOL result = DoDataExchange(DDX_SAVE);
 	//if (result == PSNRET_NOERROR) {
 	if (!result) {
 		return PSNRET_INVALID;
@@ -251,6 +272,12 @@ void WTLTreemapPage::UpdateStatics() {
 	format_results[2] = ::swprintf_s(m_sHeight, str_size, L"%d", ((CPageTreemap_maxHeight - m_nHeight) / (CPageTreemap_maxHeight / 100)));
 	format_results[3] = ::swprintf_s(m_sScaleFactor, str_size, L"%d", (100 - m_nScaleFactor));
 
+
+	TRACE(L"Statics:\r\n");
+	TRACE(L"\tm_sBrightness: %s\r\n", m_sBrightness);
+	TRACE(L"\tm_sCushionShading: %s\r\n", m_sCushionShading);
+	TRACE(L"\tm_sHeight: %s\r\n", m_sHeight);
+	TRACE(L"\tm_sScaleFactor: %s\r\n", m_sScaleFactor);
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for (rsize_t i = 0; i < 4; ++i) {
 		ASSERT(format_results[i] != -1);
@@ -342,37 +369,76 @@ LRESULT WTLTreemapPage::OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UI
 	}
 
 void WTLTreemapPage::OnSomethingChanged() noexcept {
-	VERIFY(DoDataExchange(true));
+	TRACE(L"OnSomethingChanged()\r\n");
+	debugSliderPosition();
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
+	//VERIFY(DoDataExchange(DDX_SAVE));
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
 	//VERIFY(DoDataExchange(false));
-	SetModified();
+	TRACE(L"m_sBrightness: %s\r\n", m_sBrightness);
 	UpdateStatics();
-	UpdateOptions();
+	TRACE(L"m_sBrightness: %s\r\n", m_sBrightness);
+	UpdateOptions(true);
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
+	VERIFY(DoDataExchange(DDX_LOAD));
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
+	debugSliderPosition();
+	//SetModified();
+	TRACE(L"end OnSomethingChanged()\r\n\r\n");
 }
 
 
-void WTLTreemapPage::OnVScroll(UINT nSBCode, UINT nPos, HWND pScrollBar) {
-	if (nSBCode == TB_THUMBTRACK) {
-		TRACE(L"%u\r\n", nPos);
-		if (pScrollBar == m_brightness.m_hWnd) {
-			m_brightness.SetPos(nPos);
-			OnSomethingChanged();
-			}
-		else if (pScrollBar == m_cushionShading.m_hWnd) {
-			m_cushionShading.SetPos(nPos);
-			OnSomethingChanged();
-			}
-		else if (pScrollBar == m_height.m_hWnd) {
-			m_height.SetPos(nPos);
-			OnSomethingChanged();
-			}
-		else if (pScrollBar == m_scaleFactor.m_hWnd) {
-			m_scaleFactor.SetPos(nPos);
-			OnSomethingChanged();
-			}
+void WTLTreemapPage::setPosition(const int nPos, const HWND pScrollBar) {
+	debugDataExchangeMembers();
+	if (pScrollBar == m_brightness.m_hWnd) {
+		m_brightness.SetPos(nPos);
+		m_nBrightness = nPos;
+		OnSomethingChanged();
+	}
+	else if (pScrollBar == m_cushionShading.m_hWnd) {
+		m_cushionShading.SetPos(nPos);
+
+		m_nCushionShading = nPos;
+		OnSomethingChanged();
+	}
+	else if (pScrollBar == m_height.m_hWnd) {
+		m_height.SetPos(nPos);
+		m_nHeight = nPos;
+		OnSomethingChanged();
+	}
+	else if (pScrollBar == m_scaleFactor.m_hWnd) {
+		m_scaleFactor.SetPos(nPos);
+		m_nScaleFactor = nPos;
+		OnSomethingChanged();
 		}
+	else {
+		TRACE(L"WARNING: not a known scroll bar. Position %i not set for %p\r\n", nPos, pScrollBar);
+		}
+	debugDataExchangeMembers();
+
+	}
+
+void WTLTreemapPage::OnVScroll(int nSBCode, short nPos, HWND pScrollBar) {
+	TRACE(L"OnVScroll\r\n");
+	//WM_VSCROLL (Trackbar) notification code: https://docs.microsoft.com/en-us/windows/win32/controls/wm-vscroll--trackbar-
+	//The HIWORD specifies the current position of the slider if the LOWORD is TB_THUMBPOSITION or TB_THUMBTRACK. For all other notification codes, the high-order word is zero; send the TBM_GETPOS message to determine the slider position.
+	if ((nSBCode == TB_THUMBTRACK) || (nSBCode == TB_THUMBPOSITION)) {
+		//TRACE(L"%u\r\n", nPos);
+		setPosition(nPos, pScrollBar);
+		}
+	else {
+		//TBM_GETPOS message: https://docs.microsoft.com/en-us/windows/win32/controls/tbm-getpos
+		const auto positionResult = ::SendMessage(pScrollBar, TBM_GETPOS, 0, 0);
+		const int position = static_cast<int>(positionResult);
+		setPosition(position, pScrollBar);
+		}
+	debugSliderPosition();
+	DoDataExchange(DDX_SAVE);
 	//OnSomethingChanged();
 	ValuesAltered();
+	debugSliderPosition();
 	//WTL::CTrackBarCtrl::
+	TRACE(L"End OnVScroll\r\n");
 	}
 
 
@@ -409,6 +475,21 @@ LRESULT WTLTreemapPage::onWM_NOTIFY(const int wParam, const NMHDR* const lParam)
 LRESULT WTLTreemapPage::OnMessageHandlerEX(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 	return FALSE;
+}
+
+
+void WTLTreemapPage::debugDataExchangeMembers() const noexcept {
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
+	TRACE(L"m_nCushionShading: %i\r\n", m_nCushionShading);
+	TRACE(L"m_nHeight: %i\r\n", m_nHeight);
+	TRACE(L"m_nScaleFactor: %i\r\n", m_nScaleFactor);
+	}
+
+void WTLTreemapPage::debugSliderPosition() const noexcept {
+	TRACE(L"brightness slider: %i\r\n", m_brightness.GetPos());
+	TRACE(L"cushion sh slider: %i\r\n", m_cushionShading.GetPos());
+	TRACE(L"height     slider: %i\r\n", m_height.GetPos());
+	TRACE(L"scale fact slider: %i\r\n", m_scaleFactor.GetPos());
 }
 
 #else

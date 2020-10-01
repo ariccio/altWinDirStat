@@ -35,11 +35,13 @@ void hwnd::InvalidateErase(_In_opt_ const HWND hWnd, _In_opt_ const bool do_we_c
 	//If the window handle does not identify an existing window, the return value is zero.
 	const BOOL is_window = ::IsWindow(hWnd);
 	if (!is_window) {
-		TRACE(L"InvalidateErase called on invalid window HWND: `%p`!\r\n", hWnd);
 		if (do_we_care) {
+			TRACE(L"InvalidateErase called on invalid window HWND: `%p`!\r\n", hWnd);
 			std::terminate();
 			}
-		TRACE(L"Source: %S\r\n", source);
+		else if (hWnd != nullptr) {
+			TRACE(L"Source: %S\r\n", source);
+			}
 		}
 
 	//InvalidateRect function: https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-invalidaterect
@@ -157,7 +159,7 @@ HDC hwnd::BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept {
 	return hDC;
 	}
 
-HWND hwnd::GetDlgItem(const HWND hWnd, const int nIDDlgItem) noexcept {
+HWND hwnd::GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept {
 
 	// GetDlgItem function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdlgitem
 	// If the function succeeds, the return value is the window handle of the specified control.

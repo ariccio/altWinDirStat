@@ -1965,7 +1965,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 #ifdef DEBUG
 	const auto qpc_2 = help_QueryPerformanceCounter( );
-	const auto timing = ( qpc_2.QuadPart - qpc_1.QuadPart ) * qpf;
+	const auto timing = static_cast<DOUBLE>( qpc_2.QuadPart - qpc_1.QuadPart ) * qpf;
 	TRACE( _T( "Inserting items ( expansion ) took %f!\r\n" ), timing );
 #endif
 
@@ -1974,7 +1974,7 @@ void CTreeListControl::ExpandItem( _In_ _In_range_( 0, INT_MAX ) const int i, _I
 
 #ifdef DEBUG
 	const auto qpc_3 = help_QueryPerformanceCounter( );
-	const auto timing_2 = ( qpc_3.QuadPart - qpc_2.QuadPart ) * qpf;
+	const auto timing_2 = static_cast<DOUBLE>( qpc_3.QuadPart - qpc_2.QuadPart ) * qpf;
 	TRACE( _T( "Inserting items (sort/redraw) took %f!\r\n" ), timing_2 );
 #endif
 

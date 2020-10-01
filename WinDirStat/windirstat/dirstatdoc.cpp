@@ -591,7 +591,7 @@ bool CDirstatDoc::OnWorkFinished( ) noexcept {
 			
 	CDocument::UpdateAllViews( nullptr );
 	if ( doneTime.QuadPart != 0 ) {
-		m_searchTime = ( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
+		m_searchTime = static_cast<DOUBLE>( doneTime.QuadPart - m_searchStartTime.QuadPart ) * AdjustedTimerFrequency;
 		}
 	else {
 		ASSERT( doneTime.QuadPart != 0 );

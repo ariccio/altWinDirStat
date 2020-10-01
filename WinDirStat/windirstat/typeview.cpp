@@ -373,7 +373,7 @@ void CExtensionListControl::SetExtensionData( _In_ const std::vector<SExtensionR
 	const LARGE_INTEGER doneTime = help_QueryPerformanceCounter( );
 	ASSERT( frequency.QuadPart != 0 );
 	const DOUBLE adjustedTimingFrequency = ( static_cast<DOUBLE>( 1.00 ) ) / static_cast<DOUBLE>( frequency.QuadPart );
-	m_adjustedTiming = ( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
+	m_adjustedTiming = static_cast<double>( doneTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
 
 
 	//ASSERT( count == ext_data_size );
