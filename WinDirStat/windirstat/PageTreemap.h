@@ -41,7 +41,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	//WTLTreemapPage() : m_resetButton(this, 1), m_brightness(this, 2), m_cushionShading(this, 3), m_height(this, 4), m_scaleFactor(this, 5) {
 	//	}
 
-	WTLTreemapPage() : m_resetButton(this, 1) {
+	WTLTreemapPage() : m_resetButton(L"reset", this, 1) {
 		}
 
 	//WTLTreemapPage() = default;
@@ -54,6 +54,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		MESSAGE_HANDLER_EX(BN_CLICKED, OnMessageHandlerEX)
 		ALT_MSG_MAP(1)
 			MSG_WM_SETCURSOR(OnSetCursor_Reset)
+			MSG_WM_COMMAND(onResetCommand)
 		ALT_MSG_MAP(2)
 		ALT_MSG_MAP(3)
 		ALT_MSG_MAP(4)
@@ -109,13 +110,13 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	void OnColorChangedTreemapGrid(const NMHDR*) noexcept;
 	void OnColorChangedTreemapHighlight(const NMHDR*) noexcept;
 
-
+	void onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept;
 
 	void debugDataExchangeMembers() const noexcept;
 	void debugSliderPosition() const noexcept;
 
-	Treemap_Options   m_options;	// Current options
-	Treemap_Options   m_undo;	    // Valid, if m_altered = false
+	Treemap_Options   m_options = {};	// Current options
+	Treemap_Options   m_undo = {};	    // Valid, if m_altered = false
 
 
 	BOOL              m_altered = FALSE;	// Values have been altered. Button reads "Reset to defaults".

@@ -181,7 +181,7 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	debugDataExchangeMembers();
 	debugSliderPosition();
 	TRACE(L"initialization complete\r\n-------\r\n");
-	ValuesAltered(true); // m_undo is invalid
+	//ValuesAltered(true); // m_undo is invalid
 	return TRUE;
 }
 
@@ -349,10 +349,17 @@ void CPageTreemap::OnBnClickedReset( ) {
 	SetModified( );
 	}
 
+//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
+// here, HIWORD(wPARAM) is uNotify code, LOWORD(WPARAM) is nID, and hWnd is LPARAM
+void WTLTreemapPage::onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept {
+	TRACE(L"uNotifyCode %u, nID: %i, hWnd: %p\r\n", uNotifyCode, nID, hWnd);
+	}
+
 
 //WM_SETCURSOR message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-setcursor
 //If an application processes this message, it should return TRUE to halt further processing or FALSE to continue.
 LRESULT WTLTreemapPage::OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg) {
+	TRACE(L"uHitTest: %i, uMouseMsg: %i\r\n", uHitTest, uMouseMsg);
 	Treemap_Options o;
 	if (m_altered) {
 		o = _defaultOptions;
