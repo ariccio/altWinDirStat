@@ -42,8 +42,8 @@ protected:
 	void CalcSizes        (                             ) noexcept;
 	void NotifyParent     (                             ) const noexcept;
 	void RemoveTimer      (                                  ) noexcept;
-	void PaintBackground  ( _In_ CDC& pdc                    ) noexcept;
-	void PaintGripper     ( _In_ CDC& pdc                    ) noexcept;
+	void PaintBackground  ( _In_ const HDC m_hDC, _In_ const HDC m_hAttribDC) noexcept;
+	void PaintGripper     ( _In_ const HDC m_hDC, _In_ const HDC m_hAttribDC) noexcept;
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              ) noexcept;
 	void DoDrag           ( _In_ const POINT point                ) noexcept;
 	void DoPage           ( _In_ const POINT point                ) noexcept;

@@ -216,7 +216,7 @@ void CXySlider::NotifyParent( ) const noexcept {
 	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>(&hdr) );
 	}
 
-void CXySlider::PaintBackground( _In_ CDC& pdc ) noexcept {
+void CXySlider::PaintBackground( _In_ const HDC hDC, _In_ const HDC hAttribDC) noexcept {
 	//ASSERT_VALID( &pdc );
 	//ASSERT( pdc.m_hDC != NULL );
 
@@ -232,14 +232,14 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) noexcept {
 	////If the string is drawn, the return value [of ExtTextOutW] is nonzero. However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
 	//VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &m_rcAll, NULL, 0u, NULL ) );
 
-	fill_solid_RECT( pdc.m_hDC, &m_rcAll, ::GetSysColor( COLOR_BTNFACE ) );
+	fill_solid_RECT( hDC, &m_rcAll, ::GetSysColor( COLOR_BTNFACE ) );
 
 	RECT rc = m_rcInner;
 	
-	ASSERT( pdc.m_hDC != NULL );
+	ASSERT( hDC != NULL );
 
 	//If [DrawEdge] succeeds, the return value is nonzero. If [DrawEdge] fails, the return value is zero.
-	VERIFY( ::DrawEdge( pdc.m_hDC, &rc, EDGE_SUNKEN, BF_RECT | BF_ADJUST ) );
+	VERIFY( ::DrawEdge( hDC, &rc, EDGE_SUNKEN, BF_RECT | BF_ADJUST ) );
 
 	//pdc.FillSolidRect( &rc, RGB( 255, 255, 255 ) );
 
@@ -260,18 +260,18 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) noexcept {
 	//VERIFY( ::ExtTextOutW( pdc.m_hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0u, NULL ) );
 
 
-	fill_solid_RECT( pdc.m_hDC, &rc, RGB( 255, 255, 255 ) );
+	fill_solid_RECT( hDC, &rc, RGB( 255, 255, 255 ) );
 
 	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DLIGHT ) );
-	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
+	SelectObject_wrapper sopen( hDC, pen.m_hObject );
 
-	move_to_coord( pdc.m_hDC, rc.left, m_zero.y, pdc.m_hAttribDC );
+	move_to_coord( hDC, rc.left, m_zero.y, hAttribDC );
 
-	line_to_coord( pdc.m_hDC, rc.right, m_zero.y, pdc.m_hAttribDC );
+	line_to_coord( hDC, rc.right, m_zero.y, hAttribDC );
 	
-	move_to_coord( pdc.m_hDC, m_zero.x, rc.top, pdc.m_hAttribDC );
+	move_to_coord( hDC, m_zero.x, rc.top, hAttribDC );
 
-	line_to_coord( pdc.m_hDC, m_zero.x, rc.bottom, pdc.m_hAttribDC );
+	line_to_coord( hDC, m_zero.x, rc.bottom, hAttribDC );
 
 	RECT circle = m_rcAll;
 
@@ -279,22 +279,22 @@ void CXySlider::PaintBackground( _In_ CDC& pdc ) noexcept {
 	//circle.DeflateRect( m_gripperRadius );
 	VERIFY( ::InflateRect( &circle, -( m_gripperRadius.cx ), -( m_gripperRadius.cy ) ) );
 
-	SelectStockObject_wrapper sobrush( pdc, NULL_BRUSH );
+	SelectStockObject_wrapper sobrush( hDC, NULL_BRUSH );
 
-	ASSERT( pdc.m_hDC != NULL );
+	ASSERT( hDC != NULL );
 	//If [Ellipse] succeeds, the return value is nonzero. If [Ellipse] fails, the return value is zero.
-	VERIFY( ::Ellipse( pdc.m_hDC, circle.left, circle.top, circle.right, circle.bottom ) );
+	VERIFY( ::Ellipse( hDC, circle.left, circle.top, circle.right, circle.bottom ) );
 
 	//--------------------------------
 	if ( GetFocus( ) == this ) {
 		//TODO: what function?
 		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 		ASSERT( ::IsWindow( m_hWnd ) );
-		VERIFY( ::DrawFocusRect( pdc.m_hDC, &m_rcAll ) );
+		VERIFY( ::DrawFocusRect( hDC, &m_rcAll ) );
 		}
 	}
 
-void CXySlider::PaintGripper( _In_ CDC& pdc ) noexcept {
+void CXySlider::PaintGripper( _In_ const HDC m_hDC, _In_ HDC m_hAttribDC) noexcept {
 	//ASSERT_VALID( pdc );
 	RECT rc = CXySlider::GetGripperRect( );
 
@@ -311,24 +311,24 @@ void CXySlider::PaintGripper( _In_ CDC& pdc ) noexcept {
 
 	const COLORREF color = color_scopeholder;
 
-	fill_solid_rectangle( pdc.m_hDC, rc, color );
+	fill_solid_rectangle( m_hDC, rc, color );
 
-	ASSERT( pdc.m_hDC != NULL );
+	ASSERT( m_hDC != NULL );
 
 	//If [DrawEdge] succeeds, the return value is nonzero. If [DrawEdge] fails, the return value is zero.
-	VERIFY( ::DrawEdge( pdc.m_hDC, &rc, EDGE_RAISED, BF_RECT ) );
+	VERIFY( ::DrawEdge( m_hDC, &rc, EDGE_RAISED, BF_RECT ) );
 
 
 	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
-	SelectObject_wrapper sopen( pdc.m_hDC, pen.m_hObject );
+	SelectObject_wrapper sopen( m_hDC, pen.m_hObject );
 
-	move_to_coord( pdc.m_hDC, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ), pdc.m_hAttribDC );
+	move_to_coord( m_hDC, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ), m_hAttribDC );
 
-	line_to_coord( pdc.m_hDC, rc.right, ( rc.top + ( rc.bottom - rc.top ) / 2 ), pdc.m_hAttribDC );
+	line_to_coord( m_hDC, rc.right, ( rc.top + ( rc.bottom - rc.top ) / 2 ), m_hAttribDC );
 
-	move_to_coord( pdc.m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.top, pdc.m_hAttribDC );
+	move_to_coord( m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.top, m_hAttribDC );
 
-	line_to_coord( pdc.m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.bottom, pdc.m_hAttribDC );
+	line_to_coord( m_hDC, rc.left + ( rc.right - rc.left ) / 2, rc.bottom, m_hAttribDC );
 	}
 
 void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) noexcept {
@@ -525,9 +525,9 @@ void CXySlider::OnPaint( ) {
 	VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
 	SelectObject_wrapper sobm( dcmem.m_hDC, bm.m_hObject );
 
-	CXySlider::PaintBackground( dcmem );
+	CXySlider::PaintBackground( dcmem.m_hDC, dcmem.m_hAttribDC );
 	// PaintValues(&dcmem); This is too noisy
-	CXySlider::PaintGripper( dcmem );
+	CXySlider::PaintGripper( dcmem.m_hDC, dcmem.m_hAttribDC );
 
 	VERIFY( dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY ) );
 	//VERIFY( dcmem.DeleteDC( ) );
