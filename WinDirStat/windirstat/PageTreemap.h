@@ -30,6 +30,13 @@ class CDirstatApp;
 //};
 
 
+// This is the same problem as the stroop test. I utterly fail it. It's a very specific disability.
+constexpr const BOOL DDX_CONTROL_TO_VARIABLE = TRUE;
+constexpr const BOOL DDX_VARIABLE_TO_CONTROL = FALSE;
+static_assert(DDX_LOAD == DDX_VARIABLE_TO_CONTROL, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
+static_assert(DDX_SAVE == DDX_CONTROL_TO_VARIABLE, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
+
+
 struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, public WTL::CWinDataExchange<WTLTreemapPage> {
 
 	DISALLOW_COPY_AND_ASSIGN(WTLTreemapPage);
@@ -50,11 +57,15 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		MSG_WM_INITDIALOG(OnInitDialog)
 		CHAIN_MSG_MAP(WTL::CPropertyPageImpl<WTLTreemapPage>)
 		MSG_WM_VSCROLL(OnVScroll)
-		MSG_WM_NOTIFY(onWM_NOTIFY)
-		MESSAGE_HANDLER_EX(BN_CLICKED, OnMessageHandlerEX)
+		//MSG_WM_NOTIFY(onWM_NOTIFY)
+		//MESSAGE_HANDLER_EX(BN_CLICKED, OnMessageHandlerEX)
+		COMMAND_HANDLER(IDC_RESET, BN_CLICKED, OnCommandIDCReset)
+		COMMAND_HANDLER(IDC_TREEMAPGRIDCOLOR, BN_CLICKED, on_WM_COMMAND_Treemap_colorbutton)
+		COMMAND_HANDLER(IDC_TREEMAPHIGHLIGHTCOLOR, BN_CLICKED, on_WM_COMMAND_Treemap_colorbutton)
+		//REFLECTED_COMMAND_CODE_HANDLER()
 		ALT_MSG_MAP(1)
-			MSG_WM_SETCURSOR(OnSetCursor_Reset)
-			MSG_WM_COMMAND(onResetCommand)
+			//MSG_WM_SETCURSOR(OnSetCursor_Reset)
+			//MSG_WM_COMMAND(onResetCommand)
 		ALT_MSG_MAP(2)
 		ALT_MSG_MAP(3)
 		ALT_MSG_MAP(4)
@@ -88,8 +99,8 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	void UpdateStatics          ();
 
 
-	LRESULT OnMessageHandlerEX(UINT uMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg);
+	LRESULT OnCommandIDCReset(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	//LRESULT OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg);
 
 	BOOL OnInitDialog(const HWND focus, const LPARAM lparam);
 
@@ -102,15 +113,23 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	//Note to self: WTL defines nPos as a short!?
 	//Also note to self, WTL defines nSBcode as an int
 	void OnVScroll(int nSBCode, short nPos, HWND /*pScrollBar*/);
-	void OnSomethingChanged() noexcept;
+	//void OnSomethingChanged() noexcept;
 
 
-	LRESULT onWM_NOTIFY(const int wParam, const NMHDR* const lParam);
+	//LRESULT onWM_NOTIFY(const int wParam, const NMHDR* const lParam);
 
-	void OnColorChangedTreemapGrid(const NMHDR*) noexcept;
-	void OnColorChangedTreemapHighlight(const NMHDR*) noexcept;
+	LRESULT on_WM_COMMAND_Treemap_colorbutton(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled);
+	//LRESULT on_WM_COMMAND_Treemap_highlight(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled);
 
-	void onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept;
+	//void OnColorChangedTreemapGrid(const NMHDR*) noexcept;
+	//void OnColorChangedTreemapHighlight(const NMHDR*) noexcept;
+
+	//void onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept;
+
+	void updateControls() noexcept;
+	void variablesToOptions() noexcept;
+	void optionsToVariables() noexcept;
+
 
 	void debugDataExchangeMembers() const noexcept;
 	void debugSliderPosition() const noexcept;

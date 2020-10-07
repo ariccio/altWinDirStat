@@ -193,6 +193,7 @@ protected:
 			//WM_NOTIFY message: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775583.aspx
 			//The return value is ignored except for notification messages that specify otherwise.
 			::SendMessageW( m_hWnd, WM_NOTIFY, static_cast< WPARAM >( dialog_ctrl_id ), reinterpret_cast<LPARAM>( &hdr ) );
+
 			}
 		}
 

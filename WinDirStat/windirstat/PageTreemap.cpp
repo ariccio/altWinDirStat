@@ -132,6 +132,7 @@ END_MESSAGE_MAP()
 //The dialog box procedure should return TRUE to direct the system to set the keyboard focus to the control specified by wParam.
 //Otherwise, it should return FALSE to prevent the system from setting the default keyboard focus.
 BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
+	
 	TRACE(L"Initialize WTL dialog\r\n-------\r\n");
 	debugDataExchangeMembers();
 #pragma push_macro("SubclassWindow")
@@ -149,7 +150,8 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	m_gridColor.SubclassWindow(hwnd::GetDlgItem(m_hWnd, IDC_TREEMAPGRIDCOLOR));
 #pragma pop_macro("SubclassWindow")
 
-	VERIFY(DoDataExchange(DDX_LOAD));
+	//connects variables to controls.
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
 
 	const COptions* const Options = GetOptions();
 	m_options = Options->m_treemapOptions;
@@ -157,7 +159,7 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	debugDataExchangeMembers();
 	//debugSliderPosition();
 	m_brightness = GetDlgItem(IDC_BRIGHTNESS);
-	initSlid(m_brightness, 0, 100, 1, 1, 10, 100 - m_options.brightness);
+	initSlid(m_brightness, 0, 100, 1, 1, 10, 100 - static_cast<int>(m_options.brightness * 100));
 
 	m_cushionShading = GetDlgItem(IDC_CUSHIONSHADING);
 	initSlid(m_cushionShading, 0, 100, 1, 1, 10, m_options.GetAmbientLightPercent());
@@ -175,13 +177,14 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	//m_highlightColor.Attach(GetDlgItem(IDC_TREEMAPHIGHLIGHTCOLOR));
 	m_highlightColor.m_preview.SetColor(Options->m_treemapHighlightColor);
 
-	//must DDX_LOAD after UpdateOptions(false)
-	UpdateOptions(false);
-	VERIFY(DoDataExchange(DDX_LOAD));
+	//must DDX_VARIABLE_TO_CONTROL after UpdateOptions(false)/optionsToVariables
+	optionsToVariables();
+	UpdateStatics();
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
 	debugDataExchangeMembers();
-	debugSliderPosition();
+	//debugSliderPosition();
 	TRACE(L"initialization complete\r\n-------\r\n");
-	//ValuesAltered(true); // m_undo is invalid
+	ValuesAltered(true); // m_undo is invalid
 	return TRUE;
 }
 
@@ -216,14 +219,15 @@ void CPageTreemap::OnOK( ) {
 	}
 
 int WTLTreemapPage::OnApply() {
-	const BOOL result = DoDataExchange(DDX_SAVE);
+	const BOOL result = DoDataExchange(DDX_CONTROL_TO_VARIABLE);
+	variablesToOptions();
 	//if (result == PSNRET_NOERROR) {
 	if (!result) {
 		return PSNRET_INVALID;
 		}
-	//const auto Options = GetOptions();
-	//Options->SetTreemapOptions(m_options);
-	//Options->SetTreemapHighlightColor(m_highlightColor.m_preview.m_color);
+	const auto Options = GetOptions();
+	Options->SetTreemapOptions(m_options);
+	Options->SetTreemapHighlightColor(m_highlightColor.m_preview.m_color);
 	return PSNRET_NOERROR;
 	}
 
@@ -273,11 +277,11 @@ void WTLTreemapPage::UpdateStatics() {
 	format_results[3] = ::swprintf_s(m_sScaleFactor, str_size, L"%d", (100 - m_nScaleFactor));
 
 
-	TRACE(L"Statics:\r\n");
-	TRACE(L"\tm_sBrightness: %s\r\n", m_sBrightness);
-	TRACE(L"\tm_sCushionShading: %s\r\n", m_sCushionShading);
-	TRACE(L"\tm_sHeight: %s\r\n", m_sHeight);
-	TRACE(L"\tm_sScaleFactor: %s\r\n", m_sScaleFactor);
+	//TRACE(L"Statics:\r\n");
+	//TRACE(L"\tm_sBrightness: %s\r\n", m_sBrightness);
+	//TRACE(L"\tm_sCushionShading: %s\r\n", m_sCushionShading);
+	//TRACE(L"\tm_sHeight: %s\r\n", m_sHeight);
+	//TRACE(L"\tm_sScaleFactor: %s\r\n", m_sScaleFactor);
 	//Not vectorized: 1304, loop includes assignments of different sizes
 	for (rsize_t i = 0; i < 4; ++i) {
 		ASSERT(format_results[i] != -1);
@@ -349,45 +353,78 @@ void CPageTreemap::OnBnClickedReset( ) {
 	SetModified( );
 	}
 
-//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
-// here, HIWORD(wPARAM) is uNotify code, LOWORD(WPARAM) is nID, and hWnd is LPARAM
-void WTLTreemapPage::onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept {
-	TRACE(L"uNotifyCode %u, nID: %i, hWnd: %p\r\n", uNotifyCode, nID, hWnd);
-	}
-
-
-//WM_SETCURSOR message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-setcursor
-//If an application processes this message, it should return TRUE to halt further processing or FALSE to continue.
-LRESULT WTLTreemapPage::OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg) {
-	TRACE(L"uHitTest: %i, uMouseMsg: %i\r\n", uHitTest, uMouseMsg);
+//COMMAND_HANDLER: https://docs.microsoft.com/en-us/cpp/atl/reference/message-map-macros-atl?view=vs-2019#command_handler
+LRESULT WTLTreemapPage::OnCommandIDCReset(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+	TRACE(L"wNotifyCode: %hu, wID: %hu, hWndCtl: %p, bHandled: %s\r\n", wNotifyCode, wID, hWndCtl, (bHandled ? L"TRUE" : L"False"));
+	ASSERT(wID == IDC_RESET);
 	Treemap_Options o;
 	if (m_altered) {
 		o = _defaultOptions;
 		m_undo = m_options;
-		}
+	}
 	else {
 		o = m_undo;
 	}
 	m_options = o;
-
 	ValuesAltered(!m_altered);
+	optionsToVariables();
+	//OnSomethingChanged();
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
+	UpdateStatics();
+	//updateControls();
 	SetModified();
+	TRACE(L"Damnit I need to update the sliders manually too?!?\r\n");
 	return TRUE;
+}
+
+
+//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
+// here, HIWORD(wPARAM) is uNotify code, LOWORD(WPARAM) is nID, and hWnd is LPARAM
+//void WTLTreemapPage::onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept {
+//	TRACE(L"uNotifyCode %u, nID: %i, hWnd: %p\r\n", uNotifyCode, nID, hWnd);
+//	}
+
+
+//WM_SETCURSOR message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-setcursor
+//If an application processes this message, it should return TRUE to halt further processing or FALSE to continue.
+//LRESULT WTLTreemapPage::OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg) {
+//	TRACE(L"uHitTest: %i, uMouseMsg: %i\r\n", uHitTest, uMouseMsg);
+//	ASSERT(false);
+//	return FALSE;
+//	}
+
+void WTLTreemapPage::updateControls() noexcept {
+	UpdateStatics();
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
+	ValuesAltered();
 	}
+
+void WTLTreemapPage::variablesToOptions() noexcept {
+	constexpr const bool save = true;
+	UpdateOptions(save);
+	}
+
+void WTLTreemapPage::optionsToVariables() noexcept {
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
+	constexpr const bool dontSave = false;
+	UpdateOptions(dontSave);
+	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
+	//debugSliderPosition();
+}
 
 void WTLTreemapPage::OnSomethingChanged() noexcept {
 	TRACE(L"OnSomethingChanged()\r\n");
 	debugSliderPosition();
 	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
-	//VERIFY(DoDataExchange(DDX_SAVE));
+	//VERIFY(DoDataExchange(DDX_CONTROL_TO_VARIABLE));
 	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
 	//VERIFY(DoDataExchange(false));
 	TRACE(L"m_sBrightness: %s\r\n", m_sBrightness);
 	UpdateStatics();
 	TRACE(L"m_sBrightness: %s\r\n", m_sBrightness);
-	UpdateOptions(true);
+	variablesToOptions();
 	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
-	VERIFY(DoDataExchange(DDX_LOAD));
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
 	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
 	debugSliderPosition();
 	//SetModified();
@@ -398,29 +435,27 @@ void WTLTreemapPage::OnSomethingChanged() noexcept {
 void WTLTreemapPage::setPosition(const int nPos, const HWND pScrollBar) {
 	debugDataExchangeMembers();
 	if (pScrollBar == m_brightness.m_hWnd) {
+		TRACE(L"pScrollBar: %p, m_brightness.m_hWnd: %p, m_brightness: %p\r\n", pScrollBar, m_brightness.m_hWnd, &m_brightness);
 		m_brightness.SetPos(nPos);
 		m_nBrightness = nPos;
-		OnSomethingChanged();
 	}
 	else if (pScrollBar == m_cushionShading.m_hWnd) {
 		m_cushionShading.SetPos(nPos);
-
 		m_nCushionShading = nPos;
-		OnSomethingChanged();
 	}
 	else if (pScrollBar == m_height.m_hWnd) {
 		m_height.SetPos(nPos);
 		m_nHeight = nPos;
-		OnSomethingChanged();
 	}
 	else if (pScrollBar == m_scaleFactor.m_hWnd) {
 		m_scaleFactor.SetPos(nPos);
 		m_nScaleFactor = nPos;
-		OnSomethingChanged();
 		}
 	else {
 		TRACE(L"WARNING: not a known scroll bar. Position %i not set for %p\r\n", nPos, pScrollBar);
 		}
+	variablesToOptions();
+	updateControls();
 	debugDataExchangeMembers();
 
 	}
@@ -439,50 +474,71 @@ void WTLTreemapPage::OnVScroll(int nSBCode, short nPos, HWND pScrollBar) {
 		const int position = static_cast<int>(positionResult);
 		setPosition(position, pScrollBar);
 		}
-	debugSliderPosition();
-	DoDataExchange(DDX_SAVE);
+	//debugSliderPosition();
+	DoDataExchange(DDX_CONTROL_TO_VARIABLE);
 	//OnSomethingChanged();
 	ValuesAltered();
-	debugSliderPosition();
+	//debugSliderPosition();
 	//WTL::CTrackBarCtrl::
 	TRACE(L"End OnVScroll\r\n");
 	}
 
 
-void WTLTreemapPage::OnColorChangedTreemapGrid(const NMHDR*) noexcept {
-	OnSomethingChanged();
-	}
-void WTLTreemapPage::OnColorChangedTreemapHighlight(const NMHDR*) noexcept {
-	OnSomethingChanged();
-	}
+//void WTLTreemapPage::OnColorChangedTreemapGrid(const NMHDR*) noexcept {
+//	OnSomethingChanged();
+//	}
+//void WTLTreemapPage::OnColorChangedTreemapHighlight(const NMHDR*) noexcept {
+//	OnSomethingChanged();
+//	}
 
 
-//WM_NOTIFY message: https://docs.microsoft.com/en-us/windows/win32/controls/wm-notify
-//An application should use the hwndFrom or idFrom member of the NMHDR structure (passed as the lParam parameter) to identify the control.
-LRESULT WTLTreemapPage::onWM_NOTIFY(const int wParam, const NMHDR* const lParam) {
-	const NMHDR* const notify_message_header = lParam;
-
-	if (notify_message_header->code == COLBN_CHANGED) {
-		__debugbreak();
-		}
-	//break to look for COLBN_CHANGED (0x87)
-	if (IDC_TREEMAPGRIDCOLOR == notify_message_header->idFrom) {
-		OnColorChangedTreemapGrid(notify_message_header);
-		return TRUE;
-		}
-	if (IDC_TREEMAPHIGHLIGHTCOLOR == notify_message_header->idFrom) {
-		OnColorChangedTreemapHighlight(notify_message_header);
-		return TRUE;
-		}
-	return FALSE;
+//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
+//CommandHandler: https://docs.microsoft.com/en-us/cpp/atl/commandhandler
+LRESULT WTLTreemapPage::on_WM_COMMAND_Treemap_colorbutton(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled) {
+	//TRACE(L"%s\r\n", /*__FUNCSIG__*/);
+	//TRACE(L"wNotifyCode: %u, HIWORD(BN_CLICKED): %u, wID: %u, LOWORD(IDC_TREEMAPGRIDCOLOR): %u, hWndCtl: %p, m_gridColor.m_hWnd: %p\r\n", unsigned(wNotifyCode), unsigned(HIWORD(BN_CLICKED)), unsigned(wID), unsigned(LOWORD(IDC_TREEMAPGRIDCOLOR)), hWndCtl, m_gridColor.m_hWnd);
+	//BN_CLICKED notification code: https://docs.microsoft.com/en-us/windows/win32/controls/bn-clicked
+	//	wParam: The LOWORD contains the button's control identifier. The HIWORD specifies the notification code.
+	//	lParam: A handle to the button.
+	TRACE(L"m_gridColor.preview.m_color: %u\r\n", unsigned(m_gridColor.m_preview.m_color));
+	const WPARAM wParam = (LOWORD(wID) | HIWORD(wNotifyCode));
+	const LRESULT res = ::SendMessageW(hWndCtl, WM_COMMAND, wParam, reinterpret_cast<LPARAM>(hWndCtl));
+	(void)res;
+	TRACE(L"m_gridColor.preview.m_color: %u\r\n", unsigned(m_gridColor.m_preview.m_color));
+	variablesToOptions();
+	TRACE(L"m_gridColor.preview.m_color: %u\r\n", unsigned(m_gridColor.m_preview.m_color));
+	return 0;
 	}
 
+//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
+//CommandHandler: https://docs.microsoft.com/en-us/cpp/atl/commandhandler
+//LRESULT WTLTreemapPage::on_WM_COMMAND_Treemap_highlight(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled) {
+//	TRACE(L"%s\r\n", __FUNCSIG__);
+//
+//	return 0;
+//}
+
+////WM_NOTIFY message: https://docs.microsoft.com/en-us/windows/win32/controls/wm-notify
+////An application should use the hwndFrom or idFrom member of the NMHDR structure (passed as the lParam parameter) to identify the control.
+//LRESULT WTLTreemapPage::onWM_NOTIFY(const int wParam, const NMHDR* const lParam) {
+//	const NMHDR* const notify_message_header = lParam;
+//
+//	if (notify_message_header->code == COLBN_CHANGED) {
+//		__debugbreak();
+//		}
+//	//break to look for COLBN_CHANGED (0x87)
+//	//if (IDC_TREEMAPGRIDCOLOR == notify_message_header->idFrom) {
+//	//	OnColorChangedTreemapGrid(notify_message_header);
+//	//	return TRUE;
+//	//	}
+//	//if (IDC_TREEMAPHIGHLIGHTCOLOR == notify_message_header->idFrom) {
+//	//	OnColorChangedTreemapHighlight(notify_message_header);
+//	//	return TRUE;
+//	//	}
+//	return FALSE;
+//	}
 
 
-LRESULT WTLTreemapPage::OnMessageHandlerEX(UINT uMsg, WPARAM wParam, LPARAM lParam) {
-
-	return FALSE;
-}
 
 
 void WTLTreemapPage::debugDataExchangeMembers() const noexcept {
