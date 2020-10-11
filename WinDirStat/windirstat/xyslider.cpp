@@ -514,36 +514,36 @@ void CXySlider::RemoveTimer( ) noexcept {
 	m_timer = 0;
 	}
 
-afx_msg void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
-	CWnd::OnSetFocus( pOldWnd );
-	/*
-void CWnd::OnSetFocus( CWnd* ) { 
-	BOOL bHandled;
-	bHandled = FALSE;
-	if ( m_pCtrlCont != NULL ) {
-		bHandled = m_pCtrlCont->HandleSetFocus();
-		}
+//afx_msg void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
+//	CWnd::OnSetFocus( pOldWnd );
+//	/*
+//void CWnd::OnSetFocus( CWnd* ) { 
+//	BOOL bHandled;
+//	bHandled = FALSE;
+//	if ( m_pCtrlCont != NULL ) {
+//		bHandled = m_pCtrlCont->HandleSetFocus();
+//		}
+//
+//	if( !bHandled ) {
+//		Default();
+//		}
+//	}
+//
+//LRESULT CWnd::Default( ) {
+//	_AFX_THREAD_STATE* pThreadState = _afxThreadState.GetData( );
+//	return DefWindowProc( pThreadState->m_lastSentMsg.message, pThreadState->m_lastSentMsg.wParam, pThreadState->m_lastSentMsg.lParam );
+//	}
+//	*/
+//
+//
+//	//hwnd::InvalidateErase(m_hWnd);
+//	}
 
-	if( !bHandled ) {
-		Default();
-		}
-	}
-
-LRESULT CWnd::Default( ) {
-	_AFX_THREAD_STATE* pThreadState = _afxThreadState.GetData( );
-	return DefWindowProc( pThreadState->m_lastSentMsg.message, pThreadState->m_lastSentMsg.wParam, pThreadState->m_lastSentMsg.lParam );
-	}
-	*/
-
-
-	hwnd::InvalidateErase(m_hWnd);
-	}
-
-afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
-	// calls CWnd::OnWindowPosChanging, which somehow is CWnd::OnCreate and CWnd::OnCopyData (both CWnd::Default())
-	CWnd::OnKillFocus( pNewWnd );
-	hwnd::InvalidateErase(m_hWnd);
-	}
+//afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
+//	// calls CWnd::OnWindowPosChanging, which somehow is CWnd::OnCreate and CWnd::OnCopyData (both CWnd::Default())
+//	CWnd::OnKillFocus( pNewWnd );
+//	//hwnd::InvalidateErase(m_hWnd);
+//	}
 
 
 
@@ -568,24 +568,6 @@ void CXySlider::OnPaint( ) {
 	const INT w = ( m_rcAll.right - m_rcAll.left );
 	const INT h = ( m_rcAll.bottom - m_rcAll.top );
 
-
-	/*
-	From: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\atlmfc\src\mfc\wingdi.cpp: 1047
-	CPaintDC::CPaintDC(CWnd* pWnd)
-	{
-		ASSERT_VALID(pWnd);
-		ASSERT(::IsWindow(pWnd->m_hWnd));
-
-		if (!Attach(::BeginPaint(m_hWnd = pWnd->m_hWnd, &m_ps)))
-			AfxThrowResourceException();
-	}
-
-	*/
-	//CPaintDC dc( this );
-	//CDC dcmem;
-	//VERIFY( dcmem.CreateCompatibleDC( &dc ) );
-	//CBitmap bm;
-	//VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
 
 	PAINTSTRUCT ps = { 0 };
 	const HDC dc = hwnd::BeginPaint(m_hWnd, &ps);
