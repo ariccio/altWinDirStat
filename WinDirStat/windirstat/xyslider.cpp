@@ -264,7 +264,14 @@ void CXySlider::PaintBackground( _In_ const HDC hDC, _In_ const HDC hAttribDC) n
 
 	fill_solid_RECT( hDC, &rc, RGB( 255, 255, 255 ) );
 
-	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DLIGHT ) );
+	//CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DLIGHT ) );
+	
+	// CreatePen function (wingdi.h): https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createpen
+	// If the function succeeds, the return value is a handle that identifies a logical pen.
+	// If the function fails, the return value is NULL.
+	const HPEN hPen = ::CreatePen(PS_SOLID, 1, ::GetSysColor(COLOR_3DLIGHT));
+	HGDIOBJ_wrapper pen(hPen);
+
 	SelectObject_wrapper sopen( hDC, pen.m_hObject );
 
 	move_to_coord( hDC, rc.left, m_zero.y, hAttribDC );
@@ -288,7 +295,8 @@ void CXySlider::PaintBackground( _In_ const HDC hDC, _In_ const HDC hAttribDC) n
 	VERIFY( ::Ellipse( hDC, circle.left, circle.top, circle.right, circle.bottom ) );
 
 	//--------------------------------
-	if ( GetFocus( ) == this ) {
+	if (::GetFocus() == m_hWnd) {
+		ASSERT(CWnd::GetFocus() == this);
 		//TODO: what function?
 		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
 		ASSERT( ::IsWindow( m_hWnd ) );
@@ -358,8 +366,15 @@ void CXySlider::DoMoveBy( _In_ const INT cx, _In_ const INT cy ) noexcept {
 	m_pos.y += cy;
 	CheckMinMax( m_pos.y, -m_range.cy, m_range.cy );
 
-	VERIFY( CWnd::RedrawWindow( ) );
 
+	/*
+	_AFXWIN_INLINE BOOL CWnd::RedrawWindow(LPCRECT lpRectUpdate, CRgn* prgnUpdate,
+		UINT flags)
+		{ ASSERT(::IsWindow(m_hWnd)); return ::RedrawWindow(m_hWnd, lpRectUpdate, (HRGN)prgnUpdate->GetSafeHandle(), flags); }
+
+	*/
+	//VERIFY( CWnd::RedrawWindow( ) );
+	hwnd::RedrawWindow(m_hWnd);
 	const POINT oldpos = m_externalPos;
 	CXySlider::InternToExtern( );
 	if ( ( m_externalPos.x != oldpos.x ) || ( m_externalPos.y != oldpos.y ) ) {
@@ -413,8 +428,19 @@ void CXySlider::DoDrag( _In_ const POINT point ) noexcept {
 		};
 
 	POINT ptMax = ptMax_holder;
+	/*
+	_AFXWIN_INLINE CWnd* CWnd::SetCapture()
+		{ ASSERT(::IsWindow(m_hWnd)); return CWnd::FromHandle(::SetCapture(m_hWnd)); }
 
-	CWnd::SetCapture( );
+	*/
+	ASSERT(::IsWindow(m_hWnd));
+
+	// SetCapture function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setcapture
+	// The return value is a handle to the window that had previously captured the mouse. If there is no such window, the return value is NULL.
+
+	//Don't care about return value.
+	(void)::SetCapture(m_hWnd);
+	//CWnd::SetCapture( );
 	do {
 		MSG msg;
 		if ( !::GetMessageW( &msg, nullptr, 0, 0 ) ) {
@@ -424,7 +450,8 @@ void CXySlider::DoDrag( _In_ const POINT point ) noexcept {
 		if ( msg.message == WM_LBUTTONUP ) {
 			break;
 			}
-		if ( CWnd::GetCapture( ) != this ) {
+		if ( ::GetCapture( ) != m_hWnd ) {
+			ASSERT(CWnd::GetCapture() != this);
 			break;
 			}
 
@@ -432,7 +459,8 @@ void CXySlider::DoDrag( _In_ const POINT point ) noexcept {
 			CXySlider::Handle_WM_MOUSEMOVE( ptMin, ptMax, msg, pt0 );
 			}
 		else {
-			::DispatchMessageW( &msg );
+			// Return value for DispatchMessageW is generally ignored.
+			(void)::DispatchMessageW( &msg );
 			}
 #pragma warning(suppress:4127)//conditional expression is constant
 		} while ( true );
@@ -472,7 +500,8 @@ void CXySlider::DoPage( _In_ const POINT point ) noexcept {
 
 void CXySlider::HighlightGripper( _In_ const bool on ) noexcept {
 	m_gripperHighlight = on;
-	VERIFY( CWnd::RedrawWindow( ) );
+	hwnd::RedrawWindow(m_hWnd);
+	//VERIFY( CWnd::RedrawWindow( ) );
 	}
 
 void CXySlider::RemoveTimer( ) noexcept {
@@ -511,6 +540,7 @@ LRESULT CWnd::Default( ) {
 	}
 
 afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
+	// calls CWnd::OnWindowPosChanging, which somehow is CWnd::OnCreate and CWnd::OnCopyData (both CWnd::Default())
 	CWnd::OnKillFocus( pNewWnd );
 	hwnd::InvalidateErase(m_hWnd);
 	}
@@ -599,7 +629,8 @@ void CXySlider::OnKeyDown( UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/ ) {
 	}
 
 void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
-	CWnd::SetFocus( );
+	//CWnd::SetFocus( );
+	::SetFocus(m_hWnd);
 
 	const RECT rc = GetGripperRect( );
 
@@ -611,7 +642,8 @@ void CXySlider::OnLButtonDown( UINT /*nFlags*/, CPoint point ) {
 	}
 
 void CXySlider::OnLButtonDblClk( UINT /*nFlags*/, CPoint point ) {
-	CWnd::SetFocus( );
+	//CWnd::SetFocus( );
+	::SetFocus(m_hWnd);
 
 	const RECT grip_rect = CXySlider::GetGripperRect( );
 	if ( ::PtInRect( &grip_rect, point ) ) {

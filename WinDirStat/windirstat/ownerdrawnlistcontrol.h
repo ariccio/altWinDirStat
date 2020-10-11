@@ -1907,7 +1907,8 @@ private:
 		constexpr const COLORREF gridColor = RGB( 212, 208, 200 );
 
 		RECT rcClient;
-		CWnd::GetClientRect( &rcClient );
+		//CWnd::GetClientRect( &rcClient );
+		VERIFY(::GetClientRect(m_hWnd, &rcClient));
 
 		RECT rcHeader;
 		const auto header_ctrl = CListCtrl::GetHeaderCtrl( );
