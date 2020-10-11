@@ -17,6 +17,8 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "xyslider.h"
 #include "globalhelpers.h"
 #include "hwnd_funcs.h"
+#include "macros_that_scare_small_children.h"
+#include "ScopeGuard.h"
 
 namespace {
 	constexpr const int GRIPPER_RADIUS = 8;
@@ -143,9 +145,7 @@ void CXySlider::Initialize( ) noexcept {
 
 		//"Return value: If [GetWindowRect] succeeds, the return value is nonzero. If [GetWindowRect] fails, the return value is zero. To get extended error information, call GetLastError."
 		VERIFY( ::GetWindowRect( m_hWnd, &rc ) );
-
-
-		CWnd::GetParent( )->ScreenToClient( &rc );
+		hwnd::ScreenToClient(::GetParent(m_hWnd), &rc);
 		if ( ( rc.right - rc.left ) % 2 == 0 ) {
 			rc.right--;
 			}
@@ -210,10 +210,12 @@ void CXySlider::NotifyParent( ) const noexcept {
 		return ::GetDlgCtrlID(m_hWnd);
 	}
 	*/
-	hdr.idFrom   = static_cast<UINT_PTR>( GetDlgCtrlID( ) );
+	const int ID = hwnd::GetDlgCtrlID(m_hWnd);
+	hdr.idFrom   = static_cast<UINT_PTR>( ID );
 	hdr.code     = XYSLIDER_CHANGED;
 	TRACE( _T( "NotifyParent called! Sending WM_NOTIFY!\r\n" ) );
-	CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( GetDlgCtrlID( ) ), reinterpret_cast<LPARAM>(&hdr) );
+	//CWnd::GetParent( )->SendMessageW( WM_NOTIFY, static_cast<WPARAM>( ID ), reinterpret_cast<LPARAM>(&hdr) );
+	::SendMessageW(::GetParent(m_hWnd), WM_NOTIFY, static_cast<WPARAM>(ID), reinterpret_cast<LPARAM>(&hdr));
 	}
 
 void CXySlider::PaintBackground( _In_ const HDC hDC, _In_ const HDC hAttribDC) noexcept {
@@ -318,8 +320,26 @@ void CXySlider::PaintGripper( _In_ const HDC m_hDC, _In_ HDC m_hAttribDC) noexce
 	//If [DrawEdge] succeeds, the return value is nonzero. If [DrawEdge] fails, the return value is zero.
 	VERIFY( ::DrawEdge( m_hDC, &rc, EDGE_RAISED, BF_RECT ) );
 
-
-	CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
+	//CreatePen function: https://msdn.microsoft.com/en-us/library/dd183509.aspx
+	//The CreatePen function creates a logical pen that has the specified style, width, and color.
+	//The pen can subsequently be selected into a device context and used to draw lines and curves.
+	//If the function succeeds, the return value is a handle that identifies a logical pen.
+	//If the function fails, the return value is NULL.
+	//When you no longer need the pen, call the DeleteObject function to delete it.
+	//TODO: GetSysColorBrush?
+	const HPEN hPen = ::CreatePen(PS_SOLID, 1, ::GetSysColor(COLOR_3DSHADOW));
+	/*
+	CPen::CPen(int nPenStyle, int nWidth, COLORREF crColor)
+	{
+		if (!Attach(::CreatePen(nPenStyle, nWidth, crColor)))
+			AfxThrowResourceException();
+	}
+	*/
+	if (hPen == NULL) {
+		std::terminate();
+	}
+	HGDIOBJ_wrapper pen(hPen);
+	//CPen pen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
 	SelectObject_wrapper sopen( m_hDC, pen.m_hObject );
 
 	move_to_coord( m_hDC, rc.left, ( rc.top + ( rc.bottom - rc.top ) / 2 ), m_hAttribDC );
@@ -518,19 +538,49 @@ void CXySlider::OnPaint( ) {
 	const INT w = ( m_rcAll.right - m_rcAll.left );
 	const INT h = ( m_rcAll.bottom - m_rcAll.top );
 
-	CPaintDC dc( this );
-	CDC dcmem;
-	VERIFY( dcmem.CreateCompatibleDC( &dc ) );
-	CBitmap bm;
-	VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
-	SelectObject_wrapper sobm( dcmem.m_hDC, bm.m_hObject );
 
-	CXySlider::PaintBackground( dcmem.m_hDC, dcmem.m_hAttribDC );
+	/*
+	From: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\atlmfc\src\mfc\wingdi.cpp: 1047
+	CPaintDC::CPaintDC(CWnd* pWnd)
+	{
+		ASSERT_VALID(pWnd);
+		ASSERT(::IsWindow(pWnd->m_hWnd));
+
+		if (!Attach(::BeginPaint(m_hWnd = pWnd->m_hWnd, &m_ps)))
+			AfxThrowResourceException();
+	}
+
+	*/
+	//CPaintDC dc( this );
+	//CDC dcmem;
+	//VERIFY( dcmem.CreateCompatibleDC( &dc ) );
+	//CBitmap bm;
+	//VERIFY( bm.CreateCompatibleBitmap( &dc, w, h ) );
+
+	PAINTSTRUCT ps = { 0 };
+	const HDC dc = hwnd::BeginPaint(m_hWnd, &ps);
+	auto paint_guard = WDS_SCOPEGUARD_INSTANCE([&]() { hwnd::EndPaint(m_hWnd, ps); });
+	const HDC dcmem = gdi::CreateCompatibleDeviceContext(dc);
+	auto paint_mem_guard = WDS_SCOPEGUARD_INSTANCE([&]() { gdi::DeleteDeviceContext(dcmem); });
+	const HGDIOBJ bm = gdi::CreateCompatibleBitmap(dc, w, h);
+	HGDIOBJ_wrapper bm_(bm);
+
+	/*
+	_AFXWIN_INLINE BOOL CBitmap::CreateCompatibleBitmap(CDC* pDC, int nWidth, int nHeight)
+		{ return Attach(::CreateCompatibleBitmap(pDC->m_hDC, nWidth, nHeight)); }
+	*/
+	SelectObject_wrapper sobm( dcmem, bm );
+
+	// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+	// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+	CXySlider::PaintBackground( dcmem, dcmem );
+
 	// PaintValues(&dcmem); This is too noisy
-	CXySlider::PaintGripper( dcmem.m_hDC, dcmem.m_hAttribDC );
+	CXySlider::PaintGripper( dcmem, dcmem );
 
-	VERIFY( dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY ) );
-	//VERIFY( dcmem.DeleteDC( ) );
+	//VERIFY( dc.BitBlt( 0, 0, w, h, &dcmem, 0, 0, SRCCOPY ) );
+
+	VERIFY(::BitBlt(dc, 0, 0, w, h, dcmem, 0, 0, SRCCOPY));
 	}
 
 

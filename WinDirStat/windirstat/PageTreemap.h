@@ -37,6 +37,14 @@ static_assert(DDX_LOAD == DDX_VARIABLE_TO_CONTROL, "Mixed them up. This specific
 static_assert(DDX_SAVE == DDX_CONTROL_TO_VARIABLE, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
 
 
+// Only temporarily a template.
+template <typename PageDialogT>
+inline void ValuesAltered(_In_ const bool altered, _Inout_ PageDialogT* const dialog) noexcept {
+	dialog->m_altered = (altered ? TRUE : FALSE);
+	dialog->m_resetButton.SetWindowTextW(dialog->m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings");
+}
+
+
 struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, public WTL::CWinDataExchange<WTLTreemapPage> {
 
 	DISALLOW_COPY_AND_ASSIGN(WTLTreemapPage);
@@ -96,15 +104,14 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 	END_DDX_MAP()
 	void UpdateOptions          (_In_ const bool save = true) noexcept;
-	void UpdateStatics          ();
+	//void UpdateStatics          ();
 
 
 	LRESULT OnCommandIDCReset(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg);
 
 	BOOL OnInitDialog(const HWND focus, const LPARAM lparam);
 
-	void ValuesAltered(_In_ const bool altered = true) noexcept;
+	//void ValuesAltered(_In_ const bool altered = true) noexcept;
 	int OnApply();
 	
 	//Note to self: WTL defines nPos as an int here!?
@@ -113,18 +120,9 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	//Note to self: WTL defines nPos as a short!?
 	//Also note to self, WTL defines nSBcode as an int
 	void OnVScroll(int nSBCode, short nPos, HWND /*pScrollBar*/);
-	//void OnSomethingChanged() noexcept;
-
-
-	//LRESULT onWM_NOTIFY(const int wParam, const NMHDR* const lParam);
 
 	LRESULT on_WM_COMMAND_Treemap_colorbutton(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT on_WM_COMMAND_Treemap_highlight(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled);
 
-	//void OnColorChangedTreemapGrid(const NMHDR*) noexcept;
-	//void OnColorChangedTreemapHighlight(const NMHDR*) noexcept;
-
-	//void onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept;
 
 	void updateControls() noexcept;
 	void variablesToOptions() noexcept;
@@ -153,7 +151,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	//POINT             m_ptLightSource;
 	ATL::CContainedWindow      m_resetButton;
 
-	static const rsize_t str_size = 10;
+	static constexpr const rsize_t str_size = 14;
 
 	_Field_z_               wchar_t m_sBrightness[str_size] = {};
 	_Field_z_               wchar_t m_sCushionShading[str_size] = {};
@@ -172,11 +170,10 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 	};
 
-class CPageTreemap final : public CPropertyPage {
+struct CPageTreemap final : public CPropertyPage {
 	DISALLOW_COPY_AND_ASSIGN(CPageTreemap);
 
 // Fuckin' OOP sucks.
-public:
 	enum {
 		IDD = IDD_PAGE_TREEMAP
 		};
@@ -188,17 +185,14 @@ public: \
 	virtual CRuntimeClass* GetRuntimeClass() const; \
 	*/
 	//DECLARE_DYNAMIC(CPageTreemap)
-public:
 	static const CRuntimeClass classCPageTreemap;
 	virtual CRuntimeClass* GetRuntimeClass() const;
 
-public:
 	CPageTreemap( ) noexcept : CPropertyPage( CPageTreemap::IDD ) { }
 
 
-protected:
 	void UpdateOptions          ( _In_ const bool save = true    ) noexcept;
-	void UpdateStatics          (                           );
+	//void UpdateStatics          (                           );
 	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
 	virtual BOOL OnInitDialog   (                           ) override final;
 	virtual void OnOK           (                           ) override final;
@@ -211,7 +205,7 @@ protected:
 		SetModified( );
 		}
 
-	void ValuesAltered( _In_ const bool altered = true ) noexcept;
+	void /*Values*/Altered( _In_ const bool altered = true ) noexcept;
 
 
 	Treemap_Options   m_options;	// Current options
@@ -233,25 +227,25 @@ protected:
 	POINT             m_ptLightSource;
 	CButton           m_resetButton;
 
-	static const rsize_t str_size = 10;
+	static constexpr const rsize_t str_size = 14;
 
 	_Field_z_               wchar_t m_sBrightness     [ str_size ];
 	_Field_z_               wchar_t m_sCushionShading [ str_size ];
 	_Field_z_               wchar_t m_sHeight         [ str_size ];
 	_Field_z_               wchar_t m_sScaleFactor    [ str_size ];
 
-	_Field_range_( 0,   2 ) INT     m_style;
-	_Field_range_( 0, 100 ) INT     m_nBrightness;
+	_Field_range_( 0,   2 ) INT     m_style = 0;
+	_Field_range_( 0, 100 ) INT     m_nBrightness = 0;
 
 	//TODO: m_nCushionShading is never explicitly initialized.
-	_Field_range_( 0, 100 ) INT     m_nCushionShading;
+	_Field_range_( 0, 100 ) INT     m_nCushionShading = 0;
 
 	//TODO: m_nHeight is never explicitly initialized.
-	_Field_range_( 0, 100 ) INT     m_nHeight;
+	_Field_range_( 0, 100 ) INT     m_nHeight = 0;
 
 	//TODO: m_nScaleFactor is never explicitly initialized.
 							//C4820: 'CPageTreemap' : '4' bytes padding added after data member 'CPageTreemap::m_nScaleFactor'
-	_Field_range_( 0, 100 ) INT     m_nScaleFactor;
+	_Field_range_( 0, 100 ) INT     m_nScaleFactor = 0;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnColorChangedTreemapGrid( NMHDR *, LRESULT* result ) {
@@ -264,11 +258,11 @@ protected:
 		}
 	afx_msg void OnVScroll( UINT /*nSBCode*/, UINT /*nPos*/, CScrollBar* /*pScrollBar*/ ) {
 		OnSomethingChanged( );
-		ValuesAltered( );
+		ValuesAltered(true, this);
 		}
 	afx_msg void OnLightSourceChanged( NMHDR *, LRESULT * ) {
 		OnSomethingChanged( );
-		ValuesAltered( );
+		ValuesAltered(true, this);
 		}
 	afx_msg void OnBnClickedReset();
 

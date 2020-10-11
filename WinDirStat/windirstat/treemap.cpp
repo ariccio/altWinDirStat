@@ -333,7 +333,9 @@ namespace {
 		//If the function fails, the return value is NULL.
 		//When you no longer need the pen, call the DeleteObject function to delete it.
 		const HPEN hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
-		ASSERT( hPen != NULL );
+		if (hPen == NULL) {
+			std::terminate();
+		}
 		//HPEN_wrapper pen( hPen );
 		HGDIOBJ_wrapper pen(hPen);
 		//CPen pen { PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) };

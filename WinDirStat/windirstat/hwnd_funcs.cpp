@@ -102,6 +102,68 @@ void hwnd::ScreenToClient(_In_ const HWND hWnd, _Inout_ POINT* const point) noex
 		std::terminate();
 		}
 	}
+void hwnd::ScreenToClient(_In_ const HWND hWnd, _Inout_ RECT* const rect) noexcept {
+	/*
+	When we give it a RECT, MFC decides evil pointer arithmetic is fine because they suck
+	void CWnd::ScreenToClient(LPRECT lpRect) const
+	{
+		ASSERT(::IsWindow(m_hWnd));
+		::ScreenToClient(m_hWnd, (LPPOINT)lpRect);
+		::ScreenToClient(m_hWnd, ((LPPOINT)lpRect)+1);
+		if (GetExStyle() & WS_EX_LAYOUTRTL)
+			CRect::SwapLeftRight(lpRect);
+	}
+
+	For reference:
+	inline void WINAPI CRect::SwapLeftRight(_Inout_ LPRECT lpRect) throw()
+	{
+		LONG temp = lpRect->left;
+		lpRect->left = lpRect->right;
+		lpRect->right = temp;
+	}
+
+	DWORD CWnd::GetExStyle() const
+	{
+		ASSERT(::IsWindow(m_hWnd) || (m_pCtrlSite != NULL));
+
+		if (m_pCtrlSite == NULL)
+			return (DWORD)GetWindowLong(m_hWnd, GWL_EXSTYLE);
+		else
+			return m_pCtrlSite->GetExStyle();
+	}
+	...but I don't think I'm going to apply the WS_EX_LAYOUTRTL style to anything, I don't support RTL languages right now.
+
+	A RECT is defined as such:
+	typedef struct tagRECT
+	{
+		LONG    left;
+		LONG    top;
+		LONG    right;
+		LONG    bottom;
+	} RECT, *PRECT, NEAR *NPRECT, FAR *LPRECT;
+	...and POINT is defined as such:
+	typedef struct tagPOINT
+	{
+		LONG  x;
+		LONG  y;
+	} POINT, *PPOINT, NEAR *NPPOINT, FAR *LPPOINT;
+
+	...therefore CWnd::ScreenToClient is like calling
+
+	::ScreenToClient(hWnd, {left, top});
+	::ScreenToClient(hWnd, {right, bottom});
+	*/
+	//For maximum type safety, I'm not going to type pun this. There's no POINT inside the RECT (even though they are binary compatible).
+	POINT p1 = { rect->left, rect->top };
+	POINT p2 = { rect->right, rect->bottom };
+	hwnd::ScreenToClient(hWnd, &p1);
+	hwnd::ScreenToClient(hWnd, &p2);
+	rect->left = p1.x;
+	rect->top = p1.y;
+	rect->right = p2.x;
+	rect->bottom = p2.y;
+
+	}
 
 void hwnd::EndPaint(_In_ const HWND hWnd, _In_ const PAINTSTRUCT& ps) noexcept {
 	/*
@@ -159,8 +221,25 @@ HDC hwnd::BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept {
 	return hDC;
 	}
 
-HWND hwnd::GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept {
+int hwnd::GetDlgCtrlID(_In_ const HWND hWnd) noexcept {
+	//GetDlgCtrlID function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdlgctrlid
+	// If the function succeeds, the return value is the identifier of the control.
+	// If the function fails, the return value is zero. An invalid value for the hwndCtl parameter, for example, will cause the function to fail. To get extended error information, call GetLastError.
+	const BOOL is_window = ::IsWindow(hWnd);
+	if (!is_window) {
+		TRACE(L"GetDlgCtrlID called on invalid window HWND: `%p`!\r\n", hWnd);
+		std::terminate();
+		}
+	const int ID = ::GetDlgCtrlID(hWnd);
+	if (ID == 0) {
+		displayWindowsMsgBoxWithError();
+		std::terminate();
+		}
+	return ID;
+	}
 
+
+HWND hwnd::GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept {
 	// GetDlgItem function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdlgitem
 	// If the function succeeds, the return value is the window handle of the specified control.
 	// If the function fails, the return value is NULL, indicating an invalid dialog box handle or a nonexistent control. To get extended error information, call GetLastError.

@@ -20,15 +20,44 @@ WDS_FILE_INCLUDE_MESSAGE
 namespace {
 	constexpr const int CPageTreemap_maxHeight = 200;
 
-	template<typename slidT>
-	void initSlid(slidT slid, const int minimum, const int maximum, const int ticFreq, const int lineSize, const int pageSize, const int initValue) noexcept {
-		slid.SetRange(minimum, maximum);
-		slid.SetPageSize(pageSize);
-		slid.SetTicFreq(ticFreq);
-		slid.SetLineSize(lineSize);
-		slid.SetPos(initValue);
+	void initSlid(_Inout_ WTL::CTrackBarCtrl* const slid, const int minimum, const int maximum, const int ticFreq, const int lineSize, const int pageSize, const int initValue) noexcept {
+		slid->SetRange(minimum, maximum);
+		slid->SetPageSize(pageSize);
+		slid->SetTicFreq(ticFreq);
+		slid->SetLineSize(lineSize);
+		slid->SetPos(initValue);
 		}
-	}
+
+	// Only temporarily a template.
+	template <typename PageDialogT>
+	void updateStaticText(_Inout_ PageDialogT* const dialog) noexcept {
+		int format_results[4] = { -1, -1, -1, -1 };
+
+		format_results[0] = ::swprintf_s(dialog->m_sBrightness, dialog->str_size, L"%d", (100 - dialog->m_nBrightness));
+		format_results[1] = ::swprintf_s(dialog->m_sCushionShading, dialog->str_size, L"%d", (100 - dialog->m_nCushionShading));
+		format_results[2] = ::swprintf_s(dialog->m_sHeight, dialog->str_size, L"%d", ((CPageTreemap_maxHeight - dialog->m_nHeight) / (CPageTreemap_maxHeight / 100)));
+		format_results[3] = ::swprintf_s(dialog->m_sScaleFactor, dialog->str_size, L"%d", (100 - dialog->m_nScaleFactor));
+
+
+		//TRACE(L"Statics:\r\n");
+		//TRACE(L"\tm_sBrightness: %s\r\n", m_sBrightness);
+		//TRACE(L"\tm_sCushionShading: %s\r\n", m_sCushionShading);
+		//TRACE(L"\tm_sHeight: %s\r\n", m_sHeight);
+		//TRACE(L"\tm_sScaleFactor: %s\r\n", m_sScaleFactor);
+		//Not vectorized: 1304, loop includes assignments of different sizes
+		for (rsize_t i = 0; i < 4; ++i) {
+			ASSERT(format_results[i] != -1);
+			if (format_results[i] == -1) {
+				displayWindowsMsgBoxWithMessage(std::wstring(L"format_results[ ") + std::to_wstring(i) + std::wstring(L" ] == -1! swprintf_s failed!"));
+				std::terminate();
+				}
+			}
+
+		}
+
+
+
+}
 
 /*
 #define IMPLEMENT_DYNAMIC(class_name, base_class_name) \
@@ -70,7 +99,7 @@ and this:
 */
 //IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
 AFX_COMDAT const CRuntimeClass CPageTreemap::classCPageTreemap = {
-	"CPageTreemap", sizeof(class CPageTreemap), 0xFFFF, NULL, const_cast<CRuntimeClass*>(&CPropertyPage::classCPropertyPage), NULL, NULL
+	"CPageTreemap", sizeof(struct CPageTreemap), 0xFFFF, NULL, const_cast<CRuntimeClass*>(&CPropertyPage::classCPropertyPage), NULL, NULL
 	};
 CRuntimeClass* CPageTreemap::GetRuntimeClass() const {
 	return const_cast<CRuntimeClass*>(&CPageTreemap::classCPageTreemap);
@@ -91,7 +120,7 @@ void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
 
 	if ( !pDX->m_bSaveAndValidate ) {
 		UpdateOptions( false );
-		UpdateStatics( );
+		updateStaticText(this);
 		}
 
 	DDX_Radio   ( pDX, IDC_KDIRSTAT, ( int & ) m_style );
@@ -159,18 +188,18 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 	debugDataExchangeMembers();
 	//debugSliderPosition();
 	m_brightness = GetDlgItem(IDC_BRIGHTNESS);
-	initSlid(m_brightness, 0, 100, 1, 1, 10, 100 - static_cast<int>(m_options.brightness * 100));
+	initSlid(&m_brightness, 0, 100, 1, 1, 10, 100 - static_cast<int>(m_options.brightness * 100));
 
 	m_cushionShading = GetDlgItem(IDC_CUSHIONSHADING);
-	initSlid(m_cushionShading, 0, 100, 1, 1, 10, m_options.GetAmbientLightPercent());
+	initSlid(&m_cushionShading, 0, 100, 1, 1, 10, m_options.GetAmbientLightPercent());
 
 	m_height = GetDlgItem(IDC_HEIGHT);
-	initSlid(m_height, 0, CPageTreemap_maxHeight, 1, 1, CPageTreemap_maxHeight / 10, (CPageTreemap_maxHeight - m_options.GetHeightPercent()));
+	initSlid(&m_height, 0, CPageTreemap_maxHeight, 1, 1, CPageTreemap_maxHeight / 10, (CPageTreemap_maxHeight - m_options.GetHeightPercent()));
 	//m_height.SetRange(0, CPageTreemap_maxHeight, true);
 	//m_height.SetPageSize(CPageTreemap_maxHeight / 10);
 
 	m_scaleFactor = GetDlgItem(IDC_SCALEFACTOR);
-	initSlid(m_scaleFactor, 0, 100, 1, 1, 10, (100 - m_options.GetScaleFactorPercent()));
+	initSlid(&m_scaleFactor, 0, 100, 1, 1, 10, (100 - m_options.GetScaleFactorPercent()));
 	//m_lightSource.SetRange( CSize { 400, 400 } );
 	//m_lightSource.m_externalRange = WTL::CSize{ 400, 400 };
 
@@ -179,12 +208,13 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 
 	//must DDX_VARIABLE_TO_CONTROL after UpdateOptions(false)/optionsToVariables
 	optionsToVariables();
-	UpdateStatics();
+	updateStaticText(this);
 	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
 	debugDataExchangeMembers();
 	//debugSliderPosition();
 	TRACE(L"initialization complete\r\n-------\r\n");
-	ValuesAltered(true); // m_undo is invalid
+	//ValuesAltered(true); // m_undo is invalid
+	ValuesAltered(true, this);
 	return TRUE;
 }
 
@@ -192,7 +222,7 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 
 BOOL CPageTreemap::OnInitDialog( ) {
 	VERIFY( CDialog::OnInitDialog( ) );
-	ValuesAltered( ); // m_undo is invalid
+	ValuesAltered( true, this); // m_undo is invalid
 
 	m_brightness.SetPageSize( 10 );
 	m_cushionShading.SetPageSize( 10 );
@@ -232,15 +262,15 @@ int WTLTreemapPage::OnApply() {
 	}
 
 
-void WTLTreemapPage::ValuesAltered( _In_ const bool altered ) noexcept {
-	m_altered = (altered ? TRUE : FALSE);
-	m_resetButton.SetWindowTextW(m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings");
-	}
-
-void CPageTreemap::ValuesAltered( _In_ const bool altered ) noexcept {
-	m_altered = ( altered ? TRUE : FALSE );
-	m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
-	}
+//void WTLTreemapPage::ValuesAltered( _In_ const bool altered ) noexcept {
+//	m_altered = (altered ? TRUE : FALSE);
+//	m_resetButton.SetWindowTextW(m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings");
+//	}
+//
+//void CPageTreemap::ValuesAltered( _In_ const bool altered ) noexcept {
+//	m_altered = ( altered ? TRUE : FALSE );
+//	m_resetButton.SetWindowTextW( m_altered ? L"&Reset to\r\nDefaults" : L"Back to\r\n&User Settings" );
+//	}
 
 void WTLTreemapPage::UpdateOptions(_In_ const bool save) noexcept {
 	static_assert(std::is_convertible< decltype(m_style), std::underlying_type< decltype(m_options.style) >::type>::value, "");
@@ -267,32 +297,6 @@ void WTLTreemapPage::UpdateOptions(_In_ const bool save) noexcept {
 		m_gridColor.m_preview.SetColor(m_options.gridColor);
 	}
 }
-
-void WTLTreemapPage::UpdateStatics() {
-	int format_results[4] = { -1, -1, -1, -1 };
-
-	format_results[0] = ::swprintf_s(m_sBrightness, str_size, L"%d", (100 - m_nBrightness));
-	format_results[1] = ::swprintf_s(m_sCushionShading, str_size, L"%d", (100 - m_nCushionShading));
-	format_results[2] = ::swprintf_s(m_sHeight, str_size, L"%d", ((CPageTreemap_maxHeight - m_nHeight) / (CPageTreemap_maxHeight / 100)));
-	format_results[3] = ::swprintf_s(m_sScaleFactor, str_size, L"%d", (100 - m_nScaleFactor));
-
-
-	//TRACE(L"Statics:\r\n");
-	//TRACE(L"\tm_sBrightness: %s\r\n", m_sBrightness);
-	//TRACE(L"\tm_sCushionShading: %s\r\n", m_sCushionShading);
-	//TRACE(L"\tm_sHeight: %s\r\n", m_sHeight);
-	//TRACE(L"\tm_sScaleFactor: %s\r\n", m_sScaleFactor);
-	//Not vectorized: 1304, loop includes assignments of different sizes
-	for (rsize_t i = 0; i < 4; ++i) {
-		ASSERT(format_results[i] != -1);
-		if (format_results[i] == -1) {
-			displayWindowsMsgBoxWithMessage(std::wstring(L"format_results[ ") + std::to_wstring(i) + std::wstring(L" ] == -1! swprintf_s failed!"));
-			std::terminate();
-		}
-	}
-}
-
-
 void CPageTreemap::UpdateOptions( _In_ const bool save ) noexcept {
 	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
 	if ( save ) {
@@ -318,23 +322,6 @@ void CPageTreemap::UpdateOptions( _In_ const bool save ) noexcept {
 		}
 	}
 
-void CPageTreemap::UpdateStatics( ) {
-	int format_results[ 4 ] = { -1, -1, -1, -1 };
-	
-	format_results[ 0 ] = ::swprintf_s( m_sBrightness,     str_size, L"%d", ( 100 - m_nBrightness ) );
-	format_results[ 1 ] = ::swprintf_s( m_sCushionShading, str_size, L"%d", ( 100 - m_nCushionShading ) );
-	format_results[ 2 ] = ::swprintf_s( m_sHeight,         str_size, L"%d", ( ( CPageTreemap_maxHeight - m_nHeight ) / ( CPageTreemap_maxHeight / 100 ) ) );
-	format_results[ 3 ] = ::swprintf_s( m_sScaleFactor,    str_size, L"%d", ( 100 - m_nScaleFactor ) );
-
-	//Not vectorized: 1304, loop includes assignments of different sizes
-	for ( rsize_t i = 0; i < 4; ++i ) {
-		ASSERT( format_results[ i ] != -1 );
-		if ( format_results[ i ] == -1 ) {
-			displayWindowsMsgBoxWithMessage( std::wstring( L"format_results[ " ) + std::to_wstring( i ) + std::wstring( L" ] == -1! swprintf_s failed!" ) );
-			std::terminate( );
-			}
-		}
-	}
 
 
 void CPageTreemap::OnBnClickedReset( ) {
@@ -348,7 +335,7 @@ void CPageTreemap::OnBnClickedReset( ) {
 		}
 	m_options = o;
 
-	ValuesAltered( !m_altered );
+	ValuesAltered( !m_altered, this );
 	VERIFY( CWnd::UpdateData( false ) );
 	SetModified( );
 	}
@@ -366,37 +353,21 @@ LRESULT WTLTreemapPage::OnCommandIDCReset(WORD wNotifyCode, WORD wID, HWND hWndC
 		o = m_undo;
 	}
 	m_options = o;
-	ValuesAltered(!m_altered);
+	ValuesAltered(!m_altered, this);
 	optionsToVariables();
 	//OnSomethingChanged();
 	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
-	UpdateStatics();
+	updateStaticText(this);
 	//updateControls();
 	SetModified();
 	TRACE(L"Damnit I need to update the sliders manually too?!?\r\n");
 	return TRUE;
 }
 
-
-//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
-// here, HIWORD(wPARAM) is uNotify code, LOWORD(WPARAM) is nID, and hWnd is LPARAM
-//void WTLTreemapPage::onResetCommand(UINT uNotifyCode, int nID, HWND hWnd) noexcept {
-//	TRACE(L"uNotifyCode %u, nID: %i, hWnd: %p\r\n", uNotifyCode, nID, hWnd);
-//	}
-
-
-//WM_SETCURSOR message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-setcursor
-//If an application processes this message, it should return TRUE to halt further processing or FALSE to continue.
-//LRESULT WTLTreemapPage::OnSetCursor_Reset(const HWND hwndCtrl, UINT uHitTest, UINT uMouseMsg) {
-//	TRACE(L"uHitTest: %i, uMouseMsg: %i\r\n", uHitTest, uMouseMsg);
-//	ASSERT(false);
-//	return FALSE;
-//	}
-
 void WTLTreemapPage::updateControls() noexcept {
-	UpdateStatics();
+	updateStaticText(this);
 	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
-	ValuesAltered();
+	ValuesAltered(true, this);
 	}
 
 void WTLTreemapPage::variablesToOptions() noexcept {
@@ -411,26 +382,6 @@ void WTLTreemapPage::optionsToVariables() noexcept {
 	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
 	//debugSliderPosition();
 }
-
-void WTLTreemapPage::OnSomethingChanged() noexcept {
-	TRACE(L"OnSomethingChanged()\r\n");
-	debugSliderPosition();
-	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
-	//VERIFY(DoDataExchange(DDX_CONTROL_TO_VARIABLE));
-	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
-	//VERIFY(DoDataExchange(false));
-	TRACE(L"m_sBrightness: %s\r\n", m_sBrightness);
-	UpdateStatics();
-	TRACE(L"m_sBrightness: %s\r\n", m_sBrightness);
-	variablesToOptions();
-	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
-	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
-	TRACE(L"m_nBrightness: %i\r\n", m_nBrightness);
-	debugSliderPosition();
-	//SetModified();
-	TRACE(L"end OnSomethingChanged()\r\n\r\n");
-}
-
 
 void WTLTreemapPage::setPosition(const int nPos, const HWND pScrollBar) {
 	debugDataExchangeMembers();
@@ -477,19 +428,11 @@ void WTLTreemapPage::OnVScroll(int nSBCode, short nPos, HWND pScrollBar) {
 	//debugSliderPosition();
 	DoDataExchange(DDX_CONTROL_TO_VARIABLE);
 	//OnSomethingChanged();
-	ValuesAltered();
+	ValuesAltered(true, this);
 	//debugSliderPosition();
 	//WTL::CTrackBarCtrl::
 	TRACE(L"End OnVScroll\r\n");
 	}
-
-
-//void WTLTreemapPage::OnColorChangedTreemapGrid(const NMHDR*) noexcept {
-//	OnSomethingChanged();
-//	}
-//void WTLTreemapPage::OnColorChangedTreemapHighlight(const NMHDR*) noexcept {
-//	OnSomethingChanged();
-//	}
 
 
 //WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
@@ -501,7 +444,7 @@ LRESULT WTLTreemapPage::on_WM_COMMAND_Treemap_colorbutton(const WORD wNotifyCode
 	//	wParam: The LOWORD contains the button's control identifier. The HIWORD specifies the notification code.
 	//	lParam: A handle to the button.
 	TRACE(L"m_gridColor.preview.m_color: %u\r\n", unsigned(m_gridColor.m_preview.m_color));
-	const WPARAM wParam = (LOWORD(wID) | HIWORD(wNotifyCode));
+	const WPARAM wParam = static_cast<WPARAM>(LOWORD(wID) | HIWORD(wNotifyCode));
 	const LRESULT res = ::SendMessageW(hWndCtl, WM_COMMAND, wParam, reinterpret_cast<LPARAM>(hWndCtl));
 	(void)res;
 	TRACE(L"m_gridColor.preview.m_color: %u\r\n", unsigned(m_gridColor.m_preview.m_color));
@@ -509,35 +452,6 @@ LRESULT WTLTreemapPage::on_WM_COMMAND_Treemap_colorbutton(const WORD wNotifyCode
 	TRACE(L"m_gridColor.preview.m_color: %u\r\n", unsigned(m_gridColor.m_preview.m_color));
 	return 0;
 	}
-
-//WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
-//CommandHandler: https://docs.microsoft.com/en-us/cpp/atl/commandhandler
-//LRESULT WTLTreemapPage::on_WM_COMMAND_Treemap_highlight(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled) {
-//	TRACE(L"%s\r\n", __FUNCSIG__);
-//
-//	return 0;
-//}
-
-////WM_NOTIFY message: https://docs.microsoft.com/en-us/windows/win32/controls/wm-notify
-////An application should use the hwndFrom or idFrom member of the NMHDR structure (passed as the lParam parameter) to identify the control.
-//LRESULT WTLTreemapPage::onWM_NOTIFY(const int wParam, const NMHDR* const lParam) {
-//	const NMHDR* const notify_message_header = lParam;
-//
-//	if (notify_message_header->code == COLBN_CHANGED) {
-//		__debugbreak();
-//		}
-//	//break to look for COLBN_CHANGED (0x87)
-//	//if (IDC_TREEMAPGRIDCOLOR == notify_message_header->idFrom) {
-//	//	OnColorChangedTreemapGrid(notify_message_header);
-//	//	return TRUE;
-//	//	}
-//	//if (IDC_TREEMAPHIGHLIGHTCOLOR == notify_message_header->idFrom) {
-//	//	OnColorChangedTreemapHighlight(notify_message_header);
-//	//	return TRUE;
-//	//	}
-//	return FALSE;
-//	}
-
 
 
 

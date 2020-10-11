@@ -14,6 +14,8 @@ WDS_FILE_INCLUDE_MESSAGE
 
 #include "globalhelpers.h"
 #include "signum.h"
+#include "macros_that_scare_small_children.h"
+
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
 class CXySlider final : public CStatic {
@@ -28,9 +30,10 @@ public:
 		m_pos.x = 0;
 		m_pos.y = 0;
 		}
+	DISALLOW_COPY_AND_ASSIGN(CXySlider);
 
-	CXySlider& operator=( const CXySlider& in ) = delete;
-	CXySlider( const CXySlider& in ) = delete;
+	//CXySlider& operator=( const CXySlider& in ) = delete;
+	//CXySlider( const CXySlider& in ) = delete;
 
 	void SetPos( const POINT pt );
 

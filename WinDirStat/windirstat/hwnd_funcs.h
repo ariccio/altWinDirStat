@@ -15,9 +15,11 @@ namespace hwnd {
 	void InvalidateErase(_In_opt_ const HWND hWnd, _In_opt_ const bool do_we_care = true, _In_opt_z_ PCSTR source = nullptr) noexcept;
 	void RedrawWindow(_In_ const HWND hWnd) noexcept;
 	void ScreenToClient(_In_ const HWND hWnd, _Inout_ POINT* point) noexcept;
+	void ScreenToClient(_In_ const HWND hWnd, _Inout_ RECT* point) noexcept;
 	void EndPaint(_In_ const HWND hWnd, _In_ const PAINTSTRUCT& ps) noexcept;
 	HDC BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept;
 	HWND GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept;
+	int GetDlgCtrlID(_In_ const HWND hWnd) noexcept;
 	}
 
 
