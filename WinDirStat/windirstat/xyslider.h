@@ -20,6 +20,7 @@ WDS_FILE_INCLUDE_MESSAGE
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
 struct CXySlider final : public CWnd {
 	DECLARE_DYNAMIC(CXySlider)
+	DISALLOW_COPY_AND_ASSIGN(CXySlider);
 
 	CXySlider( ) noexcept : m_gripperHighlight{ false } {
 		m_externalPos.x = 0;
@@ -29,10 +30,6 @@ struct CXySlider final : public CWnd {
 		m_pos.x = 0;
 		m_pos.y = 0;
 		}
-	DISALLOW_COPY_AND_ASSIGN(CXySlider);
-
-	//CXySlider& operator=( const CXySlider& in ) = delete;
-	//CXySlider( const CXySlider& in ) = delete;
 
 	void SetPos( const POINT pt );
 
@@ -40,21 +37,16 @@ struct CXySlider final : public CWnd {
 	// "Page size" is always 10 Pixel
 	void Initialize       (                             ) noexcept;
 	void CalcSizes        (                             ) noexcept;
-	void RemoveTimer      (                                  ) noexcept;
-	
+	void RemoveTimer      (                                  ) noexcept;	
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              ) noexcept;
 	void DoDrag           ( _In_ const POINT point                ) noexcept;
 	void DragMsgLoop(_In_ const POINT ptMin, _In_ const POINT ptMax, _Inout_ POINT* const pt0 ) noexcept;
 	void DoPage           ( _In_ const POINT point                ) noexcept;
 	void HighlightGripper ( _In_ const bool on ) noexcept;
 	void Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT* const pt0 ) noexcept;
-
 	void InternToExtern() noexcept;
-
 	void ExternToIntern() noexcept;
-
 	void InstallTimer() noexcept;
-
 	RECT GetGripperRect() const noexcept;
 
 	//C4820: 'CXySlider' : '3' bytes padding added after data member 'CXySlider::m_inited'
