@@ -239,4 +239,11 @@ namespace global_strings {
 	}
 
 
+// This is the same problem as the stroop test. I utterly fail it. It's a very specific disability.
+constexpr const BOOL DDX_CONTROL_TO_VARIABLE = TRUE;
+constexpr const BOOL DDX_VARIABLE_TO_CONTROL = FALSE;
+static_assert(DDX_LOAD == DDX_VARIABLE_TO_CONTROL, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
+static_assert(DDX_SAVE == DDX_CONTROL_TO_VARIABLE, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
+
+
 #endif
