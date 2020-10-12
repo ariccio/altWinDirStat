@@ -359,6 +359,10 @@ namespace {
 			return point;
 		}
 		*/
+		// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+		// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+		ASSERT(hDC == hAttribDC);
+
 		if ( hDC != hAttribDC ) {
 			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
@@ -418,6 +422,10 @@ namespace {
 			return point;
 		}
 		*/
+		// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+		// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+		ASSERT(hDC == hAttribDC);
+
 		if ( hDC != hAttribDC ) {
 			//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 			//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
@@ -870,6 +878,10 @@ void CTreemap::compensateForGrid( _Inout_ RECT* const rc, _In_ const HDC hDC, _I
 		ASSERT( !zero_size_rect( rc ) );
 		return;
 		}
+	// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+	// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+	ASSERT(hDC == hAttribDC);
+
 	// We shrink the rectangle here, too. If we didn't do this, the layout of the treemap would change, when grid is switched on and off.
 	shrink_for_grid( hDC, hAttribDC, rc );
 	rc->right--;
@@ -890,6 +902,10 @@ void CTreemap::DrawTreemap( _In_ const HDC hOffscreen_buffer, _Inout_ RECT* cons
 		}
 	
 	CTreemap::SetOptions( options );
+
+	// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+	// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+	ASSERT(hOffscreen_buffer == hAttribDC);
 
 	CTreemap::compensateForGrid( rc, hOffscreen_buffer, hAttribDC );
 	

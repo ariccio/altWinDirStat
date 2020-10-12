@@ -42,10 +42,15 @@ namespace {
 	constexpr const int GRIPPER_RADIUS = 8;
 
 	void move_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
+		// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+		// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+		ASSERT(hDC == hAttribDC);
+
 		//pdc.MoveTo( rc.left,  m_zero.y ); <---Not handling the return value means that WE DO NOT care about the previous "current position", thus the fourth parameter to MoveToEx should be NULL.
 		POINT pt = {}; //For debugging.
 		TRACE(L"pt: %s\r\n", pts(pt).c_str());
 		ASSERT( hDC != nullptr );
+
 		if ( hDC != hAttribDC ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
 			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, &pt ) );
@@ -59,6 +64,7 @@ namespace {
 		POINT after_hAttribDC = pt;
 		TRACE(L"pt: %s\r\n", pts(pt).c_str());
 		if (!pts_eq(after_hDC, after_hAttribDC)) {
+			ASSERT(hDC == hAttribDC);
 			TRACE(L"difference here matters!!!\r\n");
 			TRACE(L"\r\n%s\r\n%s\r\n", pts(after_hDC).c_str(), pts(after_hAttribDC).c_str());
 			}
@@ -66,6 +72,9 @@ namespace {
 	
 	void line_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
 		ASSERT( hDC != nullptr );
+		// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+		// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+		ASSERT(hDC == hAttribDC);
 		if ( ( hAttribDC != nullptr ) && ( hDC != hAttribDC ) ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
 			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, nullptr ) );
@@ -302,6 +311,11 @@ void CXySlider::PaintBackground( _In_ const HDC hDC, _In_ const HDC hAttribDC) n
 
 	SelectObject_wrapper sopen( hDC, pen.m_hObject );
 	//ASSERT(hAttribDC == nullptr);
+
+
+	// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+	// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+	ASSERT(hDC == hAttribDC);
 	move_to_coord( hDC, rc.left, m_zero.y, hAttribDC );
 
 	line_to_coord( hDC, rc.right, m_zero.y, hAttribDC );

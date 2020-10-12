@@ -1700,6 +1700,10 @@ protected:
 		ASSERT_VALID( pDC );
 		ASSERT( GetItemCount_HDM_GETITEMCOUNT( CListCtrl::GetHeaderCtrl( )->m_hWnd ) > 0 );
 		//TRACE( _T( "COwnerDrawnListCtrl::OnEraseBkgnd!\r\n" ) );
+		// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+		// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+		ASSERT(pDC->m_hDC == pDC->m_hAttribDC);
+
 		COwnerDrawnListCtrl::handle_EraseBkgnd( pDC->m_hDC, pDC->m_hAttribDC );
 		return true;
 		}
@@ -1805,6 +1809,10 @@ private:
 			}
 			*/
 			ASSERT( hDC != NULL );
+
+			// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+			// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+			ASSERT(hDC == hAttribDC);
 			if ( hDC != hAttribDC ) {
 				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
@@ -1849,7 +1857,11 @@ private:
 			}
 		const auto verticalSize = vertical_readable;
 		for ( size_t i = 0; i < verticalSize; i++ ) {
+			// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+			// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
 			ASSERT( hDC != NULL );
+			ASSERT(hDC == hAttribDC);
+
 			if ( hDC != hAttribDC ) {
 				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
@@ -1877,6 +1889,9 @@ private:
 				return ::LineTo(m_hDC, x, y);
 			}
 			*/
+			// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+			// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+			ASSERT(hDC == hAttribDC);
 			if ( ( hAttribDC != NULL ) && ( hDC != hAttribDC ) ) {
 				//MoveToEx function: https://msdn.microsoft.com/en-us/library/dd145069.aspx
 				//The MoveToEx function updates the current position to the specified point and optionally returns the previous position.
@@ -1895,6 +1910,10 @@ private:
 		}
 
 	void handle_EraseBkgnd( _In_ const HDC hDC, _In_ const HDC hAttribDC ) noexcept {
+		ASSERT(hDC == hAttribDC);
+
+		// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+		// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
 		// We should recalculate m_yFirstItem here (could have changed e.g. when the XP-Theme changed).
 		if ( GetItemCount_HDM_GETITEMCOUNT( m_hWnd ) > 0 ) {
 			RECT rc;
@@ -1967,6 +1986,10 @@ private:
 		ASSERT( vertical_readable < column_buf_size );
 
 		if ( m_showGrid ) {
+			// https://docs.microsoft.com/en-us/cpp/mfc/reference/cdc-class?view=vs-2019#m_hdc
+			// "By default, m_hDC is equal to m_hAttribDC, the other device context wrapped by CDC"
+			ASSERT(hDC == hAttribDC);
+
 			COwnerDrawnListCtrl::draw_grid_for_EraseBkgnd( gridColor, hDC, rcClient, vertical_readable, vertical_buf_temp, hAttribDC );
 			}
 
