@@ -147,8 +147,8 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	WTL::CTrackBarCtrl       m_height;
 	WTL::CTrackBarCtrl       m_scaleFactor;
 
-	//CXySlider         m_lightSource;
-	//POINT             m_ptLightSource;
+	CXySlider         m_lightSource;
+	POINT             m_ptLightSource;
 	ATL::CContainedWindow      m_resetButton;
 
 	static constexpr const rsize_t str_size = 14;

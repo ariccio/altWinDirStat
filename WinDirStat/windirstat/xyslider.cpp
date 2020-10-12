@@ -21,18 +21,46 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "ScopeGuard.h"
 
 namespace {
+
+	[[nodiscard]] std::wstring pts(const POINT& pt) {
+		return L"pt.x: " + std::to_wstring(pt.x) + L", pt.y: " + std::to_wstring(pt.y);
+		}
+
+	[[nodiscard]] bool pts_eq(const POINT& ptl, const POINT& ptr) noexcept {
+		if (ptl.x != ptr.x) {
+			return false;
+			}
+		if (ptl.y != ptr.y) {
+			return false;
+			}
+		// I could do this above, but I don't like undefined behavior.
+		// Is POINT even packed?
+		ASSERT(memcmp(&ptl, &ptr, sizeof(POINT)) == 0);
+		return true;
+		}
+
 	constexpr const int GRIPPER_RADIUS = 8;
 
 	void move_to_coord( _In_ const HDC hDC, _In_ const int rc_x, _In_ const int rc_y, _In_ const HDC hAttribDC ) {
 		//pdc.MoveTo( rc.left,  m_zero.y ); <---Not handling the return value means that WE DO NOT care about the previous "current position", thus the fourth parameter to MoveToEx should be NULL.
+		POINT pt = {}; //For debugging.
+		TRACE(L"pt: %s\r\n", pts(pt).c_str());
 		ASSERT( hDC != nullptr );
 		if ( hDC != hAttribDC ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, nullptr ) );
+			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, &pt ) );
 			}
+		POINT after_hDC = pt;
+		TRACE(L"pt: %s\r\n", pts(pt).c_str());
 		if ( hAttribDC != nullptr ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
-			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, nullptr ) );
+			VERIFY( ::MoveToEx( hAttribDC, rc_x, rc_y, &pt) );
+			}
+		POINT after_hAttribDC = pt;
+		TRACE(L"pt: %s\r\n", pts(pt).c_str());
+		if (!pts_eq(after_hDC, after_hAttribDC)) {
+			TRACE(L"difference here matters!!!\r\n");
+			TRACE(L"\r\n%s\r\n%s\r\n", pts(after_hDC).c_str(), pts(after_hAttribDC).c_str());
 			}
 		}
 	
@@ -128,7 +156,7 @@ CRuntimeClass* CXySlider::GetRuntimeClass() const {
 
 void AFXAPI DDX_XySlider( CDataExchange* pDX, INT nIDC, POINT& value ) {
 	pDX->PrepareCtrl(nIDC);
-	HWND hWndCtrl;
+	HWND hWndCtrl = nullptr;
 	pDX->m_pDlgWnd->GetDlgItem( nIDC, &hWndCtrl );
 	if ( pDX->m_bSaveAndValidate ) {
 		::SendMessageW( hWndCtrl, XY_GETPOS, 0, reinterpret_cast<LPARAM>(&value) );
@@ -273,7 +301,7 @@ void CXySlider::PaintBackground( _In_ const HDC hDC, _In_ const HDC hAttribDC) n
 	HGDIOBJ_wrapper pen(hPen);
 
 	SelectObject_wrapper sopen( hDC, pen.m_hObject );
-
+	//ASSERT(hAttribDC == nullptr);
 	move_to_coord( hDC, rc.left, m_zero.y, hAttribDC );
 
 	line_to_coord( hDC, rc.right, m_zero.y, hAttribDC );
@@ -513,38 +541,6 @@ void CXySlider::RemoveTimer( ) noexcept {
 		}
 	m_timer = 0;
 	}
-
-//afx_msg void CXySlider::OnSetFocus( CWnd* pOldWnd ) {
-//	CWnd::OnSetFocus( pOldWnd );
-//	/*
-//void CWnd::OnSetFocus( CWnd* ) { 
-//	BOOL bHandled;
-//	bHandled = FALSE;
-//	if ( m_pCtrlCont != NULL ) {
-//		bHandled = m_pCtrlCont->HandleSetFocus();
-//		}
-//
-//	if( !bHandled ) {
-//		Default();
-//		}
-//	}
-//
-//LRESULT CWnd::Default( ) {
-//	_AFX_THREAD_STATE* pThreadState = _afxThreadState.GetData( );
-//	return DefWindowProc( pThreadState->m_lastSentMsg.message, pThreadState->m_lastSentMsg.wParam, pThreadState->m_lastSentMsg.lParam );
-//	}
-//	*/
-//
-//
-//	//hwnd::InvalidateErase(m_hWnd);
-//	}
-
-//afx_msg void CXySlider::OnKillFocus( CWnd* pNewWnd ) {
-//	// calls CWnd::OnWindowPosChanging, which somehow is CWnd::OnCreate and CWnd::OnCopyData (both CWnd::Default())
-//	CWnd::OnKillFocus( pNewWnd );
-//	//hwnd::InvalidateErase(m_hWnd);
-//	}
-
 
 
 BEGIN_MESSAGE_MAP(CXySlider, CStatic)
