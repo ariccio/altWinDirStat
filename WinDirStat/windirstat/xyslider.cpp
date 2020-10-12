@@ -50,12 +50,13 @@ namespace {
 		POINT pt = {}; //For debugging.
 		TRACE(L"pt: %s\r\n", pts(pt).c_str());
 		ASSERT( hDC != nullptr );
-
+		POINT before_hDC = {};
 		if ( hDC != hAttribDC ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
 			VERIFY( ::MoveToEx( hDC, rc_x, rc_y, &pt ) );
 			}
 		POINT after_hDC = pt;
+		ASSERT(pts_eq(before_hDC, after_hDC));
 		TRACE(L"pt: %s\r\n", pts(pt).c_str());
 		if ( hAttribDC != nullptr ) {
 			//If [MoveToEx] succeeds, the return value is nonzero. If [MoveToEx] fails, the return value is zero.
