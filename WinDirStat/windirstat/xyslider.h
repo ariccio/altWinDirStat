@@ -18,8 +18,9 @@ WDS_FILE_INCLUDE_MESSAGE
 
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
-struct CXySlider final : public CStatic {
+struct CXySlider final : public CWnd {
 	DECLARE_DYNAMIC(CXySlider)
+
 	CXySlider( ) noexcept : m_gripperHighlight{ false } {
 		m_externalPos.x = 0;
 		m_externalPos.y = 0;
@@ -37,8 +38,6 @@ struct CXySlider final : public CStatic {
 
 	// "Line size" is always 1 Pixel
 	// "Page size" is always 10 Pixel
-
-protected:
 	void Initialize       (                             ) noexcept;
 	void CalcSizes        (                             ) noexcept;
 	void RemoveTimer      (                                  ) noexcept;
@@ -60,11 +59,9 @@ protected:
 
 	//C4820: 'CXySlider' : '3' bytes padding added after data member 'CXySlider::m_inited'
 	bool     m_inited = false;
-public:
 	// These are in external scale
 	SIZE          m_externalRange;
 
-protected:
 	POINT         m_externalPos;
 
 	// These are in pixels
