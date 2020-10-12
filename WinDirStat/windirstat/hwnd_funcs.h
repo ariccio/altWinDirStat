@@ -20,6 +20,9 @@ namespace hwnd {
 	HDC BeginPaint(_In_ const HWND hWnd, _Out_ PPAINTSTRUCT pPaint) noexcept;
 	HWND GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept;
 	int GetDlgCtrlID(_In_ const HWND hWnd) noexcept;
+	void GetWindowRect(_In_ const HWND hWnd, _Out_ RECT* const lpRect) noexcept;
+	RECT GetWindowRect(_In_ const HWND hWnd) noexcept;
+
 	}
 
 

@@ -18,10 +18,8 @@ WDS_FILE_INCLUDE_MESSAGE
 
 
 // CXySlider. A two-dimensional slider. CXySlider is used in the options dialog!
-class CXySlider final : public CStatic {
+struct CXySlider final : public CStatic {
 	DECLARE_DYNAMIC(CXySlider)
-
-public:
 	CXySlider( ) noexcept : m_gripperHighlight{ false } {
 		m_externalPos.x = 0;
 		m_externalPos.y = 0;
@@ -43,58 +41,22 @@ public:
 protected:
 	void Initialize       (                             ) noexcept;
 	void CalcSizes        (                             ) noexcept;
-	void NotifyParent     (                             ) const noexcept;
 	void RemoveTimer      (                                  ) noexcept;
-	void PaintBackground  ( _In_ const HDC m_hDC, _In_ const HDC m_hAttribDC) noexcept;
-	void PaintGripper     ( _In_ const HDC m_hDC, _In_ const HDC m_hAttribDC) noexcept;
+	
 	void DoMoveBy         ( _In_ const INT cx, _In_ const INT cy              ) noexcept;
 	void DoDrag           ( _In_ const POINT point                ) noexcept;
+	void DragMsgLoop(_In_ const POINT ptMin, _In_ const POINT ptMax, _Inout_ POINT* const pt0 ) noexcept;
 	void DoPage           ( _In_ const POINT point                ) noexcept;
 	void HighlightGripper ( _In_ const bool on ) noexcept;
-	void Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT& pt0 ) noexcept;
+	void Handle_WM_MOUSEMOVE( _In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT* const pt0 ) noexcept;
 
-	void InternToExtern( ) noexcept {
-		m_externalPos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.x ) ) * static_cast<DOUBLE>( m_externalRange.cx ) / static_cast<DOUBLE>( m_range.cx ) + 0.5 ) * signum( m_pos.x );
-		m_externalPos.y = static_cast<INT>( static_cast<DOUBLE>( abs( m_pos.y ) ) * static_cast<DOUBLE>( m_externalRange.cy ) / static_cast<DOUBLE>( m_range.cy ) + 0.5 ) * signum( m_pos.y );
-		}
+	void InternToExtern() noexcept;
 
-	void ExternToIntern( ) noexcept {
-		m_pos.x = static_cast<INT>( static_cast<DOUBLE>( abs( m_externalPos.x ) ) * static_cast<DOUBLE>( m_range.cx ) / static_cast<DOUBLE>( m_externalRange.cx ) + 0.5 ) * signum( m_externalPos.x );
-		m_pos.y = static_cast<INT>( static_cast<DOUBLE>( abs( m_externalPos.y ) ) * static_cast<DOUBLE>( m_range.cy ) / static_cast<DOUBLE>( m_externalRange.cy ) + 0.5 ) * signum( m_externalPos.y );
-		}
+	void ExternToIntern() noexcept;
 
-	void InstallTimer( ) noexcept {
-		RemoveTimer( );
-		/*
-_AFXWIN_INLINE UINT_PTR CWnd::SetTimer(UINT_PTR nIDEvent, UINT nElapse,
-		void (CALLBACK* lpfnTimer)(HWND, UINT, UINT_PTR, DWORD))
-	{ ASSERT(::IsWindow(m_hWnd)); return ::SetTimer(m_hWnd, nIDEvent, nElapse,
-		lpfnTimer); }
+	void InstallTimer() noexcept;
 
-		*/
-		//If the window handle identifies an existing window, [IsWindow] returns [a nonzero value].
-		ASSERT( ::IsWindow( m_hWnd ) );
-		ASSERT( m_hWnd != NULL );
-		
-
-		//If [SetTimer] succeeds and the hWnd parameter is NULL, the return value is an integer identifying the new timer. An application can pass this value to the KillTimer function to destroy the timer.
-		//If [SetTimer] succeeds and the hWnd parameter is not NULL, then the return value is a nonzero integer. An application can pass the value of the nIDEvent parameter to the KillTimer function to destroy the timer.
-		//If [SetTimer] fails to create a timer, the return value is zero. To get extended error information, call GetLastError.
-		//m_timer = SetTimer( 4711, 500, NULL );
-
-		const auto temp_timer_value = ::SetTimer( m_hWnd, 4711u, 500u, nullptr );
-		//TODO: check this value!
-		ASSERT( temp_timer_value != 0 );
-		m_timer = temp_timer_value;
-		}
-
-	RECT GetGripperRect( ) const noexcept {
-		RECT rc { -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 };
-		//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
-		VERIFY( ::OffsetRect( &rc, m_zero.x, m_zero.y ) );
-		VERIFY( ::OffsetRect( &rc, m_pos.x, m_pos.y ) );
-		return rc;
-		}
+	RECT GetGripperRect() const noexcept;
 
 	//C4820: 'CXySlider' : '3' bytes padding added after data member 'CXySlider::m_inited'
 	bool     m_inited = false;
@@ -140,18 +102,23 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp( UINT nFlags, CPoint point ) {
 		RemoveTimer( );
+		/*
+		_AFXWIN_INLINE void CWnd::OnLButtonUp(UINT, CPoint)
+			{ Default(); }
+
+		*/
 		CWnd::OnLButtonUp( nFlags, point );
 		}
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg LRESULT OnSetPos( WPARAM, LPARAM lparam ) {
 		const auto point = reinterpret_cast<const POINT*>( lparam );
-		VERIFY(point);
-		SetPos( *point );
+		ASSERT(point);
+		CXySlider::SetPos( *point );
 		return 0;
 		}
 	afx_msg LRESULT OnGetPos( WPARAM, LPARAM lparam ) {
 		auto point = reinterpret_cast<POINT*>( lparam );
-		VERIFY(point);
+		ASSERT(point);
 		*point = m_externalPos;
 		return 0;
 		}

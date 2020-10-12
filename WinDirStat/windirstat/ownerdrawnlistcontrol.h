@@ -1780,8 +1780,7 @@ protected:
 
 private:
 	void draw_grid_for_EraseBkgnd( _In_ const COLORREF gridColor, _In_ const HDC hDC, _In_ const RECT& rcClient, _In_ const rsize_t vertical_readable, _In_ _In_reads_( vertical_readable ) const int* const vertical_buf, _In_ const HDC hAttribDC ) const noexcept {
-		const HPEN hPen = ::CreatePen( PS_SOLID, 1, gridColor );
-		ASSERT( hPen != NULL );
+		const HPEN hPen = gdi::CreatePen( PS_SOLID, 1, gridColor );
 		//HPEN_wrapper pen( hPen );
 		HGDIOBJ_wrapper pen(hPen);
 		//CPen pen( PS_SOLID, 1, gridColor );
@@ -1849,8 +1848,9 @@ private:
 				}
 			//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
 			//The LineTo function draws a line from the current position up to, but not including, the specified point.
-			//If the function succeeds, the return value is nonzero.
-			//If the function fails, the return value is zero.
+			//If [LineTo] succeeds, the return value is nonzero.
+			//If [LineTo] fails, the return value is zero.
+			//Reverse Engineering shows that it can set ERROR_INVALID_HANDLE.
 			//If LineTo succeeds, the current position is set to the specified ending point.
 			VERIFY( ::LineTo( hDC, rcClient.right, static_cast< INT >( y ) ) );
 			//VERIFY( pDC->LineTo( rcClient.right, static_cast<INT>( y ) ) );
@@ -1901,8 +1901,9 @@ private:
 				}
 			//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
 			//The LineTo function draws a line from the current position up to, but not including, the specified point.
-			//If the function succeeds, the return value is nonzero.
-			//If the function fails, the return value is zero.
+			//If [LineTo] succeeds, the return value is nonzero.
+			//If [LineTo] fails, the return value is zero.
+			//Reverse Engineering shows that it can set ERROR_INVALID_HANDLE.
 			//If LineTo succeeds, the current position is set to the specified ending point.
 			VERIFY( ::LineTo( hDC, ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );
 			//VERIFY( pDC->LineTo( ( vertical_buf[ i ] - 1 ), rcClient.bottom ) );

@@ -621,6 +621,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 		case 0:
 			CTypeView::OnUpdate0( );
 			// fall thru
+			//[[fallthrough]] doesn't work here?
 
 		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
 		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:

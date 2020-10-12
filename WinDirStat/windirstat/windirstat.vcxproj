@@ -197,7 +197,7 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions);_WIN32_WINNT=0x0600;</PreprocessorDefinitions>
-      <AdditionalOptions>/cgthreads8 /Bt+ /await</AdditionalOptions>
+      <AdditionalOptions>/cgthreads8 /Bt+ /await /std:c++latest</AdditionalOptions>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
       <EnablePREfast>true</EnablePREfast>
@@ -254,7 +254,7 @@
       <PreprocessorDefinitions>DEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions);_WIN32_WINNT=0x0600;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/cgthreads8 /Bt+ /await</AdditionalOptions>
+      <AdditionalOptions>/cgthreads8 /Bt+ /await /std:c++latest</AdditionalOptions>
       <EnablePREfast>true</EnablePREfast>
       <ExceptionHandling>Sync</ExceptionHandling>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
@@ -298,7 +298,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /await</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /await /std:c++latest</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -537,7 +537,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /await</AdditionalOptions>
+      <AdditionalOptions>/Gw /Bt+  /Qvec-report:2 /Zo  /Zc:inline /await /std:c++latest</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>

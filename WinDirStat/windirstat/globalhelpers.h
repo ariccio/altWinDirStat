@@ -18,7 +18,8 @@ WDS_FILE_INCLUDE_MESSAGE
 //should really just be a void* and a size_t?
 template<typename type_struct_to_memset>
 inline void memset_zero_struct( type_struct_to_memset& the_struct ) noexcept {
-	static_assert( std::is_pod<type_struct_to_memset>::value, "can't memset a non-pod struct!" );
+	static_assert( std::is_trivially_copyable_v<type_struct_to_memset>, "can't memset a non-pod struct!" );
+	static_assert(std::is_standard_layout_v<type_struct_to_memset>, "can't memset a non-pod struct!");
 	static_assert( !std::is_polymorphic<type_struct_to_memset>::value, "can't memset a polymorphic type!" );
 	static_assert( std::is_standard_layout<type_struct_to_memset>::value, "can't memset a non-standard layout struct!" );
 	memset( &the_struct, 0, sizeof( the_struct ) );
@@ -27,7 +28,6 @@ inline void memset_zero_struct( type_struct_to_memset& the_struct ) noexcept {
 //must be inline, else compiler bitches about ODR!
 template<typename type_struct_to_init>
 inline type_struct_to_init zero_init_struct( ) noexcept {
-	static_assert( std::is_pod<type_struct_to_init>::value, "can't memset a non-pod struct!" );
 	static_assert( !std::is_polymorphic<type_struct_to_init>::value, "can't memset a polymorphic type!" );
 	static_assert( std::is_standard_layout<type_struct_to_init>::value, "can't memset a non-standard layout struct!" );
 	static_assert( std::is_trivially_default_constructible<type_struct_to_init>::value, "can't memset a struct that isn't trivially default constructable!" );
@@ -236,9 +236,16 @@ struct Treemap_Options final {
 namespace gdi {
 	HDC CreateCompatibleDeviceContext( _In_ HDC hDC );
 	void DeleteDeviceContext( _In_ _Post_ptr_invalid_ HDC hDC );
-
 	HBITMAP CreateCompatibleBitmap(_In_ HDC hDC, int cx, int cy);
+	HPEN CreatePen(_In_ int iStyle, _In_ int cWidth, _In_ COLORREF color);
 }
+
+namespace winuser {
+	BOOL GetMessageW(_Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax) noexcept;
+
+}
+
+
 
 static constexpr const Treemap_Options _defaultOptions = { Treemap_STYLE::KDirStatStyle, false, RGB( 0, 0, 0 ), 0.88, 0.38, 0.91, 0.13, -1.0, -1.0 };
 

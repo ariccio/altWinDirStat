@@ -326,16 +326,8 @@ namespace {
 		}
 		*/
 
-		//CreatePen function: https://msdn.microsoft.com/en-us/library/dd183509.aspx
-		//The CreatePen function creates a logical pen that has the specified style, width, and color.
-		//The pen can subsequently be selected into a device context and used to draw lines and curves.
-		//If the function succeeds, the return value is a handle that identifies a logical pen.
-		//If the function fails, the return value is NULL.
 		//When you no longer need the pen, call the DeleteObject function to delete it.
-		const HPEN hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
-		if (hPen == NULL) {
-			std::terminate();
-		}
+		const HPEN hPen = gdi::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) );
 		//HPEN_wrapper pen( hPen );
 		HGDIOBJ_wrapper pen(hPen);
 		//CPen pen { PS_SOLID, 1, ::GetSysColor( COLOR_3DSHADOW ) };
@@ -400,8 +392,9 @@ namespace {
 			}
 		//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
 		//The LineTo function draws a line from the current position up to, but not including, the specified point.
-		//If the function succeeds, the return value is nonzero.
-		//If the function fails, the return value is zero.
+		//If [LineTo] succeeds, the return value is nonzero.
+		//If [LineTo] fails, the return value is zero.
+		//Reverse Engineering shows that it can set ERROR_INVALID_HANDLE.
 		//If LineTo succeeds, the current position is set to the specified ending point.
 		VERIFY( ::LineTo( hDC, rc->right - 1, rc->bottom ) );
 		//VERIFY( pdc->LineTo( rc->right - 1, rc->bottom ) );
@@ -464,8 +457,9 @@ namespace {
 			}
 		//LineTo function: https://msdn.microsoft.com/en-us/library/dd145029.aspx
 		//The LineTo function draws a line from the current position up to, but not including, the specified point.
-		//If the function succeeds, the return value is nonzero.
-		//If the function fails, the return value is zero.
+		//If [LineTo] succeeds, the return value is nonzero.
+		//If [LineTo] fails, the return value is zero.
+		//Reverse Engineering shows that it can set ERROR_INVALID_HANDLE.
 		//If LineTo succeeds, the current position is set to the specified ending point.
 		VERIFY( ::LineTo( hDC, rc->right, rc->bottom - 1 ) );
 		//VERIFY( pdc->LineTo( rc->right,     rc->bottom - 1 ) );

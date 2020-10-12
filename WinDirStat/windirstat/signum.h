@@ -14,8 +14,10 @@ WDS_FILE_INCLUDE_MESSAGE
 //  (b): unnecessary code generation/unreferenced inline function removal at link time
 template<class T>
 inline INT signum( const T x ) noexcept {
-	static_assert( std::is_pod<T>::value, "what the hell are you doing, trying to use a non-pod datatype??" );
-
+	//Note to self: use concepts
+	//TODO: Concepts
+	static_assert( std::is_trivially_copyable_v<T>, "what the hell are you doing, trying to use a non-pod datatype??");
+	static_assert(std::is_standard_layout_v<T>, "what the hell are you doing, trying to use a non-pod datatype??");
 	static_assert( std::is_arithmetic<T>::value, "need an arithmetic datatype!" );
 	
 	//This static_assert probably caught a bug!!! See CDriveItem::Compare - case column::COL_TOTAL & case column::COL_FREE were passing the result of an unsigned subtraction to this!!

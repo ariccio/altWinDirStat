@@ -259,5 +259,31 @@ HWND hwnd::GetDlgItem(_In_ const HWND hWnd, _In_ const int nIDDlgItem) noexcept 
 	return dlgItem;
 	}
 
+void hwnd::GetWindowRect(_In_ const HWND hWnd, _Out_ RECT* const lpRect) noexcept {
+	//GetWindowRect function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect
+	//If [GetWindowRect] succeeds, the return value is nonzero.
+	//If [GetWindowRect] fails, the return value is zero.
+	//To get extended error information, call GetLastError.
+	const BOOL window_rect_result = ::GetWindowRect(hWnd, lpRect);
+	if (window_rect_result == 0) {
+		TRACE(L"GetWindowRect failed.\r\n");
+		displayWindowsMsgBoxWithMessage(L"GetWindowRect returned 0, indicating unexpected failure.");
+		displayWindowsMsgBoxWithError();
+		std::terminate();
+		}
+	//from https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect :
+	//	In conformance with conventions for the RECT structure, the bottom-right coordinates of the returned rectangle are exclusive.
+	//	In other words, the pixel at (right, bottom) lies immediately outside the rectangle.
+	}
+
+
+RECT hwnd::GetWindowRect(_In_ const HWND hWnd) noexcept {
+	RECT rc = {};
+	hwnd::GetWindowRect(hWnd, &rc);
+	return rc;
+	}
+
+
+
 #endif
 

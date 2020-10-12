@@ -1296,7 +1296,36 @@ HBITMAP gdi::CreateCompatibleBitmap(_In_ HDC hDC, int cx, int cy) {
 	if (bm == nullptr) {
 		TRACE(L"CreateCompatibleBitmap failed!\r\n");
 		std::terminate();
-	}
+		}
 	return bm;
+	}
 
+HPEN gdi::CreatePen(_In_ const int iStyle, _In_ const int cWidth, _In_ const COLORREF color) {
+	// CreatePen function (wingdi.h): https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createpen
+	//The CreatePen function creates a logical pen that has the specified style, width, and color.
+	//The pen can subsequently be selected into a device context and used to draw lines and curves.
+	// If the function succeeds, the return value is a handle that identifies a logical pen.
+	// If the function fails, the return value is NULL.
+	//When you no longer need the pen, call the DeleteObject function to delete it.
+	const HPEN hPen = ::CreatePen(iStyle, cWidth, color);
+	if (hPen == nullptr) {
+		std::terminate();
+		}
+	return hPen;
+	}
+
+BOOL winuser::GetMessageW(_Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax) noexcept {
+	//GetMessage function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
+	//If [GetMessage] retrieves a message other than WM_QUIT, the return value is nonzero.
+	//If [GetMessage] retrieves the WM_QUIT message, the return value is zero.
+	//If there is an error, the return value is -1.
+	//For example, the function fails if hWnd is an invalid window handle or lpMsg is an invalid pointer. To get extended error information, call GetLastError.
+	const BOOL got_message = ::GetMessageW(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+	if (got_message == -1) {
+		TRACE(L"GetMessageW failed.\r\n");
+		displayWindowsMsgBoxWithMessage(L"GetMessageW returned -1, indicating unexpected failure.");
+		displayWindowsMsgBoxWithError();
+		std::terminate();
+		}
+	return got_message;
 	}
