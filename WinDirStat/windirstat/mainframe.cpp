@@ -100,6 +100,11 @@ namespace {
 		debug_output_time_to_draw_empty_window( timeToDrawEmptyWindow );
 		}
 
+
+
+	int miniIDFromRowCol(int row, int col) {
+			return AFX_IDW_PANE_FIRST + row * 16 + col;
+		}
 	}
 
 /*
@@ -212,6 +217,122 @@ BOOL WDSOptionsPropertySheet::OnCommand( _In_ WPARAM wParam, _In_ LPARAM lParam 
 	return CPropertySheet::OnCommand( wParam, lParam );
 	}
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+WDSWTLSplitterWnd::WDSWTLSplitterWnd(_In_z_ PCWSTR const name) : m_persistenceName(name) {
+	CPersistence::GetSplitterPos(m_persistenceName, &m_wasTrackedByUser, &m_userSplitterPos);
+}
+
+//void WDSWTLSplitterWnd::StopTracking(_In_ BOOL bAccept) {
+//	CSplitterWnd::StopTracking(bAccept);
+//	if (!bAccept) {
+//		return;
+//	}
+//	RECT rcClient = { 0, 0, 0, 0 };
+//	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+//	//If the window handle identifies an existing window, the return value is nonzero.
+//	//If the window handle does not identify an existing window, the return value is zero.
+//	ASSERT(::IsWindow(m_hWnd));
+//
+//	//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+//	//Return value: If the function succeeds, the return value is nonzero.
+//	//If the function fails, the return value is zero.
+//	//To get extended error information, call GetLastError.
+//	VERIFY(::GetClientRect(m_hWnd, &rcClient));
+//
+//	auto guard = WDS_SCOPEGUARD_INSTANCE([&] { CPersistence::SetSplitterPos(m_persistenceName, m_wasTrackedByUser, m_userSplitterPos); });
+//
+//	INT dummy = 0;
+//	if (CSplitterWnd::GetColumnCount() > 1) {
+//		INT cxLeft = 0;
+//		CSplitterWnd::GetColumnInfo(0, cxLeft, dummy);
+//
+//		if ((rcClient.right - rcClient.left) > 0) {
+//			m_splitterPos = static_cast<DOUBLE>(cxLeft) / static_cast<DOUBLE>(
+//				static_cast<std::int64_t>(rcClient.right) - static_cast<std::int64_t>(rcClient.left));
+//		}
+//		m_wasTrackedByUser = true;
+//		m_userSplitterPos = m_splitterPos;
+//		return;
+//	}
+//	INT cyUpper = 0;
+//	CSplitterWnd::GetRowInfo(0, cyUpper, dummy);
+//	if ((rcClient.bottom - rcClient.top) > 0) {
+//		m_splitterPos = static_cast<DOUBLE>(cyUpper) / static_cast<DOUBLE>(
+//			static_cast<std::int64_t>(rcClient.bottom) - static_cast<std::int64_t>(rcClient.top));
+//	}
+//	m_wasTrackedByUser = true;
+//	m_userSplitterPos = m_splitterPos;
+//}
+
+//void WDSWTLSplitterWnd::MoreThanOneColumn(_In_ const RECT rcClient, _In_ const DOUBLE pos) noexcept {
+//	ASSERT(m_pColInfo != nullptr);
+//	if (m_pColInfo == nullptr) {
+//		return;
+//	}
+//	const auto cxLeft = static_cast<INT>(pos * static_cast<DOUBLE>(static_cast<std::int64_t>(rcClient.right) - static_cast<std::int64_t>(rcClient.left)));
+//	if (cxLeft >= 0) {
+//		CSplitterWnd::SetColumnInfo(0, cxLeft, 0);
+//		CSplitterWnd::RecalcLayout();
+//		return;
+//	}
+//	return;
+//}
+
+//void WDSWTLSplitterWnd::SetSplitterPos(_In_ const DOUBLE pos) noexcept {
+//	m_splitterPos = pos;
+//	RECT rcClient = { 0, 0, 0, 0 };
+//
+//	//IsWindow function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633528.aspx
+//	//If the window handle identifies an existing window, the return value is nonzero.
+//	//If the window handle does not identify an existing window, the return value is zero.
+//	ASSERT(::IsWindow(m_hWnd));
+//
+//	//GetClientRect function: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633503.aspx
+//	//Return value: If the function succeeds, the return value is nonzero.
+//	//If the function fails, the return value is zero.
+//	//To get extended error information, call GetLastError.
+//	VERIFY(::GetClientRect(m_hWnd, &rcClient));
+//
+//	//TODO: BUGBUG: THE FOLLOWING LINE SHOULD NOT BE COMMENTED OUT!
+//	auto splitter_persist = WDS_SCOPEGUARD_INSTANCE([&] { CPersistence::SetSplitterPos(m_persistenceName, m_wasTrackedByUser, m_userSplitterPos); });
+//
+//	if (CSplitterWnd::GetColumnCount() > 1) {
+//		return WDSSplitterWnd::MoreThanOneColumn(rcClient, pos);
+//	}
+//	ASSERT(m_pRowInfo != nullptr);
+//	if (m_pRowInfo == nullptr) {
+//		return;
+//	}
+//	const auto cyUpper = static_cast<INT>(pos * static_cast<DOUBLE>(static_cast<std::int64_t>(rcClient.bottom) - static_cast<std::int64_t>(rcClient.top)));
+//	if (cyUpper >= 0) {
+//		CSplitterWnd::SetRowInfo(0, cyUpper, 0);
+//		CSplitterWnd::RecalcLayout();
+//		return;
+//	}
+//}
+
+//void WDSWTLSplitterWnd::OnSize(const UINT nType, const INT cx, const INT cy) {
+//	auto guard = WDS_SCOPEGUARD_INSTANCE([&] { CSplitterWnd::OnSize(nType, cx, cy); });
+//	if (CSplitterWnd::GetColumnCount() > 1) {
+//		const INT cxLeft = static_cast<INT>(cx * m_splitterPos);
+//		if (cxLeft > 0) {
+//			CSplitterWnd::SetColumnInfo(0, cxLeft, 0);
+//			return;
+//		}
+//		return;
+//	}
+//	const INT cyUpper = static_cast<INT>(cy * m_splitterPos);
+//	if (cyUpper > 0) {
+//		CSplitterWnd::SetRowInfo(0, cyUpper, 0);
+//		return;
+//	}
+//}
+
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -267,6 +388,20 @@ void WDSSplitterWnd::StopTracking( _In_ BOOL bAccept ) {
 	m_userSplitterPos = m_splitterPos;
 	}
 
+void WDSSplitterWnd::MoreThanOneColumn(_In_ const RECT rcClient, _In_ const DOUBLE pos) noexcept {
+	ASSERT(m_pColInfo != nullptr);
+	if (m_pColInfo == nullptr) {
+		return;
+	}
+	const auto cxLeft = static_cast<INT>(pos * static_cast<DOUBLE>(static_cast<std::int64_t>(rcClient.right) - static_cast<std::int64_t>(rcClient.left)));
+	if (cxLeft >= 0) {
+		CSplitterWnd::SetColumnInfo(0, cxLeft, 0);
+		CSplitterWnd::RecalcLayout();
+		return;
+	}
+	return;
+	}
+
 void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 	m_splitterPos = pos;
 	RECT rcClient = { 0, 0, 0, 0 };
@@ -282,24 +417,11 @@ void WDSSplitterWnd::SetSplitterPos( _In_ const DOUBLE pos ) noexcept {
 	//To get extended error information, call GetLastError.
 	VERIFY( ::GetClientRect( m_hWnd, &rcClient ) );
 
-	//auto splitter_persist = scopeGuard( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); }, __FILE__, __FUNCSIG__, __LINE__ );
-	//WDS_SCOPEGUARD_INSTANCE
-
 	//TODO: BUGBUG: THE FOLLOWING LINE SHOULD NOT BE COMMENTED OUT!
 	auto splitter_persist = WDS_SCOPEGUARD_INSTANCE( [&]{ CPersistence::SetSplitterPos( m_persistenceName, m_wasTrackedByUser, m_userSplitterPos ); } );
-
+	
 	if ( CSplitterWnd::GetColumnCount( ) > 1 ) {
-		ASSERT( m_pColInfo != nullptr );
-		if ( m_pColInfo == nullptr ) {
-			return;
-			}
-		const auto cxLeft = static_cast< INT >( pos * static_cast<DOUBLE>( static_cast<std::int64_t>(rcClient.right) - static_cast<std::int64_t>(rcClient.left) ) );
-		if ( cxLeft >= 0 ) {
-			CSplitterWnd::SetColumnInfo( 0, cxLeft, 0 );
-			CSplitterWnd::RecalcLayout( );
-			return;
-			}
-		return;
+		return WDSSplitterWnd::MoreThanOneColumn(rcClient, pos);
 		}
 	ASSERT( m_pRowInfo != nullptr );
 	if ( m_pRowInfo == nullptr ) {
@@ -329,6 +451,9 @@ void WDSSplitterWnd::OnSize( const UINT nType, const INT cx, const INT cy ) {
 		return;
 		}
 	}
+
+
+
 
 LRESULT CDeadFocusWnd::OnKeyDown( UINT /*nMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled ) {
 	const UINT nChar = static_cast<UINT>( wParam );
@@ -570,10 +695,20 @@ BOOL CMainFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 	const SIZE DirstatView_size = { 700, 500 };
 	const SIZE TypeView_size = { 100, 500 };
 
-	VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
-	VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), GraphView_size, pContext ) );
+	//VERIFY( m_wndSplitter.CreateStatic( this, 2, 1 ) );
+	m_wndSplitter.Create(m_hWnd);
+	CGraphView* const graph_view = static_cast<CGraphView*>(RUNTIME_CLASS(CGraphView)->CreateObject());
 
-	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter, 1, 2, ( WS_CHILD | WS_VISIBLE | WS_BORDER ), static_cast< UINT >( m_wndSplitter.IdFromRowCol( 0, 0 ) ) ) );
+	//From: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\atlmfc\src\mfc\winsplit.cpp:307
+	constexpr const DWORD dwStyle = (AFX_WS_DEFAULT_VIEW & ~WS_BORDER);
+	const CRect graph_size_rect(CPoint(0, 0), GraphView_size);
+	if (!graph_view->CreateEx(0, nullptr, nullptr, dwStyle, graph_size_rect.left, graph_size_rect.top, graph_size_rect.right - graph_size_rect.left, graph_size_rect.bottom - graph_size_rect.top, m_wndSplitter.m_hWnd, reinterpret_cast<HMENU>(static_cast<INT_PTR>(miniIDFromRowCol(1, 0))), pContext)) {
+		ASSERT(FALSE);
+		}
+
+	//VERIFY( m_wndSplitter.CreateView( 1, 0, RUNTIME_CLASS( CGraphView ), GraphView_size, pContext ) );
+
+	VERIFY( m_wndSubSplitter.CreateStatic( &m_wndSplitter.m_hWnd, 1, 2, ( WS_CHILD | WS_VISIBLE | WS_BORDER ), static_cast< UINT >(miniIDFromRowCol( 0, 0 ) ) ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 0, RUNTIME_CLASS( CDirstatView ), DirstatView_size, pContext ) );
 	VERIFY( m_wndSubSplitter.CreateView( 0, 1, RUNTIME_CLASS( CTypeView ), TypeView_size, pContext ) );
 

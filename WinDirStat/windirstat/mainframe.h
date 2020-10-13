@@ -46,6 +46,44 @@ public: \
 	};
 
 
+#ifndef __ATLSPLIT_H__
+
+#error hmm
+#endif
+
+// WDSSplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
+struct WDSWTLSplitterWnd final : public WTL::CSplitterWindowImpl<WDSWTLSplitterWnd> {
+	DISALLOW_COPY_AND_ASSIGN(WDSWTLSplitterWnd);
+
+	WDSWTLSplitterWnd(_In_z_ PCWSTR const name);
+
+	void RestoreSplitterPos(_In_ const DOUBLE default_pos) noexcept {
+		SetSplitterPos((m_wasTrackedByUser) ? m_userSplitterPos : default_pos);
+	}
+
+	BEGIN_MSG_MAP(WDSWTLSplitterWnd)
+		//MSG_WM_SIZE(OnSize)
+	END_MSG_MAP()
+
+
+
+	//virtual void    StopTracking       (_In_       BOOL   bAccept) override final;
+	//void            SetSplitterPos     (_In_ const DOUBLE pos) noexcept;
+	//void MoreThanOneColumn(_In_ const RECT rcClient, _In_ const DOUBLE pos) noexcept;
+
+	PCWSTR const m_persistenceName;		// Name of object for CPersistence
+	PCWSTR const m_persistenceName;		// Name of object for CPersistence
+	DOUBLE       m_splitterPos = 0.5;			// Current split ratio
+	DOUBLE       m_userSplitterPos = 0.5;		// Split ratio as set by the user
+	//C4820: 'WDSSplitterWnd' : '7' bytes padding added after data member 'WDSSplitterWnd::m_wasTrackedByUser' (dirstatdoc.cpp)
+	bool         m_wasTrackedByUser = false;	// True as soon as user has modified the splitter position
+
+
+	//DECLARE_MESSAGE_MAP()
+	//void OnSize(const UINT nType, WTL::CSize size);
+
+};
+
 
 
 // WDSSplitterWnd. A CSplitterWnd with 2 columns or rows, which knows about the current split ratio and retains it even when resized.
@@ -62,6 +100,7 @@ struct WDSSplitterWnd final : public CSplitterWnd {
 
 	virtual void    StopTracking       ( _In_       BOOL   bAccept     ) override final;
 	void            SetSplitterPos     ( _In_ const DOUBLE pos         ) noexcept;
+	void MoreThanOneColumn(_In_ const RECT rcClient, _In_ const DOUBLE pos) noexcept;
 
 	PCWSTR const m_persistenceName;		// Name of object for CPersistence
 	DOUBLE       m_splitterPos = 0.5;			// Current split ratio
@@ -172,7 +211,8 @@ public: \
 
 public:	
 	WDSSplitterWnd       m_wndSubSplitter;	// Contains the two upper views (dirstatview & typeview?)
-	WDSSplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
+	//WDSSplitterWnd       m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
+	WDSWTLSplitterWnd    m_wndSplitter;
 	CStatusBar           m_wndStatusBar;	// Status bar
 	//C4820: 'CMainFrame' : '4' bytes padding added after data member 'CMainFrame::m_logicalFocus'
 	LOGICAL_FOCUS        m_logicalFocus;	// Which view has the logical focus

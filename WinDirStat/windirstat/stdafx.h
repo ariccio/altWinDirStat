@@ -317,7 +317,7 @@ extern WTL::CAppModule _Module;
 #include <atlcrack.h>       // WTL message map macros
 #include <atldlgs.h>
 #include <atlddx.h>         //For DDX support
-
+#include <atlsplit.h> //For WTL splitters
 
 #pragma warning(disable:4702)//unreachable code
 
