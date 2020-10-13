@@ -173,101 +173,101 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 	};
 
-struct CPageTreemap final : public CPropertyPage {
-	DISALLOW_COPY_AND_ASSIGN(CPageTreemap);
-
-// Fuckin' OOP sucks.
-	enum {
-		IDD = IDD_PAGE_TREEMAP
-		};
-
-	/*
-	#define DECLARE_DYNAMIC(class_name) \
-public: \
-	static const CRuntimeClass class##class_name; \
-	virtual CRuntimeClass* GetRuntimeClass() const; \
-	*/
-	//DECLARE_DYNAMIC(CPageTreemap)
-	static const CRuntimeClass classCPageTreemap;
-	virtual CRuntimeClass* GetRuntimeClass() const;
-
-	CPageTreemap( ) noexcept : CPropertyPage( CPageTreemap::IDD ) { }
-
-
-	void UpdateOptions          ( _In_ const bool save = true    ) noexcept;
-	//void UpdateStatics          (                           );
-	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
-	virtual BOOL OnInitDialog   (                           ) override final;
-	virtual void OnOK           (                           ) override final;
-
-
-	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
-	void OnSomethingChanged( ) noexcept {
-		VERIFY( CWnd::UpdateData( ) );
-		VERIFY( CWnd::UpdateData( false ) );
-		SetModified( );
-		}
-
-	void /*Values*/Altered( _In_ const bool altered = true ) noexcept;
-
-
-	Treemap_Options   m_options;	// Current options
-	Treemap_Options   m_undo;	    // Valid, if m_altered = false
-
-
-	BOOL              m_altered = FALSE;	// Values have been altered. Button reads "Reset to defaults".
-	BOOL              m_grid;
-
-	CColorButton      m_highlightColor;
-	CColorButton      m_gridColor;
-
-	CSliderCtrl       m_brightness;
-	CSliderCtrl       m_cushionShading;
-	CSliderCtrl       m_height;
-	CSliderCtrl       m_scaleFactor;
-
-	CXySlider         m_lightSource;
-	POINT             m_ptLightSource;
-	CButton           m_resetButton;
-
-	static constexpr const rsize_t str_size = 14;
-
-	_Field_z_               wchar_t m_sBrightness     [ str_size ];
-	_Field_z_               wchar_t m_sCushionShading [ str_size ];
-	_Field_z_               wchar_t m_sHeight         [ str_size ];
-	_Field_z_               wchar_t m_sScaleFactor    [ str_size ];
-
-	_Field_range_( 0,   2 ) INT     m_style = 0;
-	_Field_range_( 0, 100 ) INT     m_nBrightness = 0;
-
-	//TODO: m_nCushionShading is never explicitly initialized.
-	_Field_range_( 0, 100 ) INT     m_nCushionShading = 0;
-
-	//TODO: m_nHeight is never explicitly initialized.
-	_Field_range_( 0, 100 ) INT     m_nHeight = 0;
-
-	//TODO: m_nScaleFactor is never explicitly initialized.
-							//C4820: 'CPageTreemap' : '4' bytes padding added after data member 'CPageTreemap::m_nScaleFactor'
-	_Field_range_( 0, 100 ) INT     m_nScaleFactor = 0;
-
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnColorChangedTreemapGrid( NMHDR *, LRESULT* result ) {
-		*result = 0;
-		OnSomethingChanged( );
-		}
-	afx_msg void OnColorChangedTreemapHighlight( NMHDR*, LRESULT* result ) {
-		*result = 0;
-		OnSomethingChanged( );
-		}
-	afx_msg void OnVScroll( UINT /*nSBCode*/, UINT /*nPos*/, CScrollBar* /*pScrollBar*/ ) {
-		OnSomethingChanged( );
-		ValuesAltered(true, this);
-		}
-	afx_msg void OnLightSourceChanged( NMHDR *, LRESULT * ) {
-		OnSomethingChanged( );
-		ValuesAltered(true, this);
-		}
-	afx_msg void OnBnClickedReset();
-
-};
+//struct CPageTreemap final : public CPropertyPage {
+//	DISALLOW_COPY_AND_ASSIGN(CPageTreemap);
+//
+//// Fuckin' OOP sucks.
+//	enum {
+//		IDD = IDD_PAGE_TREEMAP
+//		};
+//
+//	/*
+//	#define DECLARE_DYNAMIC(class_name) \
+//public: \
+//	static const CRuntimeClass class##class_name; \
+//	virtual CRuntimeClass* GetRuntimeClass() const; \
+//	*/
+//	//DECLARE_DYNAMIC(CPageTreemap)
+//	static const CRuntimeClass classCPageTreemap;
+//	virtual CRuntimeClass* GetRuntimeClass() const;
+//
+//	CPageTreemap( ) noexcept : CPropertyPage( CPageTreemap::IDD ) { }
+//
+//
+//	void UpdateOptions          ( _In_ const bool save = true    ) noexcept;
+//	//void UpdateStatics          (                           );
+//	virtual void DoDataExchange ( CDataExchange* pDX        ) override final;
+//	virtual BOOL OnInitDialog   (                           ) override final;
+//	virtual void OnOK           (                           ) override final;
+//
+//
+//	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
+//	void OnSomethingChanged( ) noexcept {
+//		VERIFY( CWnd::UpdateData( ) );
+//		VERIFY( CWnd::UpdateData( false ) );
+//		SetModified( );
+//		}
+//
+//	void /*Values*/Altered( _In_ const bool altered = true ) noexcept;
+//
+//
+//	Treemap_Options   m_options;	// Current options
+//	Treemap_Options   m_undo;	    // Valid, if m_altered = false
+//
+//
+//	BOOL              m_altered = FALSE;	// Values have been altered. Button reads "Reset to defaults".
+//	BOOL              m_grid;
+//
+//	CColorButton      m_highlightColor;
+//	CColorButton      m_gridColor;
+//
+//	CSliderCtrl       m_brightness;
+//	CSliderCtrl       m_cushionShading;
+//	CSliderCtrl       m_height;
+//	CSliderCtrl       m_scaleFactor;
+//
+//	CXySlider         m_lightSource;
+//	POINT             m_ptLightSource;
+//	CButton           m_resetButton;
+//
+//	static constexpr const rsize_t str_size = 14;
+//
+//	_Field_z_               wchar_t m_sBrightness     [ str_size ];
+//	_Field_z_               wchar_t m_sCushionShading [ str_size ];
+//	_Field_z_               wchar_t m_sHeight         [ str_size ];
+//	_Field_z_               wchar_t m_sScaleFactor    [ str_size ];
+//
+//	_Field_range_( 0,   2 ) INT     m_style = 0;
+//	_Field_range_( 0, 100 ) INT     m_nBrightness = 0;
+//
+//	//TODO: m_nCushionShading is never explicitly initialized.
+//	_Field_range_( 0, 100 ) INT     m_nCushionShading = 0;
+//
+//	//TODO: m_nHeight is never explicitly initialized.
+//	_Field_range_( 0, 100 ) INT     m_nHeight = 0;
+//
+//	//TODO: m_nScaleFactor is never explicitly initialized.
+//							//C4820: 'CPageTreemap' : '4' bytes padding added after data member 'CPageTreemap::m_nScaleFactor'
+//	_Field_range_( 0, 100 ) INT     m_nScaleFactor = 0;
+//
+//	DECLARE_MESSAGE_MAP()
+//	afx_msg void OnColorChangedTreemapGrid( NMHDR *, LRESULT* result ) {
+//		*result = 0;
+//		OnSomethingChanged( );
+//		}
+//	afx_msg void OnColorChangedTreemapHighlight( NMHDR*, LRESULT* result ) {
+//		*result = 0;
+//		OnSomethingChanged( );
+//		}
+//	afx_msg void OnVScroll( UINT /*nSBCode*/, UINT /*nPos*/, CScrollBar* /*pScrollBar*/ ) {
+//		OnSomethingChanged( );
+//		ValuesAltered(true, this);
+//		}
+//	afx_msg void OnLightSourceChanged( NMHDR *, LRESULT * ) {
+//		OnSomethingChanged( );
+//		ValuesAltered(true, this);
+//		}
+//	afx_msg void OnBnClickedReset();
+//
+//};
 #endif

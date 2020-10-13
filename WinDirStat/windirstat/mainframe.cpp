@@ -932,23 +932,25 @@ void CMainFrame::OnViewShowfiletypes( ) {
 	}
 
 void CMainFrame::OnConfigure( ) {
-	WDSOptionsPropertySheet sheet;
+	//WDSOptionsPropertySheet sheet;
 
-	CPageGeneral  general( m_appptr );
-	CPageTreemap  treemap;
+	//CPageGeneral  general( m_appptr );
+	//CPageTreemap  treemap;
 
 
-	sheet.AddPage( &general );
-	sheet.AddPage( &treemap );
+	//sheet.AddPage( &general );
+	//sheet.AddPage( &treemap );
 
-	sheet.DoModal( );
+	//sheet.DoModal( );
 	const auto Options = GetOptions( );
-	Options->SaveToRegistry( );
-
+	
 	WTL::CPropertySheet WTL_settings_sheet(L"WTL property sheet testing");
 	WTLTreemapPage WTL_treemap_page;
+	WTLPageGeneral wtl_general(m_appptr);
+	WTL_settings_sheet.AddPage(wtl_general);
 	WTL_settings_sheet.AddPage(WTL_treemap_page);
 	WTL_settings_sheet.DoModal(m_hWnd);
+	Options->SaveToRegistry();
 
 	}
 

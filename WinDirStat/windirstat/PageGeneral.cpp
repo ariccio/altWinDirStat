@@ -19,60 +19,99 @@ WDS_FILE_INCLUDE_MESSAGE
 #include "mainframe.h"		// WDSOptionsPropertySheet
 
 
-
-IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
-
-_Must_inspect_result_ WDSOptionsPropertySheet* CPageGeneral::GetSheet( ) {
-	WDSOptionsPropertySheet* sheet = static_cast<WDSOptionsPropertySheet*>( CWnd::GetParent( ) );
-	ASSERT( sheet != NULL );
-	return sheet;
-	}
-
-BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
-	ON_BN_CLICKED(IDC_HUMANFORMAT,       &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS,   &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_SHOWGRID,          &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_SHOWSTRIPES,       &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_FULLROWSELECTION,  &( CPageGeneral::OnBnClickedAnyOption ) )
-	ON_BN_CLICKED(IDC_SHOWTIMESPENT,     &( CPageGeneral::OnBnClickedAnyOption ) )
-END_MESSAGE_MAP()
-
-
-BOOL CPageGeneral::OnInitDialog( ) {
-	CDialog::OnInitDialog( );
-	const COptions* const Options = GetOptions( );
-	m_humanFormat          = Options->m_humanFormat;
-	m_listGrid             = Options->m_listGrid;
-	m_listStripes          = Options->m_listStripes;
+//WM_INITDIALOG message: https://docs.microsoft.com/en-us/windows/win32/dlgbox/wm-initdialog
+//The dialog box procedure should return TRUE to direct the system to set the keyboard focus to the control specified by wParam.
+//Otherwise, it should return FALSE to prevent the system from setting the default keyboard focus.
+BOOL WTLPageGeneral::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) noexcept {
+	const COptions* const Options = GetOptions();
+	m_humanFormat = Options->m_humanFormat;
+	m_listGrid = Options->m_listGrid;
+	m_listStripes = Options->m_listStripes;
 	m_listFullRowSelection = Options->m_listFullRowSelection;
-	m_followMountPoints    = Options->m_followMountPoints;
-	m_followJunctionPoints = Options->m_followJunctionPoints;
-	
-	m_followMountPoints = false;	                 // Otherwise we would see pacman only.
-	m_ctlFollowMountPoints.ShowWindow( SW_HIDE );    // Ignorance is bliss.
-	                                                 // The same for junction points
-	m_followJunctionPoints = false;	                 // Otherwise we would see pacman only.
-	m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
+	//m_followMountPoints = Options->m_followMountPoints;
+	//m_followJunctionPoints = Options->m_followJunctionPoints;
 
+	//m_followMountPoints = false;	                 // Otherwise we would see pacman only.
+	//m_ctlFollowMountPoints.ShowWindow(SW_HIDE);    // Ignorance is bliss.
+													 // The same for junction points
+	//m_followJunctionPoints = false;	                 // Otherwise we would see pacman only.
+	//m_ctlFollowJunctionPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
 
-	VERIFY( CWnd::UpdateData( false ) );
 	return TRUE;
 	}
 
-void CPageGeneral::OnOK( ) {
-	TRACE( _T( "User clicked OK...\r\n" ) );
-	VERIFY( CWnd::UpdateData( ) );
-	ASSERT( m_appptr != NULL );
-	const auto Options = GetOptions( );
+int WTLPageGeneral::OnApply() noexcept {
+	TRACE(_T("User clicked OK...\r\n"));
+	ASSERT(m_appptr != NULL);
+	VERIFY(DoDataExchange(DDX_CONTROL_TO_VARIABLE));
+	const auto Options = GetOptions();
 	//Compare with TRUE to prevent int->bool coercion
-	Options->m_followMountPoints    = ( ( m_followMountPoints    == TRUE ) ? true : false );
-	Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
-	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ), m_appptr );
-	Options->SetListGrid            ( ( ( m_listGrid             == TRUE ) ? true : false ) );
-	Options->SetListStripes         ( ( ( m_listStripes          == TRUE ) ? true : false ) );
-	Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
-	CPropertyPage::OnOK( );
+	//Options->m_followMountPoints = ((m_followMountPoints == TRUE) ? true : false);
+	//Options->m_followJunctionPoints = ((m_followJunctionPoints == TRUE) ? true : false);
+	Options->SetHumanFormat         (((m_humanFormat == TRUE) ? true : false), m_appptr);
+	Options->SetListGrid            (((m_listGrid == TRUE) ? true : false));
+	Options->SetListStripes         (((m_listStripes == TRUE) ? true : false));
+	Options->SetListFullRowSelection(((m_listFullRowSelection == TRUE) ? true : false));
+	//CPropertyPage::OnOK();
+
+	return PSNRET_NOERROR;
 	}
+
+
+//IMPLEMENT_DYNAMIC( CPageGeneral, CPropertyPage )
+//
+////_Must_inspect_result_ WDSOptionsPropertySheet* CPageGeneral::GetSheet( ) {
+////	WDSOptionsPropertySheet* sheet = static_cast<WDSOptionsPropertySheet*>( CWnd::GetParent( ) );
+////	ASSERT( sheet != NULL );
+////	return sheet;
+////	}
+//
+//BEGIN_MESSAGE_MAP(CPageGeneral, CPropertyPage)
+//	ON_BN_CLICKED(IDC_HUMANFORMAT,       &( CPageGeneral::OnBnClickedAnyOption ) )
+//	ON_BN_CLICKED(IDC_FOLLOWMOUNTPOINTS, &( CPageGeneral::OnBnClickedAnyOption ) )
+//	ON_BN_CLICKED(IDC_FOLLOWJUNCTIONS,   &( CPageGeneral::OnBnClickedAnyOption ) )
+//	ON_BN_CLICKED(IDC_SHOWGRID,          &( CPageGeneral::OnBnClickedAnyOption ) )
+//	ON_BN_CLICKED(IDC_SHOWSTRIPES,       &( CPageGeneral::OnBnClickedAnyOption ) )
+//	ON_BN_CLICKED(IDC_FULLROWSELECTION,  &( CPageGeneral::OnBnClickedAnyOption ) )
+//	ON_BN_CLICKED(IDC_SHOWTIMESPENT,     &( CPageGeneral::OnBnClickedAnyOption ) )
+//END_MESSAGE_MAP()
+//
+//
+//BOOL CPageGeneral::OnInitDialog( ) {
+//	CDialog::OnInitDialog( );
+//	const COptions* const Options = GetOptions( );
+//	m_humanFormat          = Options->m_humanFormat;
+//	m_listGrid             = Options->m_listGrid;
+//	m_listStripes          = Options->m_listStripes;
+//	m_listFullRowSelection = Options->m_listFullRowSelection;
+//	m_followMountPoints    = Options->m_followMountPoints;
+//	m_followJunctionPoints = Options->m_followJunctionPoints;
+//	
+//	m_followMountPoints = false;	                 // Otherwise we would see pacman only.
+//	m_ctlFollowMountPoints.ShowWindow( SW_HIDE );    // Ignorance is bliss.
+//	                                                 // The same for junction points
+//	m_followJunctionPoints = false;	                 // Otherwise we would see pacman only.
+//	m_ctlFollowJunctionPoints.ShowWindow( SW_HIDE ); // Ignorance is bliss.
+//
+//
+//	VERIFY( CWnd::UpdateData( false ) );
+//	return TRUE;
+//	}
+//
+//void CPageGeneral::OnOK( ) {
+//	TRACE( _T( "User clicked OK...\r\n" ) );
+//	VERIFY( CWnd::UpdateData( ) );
+//	ASSERT( m_appptr != NULL );
+//	const auto Options = GetOptions( );
+//	//Compare with TRUE to prevent int->bool coercion
+//	Options->m_followMountPoints    = ( ( m_followMountPoints    == TRUE ) ? true : false );
+//	Options->m_followJunctionPoints = ( ( m_followJunctionPoints == TRUE ) ? true : false );
+//	Options->SetHumanFormat         ( ( ( m_humanFormat          == TRUE ) ? true : false ), m_appptr );
+//	Options->SetListGrid            ( ( ( m_listGrid             == TRUE ) ? true : false ) );
+//	Options->SetListStripes         ( ( ( m_listStripes          == TRUE ) ? true : false ) );
+//	Options->SetListFullRowSelection( ( ( m_listFullRowSelection == TRUE ) ? true : false ) );
+//	CPropertyPage::OnOK( );
+//	}
 
 #endif

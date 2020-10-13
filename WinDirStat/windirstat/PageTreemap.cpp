@@ -98,63 +98,63 @@ and this:
 
 */
 //IMPLEMENT_DYNAMIC( CPageTreemap, CPropertyPage )
-AFX_COMDAT const CRuntimeClass CPageTreemap::classCPageTreemap = {
-	"CPageTreemap", sizeof(struct CPageTreemap), 0xFFFF, NULL, const_cast<CRuntimeClass*>(&CPropertyPage::classCPropertyPage), NULL, NULL
-	};
-CRuntimeClass* CPageTreemap::GetRuntimeClass() const {
-	return const_cast<CRuntimeClass*>(&CPageTreemap::classCPageTreemap);
-	}
-
-
-void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
-	CWnd::DoDataExchange( pDX );
-
-	DDX_Control ( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
-	DDX_Control ( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
-	DDX_Control ( pDX, IDC_BRIGHTNESS,            m_brightness );
-	DDX_Control ( pDX, IDC_CUSHIONSHADING,        m_cushionShading );
-	DDX_Control ( pDX, IDC_HEIGHT,                m_height );
-	DDX_Control ( pDX, IDC_SCALEFACTOR,           m_scaleFactor );
-	DDX_Control ( pDX, IDC_LIGHTSOURCE,           m_lightSource );
-	DDX_Control ( pDX, IDC_RESET,                 m_resetButton );
-
-	if ( !pDX->m_bSaveAndValidate ) {
-		UpdateOptions( false );
-		updateStaticText(this);
-		}
-
-	DDX_Radio   ( pDX, IDC_KDIRSTAT, ( int & ) m_style );
-	DDX_Text    ( pDX, IDC_STATICBRIGHTNESS,     m_sBrightness,     str_size );
-	DDX_Slider  ( pDX, IDC_BRIGHTNESS,           m_nBrightness );
-
-	DDX_Text    ( pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading, str_size );
-	DDX_Slider  ( pDX, IDC_CUSHIONSHADING,       m_nCushionShading );
-
-	DDX_Text    ( pDX, IDC_STATICHEIGHT,         m_sHeight,         str_size );
-	DDX_Slider  ( pDX, IDC_HEIGHT,               m_nHeight );
-
-	DDX_Text    ( pDX, IDC_STATICSCALEFACTOR,    m_sScaleFactor,    str_size );
-	DDX_Slider  ( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
-
-	DDX_XySlider( pDX, IDC_LIGHTSOURCE,          m_ptLightSource );
-
-
-	if ( pDX->m_bSaveAndValidate ) {
-		UpdateOptions( );
-		}
-	}
-
-
-BEGIN_MESSAGE_MAP(CPageTreemap, CPropertyPage)
-	ON_WM_VSCROLL()
-	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPGRIDCOLOR, &( CPageTreemap::OnColorChangedTreemapGrid ) )
-	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPHIGHLIGHTCOLOR, &( CPageTreemap::OnColorChangedTreemapHighlight ) )
-	ON_BN_CLICKED(IDC_KDIRSTAT,    &( CPageTreemap::OnSomethingChanged ) )
-	ON_BN_CLICKED(IDC_SEQUOIAVIEW, &( CPageTreemap::OnSomethingChanged ) )
-	ON_BN_CLICKED(IDC_TREEMAPGRID, &( CPageTreemap::OnSomethingChanged ) )
-	ON_BN_CLICKED(IDC_RESET, &( CPageTreemap::OnBnClickedReset ) )
-	ON_NOTIFY(XYSLIDER_CHANGED, IDC_LIGHTSOURCE, &( CPageTreemap::OnLightSourceChanged ) )
-END_MESSAGE_MAP()
+//AFX_COMDAT const CRuntimeClass CPageTreemap::classCPageTreemap = {
+//	"CPageTreemap", sizeof(struct CPageTreemap), 0xFFFF, NULL, const_cast<CRuntimeClass*>(&CPropertyPage::classCPropertyPage), NULL, NULL
+//	};
+//CRuntimeClass* CPageTreemap::GetRuntimeClass() const {
+//	return const_cast<CRuntimeClass*>(&CPageTreemap::classCPageTreemap);
+//	}
+//
+//
+//void CPageTreemap::DoDataExchange( CDataExchange* pDX ) {
+//	CWnd::DoDataExchange( pDX );
+//
+//	DDX_Control ( pDX, IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor );
+//	DDX_Control ( pDX, IDC_TREEMAPGRIDCOLOR,      m_gridColor );
+//	DDX_Control ( pDX, IDC_BRIGHTNESS,            m_brightness );
+//	DDX_Control ( pDX, IDC_CUSHIONSHADING,        m_cushionShading );
+//	DDX_Control ( pDX, IDC_HEIGHT,                m_height );
+//	DDX_Control ( pDX, IDC_SCALEFACTOR,           m_scaleFactor );
+//	DDX_Control ( pDX, IDC_LIGHTSOURCE,           m_lightSource );
+//	DDX_Control ( pDX, IDC_RESET,                 m_resetButton );
+//
+//	if ( !pDX->m_bSaveAndValidate ) {
+//		UpdateOptions( false );
+//		updateStaticText(this);
+//		}
+//
+//	DDX_Radio   ( pDX, IDC_KDIRSTAT, ( int & ) m_style );
+//	DDX_Text    ( pDX, IDC_STATICBRIGHTNESS,     m_sBrightness,     str_size );
+//	DDX_Slider  ( pDX, IDC_BRIGHTNESS,           m_nBrightness );
+//
+//	DDX_Text    ( pDX, IDC_STATICCUSHIONSHADING, m_sCushionShading, str_size );
+//	DDX_Slider  ( pDX, IDC_CUSHIONSHADING,       m_nCushionShading );
+//
+//	DDX_Text    ( pDX, IDC_STATICHEIGHT,         m_sHeight,         str_size );
+//	DDX_Slider  ( pDX, IDC_HEIGHT,               m_nHeight );
+//
+//	DDX_Text    ( pDX, IDC_STATICSCALEFACTOR,    m_sScaleFactor,    str_size );
+//	DDX_Slider  ( pDX, IDC_SCALEFACTOR,          m_nScaleFactor );
+//
+//	DDX_XySlider( pDX, IDC_LIGHTSOURCE,          m_ptLightSource );
+//
+//
+//	if ( pDX->m_bSaveAndValidate ) {
+//		UpdateOptions( );
+//		}
+//	}
+//
+//
+//BEGIN_MESSAGE_MAP(CPageTreemap, CPropertyPage)
+//	ON_WM_VSCROLL()
+//	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPGRIDCOLOR, &( CPageTreemap::OnColorChangedTreemapGrid ) )
+//	ON_NOTIFY(COLBN_CHANGED, IDC_TREEMAPHIGHLIGHTCOLOR, &( CPageTreemap::OnColorChangedTreemapHighlight ) )
+//	ON_BN_CLICKED(IDC_KDIRSTAT,    &( CPageTreemap::OnSomethingChanged ) )
+//	ON_BN_CLICKED(IDC_SEQUOIAVIEW, &( CPageTreemap::OnSomethingChanged ) )
+//	ON_BN_CLICKED(IDC_TREEMAPGRID, &( CPageTreemap::OnSomethingChanged ) )
+//	ON_BN_CLICKED(IDC_RESET, &( CPageTreemap::OnBnClickedReset ) )
+//	ON_NOTIFY(XYSLIDER_CHANGED, IDC_LIGHTSOURCE, &( CPageTreemap::OnLightSourceChanged ) )
+//END_MESSAGE_MAP()
 
 
 //WM_INITDIALOG message: https://docs.microsoft.com/en-us/windows/win32/dlgbox/wm-initdialog
@@ -220,34 +220,34 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 
 
 
-BOOL CPageTreemap::OnInitDialog( ) {
-	VERIFY( CDialog::OnInitDialog( ) );
-	ValuesAltered( true, this); // m_undo is invalid
-
-	m_brightness.SetPageSize( 10 );
-	m_cushionShading.SetPageSize( 10 );
-	m_height.SetRange( 0, CPageTreemap_maxHeight, true );
-	m_height.SetPageSize( CPageTreemap_maxHeight / 10 );
-	m_scaleFactor.SetPageSize( 10 );
-	//m_lightSource.SetRange( CSize { 400, 400 } );
-	m_lightSource.m_externalRange = WTL::CSize { 400, 400 };
-	
-	const COptions* const Options = GetOptions( );
-	m_options = Options->m_treemapOptions;
-	m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
-
-	VERIFY( CWnd::UpdateData( false ) );
-	return TRUE;
-	}
-
-void CPageTreemap::OnOK( ) {
-	VERIFY( CWnd::UpdateData( ) );
-	const auto Options = GetOptions( );
-	Options->SetTreemapOptions( m_options );
-	Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
-	CPropertyPage::OnOK( );
-	}
-
+//BOOL CPageTreemap::OnInitDialog( ) {
+//	VERIFY( CDialog::OnInitDialog( ) );
+//	ValuesAltered( true, this); // m_undo is invalid
+//
+//	m_brightness.SetPageSize( 10 );
+//	m_cushionShading.SetPageSize( 10 );
+//	m_height.SetRange( 0, CPageTreemap_maxHeight, true );
+//	m_height.SetPageSize( CPageTreemap_maxHeight / 10 );
+//	m_scaleFactor.SetPageSize( 10 );
+//	//m_lightSource.SetRange( CSize { 400, 400 } );
+//	m_lightSource.m_externalRange = WTL::CSize { 400, 400 };
+//	
+//	const COptions* const Options = GetOptions( );
+//	m_options = Options->m_treemapOptions;
+//	m_highlightColor.m_preview.SetColor( Options->m_treemapHighlightColor );
+//
+//	VERIFY( CWnd::UpdateData( false ) );
+//	return TRUE;
+//	}
+//
+//void CPageTreemap::OnOK( ) {
+//	VERIFY( CWnd::UpdateData( ) );
+//	const auto Options = GetOptions( );
+//	Options->SetTreemapOptions( m_options );
+//	Options->SetTreemapHighlightColor( m_highlightColor.m_preview.m_color );
+//	CPropertyPage::OnOK( );
+//	}
+//
 int WTLTreemapPage::OnApply() {
 	const BOOL result = DoDataExchange(DDX_CONTROL_TO_VARIABLE);
 	variablesToOptions();
@@ -301,48 +301,48 @@ void WTLTreemapPage::UpdateOptions(_In_ const bool save) noexcept {
 	Options->SetTreemapHighlightColor(m_highlightColor.m_preview.m_color);
 	}
 
-void CPageTreemap::UpdateOptions( _In_ const bool save ) noexcept {
-	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
-	if ( save ) {
-		m_options.SetBrightnessPercent( 100 - m_nBrightness );
-		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
-		m_options.SetAmbientLightPercent( m_nCushionShading );
-		m_options.SetHeightPercent( CPageTreemap_maxHeight - m_nHeight );
-		
-		m_options.SetLightSourcePoint( m_ptLightSource );
-		m_options.style     = ( ( m_style == 0 ) ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle );
-		m_options.grid      = ( ( m_grid == FALSE ) ? false : true );
-		m_options.gridColor = m_gridColor.m_preview.m_color;
-		}
-	else {
-		m_nBrightness     = ( 100 - m_options.GetBrightnessPercent( ) );
-		m_nScaleFactor    = ( 100 - m_options.GetScaleFactorPercent( ) );
-		m_nCushionShading = m_options.GetAmbientLightPercent( );
-		m_nHeight         = CPageTreemap_maxHeight - m_options.GetHeightPercent( );
-		m_ptLightSource   = m_options.GetLightSourcePoint( );
-		m_style           = ( ( m_options.style == Treemap_STYLE::KDirStatStyle ) ? 0 : 1 );
-		m_grid            = ( m_options.grid ? TRUE : FALSE );
-		m_gridColor.m_preview.SetColor( m_options.gridColor );
-		}
-	}
+//void CPageTreemap::UpdateOptions( _In_ const bool save ) noexcept {
+//	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
+//	if ( save ) {
+//		m_options.SetBrightnessPercent( 100 - m_nBrightness );
+//		m_options.SetScaleFactorPercent( 100 - m_nScaleFactor );
+//		m_options.SetAmbientLightPercent( m_nCushionShading );
+//		m_options.SetHeightPercent( CPageTreemap_maxHeight - m_nHeight );
+//		
+//		m_options.SetLightSourcePoint( m_ptLightSource );
+//		m_options.style     = ( ( m_style == 0 ) ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle );
+//		m_options.grid      = ( ( m_grid == FALSE ) ? false : true );
+//		m_options.gridColor = m_gridColor.m_preview.m_color;
+//		}
+//	else {
+//		m_nBrightness     = ( 100 - m_options.GetBrightnessPercent( ) );
+//		m_nScaleFactor    = ( 100 - m_options.GetScaleFactorPercent( ) );
+//		m_nCushionShading = m_options.GetAmbientLightPercent( );
+//		m_nHeight         = CPageTreemap_maxHeight - m_options.GetHeightPercent( );
+//		m_ptLightSource   = m_options.GetLightSourcePoint( );
+//		m_style           = ( ( m_options.style == Treemap_STYLE::KDirStatStyle ) ? 0 : 1 );
+//		m_grid            = ( m_options.grid ? TRUE : FALSE );
+//		m_gridColor.m_preview.SetColor( m_options.gridColor );
+//		}
+//	}
 
 
 
-void CPageTreemap::OnBnClickedReset( ) {
-	Treemap_Options o;
-	if ( m_altered ) {
-		o = _defaultOptions;
-		m_undo = m_options;
-		}
-	else {
-		o = m_undo;
-		}
-	m_options = o;
-
-	ValuesAltered( !m_altered, this );
-	VERIFY( CWnd::UpdateData( false ) );
-	SetModified( );
-	}
+//void CPageTreemap::OnBnClickedReset( ) {
+//	Treemap_Options o;
+//	if ( m_altered ) {
+//		o = _defaultOptions;
+//		m_undo = m_options;
+//		}
+//	else {
+//		o = m_undo;
+//		}
+//	m_options = o;
+//
+//	ValuesAltered( !m_altered, this );
+//	VERIFY( CWnd::UpdateData( false ) );
+//	SetModified( );
+//	}
 
 //COMMAND_HANDLER: https://docs.microsoft.com/en-us/cpp/atl/reference/message-map-macros-atl?view=vs-2019#command_handler
 LRESULT WTLTreemapPage::OnCommandIDCReset(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
