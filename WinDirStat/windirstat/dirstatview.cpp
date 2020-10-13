@@ -40,63 +40,6 @@ inline void trace_SelectionCha( ) noexcept {
 	TRACE( _T( "CDirstatView::OnUpdateHINT_SELECTIONCHANGED\r\n" ) );
 	}
 
-/*
-
-From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:598:
-#define RUNTIME_CLASS(class_name) _RUNTIME_CLASS(class_name)
-
-From C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:594:
-#define _RUNTIME_CLASS(class_name) ((CRuntimeClass*)(&class_name::class##class_name))
-
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:707:
-#define IMPLEMENT_DYNCREATE(class_name, base_class_name) \
-	CObject* PASCAL class_name::CreateObject() \
-		{ return new class_name; } \
-	IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, \
-		class_name::CreateObject, NULL)
-
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\include\afx.h:688:
-#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew, class_init) \
-	AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \
-		#class_name, sizeof(class class_name), wSchema, pfnNew, \
-			RUNTIME_CLASS(base_class_name), NULL, class_init }; \
-	CRuntimeClass* class_name::GetRuntimeClass() const \
-		{ return RUNTIME_CLASS(class_name); }
-
-
-Sooo...
-	
-	IMPLEMENT_DYNCREATE( CDirstatView, CView )
-		--becomes--
-	CObject* PASCAL class_name::CreateObject() \
-		{ return new CDirstatView; } \
-	IMPLEMENT_RUNTIMECLASS(CDirstatView, CView, 0xFFFF, \
-		CDirstatView::CreateObject, NULL)
-	--becomes--
-	CObject* PASCAL CDirstatView::CreateObject() \
-		{ return new CDirstatView; } \
-	AFX_COMDAT const CRuntimeClass CDirstatView::classCDirstatView = { \
-		"CDirstatView", sizeof(class CDirstatView), 0xFFFF, CDirstatView::CreateObject, \
-			RUNTIME_CLASS(CView), NULL, NUKK }; \
-	CRuntimeClass* CDirstatView::GetRuntimeClass() const \
-		{ return RUNTIME_CLASS(CDirstatView); }
-
-And...
-
-	RUNTIME_CLASS(CView)
-		--becomes--
-	_RUNTIME_CLASS(CView)
-		--becomes--
-	((CRuntimeClass*)(&CView::classCView))
-
-And...
-	RUNTIME_CLASS(CDirstatView);
-		--becomes--
-	_RUNTIME_CLASS(CDirstatView)
-		--becomes--
-	((CRuntimeClass*)(&CDirstatView::classCDirstatView))
-*/
-
 //IMPLEMENT_DYNCREATE( CDirstatView, CView )
 CObject* PASCAL CDirstatView::CreateObject() {
 	return new CDirstatView;
