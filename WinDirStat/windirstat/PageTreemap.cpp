@@ -280,7 +280,7 @@ void WTLTreemapPage::UpdateOptions(_In_ const bool save) noexcept {
 		m_options.SetAmbientLightPercent(m_nCushionShading);
 		m_options.SetHeightPercent(CPageTreemap_maxHeight - m_nHeight);
 
-		//m_options.SetLightSourcePoint(m_ptLightSource);
+		m_options.SetLightSourcePoint(m_ptLightSource);
 		m_options.style = ((m_style == 0) ? Treemap_STYLE::KDirStatStyle : Treemap_STYLE::SequoiaViewStyle);
 		m_options.grid = ((m_grid == FALSE) ? false : true);
 		m_options.gridColor = m_gridColor.m_preview.m_color;
@@ -291,12 +291,16 @@ void WTLTreemapPage::UpdateOptions(_In_ const bool save) noexcept {
 		m_nScaleFactor = (100 - m_options.GetScaleFactorPercent());
 		m_nCushionShading = m_options.GetAmbientLightPercent();
 		m_nHeight = CPageTreemap_maxHeight - m_options.GetHeightPercent();
-		//m_ptLightSource = m_options.GetLightSourcePoint();
+		m_ptLightSource = m_options.GetLightSourcePoint();
 		m_style = ((m_options.style == Treemap_STYLE::KDirStatStyle) ? 0 : 1);
 		m_grid = (m_options.grid ? TRUE : FALSE);
 		m_gridColor.m_preview.SetColor(m_options.gridColor);
 	}
-}
+	const auto Options = GetOptions();
+	Options->SetTreemapOptions(m_options);
+	Options->SetTreemapHighlightColor(m_highlightColor.m_preview.m_color);
+	}
+
 void CPageTreemap::UpdateOptions( _In_ const bool save ) noexcept {
 	static_assert( std::is_convertible< decltype( m_style ), std::underlying_type< decltype( m_options.style ) >::type>::value, "" );
 	if ( save ) {
@@ -483,7 +487,23 @@ void WTLTreemapPage::debugSliderPosition() const noexcept {
 	TRACE(L"cushion sh slider: %i\r\n", m_cushionShading.GetPos());
 	TRACE(L"height     slider: %i\r\n", m_height.GetPos());
 	TRACE(L"scale fact slider: %i\r\n", m_scaleFactor.GetPos());
-}
+	}
+
+LRESULT WTLTreemapPage::setXY(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+	const POINT* point = reinterpret_cast<POINT*>(lParam);
+
+	TRACE(L"point: %p\r\n", point);
+	m_ptLightSource = *point;
+	UpdateOptions(true);
+	return TRUE;
+	}
+
+
+LRESULT WTLTreemapPage::OnXYNotifyHandlerEX(const NMHDR* const pnmh) noexcept {
+	TRACE(L"WM_NOTIFY XYSLIDER_CHANGED: %p\r\n", pnmh);
+
+	return TRUE;
+	}
 
 #else
 

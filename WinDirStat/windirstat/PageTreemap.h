@@ -62,6 +62,8 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		MSG_WM_VSCROLL(OnVScroll)
 		//MSG_WM_NOTIFY(onWM_NOTIFY)
 		//MESSAGE_HANDLER_EX(BN_CLICKED, OnMessageHandlerEX)
+		MESSAGE_HANDLER_EX(XY_SETPOS, setXY)
+		NOTIFY_HANDLER_EX(IDC_LIGHTSOURCE, XYSLIDER_CHANGED, OnXYNotifyHandlerEX)
 		COMMAND_HANDLER(IDC_RESET, BN_CLICKED, OnCommandIDCReset)
 		COMMAND_HANDLER(IDC_TREEMAPGRIDCOLOR, BN_CLICKED, on_WM_COMMAND_Treemap_colorbutton)
 		COMMAND_HANDLER(IDC_TREEMAPHIGHLIGHTCOLOR, BN_CLICKED, on_WM_COMMAND_Treemap_colorbutton)
@@ -128,6 +130,10 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 	void debugDataExchangeMembers() const noexcept;
 	void debugSliderPosition() const noexcept;
+
+	LRESULT setXY(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
+	LRESULT OnXYNotifyHandlerEX(const NMHDR* const pnmh) noexcept;
+
 
 	Treemap_Options   m_options = {};	// Current options
 	Treemap_Options   m_undo = {};	    // Valid, if m_altered = false

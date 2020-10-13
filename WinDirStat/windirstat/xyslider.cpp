@@ -709,6 +709,7 @@ void WTLXySlider::DoMoveBy(_In_ const INT cx, _In_ const INT cy) noexcept {
 	WTLXySlider::InternToExtern();
 	if ((m_externalPos.x != oldpos.x) || (m_externalPos.y != oldpos.y)) {
 		notify_parent(m_hWnd);
+		::SendMessageW(m_hWnd, XY_SETPOS, 0, reinterpret_cast<LPARAM>(&m_externalPos));
 	}
 }
 
@@ -916,6 +917,7 @@ void WTLXySlider::SetPos(const POINT pt) {
 	WTLXySlider::ExternToIntern();
 
 	hwnd::InvalidateErase(m_hWnd);
+	::SendMessageW(::GetParent(m_hWnd), XY_SETPOS, 0, reinterpret_cast<LPARAM>(&pt));
 }
 
 
