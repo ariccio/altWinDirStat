@@ -196,7 +196,7 @@ void CGraphView::DoDraw( _Inout_ RECT* const rc, _In_ HDC const offscreen_buffer
 		//}
 		//return bm;
 		//	}());
-
+	ASSERT(offscreen_buffer_device_context == offscreen_buffer_attribute_device_context);
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { CGraphView::cause_OnIdle_to_be_called_once( ); } );
 
 	SelectObject_wrapper sobmp( offscreen_buffer_device_context, m_bitmap.m_hObject );

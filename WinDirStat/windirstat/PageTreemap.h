@@ -51,7 +51,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	//WTLTreemapPage() : m_resetButton(this, 1), m_brightness(this, 2), m_cushionShading(this, 3), m_height(this, 4), m_scaleFactor(this, 5) {
 	//	}
 
-	WTLTreemapPage() : m_resetButton(L"reset", this, 1) {
+	WTLTreemapPage() : m_resetButton(L"reset", this, 1), m_brightness(this), m_cushionShading(this), m_height(this), m_scaleFactor(this) {
 		}
 
 	//WTLTreemapPage() = default;
@@ -79,10 +79,10 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	BEGIN_DDX_MAP(WTLTreemapPage)
 		DDX_CONTROL(IDC_TREEMAPHIGHLIGHTCOLOR, m_highlightColor)
 		DDX_CONTROL(IDC_TREEMAPGRIDCOLOR, m_gridColor)
-		//DDX_CONTROL(IDC_BRIGHTNESS, m_brightness)
-		//DDX_CONTROL(IDC_CUSHIONSHADING, m_cushionShading)
-		//DDX_CONTROL(IDC_HEIGHT, m_height)
-		//DDX_CONTROL(IDC_SCALEFACTOR, m_scaleFactor)
+		DDX_CONTROL(IDC_BRIGHTNESS, m_brightness)
+		DDX_CONTROL(IDC_CUSHIONSHADING, m_cushionShading)
+		DDX_CONTROL(IDC_HEIGHT, m_height)
+		DDX_CONTROL(IDC_SCALEFACTOR, m_scaleFactor)
 		DDX_CONTROL(IDC_LIGHTSOURCE, m_lightSource)
 		DDX_CONTROL(IDC_RESET, m_resetButton)
 		DDX_RADIO(IDC_KDIRSTAT, m_style)
@@ -90,11 +90,11 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		//DDX_CONTROL(IDC_BRIGHTNESS, m_nBrightness)
 		DDX_INT(IDC_BRIGHTNESS, m_nBrightness)
 		DDX_TEXT_LEN(IDC_STATICCUSHIONSHADING, m_sCushionShading, str_size)
-		//DDX_CONTROL(IDC_CUSHIONSHADING, m_nCushionShading)
+		DDX_INT(IDC_CUSHIONSHADING, m_nCushionShading)
 		DDX_TEXT_LEN(IDC_STATICHEIGHT, m_sHeight, str_size)
-		//DDX_CONTROL(IDC_HEIGHT, m_nHeight)
+		DDX_INT(IDC_HEIGHT, m_nHeight)
 		DDX_TEXT_LEN(IDC_STATICSCALEFACTOR, m_sScaleFactor, str_size)
-		//DDX_CONTROL(IDC_SCALEFACTOR, m_nScaleFactor)
+		DDX_INT(IDC_SCALEFACTOR, m_nScaleFactor)
 
 		//DDX_CONTROL(IDC_LIGHTSOURCE, m_ptLightSource)
 
@@ -121,6 +121,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 
 
 	void updateControls() noexcept;
+	void updateSliders() noexcept;
 	void variablesToOptions() noexcept;
 	void optionsToVariables() noexcept;
 
@@ -138,10 +139,10 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	CColorButton      m_highlightColor;
 	CColorButton      m_gridColor;
 
-	WTL::CTrackBarCtrl       m_brightness;
-	WTL::CTrackBarCtrl       m_cushionShading;
-	WTL::CTrackBarCtrl       m_height;
-	WTL::CTrackBarCtrl       m_scaleFactor;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_brightness;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_cushionShading;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_height;
+	ATL::CContainedWindowT<WTL::CTrackBarCtrl>       m_scaleFactor;
 
 	WTLXySlider         m_lightSource;
 	POINT             m_ptLightSource;

@@ -187,18 +187,18 @@ BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
 
 	debugDataExchangeMembers();
 	//debugSliderPosition();
-	m_brightness = GetDlgItem(IDC_BRIGHTNESS);
+	//m_brightness = GetDlgItem(IDC_BRIGHTNESS);
 	initSlid(&m_brightness, 0, 100, 1, 1, 10, 100 - static_cast<int>(m_options.brightness * 100));
 
-	m_cushionShading = GetDlgItem(IDC_CUSHIONSHADING);
+	//m_cushionShading = GetDlgItem(IDC_CUSHIONSHADING);
 	initSlid(&m_cushionShading, 0, 100, 1, 1, 10, m_options.GetAmbientLightPercent());
 
-	m_height = GetDlgItem(IDC_HEIGHT);
+	//m_height = GetDlgItem(IDC_HEIGHT);
 	initSlid(&m_height, 0, CPageTreemap_maxHeight, 1, 1, CPageTreemap_maxHeight / 10, (CPageTreemap_maxHeight - m_options.GetHeightPercent()));
 	//m_height.SetRange(0, CPageTreemap_maxHeight, true);
 	//m_height.SetPageSize(CPageTreemap_maxHeight / 10);
 
-	m_scaleFactor = GetDlgItem(IDC_SCALEFACTOR);
+	//m_scaleFactor = GetDlgItem(IDC_SCALEFACTOR);
 	initSlid(&m_scaleFactor, 0, 100, 1, 1, 10, (100 - m_options.GetScaleFactorPercent()));
 	//m_lightSource.SetRange( CSize { 400, 400 } );
 	//m_lightSource.m_externalRange = WTL::CSize{ 400, 400 };
@@ -361,13 +361,29 @@ LRESULT WTLTreemapPage::OnCommandIDCReset(WORD wNotifyCode, WORD wID, HWND hWndC
 	//updateControls();
 	SetModified();
 	TRACE(L"Damnit I need to update the sliders manually too?!?\r\n");
+	//m_brightness.UpdateWindow();
+	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
+	updateSliders();
+	
+	//TODO: BUGBUG: there's no way to do this? It isn't in the old treemap page?
+	//m_highlightColor.m_preview.SetColor(m_options.)
+	m_gridColor.m_preview.m_color = m_options.gridColor;
 	return TRUE;
 }
+
+void WTLTreemapPage::updateSliders() noexcept {
+	m_brightness.SetPos(100 - m_options.GetBrightnessPercent());
+	m_cushionShading.SetPos(m_options.GetAmbientLightPercent());
+	m_height.SetPos(CPageTreemap_maxHeight - m_options.GetHeightPercent());
+	m_scaleFactor.SetPos(100 - m_options.GetScaleFactorPercent());
+
+	}
 
 void WTLTreemapPage::updateControls() noexcept {
 	updateStaticText(this);
 	VERIFY(DoDataExchange(DDX_VARIABLE_TO_CONTROL));
 	ValuesAltered(true, this);
+	updateSliders();
 	}
 
 void WTLTreemapPage::variablesToOptions() noexcept {
