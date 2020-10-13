@@ -30,11 +30,6 @@ class CDirstatApp;
 //};
 
 
-// This is the same problem as the stroop test. I utterly fail it. It's a very specific disability.
-constexpr const BOOL DDX_CONTROL_TO_VARIABLE = TRUE;
-constexpr const BOOL DDX_VARIABLE_TO_CONTROL = FALSE;
-static_assert(DDX_LOAD == DDX_VARIABLE_TO_CONTROL, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
-static_assert(DDX_SAVE == DDX_CONTROL_TO_VARIABLE, "Mixed them up. This specific type of problem breaks my brain. It's simple, but it's a disability of sorts. it took me like 15 minutes to get this right");
 
 
 // Only temporarily a template.
@@ -71,6 +66,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		COMMAND_HANDLER(IDC_TREEMAPGRIDCOLOR, BN_CLICKED, on_WM_COMMAND_Treemap_colorbutton)
 		COMMAND_HANDLER(IDC_TREEMAPHIGHLIGHTCOLOR, BN_CLICKED, on_WM_COMMAND_Treemap_colorbutton)
 		//REFLECTED_COMMAND_CODE_HANDLER()
+		//CHAIN_MSG_MAP_MEMBER(m_lightSource)
 		ALT_MSG_MAP(1)
 			//MSG_WM_SETCURSOR(OnSetCursor_Reset)
 			//MSG_WM_COMMAND(onResetCommand)
@@ -87,7 +83,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 		//DDX_CONTROL(IDC_CUSHIONSHADING, m_cushionShading)
 		//DDX_CONTROL(IDC_HEIGHT, m_height)
 		//DDX_CONTROL(IDC_SCALEFACTOR, m_scaleFactor)
-		//DDX_CONTROL_HANDLE(IDC_LIGHTSOURCE, m_lightSource)
+		DDX_CONTROL(IDC_LIGHTSOURCE, m_lightSource)
 		DDX_CONTROL(IDC_RESET, m_resetButton)
 		DDX_RADIO(IDC_KDIRSTAT, m_style)
 		DDX_TEXT_LEN(IDC_STATICBRIGHTNESS, m_sBrightness, str_size)
@@ -147,7 +143,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	WTL::CTrackBarCtrl       m_height;
 	WTL::CTrackBarCtrl       m_scaleFactor;
 
-	CXySlider         m_lightSource;
+	WTLXySlider         m_lightSource;
 	POINT             m_ptLightSource;
 	ATL::CContainedWindow      m_resetButton;
 

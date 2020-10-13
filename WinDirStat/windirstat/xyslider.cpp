@@ -637,6 +637,289 @@ void CXySlider::SetPos( const POINT pt ) {
 	}
 
 
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+
+void WTLXySlider::Initialize() noexcept {
+	if ((!m_inited) && ::IsWindow(m_hWnd)) {
+
+		RECT rc = hwnd::GetWindowRect(m_hWnd);
+		hwnd::ScreenToClient(::GetParent(m_hWnd), &rc);
+		shrink_rect_slightly(&rc);
+
+		//If [MoveWindow] succeeds, the return value is nonzero.
+		VERIFY(::MoveWindow(m_hWnd, rc.left, rc.top, (rc.right - rc.left), (rc.bottom - rc.top), TRUE));
+
+		WTLXySlider::CalcSizes();
+
+		m_inited = true;
+	}
+}
+
+void WTLXySlider::CalcSizes() noexcept {
+	ASSERT(::IsWindow(m_hWnd));
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero. To get extended error information, call GetLastError."
+	VERIFY(::GetClientRect(m_hWnd, &m_rcAll));
+
+	verify_m_rect_all_size(m_rcAll);
+
+	m_zero = m_zero_size(m_rcAll);
+	m_radius = m_radius_size(m_rcAll);
+
+	m_rcInner = m_rcAll;
+	constexpr const int neg_GRIPPER_RADIUS = -(GRIPPER_RADIUS - 3);
+	//"Return value: If [InflateRect] succeeds, the return value is nonzero. If [InflateRect] fails, the return value is zero."
+	VERIFY(::InflateRect(&m_rcInner, neg_GRIPPER_RADIUS, neg_GRIPPER_RADIUS));
+
+
+	m_gripperRadius.cx = GRIPPER_RADIUS;
+	m_gripperRadius.cy = GRIPPER_RADIUS;
+
+	m_range.cx = m_radius.cx - m_gripperRadius.cx;
+	m_range.cy = m_radius.cy - m_gripperRadius.cy;
+
+}
+
+
+void WTLXySlider::DoMoveBy(_In_ const INT cx, _In_ const INT cy) noexcept {
+	m_pos.x += cx;
+	CheckMinMax(m_pos.x, -m_range.cx, m_range.cx);
+
+	m_pos.y += cy;
+	CheckMinMax(m_pos.y, -m_range.cy, m_range.cy);
+
+	hwnd::RedrawWindow(m_hWnd);
+	const POINT oldpos = m_externalPos;
+	WTLXySlider::InternToExtern();
+	if ((m_externalPos.x != oldpos.x) || (m_externalPos.y != oldpos.y)) {
+		notify_parent(m_hWnd);
+	}
+}
+
+void WTLXySlider::Handle_WM_MOUSEMOVE(_In_ const POINT& ptMin, _In_ const POINT& ptMax, _In_ const MSG& msg, _Inout_ POINT* const pt0) noexcept {
+	POINT pt = msg.pt;
+	//VERIFY( ::ScreenToClient( m_hWnd, &pt ) );
+	hwnd::ScreenToClient(m_hWnd, &pt);
+	//ScreenToClient( &pt );
+
+	CheckMinMax(pt.x, ptMin.x, ptMax.x);
+	CheckMinMax(pt.y, ptMin.y, ptMax.y);
+
+	const INT dx = pt.x - pt0->x;
+	const INT dy = pt.y - pt0->y;
+
+	WTLXySlider::DoMoveBy(dx, dy);
+
+	(*pt0) = pt;
+}
+
+inline void WTLXySlider::InternToExtern() noexcept {
+	const DOUBLE x = internal_x_to_external_x(m_pos, m_externalRange, m_range);
+	const DOUBLE y = internal_y_to_external_y(m_pos, m_externalRange, m_range);
+
+	m_externalPos.x = static_cast<INT>(x) * signum(m_pos.x);
+	m_externalPos.y = static_cast<INT>(y) * signum(m_pos.y);
+}
+
+inline void WTLXySlider::ExternToIntern() noexcept {
+	const DOUBLE x = external_x_to_internal_x(m_externalPos, m_range, m_externalRange);
+	const DOUBLE y = external_y_to_internal_y(m_externalPos, m_range, m_externalRange);
+
+	m_pos.x = static_cast<INT>(x) * signum(m_externalPos.x);
+	m_pos.y = static_cast<INT>(y) * signum(m_externalPos.y);
+}
+
+inline void WTLXySlider::InstallTimer() noexcept {
+	RemoveTimer();
+	m_timer = set_timer(m_hWnd);
+}
+
+inline RECT WTLXySlider::GetGripperRect() const noexcept {
+	RECT rc{ -m_gripperRadius.cx, -m_gripperRadius.cy, m_gripperRadius.cx + 1, m_gripperRadius.cy + 1 };
+	//"Return value: If the function succeeds, the return value is nonzero. If the function fails, the return value is zero."
+	VERIFY(::OffsetRect(&rc, m_zero.x, m_zero.y));
+	VERIFY(::OffsetRect(&rc, m_pos.x, m_pos.y));
+	return rc;
+}
+
+void WTLXySlider::DragMsgLoop(_In_ const POINT ptMin, _In_ const POINT ptMax, _Inout_ POINT* const pt0) noexcept {
+	do {
+		MSG msg;
+		if (!winuser::GetMessageW(&msg, nullptr, 0, 0)) {
+			break;
+		}
+
+		if (msg.message == WM_LBUTTONUP) {
+			break;
+		}
+		if (::GetCapture() != m_hWnd) {
+			break;
+		}
+
+		if (msg.message == WM_MOUSEMOVE) {
+			WTLXySlider::Handle_WM_MOUSEMOVE(ptMin, ptMax, msg, pt0);
+		}
+		else {
+			// Return value for DispatchMessageW is generally ignored.
+			(void)::DispatchMessageW(&msg);
+		}
+#pragma warning(suppress:4127)//conditional expression is constant
+	} while (true);
+}
+
+void WTLXySlider::DoDrag(_In_ const POINT point) noexcept {
+	POINT pt0 = point;
+
+	WTLXySlider::HighlightGripper(true);
+
+	const RECT grip_rect = WTLXySlider::GetGripperRect();
+	const SIZE inGripper = center_gripper(grip_rect, pt0);
+	const POINT ptMin = pt_min(m_zero, m_range, inGripper);
+	const POINT ptMax = pt_max(m_zero, m_range, inGripper);
+
+	ASSERT(::IsWindow(m_hWnd));
+
+	// SetCapture function (winuser.h): https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setcapture
+	// The return value is a handle to the window that had previously captured the mouse. If there is no such window, the return value is NULL.
+	//Don't care about return value.
+	(void)::SetCapture(m_hWnd);
+
+	WTLXySlider::DragMsgLoop(ptMin, ptMax, &pt0);
+
+	VERIFY(::ReleaseCapture());
+
+	WTLXySlider::HighlightGripper(false);
+}
+
+void WTLXySlider::DoPage(_In_ const POINT point) noexcept {
+	const POINT relative_circle_coords = {
+		(m_zero.x + m_pos.x),
+		(m_zero.y + m_pos.y)
+	};
+
+	const POINT point_minus_circle_coords = {
+		.x = (point.x - relative_circle_coords.x),
+		.y = (point.y - relative_circle_coords.y)
+	};
+
+	const SIZE sz = { point_minus_circle_coords.x, point_minus_circle_coords.y };
+
+	ASSERT(sz.cx != 0 || sz.cy != 0);
+	const DOUBLE x_sq = static_cast<DOUBLE>(sz.cx) * static_cast<DOUBLE>(sz.cx);
+	const DOUBLE y_sq = static_cast<DOUBLE>(sz.cy) * static_cast<DOUBLE>(sz.cy);
+
+	//pythagorean theory yo
+	const double len = ::sqrt(x_sq + y_sq);
+
+	const INT dx = static_cast<INT>(10 * static_cast<std::int64_t>(sz.cx) / len);
+	const INT dy = static_cast<INT>(10 * static_cast<std::int64_t>(sz.cy) / len);
+
+	WTLXySlider::DoMoveBy(dx, dy);
+}
+
+void WTLXySlider::HighlightGripper(_In_ const bool on) noexcept {
+	m_gripperHighlight = on;
+	hwnd::RedrawWindow(m_hWnd);
+	//VERIFY( CWnd::RedrawWindow( ) );
+}
+
+void WTLXySlider::RemoveTimer() noexcept {
+	if (m_timer != 0) {
+		ASSERT(::IsWindow(m_hWnd));
+
+		//If [KillTimer] succeeds, the return value is nonzero. If [KillTimer] fails, the return value is zero. To get extended error information, call GetLastError.
+		VERIFY(::KillTimer(m_hWnd, m_timer));
+		m_timer = 0;
+	}
+}
+
+
+void WTLXySlider::OnPaint(const HDC hDC) {
+	WTLXySlider::Initialize();
+	on_paint(m_rcAll, m_hWnd, m_rcInner, m_zero, m_gripperRadius, m_gripperHighlight, WTLXySlider::GetGripperRect());
+}
+
+
+void WTLXySlider::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
+	switch (nChar)
+	{
+	case VK_LEFT:
+		return WTLXySlider::DoMoveBy(-1, 0);
+	case VK_RIGHT:
+		return WTLXySlider::DoMoveBy(1, 0);
+	case VK_UP:
+		return WTLXySlider::DoMoveBy(0, -1);
+	case VK_DOWN:
+		return WTLXySlider::DoMoveBy(0, 1);
+	}
+}
+
+void WTLXySlider::OnLButtonDown(UINT /*nFlags*/, CPoint point) {
+	//don't care about old focus
+	(void)::SetFocus(m_hWnd);
+
+	const RECT rc = GetGripperRect();
+
+	if (::PtInRect(&rc, point)) {
+		return WTLXySlider::DoDrag(point);
+	}
+	WTLXySlider::DoPage(point);
+	WTLXySlider::InstallTimer();
+}
+
+void WTLXySlider::OnLButtonDblClk(UINT /*nFlags*/, CPoint point) {
+	//don't care about old focus
+	::SetFocus(m_hWnd);
+
+	const RECT grip_rect = WTLXySlider::GetGripperRect();
+	if (::PtInRect(&grip_rect, point)) {
+		return WTLXySlider::DoMoveBy(-m_pos.x, -m_pos.y);
+	}
+	WTLXySlider::DoPage(point);
+	WTLXySlider::InstallTimer();
+}
+
+void WTLXySlider::OnTimer(UINT_PTR /*nIDEvent*/) {
+	TRACE(L"Timer fired...\r\n");
+	POINT point;
+	VERIFY(::GetCursorPos(&point));
+	ASSERT(::IsWindow(m_hWnd));
+
+	//VERIFY( ::ScreenToClient( m_hWnd, &point ) );
+	hwnd::ScreenToClient(m_hWnd, &point);
+
+	const RECT rc = WTLXySlider::GetGripperRect();
+	if (!::PtInRect(&rc, point)) {
+		WTLXySlider::DoPage(point);
+	}
+}
+
+void WTLXySlider::SetPos(const POINT pt) {
+	WTLXySlider::Initialize();
+	m_externalPos = pt;
+	WTLXySlider::ExternToIntern();
+
+	hwnd::InvalidateErase(m_hWnd);
+}
+
+
+
 #else
 
 #endif
