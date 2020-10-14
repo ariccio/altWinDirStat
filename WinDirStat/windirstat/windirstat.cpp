@@ -244,6 +244,58 @@ SetProcessMitigationPolicy(
 		return OnOpenAFolder( NULL );
 		}
 
+
+	// Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
+	_Success_(return != clrDefault) COLORREF GetAlternativeColor(_In_ const COLORREF clrDefault, _In_z_ PCWSTR const which) noexcept {
+		COLORREF x;
+		ULONG cbValue = sizeof(x);
+		ATL::CRegKey key;
+
+		// Open the explorer key
+		key.Open(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer"), KEY_READ);
+
+		// Try to read the REG_BINARY value
+		if (ERROR_SUCCESS == key.QueryBinaryValue(which, &x, &cbValue)) {
+			return x;
+		}
+		return clrDefault;
+		}
+
+	_Success_(return == true) bool MemoryInfo(_Out_ SIZE_T* m_workingSet) noexcept {
+		//auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
+		PROCESS_MEMORY_COUNTERS pmc = { };
+
+		pmc.cb = sizeof(pmc);
+
+		//GetProcessMemoryInfo function (psapi.h): https://docs.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessmemoryinfo
+		//If the function succeeds, the return value is nonzero.
+		//If the function fails, the return value is zero.
+		//To get extended error information, call GetLastError.
+		if (!::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+			return false;
+		}
+
+		(*m_workingSet) = pmc.WorkingSetSize;
+
+		return true;
+		}
+
+	void FileOpenLight(CSingleDocTemplate* const m_pDocTemplate) {
+		constexpr const UINT flags = (BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON);
+		WTL::CFolderDialog bob{ NULL, global_strings::select_folder_dialog_title_text, flags };
+		//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
+		const INT_PTR resDoModal = bob.DoModal();
+		if (resDoModal == IDOK) {
+			PCWSTR const m_folder_name_heap(bob.GetFolderPath());
+			if (wcslen(m_folder_name_heap) > 0) {
+
+				//Here, calls CSingleDocTemplate::OpenDocumentFile (in docsingl.cpp)
+				m_pDocTemplate->OpenDocumentFile(m_folder_name_heap, TRUE);
+				}
+			}
+		}
+
+
 	}
 
 
@@ -260,30 +312,15 @@ WTL::CAppModule _Module;	// add this line
 CDirstatApp _theApp;
 
 
-CDirstatApp::CDirstatApp( ) noexcept : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
+CDirstatApp::CDirstatApp( ) noexcept : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( ::GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
 
 CDirstatApp::~CDirstatApp( ) {
 	m_pDocTemplate = { NULL };
 	}
 
-// Get the alternative colors for compressed and encrypted files/folders. This function uses either the value defined in the Explorer configuration or the default color values.
-_Success_( return != clrDefault ) COLORREF CDirstatApp::GetAlternativeColor( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) noexcept {
-	COLORREF x;
-	ULONG cbValue = sizeof( x );
-	ATL::CRegKey key;
-
-	// Open the explorer key
-	key.Open( HKEY_CURRENT_USER, _T( "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer" ), KEY_READ );
-
-	// Try to read the REG_BINARY value
-	if ( ERROR_SUCCESS == key.QueryBinaryValue( which, &x, &cbValue ) ) {
-		return x;
-		}
-	return clrDefault;
-	}
 
 _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInfo( _Out_writes_z_( strSize ) _Pre_writable_size_( strSize ) PWSTR psz_formatted_usage, _In_range_( 50, 64 ) const rsize_t strSize ) noexcept {
-	const auto Memres = UpdateMemoryInfo( );
+	const auto Memres = MemoryInfo(&m_workingSet);
 	if ( !Memres ) {
 		wds_fmt::write_MEM_INFO_ERR( psz_formatted_usage );
 		return STRSAFE_E_INVALID_PARAMETER;
@@ -296,21 +333,6 @@ _Success_( SUCCEEDED( return ) ) HRESULT CDirstatApp::GetCurrentProcessMemoryInf
 		return ::StringCchPrintfW( psz_formatted_usage, strSize, L"RAM Usage: %s", wds_fmt::FormatBytes( m_workingSet, GetOptions( )->m_humanFormat ).c_str( ) );
 		}
 	return res;
-	}
-
-_Success_( return == true ) bool CDirstatApp::UpdateMemoryInfo( ) noexcept {
-	//auto pmc = zeroInitPROCESS_MEMORY_COUNTERS( );
-	PROCESS_MEMORY_COUNTERS pmc = { };
-
-	pmc.cb = sizeof( pmc );
-
-	if ( !::GetProcessMemoryInfo( ::GetCurrentProcess( ), &pmc, sizeof( pmc ) ) ) {
-		return false;
-		}	
-
-	m_workingSet = pmc.WorkingSetSize;
-
-	return true;
 	}
 
 BOOL CDirstatApp::InitInstance( ) {
@@ -363,6 +385,7 @@ BOOL CDirstatApp::InitInstance( ) {
 	m_nCmdShow = SW_HIDE;
 
 
+	//Can call OnFileOpen
 	if ( !CWinApp::ProcessShellCommand( cmdInfo ) ) {
 		return FALSE;
 		}
@@ -405,18 +428,7 @@ void CDirstatApp::OnFileOpen( ) {
 	}
 
 void CDirstatApp::OnFileOpenLight( ) {
-	constexpr const UINT flags = ( BIF_RETURNONLYFSDIRS bitor BIF_USENEWUI bitor BIF_NONEWFOLDERBUTTON );
-	WTL::CFolderDialog bob { NULL, global_strings::select_folder_dialog_title_text, flags };
-	//ASSERT( m_folder_name_heap.compare( m_folderName ) == 0 );
-	const INT_PTR resDoModal = bob.DoModal( );
-	if ( resDoModal == IDOK ) {
-		PCWSTR const m_folder_name_heap( bob.GetFolderPath( ) );
-		if ( wcslen( m_folder_name_heap ) > 0 ) {
-
-			//Here, calls CSingleDocTemplate::OpenDocumentFile (in docsingl.cpp)
-			m_pDocTemplate->OpenDocumentFile( m_folder_name_heap, TRUE );
-			}
-		}
+	FileOpenLight(m_pDocTemplate);
 	}
 
 BOOL CDirstatApp::OnIdle( _In_ LONG lCount ) {

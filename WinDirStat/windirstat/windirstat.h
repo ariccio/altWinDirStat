@@ -37,9 +37,9 @@ public:
 
 	//The compiler will automatically inline if /Ob2 is on, so we'll ask anyways.
 	void PeriodicalUpdateRamUsage( ) noexcept {
-		if ( GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
+		if ( ::GetTickCount64( ) - m_lastPeriodicalRamUsageUpdate > RAM_USAGE_UPDATE_INTERVAL ) {
 			UpdateRamUsage( );
-			m_lastPeriodicalRamUsageUpdate = GetTickCount64( );
+			m_lastPeriodicalRamUsageUpdate = ::GetTickCount64( );
 			}
 		}
 
@@ -53,10 +53,9 @@ public:
 
 	
 protected:
-	_Success_( return == true )
-	bool UpdateMemoryInfo                      (                                                                    ) noexcept;
-	_Success_( return != clrDefault )
-	COLORREF GetAlternativeColor               ( _In_ const COLORREF clrDefault, _In_z_ PCWSTR const which ) noexcept;
+	//_Success_( return == true )
+	//bool UpdateMemoryInfo                      (                                                                    ) noexcept;
+
 	virtual BOOL OnIdle                        ( _In_ LONG lCount                        ) override final;		// This was, where scanning was done.
 
 public:
