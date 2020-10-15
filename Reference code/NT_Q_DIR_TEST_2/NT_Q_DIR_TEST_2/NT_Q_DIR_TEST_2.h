@@ -21,6 +21,9 @@
 #include <future>
 #include <regex>
 #include <mutex>
+#include <span>
+#include <type_traits>
+#include <memory>
 #include <ntstatus.h>
 #include <strsafe.h>
 typedef WCHAR bufferChar;
@@ -388,8 +391,8 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 // Adapted from http://www.cprogramming.com/snippets/source-code/convert-ntstatus-win32-error
 // Could use RtlNtStatusToDosError() instead
-static inline void SetWin32LastErrorFromNtStatus( NTSTATUS ntstatus ) {
-	DWORD br;
+static inline void SetWin32LastErrorFromNtStatus( NTSTATUS ntstatus ) noexcept {
+	DWORD br = {};
 	OVERLAPPED o;
 
 	o.Internal = ntstatus;
@@ -397,7 +400,7 @@ static inline void SetWin32LastErrorFromNtStatus( NTSTATUS ntstatus ) {
 	o.Offset = 0;
 	o.OffsetHigh = 0;
 	o.hEvent = 0;
-	GetOverlappedResult( NULL, &o, &br, FALSE );
+	::GetOverlappedResult( NULL, &o, &br, FALSE );
 	}
 //END boost
 
@@ -413,7 +416,7 @@ typedef struct _FILE_DIRECTORY_INFORMATION {
   LARGE_INTEGER AllocationSize;
   ULONG         FileAttributes;
   ULONG         FileNameLength;
-  WCHAR         FileName[1];
+  _Field_size_(FileNameLength) WCHAR         FileName[1];
 } FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
 
 
@@ -469,21 +472,21 @@ typedef DECLSPEC_ALIGN( 8 ) struct _FILE_ID_BOTH_DIR_INFORMATION {
 
 
 
-struct NtQueryDirectoryFile_f {
+struct NtQueryDirectoryFile_f final {
 	typedef NTSTATUS( NTAPI* pfnQueryDirFile )( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
 
 	pfnQueryDirFile ntQueryDirectoryFuncPtr = nullptr;
 
-	NtQueryDirectoryFile_f( ) : ntQueryDirectoryFuncPtr( nullptr ) { }
+	NtQueryDirectoryFile_f( ) noexcept : ntQueryDirectoryFuncPtr( nullptr ) { }
 
-	NtQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
+	NtQueryDirectoryFile_f( _In_ FARPROC ntQueryDirectoryFuncPtr_IN ) noexcept : ntQueryDirectoryFuncPtr( reinterpret_cast<pfnQueryDirFile>( ntQueryDirectoryFuncPtr_IN ) ) {
 		if ( ntQueryDirectoryFuncPtr == nullptr ) {
-			throw -1;
+			std::terminate();
 			}
 		}
 
 	NtQueryDirectoryFile_f( NtQueryDirectoryFile_f& in ) = delete;
-	bool init( FARPROC ntqfptr ) {
+	[[nodiscard]] bool init( FARPROC ntqfptr ) noexcept {
 		if ( ntqfptr != nullptr ) {
 			ntQueryDirectoryFuncPtr = reinterpret_cast< pfnQueryDirFile >( ntqfptr );
 			return true;
@@ -491,13 +494,13 @@ struct NtQueryDirectoryFile_f {
 		return false;
 		}
 
-	_Success_( NT_SUCCESS( return ) )  NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan );
+	_Success_( NT_SUCCESS( return ) ) [[nodiscard]] NTSTATUS NTAPI operator()( _In_ HANDLE FileHandle, _In_opt_ HANDLE Event, _In_opt_ PVOID ApcRoutine, _In_opt_ PVOID ApcContext, _Out_  IO_STATUS_BLOCK* IoStatusBlock, _Out_  PVOID FileInformation, _In_ ULONG Length, _In_ FILE_INFORMATION_CLASS FileInformationClass, _In_ BOOLEAN ReturnSingleEntry, _In_opt_ PUNICODE_STRING FileName, _In_ BOOLEAN RestartScan ) noexcept;
 
-	bool operator!( ) {
+	[[nodiscard]] bool operator!( ) noexcept {
 		return ( ntQueryDirectoryFuncPtr == nullptr );
 		}
 
-	operator bool( ) {
+	[[nodiscard]] operator bool( ) noexcept {
 		return ( ntQueryDirectoryFuncPtr != nullptr );
 		}
 
@@ -509,7 +512,7 @@ struct NtdllWrap {
 
 	NtQueryDirectoryFile_f NtQueryDirectoryFile;
 	
-	NtdllWrap( );
+	NtdllWrap( ) noexcept;
 	NtdllWrap( NtdllWrap& in ) = delete;
 	};
 
@@ -519,17 +522,22 @@ std::pair<std::uint64_t, std::uint64_t> ListDirectory( _In_ std::wstring dir, _I
 void FormatError( _Out_ _Out_writes_z_( msgSize ) PWSTR msg, size_t msgSize ) {
 	// Retrieve the system error message for the last-error code
 
-	const size_t bufSize = 256;
+	const constexpr size_t bufSize = 256;
 	wchar_t lpMsgBuf[ bufSize ] = { 0 };
 	//LPTSTR lpDisplayBuf = NULL;
-	DWORD dw = GetLastError( );
+	const DWORD dw = ::GetLastError( );
 
-	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), lpMsgBuf, bufSize, NULL );
-
+	const DWORD format_res = ::FormatMessageW( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), lpMsgBuf, bufSize, NULL );
+	if (format_res == 0) {
+		std::terminate();
+		}
 	// Display the error message and exit the process
 
 	//lpDisplayBuf = LPTSTR( LocalAlloc( LMEM_ZEROINIT, ( 40 * sizeof( TCHAR ) ) ) );
-	StringCchPrintf( msg, msgSize, L"error %lu: %s", dw, lpMsgBuf );
+	const HRESULT print_res = StringCchPrintfW( msg, msgSize, L"error %lu: %s", dw, lpMsgBuf );
+	if (FAILED(print_res)) {
+		std::terminate();
+		}
 	//MessageBox( NULL, ( LPCTSTR ) lpDisplayBuf, TEXT( "Error" ), MB_OK );
 
 
