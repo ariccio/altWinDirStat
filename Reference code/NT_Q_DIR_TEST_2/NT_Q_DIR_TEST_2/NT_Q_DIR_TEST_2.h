@@ -470,6 +470,34 @@ typedef DECLSPEC_ALIGN( 8 ) struct _FILE_ID_BOTH_DIR_INFORMATION {
 	} FILE_ID_BOTH_DIR_INFORMATION, *PFILE_ID_BOTH_DIR_INFORMATION;
 
 
+struct entry {
+	entry() = default;
+	entry(const std::wstring& name_, std::uint64_t size_, std::vector<entry>&& children_, bool needs_query_) : name(name_), size(size_), children(children_), needs_query(needs_query_) {}
+	std::wstring name;
+	std::uint64_t size;
+	std::vector<entry> children;
+
+	bool needs_query = false;
+
+	std::uint32_t recurseNumberChildren() const noexcept {
+		std::uint32_t total = 1u;
+		for (auto&& child : children) {
+			total += child.recurseNumberChildren();
+		}
+		return total;
+		}
+	std::uint64_t recurseSizeChildren() const noexcept {
+		std::uint64_t total = size;
+		for (auto&& child : children) {
+			total += child.recurseSizeChildren();
+			}
+		return total;
+		}
+
+	void sortByName() noexcept {
+		std::sort(children.begin(), children.end(), [](entry& left, entry& right) {return left.name > right.name; });
+	}
+};
 
 
 struct NtQueryDirectoryFile_f final {
@@ -517,7 +545,7 @@ struct NtdllWrap {
 	};
 
 
-std::pair<std::uint64_t, std::uint64_t> ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll );
+entry ListDirectory(_In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll, const std::wstring filePart);
 
 void FormatError( _Out_ _Out_writes_z_( msgSize ) PWSTR msg, size_t msgSize ) {
 	// Retrieve the system error message for the last-error code

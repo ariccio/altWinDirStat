@@ -41,6 +41,7 @@
 #pragma warning( pop )
 
 
+
 //Utility class I wrote
 template <typename T, size_t startingBufferSize>
 struct StackOrHeapBufferImpl {
@@ -340,7 +341,7 @@ void check_debug_size(_In_ const THIS_FILE_INFORMATION_CLASS* const pFileInf, co
 			::wprintf(L"%s: %s\r\n", L"FILE_ATTRIBUTE_VIRTUAL", ((pFileInf->FileAttributes & FILE_ATTRIBUTE_VIRTUAL) ? L"YES" : L"NO"));
 			::wprintf(L"%s: %s\r\n", L"FILE_ATTRIBUTE_NO_SCRUB_DATA", ((pFileInf->FileAttributes & FILE_ATTRIBUTE_NO_SCRUB_DATA) ? L"YES" : L"NO"));
 
-			_CrtDbgBreak();
+			//_CrtDbgBreak();
 		}
 	}
 
@@ -348,6 +349,9 @@ void check_debug_size(_In_ const THIS_FILE_INFORMATION_CLASS* const pFileInf, co
 
 [[nodiscard]] THIS_FILE_INFORMATION_CLASS* next_entry(THIS_FILE_INFORMATION_CLASS* const pFileInf, const char* const buffer_start, const size_t buffer_byte_cap) noexcept {
 	THIS_FILE_INFORMATION_CLASS* const next_file_entry = reinterpret_cast<THIS_FILE_INFORMATION_CLASS*>( reinterpret_cast<std::uint64_t>(pFileInf) + (static_cast<std::uint64_t>(pFileInf->NextEntryOffset)));
+	if (pFileInf->NextEntryOffset == 0) {
+
+		}
 	const char* const buffer_end = (buffer_start + buffer_byte_cap);
 	if (reinterpret_cast<char*>(next_file_entry) >= buffer_end) {
 		std::terminate();
@@ -355,17 +359,18 @@ void check_debug_size(_In_ const THIS_FILE_INFORMATION_CLASS* const pFileInf, co
 	if ((reinterpret_cast<char*>(next_file_entry) + sizeof(THIS_FILE_INFORMATION_CLASS)) >= buffer_end) {
 		std::terminate();
 		}
+	//::wprintf(L"\t\tpFileInf: %p, pFileInf->NextEntryOffset: %lu, ( pFileInf + pFileInf->NextEntryOffset ): %p\r\n", pFileInf, pFileInf->NextEntryOffset, next_file_entry);
 	return next_file_entry;
 	}
 
 
-void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool writeToScreen, NtdllWrap* ntdll, _In_ const std::wstring curDir, HANDLE hDir, std::uint64_t& total_size ) {
+void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, NtdllWrap* ntdll, HANDLE hDir, _Inout_ entry* const parent_entry, const std::wstring filePart) {
 	//sizeof(FILE_ALL_INFORMATION)/sizeof(std::filesystem::path::value_type)+32769
 	
 	//auto bufSize = sizeof(THIS_FILE_INFORMATION_CLASS)/sizeof(wchar_t)+32769;
 	
 	
-	const constexpr size_t init_bufSize = ( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 1000 );
+	const constexpr size_t init_bufSize = ( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 100 );
 
 	//wchar_t* idInfo = NULL;
 	//idInfo = new __declspec( align( 8 ) ) wchar_t[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
@@ -379,7 +384,7 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 	std::vector<std::wstring> breadthDirs;
 	std::vector<WCHAR> fNameVect;
 
-	std::vector<std::future<std::pair<std::uint64_t, std::uint64_t>>> futureDirs;
+	std::vector<std::future<entry>> futureDirs;
 
 	IO_STATUS_BLOCK iosb = { };
 
@@ -442,92 +447,122 @@ void qDirFile( _In_ const std::wstring dir, std::uint64_t& numItems, const bool 
 			goto nextItem;
 			}
 
-		total_size += pFileInf->AllocationSize.QuadPart;
+				
 		//const auto lores = GetCompressedFileSizeW( , ) 
 #ifdef DEBUG
-		check_debug_size(pFileInf, dir);
+		if (writeToScreen) {
+			check_debug_size(pFileInf, dir);
+			}
 #endif
-		++numItems;
-		if ( writeToScreen || ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {//I'd like to avoid building a null terminated string unless it is necessary
-			fNameVect.clear( );
-			fNameVect.reserve( ( pFileInf->FileNameLength / sizeof( WCHAR ) ) + 1 );
-			PWCHAR end = pFileInf->FileName + ( pFileInf->FileNameLength / sizeof( WCHAR ) );
-			fNameVect.insert( fNameVect.end( ), pFileInf->FileName, end );
-			fNameVect.emplace_back( L'\0' );
-			PWSTR fNameChar = &( fNameVect[ 0 ] );
-			
-			if ( writeToScreen ) {
-				if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_COMPRESSED ) {
-					::wprintf( L"AllocationSize: %I64d    %s\\%s\r\n", static_cast<std::int64_t>( pFileInf->AllocationSize.QuadPart ), curDir.c_str( ), fNameChar );
-					}
-				}
-			if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
-
-				if ( curDir[ curDir.length( ) - 1 ] != L'\\' ) {
-					//breadthDirs.emplace_back( std::wstring( curDir ) + L'\\' + fNameChar + L'\\' );
-					auto query = std::wstring( curDir + L'\\' + fNameChar + L'\\' );
-					futureDirs.emplace_back( std::async( std::launch::deferred, ListDirectory, std::move(query), writeToScreen, ntdll ) );
-					}
-				else {
-					//breadthDirs.emplace_back( std::wstring( curDir ) + fNameChar + L'\\' );
-					auto query = std::wstring( curDir + fNameChar + L'\\' );
-					futureDirs.emplace_back( std::async( std::launch::deferred, ListDirectory, std::move(query), writeToScreen, ntdll ) );
-					}
+		//fNameVect.clear( );
+		const size_t fileNameWcharCount = (pFileInf->FileNameLength / sizeof(WCHAR));
+		wchar_t filename_with_null[MAX_PATH + 1] = {};
+		wmemcpy(filename_with_null, pFileInf->FileName, fileNameWcharCount);
+		assert(wcslen(filename_with_null) == fileNameWcharCount);
+		//fNameVect.reserve( fileNameWcharCount + 1 );
+		//PWCHAR end = pFileInf->FileName + ( pFileInf->FileNameLength / sizeof( WCHAR ) );
+		//fNameVect.insert( fNameVect.end( ), pFileInf->FileName, end );
+		//fNameVect.emplace_back( L'\0' );
+		//PWSTR fNameChar = &( fNameVect[ 0 ] );
+		if (wcscmp(filename_with_null, L"vcruntime140.dll") == 0) {
+			__debugbreak();
+		}
+		if ( writeToScreen ) {
+			if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_COMPRESSED ) {
+				::wprintf( L"AllocationSize: %I64d    %s\\%s\r\n", static_cast<std::int64_t>( pFileInf->AllocationSize.QuadPart ), dir.c_str( ), filename_with_null);
 				}
 			}
+		if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
+
+			if ( dir[ dir.length( ) - 1 ] != L'\\' ) {
+				//curDir + L'\\' + std::wstring_view(pFileInf->FileName, fileNameWcharCount) + L'\\' + '\0'
+				const size_t needed_buffer_size = dir.length() + 1 + fileNameWcharCount + 1 + 1;
+				std::unique_ptr<wchar_t[]> queryStr = std::make_unique<wchar_t[]>(needed_buffer_size);
+				const int fmt_res = ::swprintf_s(queryStr.get(), needed_buffer_size, L"%s\\%s\\", dir.c_str(), filename_with_null);
+				assert(fmt_res != -1);
+				if (fmt_res == -1) {
+					std::terminate();
+					}
+				//breadthDirs.emplace_back( std::wstring( curDir ) + L'\\' + fNameChar + L'\\' );
+				//auto query = std::wstring( curDir + L'\\' + std::wstring_view(pFileInf->FileName, fileNameWcharCount) + L'\\' );
+				parent_entry->children.emplace_back(ListDirectory( std::move(queryStr), writeToScreen, ntdll, filename_with_null) );
+				}
+			else {
+				//breadthDirs.emplace_back( std::wstring( curDir ) + fNameChar + L'\\' );
+				// need extra +1 for null terminator
+				const size_t needed_buffer_size = dir.length() + fileNameWcharCount + 1 + 1;
+				std::unique_ptr<wchar_t[]> queryStr = std::make_unique<wchar_t[]>(needed_buffer_size);
+				const int fmt_res = ::swprintf_s(queryStr.get(), needed_buffer_size, L"%s%s\\", dir.c_str(), filename_with_null);
+				if (fmt_res == -1) {
+					std::terminate();
+					}
+				//auto query = std::wstring( dir + fNameChar + L'\\' );
+				parent_entry->children.emplace_back(ListDirectory( std::move(queryStr), writeToScreen, ntdll, filename_with_null) );
+				}
+			}
+		else {
+			parent_entry->children.emplace_back(filename_with_null, std::uint64_t(pFileInf->AllocationSize.QuadPart), std::vector<entry>{}, false);
+
+		}
 
 	nextItem:
 		//stat = NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, &idInfo[ 0 ], idInfo.size( ), FileIdBothDirectoryInformation, TRUE, NULL, FALSE );
-		if ( writeToScreen ) {
-			::wprintf( L"\t\tpFileInf: %p, pFileInf->NextEntryOffset: %lu, ( pFileInf + pFileInf->NextEntryOffset ): %p\r\n", pFileInf, pFileInf->NextEntryOffset, next_entry(pFileInf, idInfoBuffer.as_char(), idInfoBuffer.raw_buffer_size_bytes()));
-			}
 		pFileInf = ( pFileInf->NextEntryOffset != 0 ) ? next_entry(pFileInf, idInfoBuffer.as_char(), idInfoBuffer.raw_buffer_size_bytes()) : NULL;
 		}
 
 	//for ( auto& aDir : breadthDirs ) {
 	//	numItems += ListDirectory( aDir.c_str( ), writeToScreen, ntdll );
 	//	}
-	for ( auto& a : futureDirs ) {
-		const auto a_pair = a.get( );
-		numItems += a_pair.first;
-		total_size += a_pair.second;
+	for ( std::future<entry>& a : futureDirs ) {
+		parent_entry->children.emplace_back(std::move(a.get( )));
 		//numItems += a.get( );
 		}
 
 	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
 	}
 
-std::pair<std::uint64_t, std::uint64_t> ListDirectory( _In_ std::wstring dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll ) {
+entry ListDirectory( _In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll, const std::wstring filePart) {
 	std::wstring curDir;
 	std::uint64_t numItems = 0;
-	if ( dir.size( ) == 0 ) {
-		curDir.resize( ::GetCurrentDirectoryW( 0, NULL ) );
+	if ( wcslen(dir.get( )) == 0 ) {
+		const DWORD needed = ::GetCurrentDirectoryW(0, NULL);
+		if (needed == 0) {
+			std::terminate();
+		}
+		curDir.resize( needed + 1 );
 		::GetCurrentDirectoryW( static_cast<DWORD>( curDir.size( ) ), &curDir[ 0 ] );
-		dir = curDir;
+		wprintf_s(L"hmmm, did you mean %s\r\n", curDir.c_str());
+		//dir = curDir;
+		__debugbreak();
+		std::terminate();
 		}
 	else {
 		//curDir = dir;
 		}
-	HANDLE hDir = ::CreateFileW( dir.c_str( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
+	entry thisDirectory( filePart, std::uint64_t(0), std::vector<entry>(), true );
+	HANDLE hDir = ::CreateFileW( dir.get( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
 	if ( hDir == INVALID_HANDLE_VALUE ) {
 		const DWORD err = ::GetLastError( );
 		//std::wcout << L"Failed to open directory " << dir << L" because of error " << err << std::endl;
 		//const size_t bufSize = 256;
 		//wchar_t buffer[ bufSize ] = { 0 };
 		//FormatError( buffer, bufSize );
-		::wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.c_str( ), err );
+		::wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.get( ), err );
 		::wprintf( L"err: `%lu` means: %s\r\n", err, handyDandyErrMsgFormatter( ).c_str( ) );
-		return std::make_pair( numItems, 0 );
+		return thisDirectory;
 		}
 	std::uint64_t total_size = 0;
-	qDirFile( dir, numItems, writeToScreen, ntdll, dir, hDir, total_size );
+	qDirFile( dir.get(), writeToScreen, ntdll, hDir, &thisDirectory, filePart);
 	if ( writeToScreen ) {
-		::wprintf( L"%I64u items in directory : %s\r\n", numItems, dir.c_str( ) );
+		::wprintf( L"%I64u items in directory : %s\r\n", numItems, dir.get( ) );
 		::wprintf( L"%I64u total size of items\r\n", total_size );
 		//std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << numItems << std::setw( 0 ) << L" items in directory " << dir << std::endl;
 		}
-	::CloseHandle( hDir );
-	return std::make_pair( numItems, total_size );
+	const BOOL close_res = ::CloseHandle( hDir );
+	if (close_res == 0) {
+		std::terminate();
+		}
+	return thisDirectory;
 	}
 
 //void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
@@ -570,16 +605,160 @@ std::pair<std::uint64_t, std::uint64_t> ListDirectory( _In_ std::wstring dir, _I
 //		}
 //	}
 
-std::pair<std::uint64_t, std::uint64_t> RecurseListDirectory( _In_z_ const wchar_t* dir, _In_ const bool writeToScreen ) {
+entry RecurseListDirectory( _In_z_ const wchar_t* dir_, _In_ const bool writeToScreen ) {
 	//__declspec( align( 8 ) ) std::vector<wchar_t> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 500000 );
 	std::uint64_t items = 1;
 	static NtdllWrap ntdll;
 	std::uint64_t total_size = 0;
-	const auto a_pair = ListDirectory( dir, writeToScreen, &ntdll );
-	items += a_pair.first;
-	total_size += a_pair.second;
-	::wprintf( L"Total items in directory tree of %s: %I64u\r\n", dir, items );
-	return std::make_pair( items, total_size );
+	const size_t buf_size = wcslen(dir_) + 1;
+	std::unique_ptr<wchar_t[]> dir = std::make_unique<wchar_t[]>(buf_size);
+	wcscpy_s(dir.get(), buf_size , dir_);
+	const entry topDir = ListDirectory( std::move(dir), writeToScreen, &ntdll, dir_ );
+
+	::wprintf( L"Total items in directory tree of %s: %I32u\r\n", dir_, topDir.recurseNumberChildren() );
+	::wprintf(L"Total size in directory tree of %s: %I64u\r\n", dir_, topDir.recurseSizeChildren());
+
+	return topDir;
+	}
+
+std::vector<entry> FindFilesLoop(const std::wstring path) {
+	//ASSERT( path.back( ) == L'*' );
+	WIN32_FIND_DATA fData;
+	HANDLE fDataHand = ::FindFirstFileExW(path.c_str(), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0);
+	BOOL findNextFileRes = TRUE;
+	std::vector<entry> entries;
+	if (fDataHand == INVALID_HANDLE_VALUE) {
+		const auto err = handyDandyErrMsgFormatter();
+		_putws(err.c_str());
+		__debugbreak();
+		}
+	while ((fDataHand != INVALID_HANDLE_VALUE) && (findNextFileRes != 0)) {
+		const int scmpVal = ::wcscmp(fData.cFileName, L"..");
+		const int scmpVal2 = ::wcscmp(fData.cFileName, L".");
+		if ((scmpVal == 0) || (scmpVal2 == 0)) {//This branches on the return of IsDirectory, then checks characters 0,1, & 2//IsDirectory calls MatchesMask, which bitwise-ANDs dwFileAttributes with FILE_ATTRIBUTE_DIRECTORY
+			findNextFileRes = ::FindNextFileW(fDataHand, &fData);
+			continue;//No point in operating on ourselves!
+		}
+		else if (fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			assert(path.substr(path.length() - 3, 3).compare(L"*.*") == 0);
+			const std::wstring alt_path_this_dir(path.substr(0, path.length() - 3) + fData.cFileName);
+			
+			entries.emplace_back(fData.cFileName,
+				0,
+				FindFilesLoop(alt_path_this_dir + L"\\*.*"),
+				false
+			);
+		}
+		else {
+			entries.emplace_back(fData.cFileName,
+				(static_cast<std::uint64_t>(fData.nFileSizeHigh) * (static_cast<std::uint64_t>(MAXDWORD) + 1)) + static_cast<std::uint64_t>(fData.nFileSizeLow),
+				std::vector<entry>(),
+				false
+			);
+		}
+		findNextFileRes = ::FindNextFileW(fDataHand, &fData);
+	}
+	if (fDataHand == INVALID_HANDLE_VALUE) {
+		puts("hmmmmmm\r\n");
+		}
+	const BOOL close_res = ::FindClose(fDataHand);
+	if (close_res == 0) {
+		std::terminate();
+		}
+	return entries;
+	}
+
+void RecurseListDirectoryWin32(_Inout_ entry* entry_, _In_z_ const wchar_t* dir_) {
+
+	}
+
+
+entry win32RecurseDirectoryTop(_In_z_ const wchar_t* dir_) {
+	LARGE_INTEGER startTime = { 0 };
+	LARGE_INTEGER endTime = { 0 };
+
+	//std::int64_t fileSizeTotal = 0;
+	const auto adjustedTimingFrequency = getAdjustedTimingFrequency();
+	const BOOL res2 = QueryPerformanceCounter(&startTime);
+	//std::uint64_t total_size = 0;
+
+	//		FindFilesLoop( vecFiles, vecDirs, std::move( path + _T( "\\*.*" ) ) );
+	const entry top = { dir_, 0, FindFilesLoop(std::wstring(dir_) + std::wstring(L"\\*.*")), false };
+	const auto items = top.recurseNumberChildren();
+	const auto total_size = top.recurseSizeChildren();
+	::wprintf(L"%I32u items in directory : %s\r\n", items, dir_);
+	::wprintf(L"%I64u total size of items\r\n", total_size);
+	const BOOL res3 = QueryPerformanceCounter(&endTime);
+
+	if ((!res2) || (!res3)) {
+		::wprintf(L"QueryPerformanceCounter Failed!!!!!! Disregard any timing data!!\r\n");
+	}
+	const auto totalTime = (endTime.QuadPart - startTime.QuadPart) * adjustedTimingFrequency;
+
+	//items = RecurseListDirectory( L"\\\\?\\C:", false );
+	::wprintf(L"Time in seconds: %f\r\n", totalTime);
+	::wprintf(L"Items: %I32u\r\n", items);
+	::wprintf(L"total size of items: %I64u\r\n", total_size);
+	::wprintf(L"Items/second: %f\r\n", (static_cast<DOUBLE>(items) / totalTime));
+	//ListDirectory( argc < 3 ? NULL : argv[ 2 ], dirs, false );
+	return top;
+}
+
+entry NtRecurseListDirectory(_In_z_ const wchar_t* dir_) {
+	LARGE_INTEGER startTime = { 0 };
+	LARGE_INTEGER endTime = { 0 };
+
+	//std::int64_t fileSizeTotal = 0;
+	const auto adjustedTimingFrequency = getAdjustedTimingFrequency();
+	const BOOL res2 = QueryPerformanceCounter(&startTime);
+	//std::uint64_t total_size = 0;
+
+	const entry top = RecurseListDirectory(dir_, false);
+	//const auto a_pair = RecurseListDirectory( L"C:\\", false );
+	const auto items = top.recurseNumberChildren();
+	const auto total_size = top.recurseSizeChildren();
+	const BOOL res3 = QueryPerformanceCounter(&endTime);
+
+	if ((!res2) || (!res3)) {
+		::wprintf(L"QueryPerformanceCounter Failed!!!!!! Disregard any timing data!!\r\n");
+	}
+	const auto totalTime = (endTime.QuadPart - startTime.QuadPart) * adjustedTimingFrequency;
+
+	//items = RecurseListDirectory( L"\\\\?\\C:", false );
+	::wprintf(L"Time in seconds: %f\r\n", totalTime);
+	::wprintf(L"Items: %I32u\r\n", items);
+	::wprintf(L"total size of items: %I64u\r\n", total_size);
+	::wprintf(L"Items/second: %f\r\n", (static_cast<DOUBLE>(items) / totalTime));
+	//ListDirectory( argc < 3 ? NULL : argv[ 2 ], dirs, false );
+
+	return top;
+	}
+
+
+void entry_diffs(const entry& NT_enum, const entry& win32_enum, const std::wstring parent_path) noexcept {
+	//if (NT_enum.children.size() != win32_enum.children.size()) {
+		for (auto& win32_child : win32_enum.children) {
+			const auto location_found = std::find_if(NT_enum.children.begin(), NT_enum.children.end(), [&](const entry& entry_) {return (entry_.name == win32_child.name); });
+			if (location_found == NT_enum.children.end()) {
+				::wprintf_s(L"Difference found! NT does not contain file name %s\r\n", std::wstring(parent_path + L"\\" + win32_child.name).c_str() );
+				}
+			else {
+				assert(location_found->name == win32_child.name);
+				entry_diffs(*location_found, win32_child, std::wstring(parent_path + L"\\" + win32_child.name));
+				}
+			}
+
+		for (auto& nt_child : NT_enum.children) {
+			const auto location_found = std::find_if(win32_enum.children.begin(), win32_enum.children.end(), [&](const entry& entry_) { return (entry_.name == nt_child.name); });
+			if (location_found == win32_enum.children.end()) {
+				::wprintf_s(L"Difference found! win32 does not contain file name %s\r\n", std::wstring(parent_path + L"\\" + nt_child.name).c_str() );
+				}
+			else {
+				assert(location_found->name == nt_child.name);
+				entry_diffs(nt_child, *location_found, std::wstring(parent_path + L"\\" + nt_child.name));
+				}
+			}
+		//}
 	}
 
 int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** argv ) {
@@ -602,36 +781,20 @@ int __cdecl wmain( _In_ int argc, _In_ _Deref_prepost_count_( argc ) wchar_t** a
 			//ListDirectory( argc < 3 ? NULL : argv[ 2 ], dirs, true );
 			}
 		if ( res == ENUM_DIR ) {
-			std::wstring _path( argv[ 2 ] );
-			::wprintf( L"Arg: %s\r\n", _path.c_str( ) );
-			std::wstring nativePath = L"\\\\?\\" + _path;
-			::wprintf( L"'native' path: %s\r\n", nativePath.c_str( ) );
-			LARGE_INTEGER startTime = { 0 };
-			LARGE_INTEGER endTime = { 0 };
-	
-			//std::int64_t fileSizeTotal = 0;
-			const auto adjustedTimingFrequency = getAdjustedTimingFrequency( );
-			const BOOL res2 = QueryPerformanceCounter( &startTime );
-			//std::uint64_t total_size = 0;
-
-			const auto a_pair = RecurseListDirectory( nativePath.c_str( ), false );
-			//const auto a_pair = RecurseListDirectory( L"C:\\", false );
-			const auto items = a_pair.first;
-			const auto total_size = a_pair.second;
-			const BOOL res3 = QueryPerformanceCounter( &endTime );
-	
-			if ( ( !res2 ) || ( !res3 ) ) {
-				::wprintf( L"QueryPerformanceCounter Failed!!!!!! Disregard any timing data!!\r\n" );
-				}
-			const auto totalTime = ( endTime.QuadPart - startTime.QuadPart ) * adjustedTimingFrequency;
-
-			//items = RecurseListDirectory( L"\\\\?\\C:", false );
-			::wprintf( L"Time in seconds: %f\r\n", totalTime );
-			::wprintf( L"Items: %I64u\r\n", items );
-			::wprintf( L"total size of items: %I64u\r\n", total_size );
-			::wprintf( L"Items/second: %f\r\n", ( static_cast< DOUBLE >( items ) / totalTime ) );
-			//ListDirectory( argc < 3 ? NULL : argv[ 2 ], dirs, false );
-			}
+			std::wstring _path(argv[2]);
+			::wprintf(L"Arg: %s\r\n", _path.c_str());
+			const std::wstring nativePath = L"\\\\?\\" + _path;
+			::wprintf(L"'native' path: %s\r\n", nativePath.c_str());
+			entry NT_enum = NtRecurseListDirectory(nativePath.c_str());
+			::wprintf(L"------------------------\r\n");
+			entry win32_enum = win32RecurseDirectoryTop(nativePath.c_str());
+			::wprintf(L"------------------------\r\n");
+			::wprintf(L"sorting\r\n");
+			::wprintf(L"------------------------");
+			NT_enum.sortByName();
+			win32_enum.sortByName();
+			entry_diffs(NT_enum, win32_enum, nativePath);
+		}
 		else // DEL_FILE
 			{
 			//return 0;
