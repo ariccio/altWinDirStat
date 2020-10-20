@@ -41,6 +41,13 @@
 #pragma warning( pop )
 
 
+namespace {
+	static NtdllWrap ntdll;
+
+	const constexpr size_t init_bufSize = ((sizeof(FILE_ID_BOTH_DIR_INFORMATION) + (MAX_PATH * sizeof(wchar_t))) * 100);
+	}
+
+
 
 //Utility class I wrote
 template <typename T, size_t startingBufferSize>
@@ -58,6 +65,15 @@ struct StackOrHeapBufferImpl {
 		}
 		return stackBuffer;
 	}
+
+	_At_(return, _Post_writable_size_(currentSize))
+		[[nodiscard]] const T* as_raw() const noexcept {
+		if (isHeap()) {
+			return heapBuffer.get();
+		}
+		return stackBuffer;
+	}
+
 
 	_At_(return, _Post_writable_byte_size_(currentSize * sizeof(T)))
 	[[nodiscard]] void* as_void() noexcept {
@@ -82,6 +98,17 @@ struct StackOrHeapBufferImpl {
 	[[nodiscard]] char* as_char() noexcept {
 		if constexpr (!std::is_same_v<T, char>) {
 			return reinterpret_cast<char*>(as_raw());
+		}
+		else {
+			//else statement NECESSARY with 'if constexpr'
+			return reinterpret_cast<char*>(as_raw());
+		}
+	}
+
+	_At_(return, _Post_writable_byte_size_(currentSize * sizeof(T)))
+		[[nodiscard]] const char* as_char() const noexcept {
+		if constexpr (!std::is_same_v<T, char>) {
+			return reinterpret_cast<const char*>(as_raw());
 		}
 		else {
 			//else statement NECESSARY with 'if constexpr'
@@ -123,18 +150,23 @@ struct StackOrHeapBufferImpl {
 		//}
 		}
 
-	size_t currentSize = startingBufferSize;
+	alignas(8) T stackBuffer[startingBufferSize] = {};
 
 	_When_(currentSize > startingBufferSize, _Field_size_(currentSize))
 		_When_(currentSize <= startingBufferSize, _Field_size_(0))
 		std::unique_ptr<T[]> heapBuffer;
-	T stackBuffer[startingBufferSize] = {};
+	size_t currentSize = startingBufferSize;
 };
 
 template <typename T = std::byte, size_t startingBufferSize = 12>
 struct StackOrHeapBuffer : public StackOrHeapBufferImpl<T, startingBufferSize> {
 
 };
+
+
+
+typedef StackOrHeapBuffer<wchar_t, init_bufSize> StackOrHeapBufferQuery;
+
 
 std::wstring handyDandyErrMsgFormatter( const DWORD last_err ) {
 	const constexpr size_t msgBufSize = 2 * 1024;
@@ -223,26 +255,6 @@ _Success_( NT_SUCCESS( return ) ) NTSTATUS NTAPI NtQueryDirectoryFile_f::operato
 	//abort( );
 	//return -LONG_MAX;
 	}
-
-
-//void DeleteFileByHandle( _In_ HANDLE hFile ) {
-//	assert( false );
-//	return;
-//	IO_STATUS_BLOCK iosb = { 0 };
-//
-//	struct FILE_DISPOSITION_INFORMATION {
-//		BOOLEAN  DeleteFile;
-//		} fdi = { TRUE };
-//
-//	HMODULE hNtdll = GetModuleHandle( L"C:\\Windows\\System32\\ntdll.dll" );
-//	if ( hNtdll ) {
-//		pfnSetInfoFile ntSetInformationFile = ( pfnSetInfoFile ) GetProcAddress( hNtdll, "NtSetInformationFile" );
-//		if ( ntSetInformationFile ) {
-//			ntSetInformationFile( hFile, &iosb, &fdi, sizeof( fdi ), FileDispositionInformation );
-//			}
-//		}
-//	}
-
 
 // Hmm, I must've copied at least some of this code from: http://blog.airesoft.co.uk/code/fileid.cpp
 LONGLONG WcsToLLDec( _In_z_ const wchar_t* pNumber, _In_ wchar_t* endChar ) noexcept {
@@ -347,11 +359,18 @@ void check_debug_size(_In_ const THIS_FILE_INFORMATION_CLASS* const pFileInf, co
 
 	}
 
-[[nodiscard]] THIS_FILE_INFORMATION_CLASS* next_entry(THIS_FILE_INFORMATION_CLASS* const pFileInf, const char* const buffer_start, const size_t buffer_byte_cap) noexcept {
+[[nodiscard]] THIS_FILE_INFORMATION_CLASS* next_entry(const THIS_FILE_INFORMATION_CLASS* const pFileInf, const char* const buffer_start, const size_t buffer_byte_cap) noexcept {
 	THIS_FILE_INFORMATION_CLASS* const next_file_entry = reinterpret_cast<THIS_FILE_INFORMATION_CLASS*>( reinterpret_cast<std::uint64_t>(pFileInf) + (static_cast<std::uint64_t>(pFileInf->NextEntryOffset)));
 	if (pFileInf->NextEntryOffset == 0) {
-
+		return nullptr;
 		}
+	else {
+		//If a buffer contains two or more of these structures, the NextEntryOffset value in each entry, except the last, falls on an 8-byte boundary.
+		const void* const nef_as_void = next_file_entry;
+		const uintptr_t nef = reinterpret_cast<uintptr_t>(nef_as_void);
+		assert((nef % 8) == 0);
+
+	}
 	const char* const buffer_end = (buffer_start + buffer_byte_cap);
 	if (reinterpret_cast<char*>(next_file_entry) >= buffer_end) {
 		std::terminate();
@@ -363,96 +382,64 @@ void check_debug_size(_In_ const THIS_FILE_INFORMATION_CLASS* const pFileInf, co
 	return next_file_entry;
 	}
 
-
-void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, NtdllWrap* ntdll, HANDLE hDir, _Inout_ entry* const parent_entry, const std::wstring filePart) {
-	//sizeof(FILE_ALL_INFORMATION)/sizeof(std::filesystem::path::value_type)+32769
-	
-	//auto bufSize = sizeof(THIS_FILE_INFORMATION_CLASS)/sizeof(wchar_t)+32769;
-	
-	
-	const constexpr size_t init_bufSize = ( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 100 );
-
-	//wchar_t* idInfo = NULL;
-	//idInfo = new __declspec( align( 8 ) ) wchar_t[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
-	//if ( idInfo != NULL ) {
-	//	memset( idInfo, 0, bufSize );
-	//	}
-
-	//__declspec( align( 8 ) ) wchar_t buffer[ init_bufSize ];
-	static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= 8, "underaligned type?");
-	StackOrHeapBuffer<wchar_t, init_bufSize> idInfoBuffer;
-	std::vector<std::wstring> breadthDirs;
-	std::vector<WCHAR> fNameVect;
-
-	std::vector<std::future<entry>> futureDirs;
-
-	IO_STATUS_BLOCK iosb = { };
-
-	//UNICODE_STRING _glob;
-	
-	NTSTATUS stat = STATUS_PENDING;
-	if ( writeToScreen ) {
-		::wprintf( L"Files in directory %s\r\n", dir.c_str( ) );
-		::wprintf( L"      File ID       |       File Name\r\n" );
+[[nodiscard]] const char* one_byte_past_entry_end(const THIS_FILE_INFORMATION_CLASS* const pFileInf, const char* const buffer_start, const size_t buffer_byte_cap) noexcept {
+	assert(pFileInf->NextEntryOffset == 0);
+	assert(pFileInf->FileNameLength > 0);
+	if (pFileInf->FileNameLength == 0) {
+		std::terminate();
 		}
-	assert( init_bufSize > 1 );
-	//auto buffer = &( idInfo[ 0 ] );
-	//++numItems;
-	const NTSTATUS sBefore = stat;
-	stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfoBuffer.as_void(), static_cast<ULONG>( init_bufSize ), InfoClass, FALSE, NULL, TRUE );
-	if ( stat == STATUS_TIMEOUT ) {
-		std::terminate( );
+	const wchar_t* const end_of_filename_str_wchar = pFileInf->FileName + pFileInf->FileNameLength;
+	const char* const end_of_filename_byte = reinterpret_cast<const char*>(end_of_filename_str_wchar);
+	if (end_of_filename_byte > (buffer_start + buffer_byte_cap)) {
+		std::terminate();
 		}
-	if ( stat == STATUS_PENDING ) {
-		std::terminate( );
-		}
-	assert( NT_SUCCESS( stat ) );
-	assert( stat != sBefore );
-	assert( GetLastError( ) != ERROR_MORE_DATA );
-	auto bufSize = init_bufSize;
-	//wchar_t* idInfo = NULL;
-	while ( stat == STATUS_BUFFER_OVERFLOW ) {
-		bufSize = ( bufSize * 2 );
-		static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= 8, "underaligned type?");
-		idInfoBuffer.grow(bufSize);
-		
-		stat = ntdll->NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfoBuffer.as_void(), static_cast<ULONG>( bufSize ), InfoClass, FALSE, NULL, TRUE );
-		}
-	assert( NT_SUCCESS( stat ) );
-	if ( !NT_SUCCESS( stat ) ) {
-		::wprintf( L"Critical error!\r\n" );
-		std::terminate( );
-		}
-	const ULONG_PTR bufSizeWritten = iosb.Information;
+	return end_of_filename_byte;
+	}
 
-	const auto idInfoSize = bufSize;
-	//This zeros just enough of the idInfo buffer ( after the end of valid data ) to halt the forthcoming while loop at the last valid data. This saves the effort of zeroing larger parts of the buffer.
-	for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( wchar_t ) ) * 2 ); ++i ) {
-		if ( i == idInfoSize ) {
-			break;
-			}
-		idInfoBuffer.as_buffer()[ i ] = 0;
+[[nodiscard]] bool buffer_way_too_small(const NTSTATUS status, const IO_STATUS_BLOCK& iosb) noexcept {
+	//On subsequent calls, if the output buffer contains no structures, NtQueryDirectoryFile returns STATUS_SUCCESS but sets IoStatusBlock->Information = 0 to notify the caller of this condition. 
+	if (STATUS_SUCCESS != status) {
+		return false;
 		}
-	
+	if (iosb.Information != 0) {
+		return false;
+		}
+	return true;
+ 	}
 
-	auto pFileInf = reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>( idInfoBuffer.as_raw() );
+[[nodiscard]] std::wstring ntdll_error(const NTSTATUS status) noexcept {
+	const constexpr size_t msgBufSize = 2 * 1024;
+	wchar_t msgBuf[msgBufSize] = { 0 };
+	const DWORD ret = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE, ntdll.ntdll, status, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), msgBuf, msgBufSize, NULL);
+	if (ret > 0) {
+		return std::wstring(msgBuf);
+		}
+	return std::wstring(L"FormatMessage failed to format an error!");
 
-	assert( pFileInf != NULL );
-	while ( NT_SUCCESS( stat ) && ( pFileInf != NULL ) ) {
+	}
+
+//[[nodiscard]] bool NtQueryDirectoryFile_second_query_succeeded(const NTSTATUS stat, const IO_STATUS_BLOCK& iosb) noexcept {
+//
+//	}
+
+
+void parse_file_information_buffer(_Inout_ entry* const parent_entry, const bool writeToScreen, _In_ const std::wstring dir, const THIS_FILE_INFORMATION_CLASS* const pFileInfOriginal, const StackOrHeapBufferQuery& idInfoBuffer) {
+	const THIS_FILE_INFORMATION_CLASS* pFileInf = pFileInfOriginal;
+	while (NT_SUCCESS(stat) && (pFileInf != NULL)) {
 		//PFILE_ID_BOTH_DIR_INFORMATION pFileInf = ( FILE_ID_BOTH_DIR_INFORMATION* ) buffer;
 
-		assert( pFileInf->FileNameLength > 1 );
-		if ( pFileInf->FileName[ 0 ] == L'.' && ( pFileInf->FileName[ 1 ] == 0 || ( pFileInf->FileName[ 1 ] == '.' ) ) ) {
+		assert(pFileInf->FileNameLength > 1);
+		if (pFileInf->FileName[0] == L'.' && (pFileInf->FileName[1] == 0 || (pFileInf->FileName[1] == '.'))) {
 			//continue;
 			goto nextItem;
-			}
+		}
 
-				
+
 		//const auto lores = GetCompressedFileSizeW( , ) 
 #ifdef DEBUG
 		if (writeToScreen) {
 			check_debug_size(pFileInf, dir);
-			}
+		}
 #endif
 		//fNameVect.clear( );
 		const size_t fileNameWcharCount = (pFileInf->FileNameLength / sizeof(WCHAR));
@@ -464,17 +451,14 @@ void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, NtdllWrap*
 		//fNameVect.insert( fNameVect.end( ), pFileInf->FileName, end );
 		//fNameVect.emplace_back( L'\0' );
 		//PWSTR fNameChar = &( fNameVect[ 0 ] );
-		if (wcscmp(filename_with_null, L"vcruntime140.dll") == 0) {
-			__debugbreak();
-		}
-		if ( writeToScreen ) {
-			if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_COMPRESSED ) {
-				::wprintf( L"AllocationSize: %I64d    %s\\%s\r\n", static_cast<std::int64_t>( pFileInf->AllocationSize.QuadPart ), dir.c_str( ), filename_with_null);
-				}
+		if (writeToScreen) {
+			if (pFileInf->FileAttributes & FILE_ATTRIBUTE_COMPRESSED) {
+				::wprintf(L"AllocationSize: %I64d    %s\\%s\r\n", static_cast<std::int64_t>(pFileInf->AllocationSize.QuadPart), dir.c_str(), filename_with_null);
 			}
-		if ( pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
+		}
+		if (pFileInf->FileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 
-			if ( dir[ dir.length( ) - 1 ] != L'\\' ) {
+			if (dir[dir.length() - 1] != L'\\') {
 				//curDir + L'\\' + std::wstring_view(pFileInf->FileName, fileNameWcharCount) + L'\\' + '\0'
 				const size_t needed_buffer_size = dir.length() + 1 + fileNameWcharCount + 1 + 1;
 				std::unique_ptr<wchar_t[]> queryStr = std::make_unique<wchar_t[]>(needed_buffer_size);
@@ -482,11 +466,11 @@ void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, NtdllWrap*
 				assert(fmt_res != -1);
 				if (fmt_res == -1) {
 					std::terminate();
-					}
+				}
 				//breadthDirs.emplace_back( std::wstring( curDir ) + L'\\' + fNameChar + L'\\' );
 				//auto query = std::wstring( curDir + L'\\' + std::wstring_view(pFileInf->FileName, fileNameWcharCount) + L'\\' );
-				parent_entry->children.emplace_back(ListDirectory( std::move(queryStr), writeToScreen, ntdll, filename_with_null) );
-				}
+				parent_entry->children.emplace_back(ListDirectory(std::move(queryStr), writeToScreen, filename_with_null));
+			}
 			else {
 				//breadthDirs.emplace_back( std::wstring( curDir ) + fNameChar + L'\\' );
 				// need extra +1 for null terminator
@@ -495,11 +479,11 @@ void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, NtdllWrap*
 				const int fmt_res = ::swprintf_s(queryStr.get(), needed_buffer_size, L"%s%s\\", dir.c_str(), filename_with_null);
 				if (fmt_res == -1) {
 					std::terminate();
-					}
-				//auto query = std::wstring( dir + fNameChar + L'\\' );
-				parent_entry->children.emplace_back(ListDirectory( std::move(queryStr), writeToScreen, ntdll, filename_with_null) );
 				}
+				//auto query = std::wstring( dir + fNameChar + L'\\' );
+				parent_entry->children.emplace_back(ListDirectory(std::move(queryStr), writeToScreen, filename_with_null));
 			}
+		}
 		else {
 			parent_entry->children.emplace_back(filename_with_null, std::uint64_t(pFileInf->AllocationSize.QuadPart), std::vector<entry>{}, false);
 
@@ -507,24 +491,143 @@ void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, NtdllWrap*
 
 	nextItem:
 		//stat = NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, &idInfo[ 0 ], idInfo.size( ), FileIdBothDirectoryInformation, TRUE, NULL, FALSE );
-		pFileInf = ( pFileInf->NextEntryOffset != 0 ) ? next_entry(pFileInf, idInfoBuffer.as_char(), idInfoBuffer.raw_buffer_size_bytes()) : NULL;
+		pFileInf = next_entry(pFileInf, idInfoBuffer.as_char(), idInfoBuffer.raw_buffer_size_bytes());
+	}
+
+	}
+
+[[nodiscard]] size_t grow_size(const size_t current) noexcept {
+	const size_t maybe_new_size = (current * 2);
+	constexpr const size_t threshold = (UINT32_MAX / 256);
+	
+	// for this purpose, we don't actually need to keep growing.
+	if (maybe_new_size > threshold ) {
+		return current;
 		}
+	return maybe_new_size;
+	}
+
+void qDirFile( _In_ const std::wstring dir, const bool writeToScreen, HANDLE hDir, _Inout_ entry* const parent_entry, const std::wstring filePart) {
+	//sizeof(FILE_ALL_INFORMATION)/sizeof(std::filesystem::path::value_type)+32769
+	
+	//auto bufSize = sizeof(THIS_FILE_INFORMATION_CLASS)/sizeof(wchar_t)+32769;
+	
+	
+
+	//wchar_t* idInfo = NULL;
+	//idInfo = new __declspec( align( 8 ) ) wchar_t[ bufSize ];//this is a MAJOR bottleneck for async enumeration.
+	//if ( idInfo != NULL ) {
+	//	memset( idInfo, 0, bufSize );
+	//	}
+
+	//__declspec( align( 8 ) ) wchar_t buffer[ init_bufSize ];
+	static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= 8, "underaligned type?");
+	StackOrHeapBufferQuery idInfoBuffer;
+	assert((reinterpret_cast<uintptr_t>(idInfoBuffer.as_void()) % 8) == 0);
+	std::vector<std::wstring> breadthDirs;
+	std::vector<WCHAR> fNameVect;
+
+	//std::vector<std::future<entry>> futureDirs;
+
+	IO_STATUS_BLOCK iosb = { };
+
+	//UNICODE_STRING _glob;
+	
+	
+	if ( writeToScreen ) {
+		::wprintf( L"Files in directory %s\r\n", dir.c_str( ) );
+		::wprintf( L"      File ID       |       File Name\r\n" );
+		}
+	assert( init_bufSize > 1 );
+	//auto buffer = &( idInfo[ 0 ] );
+	//++numItems;
+	//NtQueryDirectoryFile function (ntifs.h): https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntquerydirectoryfile
+	//The NtQueryDirectoryFileroutine returns STATUS_SUCCESS or an appropriate error status.
+	//Note that the set of error status values that can be returned is file-system-specific.
+	//NtQueryDirectoryFilealso returns the number of bytes actually written to the given FileInformation buffer in the Information member of IoStatusBlock.
+
+
+	//On the first call, NtQueryDirectoryFile returns STATUS_SUCCESS only if the output buffer contains at least one complete structure
+	NTSTATUS stat = ntdll.NtQueryDirectoryFile( hDir, NULL, NULL, NULL, &iosb, idInfoBuffer.as_void(), static_cast<ULONG>( init_bufSize ), InfoClass, FALSE, NULL, TRUE );
+	// First call only, if buffer is only slightly too small.
+	if (stat == STATUS_BUFFER_OVERFLOW) {
+		::wprintf_s(L"buffer slightly too small for NtQueryDirectoryFile\r\n");
+		std::terminate();
+		}
+	if (!NT_SUCCESS(stat)) {
+		::wprintf_s(L"NtQueryDirectoryFile failed with error: %s\r\n", ntdll_error(stat).c_str());
+		std::terminate();
+		}
+	if ( stat == STATUS_TIMEOUT ) {
+		std::terminate( );
+		}
+	if ( stat == STATUS_PENDING ) {
+		std::terminate( );
+		}
+	assert( ::GetLastError( ) != ERROR_MORE_DATA );
+	auto bufSize = init_bufSize;
+	//wchar_t* idInfo = NULL;
+	static_assert(!NT_SUCCESS(STATUS_NO_MORE_FILES), "");
+
+
+	parse_file_information_buffer(parent_entry, writeToScreen, dir, reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>(idInfoBuffer.as_raw()), idInfoBuffer);
+
+	while ( stat != STATUS_NO_MORE_FILES) {
+		stat = ntdll.NtQueryDirectoryFile(hDir, NULL, NULL, NULL, &iosb, idInfoBuffer.as_void(), static_cast<ULONG>(bufSize), InfoClass, FALSE, NULL, FALSE);
+		if (stat == STATUS_NO_MORE_FILES) {
+			break;
+		}
+		if (!NT_SUCCESS(stat)) {
+			::wprintf(L"Critical error!\r\n");
+			std::terminate();
+		}
+		parse_file_information_buffer(parent_entry, writeToScreen, dir, reinterpret_cast<PTHIS_FILE_INFORMATION_CLASS>(idInfoBuffer.as_raw()), idInfoBuffer);
+		//bufSize = ( bufSize * 2 );
+		bufSize = grow_size(bufSize);
+		static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= 8, "underaligned type?");
+		idInfoBuffer.grow(bufSize);
+		//memset(idInfoBuffer.as_char(), 0, idInfoBuffer.raw_buffer_size_bytes());
+		
+
+
+		if (buffer_way_too_small(stat, iosb)) {
+			wprintf_s(L"Buffer WAY too small for NtQueryDirectoryFile\r\n");
+			std::terminate();
+			}
+
+		}
+	//assert((stat == STATUS_SUCCESS)&&(iosb.Information != 0));
+	assert(stat == STATUS_NO_MORE_FILES);
+	const ULONG_PTR bufSizeWritten = iosb.Information;
+
+	const auto idInfoSize = bufSize;
+	//This zeros just enough of the idInfo buffer ( after the end of valid data ) to halt the forthcoming while loop at the last valid data. This saves the effort of zeroing larger parts of the buffer.
+	//for ( size_t i = bufSizeWritten; i < bufSizeWritten + ( sizeof( THIS_FILE_INFORMATION_CLASS ) + ( MAX_PATH * sizeof( wchar_t ) ) * 2 ); ++i ) {
+	//	if ( i == idInfoSize ) {
+	//		break;
+	//		}
+	//	idInfoBuffer.as_buffer()[ i ] = 0;
+	//	}
+
+	
+
 
 	//for ( auto& aDir : breadthDirs ) {
 	//	numItems += ListDirectory( aDir.c_str( ), writeToScreen, ntdll );
 	//	}
-	for ( std::future<entry>& a : futureDirs ) {
-		parent_entry->children.emplace_back(std::move(a.get( )));
-		//numItems += a.get( );
-		}
+	//for ( std::future<entry>& a : futureDirs ) {
+	//	parent_entry->children.emplace_back(std::move(a.get( )));
+	//	}
 
-	assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
+	//assert( ( pFileInf == NULL ) || ( !NT_SUCCESS( stat ) ) );
+	
+	//this needs to pass
+	assert(stat == STATUS_NO_MORE_FILES);
 	}
 
-entry ListDirectory( _In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll, const std::wstring filePart) {
+entry ListDirectory( _In_ std::unique_ptr<wchar_t[]> const dir, _In_ const bool writeToScreen, const std::wstring filePart) {
 	std::wstring curDir;
-	std::uint64_t numItems = 0;
-	if ( wcslen(dir.get( )) == 0 ) {
+	if ( wcslen(dir.get()) == 0 ) {
 		const DWORD needed = ::GetCurrentDirectoryW(0, NULL);
 		if (needed == 0) {
 			std::terminate();
@@ -540,24 +643,23 @@ entry ListDirectory( _In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeT
 		//curDir = dir;
 		}
 	entry thisDirectory( filePart, std::uint64_t(0), std::vector<entry>(), true );
-	HANDLE hDir = ::CreateFileW( dir.get( ), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
+	HANDLE hDir = ::CreateFileW( dir.get(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL );
 	if ( hDir == INVALID_HANDLE_VALUE ) {
 		const DWORD err = ::GetLastError( );
-		//std::wcout << L"Failed to open directory " << dir << L" because of error " << err << std::endl;
-		//const size_t bufSize = 256;
-		//wchar_t buffer[ bufSize ] = { 0 };
-		//FormatError( buffer, bufSize );
-		::wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.get( ), err );
-		::wprintf( L"err: `%lu` means: %s\r\n", err, handyDandyErrMsgFormatter( ).c_str( ) );
+		// Common error, harmless.
+		if (err != ERROR_ACCESS_DENIED) {
+			::wprintf( L"Failed to open directory %s because of error %lu\r\n", dir.get(), err );
+			::wprintf( L"err: `%lu` means: %s\r\n", err, handyDandyErrMsgFormatter( ).c_str( ) );
+			}
 		return thisDirectory;
 		}
-	std::uint64_t total_size = 0;
-	qDirFile( dir.get(), writeToScreen, ntdll, hDir, &thisDirectory, filePart);
-	if ( writeToScreen ) {
-		::wprintf( L"%I64u items in directory : %s\r\n", numItems, dir.get( ) );
-		::wprintf( L"%I64u total size of items\r\n", total_size );
-		//std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << numItems << std::setw( 0 ) << L" items in directory " << dir << std::endl;
-		}
+	//std::uint64_t total_size = 0;
+	qDirFile( dir.get(), writeToScreen, hDir, &thisDirectory, filePart);
+	//if ( writeToScreen ) {
+	//	::wprintf( L"%I64u items in directory : %s\r\n", numItems, dir );
+	//	::wprintf( L"%I64u total size of items\r\n", total_size );
+	//	//std::wcout << std::setw( std::numeric_limits<LONGLONG>::digits10 ) << numItems << std::setw( 0 ) << L" items in directory " << dir << std::endl;
+	//	}
 	const BOOL close_res = ::CloseHandle( hDir );
 	if (close_res == 0) {
 		std::terminate();
@@ -565,55 +667,13 @@ entry ListDirectory( _In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeT
 	return thisDirectory;
 	}
 
-//void DelFile( _In_ WCHAR fileVolume, _In_ LONGLONG fileId ) {
-//	assert( false );
-//	return;
-//	HMODULE hNtdll = GetModuleHandleW( L"C:\\Windows\\System32\\ntdll.dll" );
-//	if ( hNtdll == NULL ) {
-//		return;
-//		}
-//	pfnOpenFile ntCreateFile = ( pfnOpenFile ) GetProcAddress( hNtdll, "NtCreateFile" );
-//	WCHAR volumePath[ ] = { L'\\', L'\\', L'.', L'\\', fileVolume, L':', 0 };
-//	HANDLE hVolume = CreateFileW( volumePath, 0, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0x80, NULL );
-//	if ( hVolume == INVALID_HANDLE_VALUE ) {
-//		DWORD err = GetLastError( );
-//		std::wcout << L"Failed to open volume " << fileVolume << L": because of error " << err << L'\n';
-//		return;
-//		}
-//	HANDLE hFile = NULL;
-//	IO_STATUS_BLOCK iosb = { 0 };
-//	OBJECT_ATTRIBUTES oa = { sizeof( oa ), 0 };
-//	UNICODE_STRING name;
-//	name.Buffer = ( PWSTR ) &fileId;
-//	name.Length = name.MaximumLength = sizeof( fileId );
-//	oa.ObjectName = &name;
-//	oa.RootDirectory = hVolume;
-//	NTSTATUS stat = ntCreateFile(
-//		&hFile, GENERIC_READ | GENERIC_WRITE | DELETE, &oa, &iosb, NULL, FILE_ATTRIBUTE_NORMAL, 0, FILE_OPEN, FILE_NON_DIRECTORY_FILE | FILE_OPEN_BY_FILE_ID, NULL, 0 );
-//	CloseHandle( hVolume );
-//	if ( !NT_SUCCESS( stat ) ) {
-//		std::cout << "Failed to delete file because of error " << std::hex << stat << '\n';
-//		}
-//	else {
-//		BYTE buffer[ ( ( sizeof( WCHAR ) * MAX_PATH ) + sizeof( ULONG ) ) ] = { 0 };
-//		GetFileInformationByHandleEx( hFile, FileNameInfo, buffer, sizeof( buffer ) );
-//		FILE_NAME_INFO* pFni = ( FILE_NAME_INFO* ) buffer;
-//		std::wcout << L"Deleting " << pFni->FileName << L'\n';
-//		DeleteFileByHandle( hFile );
-//		CloseHandle( hFile );
-//		std::cout << "File deleted\n";
-//		}
-//	}
 
 entry RecurseListDirectory( _In_z_ const wchar_t* dir_, _In_ const bool writeToScreen ) {
 	//__declspec( align( 8 ) ) std::vector<wchar_t> idInfo( ( sizeof( FILE_ID_BOTH_DIR_INFORMATION ) + ( MAX_PATH * sizeof( wchar_t ) ) ) * 500000 );
-	std::uint64_t items = 1;
-	static NtdllWrap ntdll;
-	std::uint64_t total_size = 0;
 	const size_t buf_size = wcslen(dir_) + 1;
 	std::unique_ptr<wchar_t[]> dir = std::make_unique<wchar_t[]>(buf_size);
 	wcscpy_s(dir.get(), buf_size , dir_);
-	const entry topDir = ListDirectory( std::move(dir), writeToScreen, &ntdll, dir_ );
+	const entry topDir = ListDirectory( std::move(dir), writeToScreen, dir_ );
 
 	::wprintf( L"Total items in directory tree of %s: %I32u\r\n", dir_, topDir.recurseNumberChildren() );
 	::wprintf(L"Total size in directory tree of %s: %I64u\r\n", dir_, topDir.recurseSizeChildren());
@@ -627,10 +687,14 @@ std::vector<entry> FindFilesLoop(const std::wstring path) {
 	HANDLE fDataHand = ::FindFirstFileExW(path.c_str(), FindExInfoBasic, &fData, FindExSearchNameMatch, NULL, 0);
 	BOOL findNextFileRes = TRUE;
 	std::vector<entry> entries;
-	if (fDataHand == INVALID_HANDLE_VALUE) {
-		const auto err = handyDandyErrMsgFormatter();
-		_putws(err.c_str());
-		__debugbreak();
+	if ((fDataHand == INVALID_HANDLE_VALUE) || (fDataHand == nullptr)) {
+		const DWORD err = ::GetLastError();
+		if (err == ERROR_ACCESS_DENIED) {
+			return entries;
+		}
+		//const auto err = handyDandyErrMsgFormatter();
+		//_putws(err.c_str());
+		//__debugbreak();
 		}
 	while ((fDataHand != INVALID_HANDLE_VALUE) && (findNextFileRes != 0)) {
 		const int scmpVal = ::wcscmp(fData.cFileName, L"..");
@@ -666,10 +730,6 @@ std::vector<entry> FindFilesLoop(const std::wstring path) {
 		std::terminate();
 		}
 	return entries;
-	}
-
-void RecurseListDirectoryWin32(_Inout_ entry* entry_, _In_z_ const wchar_t* dir_) {
-
 	}
 
 
@@ -738,7 +798,7 @@ entry NtRecurseListDirectory(_In_z_ const wchar_t* dir_) {
 void entry_diffs(const entry& NT_enum, const entry& win32_enum, const std::wstring parent_path) noexcept {
 	//if (NT_enum.children.size() != win32_enum.children.size()) {
 		for (auto& win32_child : win32_enum.children) {
-			const auto location_found = std::find_if(NT_enum.children.begin(), NT_enum.children.end(), [&](const entry& entry_) {return (entry_.name == win32_child.name); });
+			const auto location_found = std::find_if(NT_enum.children.begin(), NT_enum.children.end(), [&](const entry& entry_) noexcept {return (entry_.name == win32_child.name); });
 			if (location_found == NT_enum.children.end()) {
 				::wprintf_s(L"Difference found! NT does not contain file name %s\r\n", std::wstring(parent_path + L"\\" + win32_child.name).c_str() );
 				}

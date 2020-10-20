@@ -18,9 +18,10 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-#include <future>
-#include <regex>
-#include <mutex>
+#include <algorithm>
+//#include <future>
+//#include <regex>
+//#include <mutex>
 #include <span>
 #include <type_traits>
 #include <memory>
@@ -405,7 +406,8 @@ static inline void SetWin32LastErrorFromNtStatus( NTSTATUS ntstatus ) noexcept {
 //END boost
 
 
-typedef struct _FILE_DIRECTORY_INFORMATION {
+//This structure must be aligned on a LONGLONG (8-byte) boundary. If a buffer contains two or more of these structures, the NextEntryOffset value in each entry, except the last, falls on an 8-byte boundary.
+typedef struct alignas(8) _FILE_DIRECTORY_INFORMATION {
   ULONG         NextEntryOffset;
   ULONG         FileIndex;
   LARGE_INTEGER CreationTime;
@@ -416,7 +418,7 @@ typedef struct _FILE_DIRECTORY_INFORMATION {
   LARGE_INTEGER AllocationSize;
   ULONG         FileAttributes;
   ULONG         FileNameLength;
-  _Field_size_(FileNameLength) WCHAR         FileName[1];
+  _Field_size_bytes_(FileNameLength) WCHAR         FileName[1];
 } FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
 
 
@@ -495,7 +497,7 @@ struct entry {
 		}
 
 	void sortByName() noexcept {
-		std::sort(children.begin(), children.end(), [](entry& left, entry& right) {return left.name > right.name; });
+		std::sort(children.begin(), children.end(), [] (entry& left, entry& right) noexcept {return left.name > right.name; });
 	}
 };
 
@@ -545,7 +547,7 @@ struct NtdllWrap {
 	};
 
 
-entry ListDirectory(_In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeToScreen, _In_ NtdllWrap* ntdll, const std::wstring filePart);
+entry ListDirectory(_In_ std::unique_ptr<wchar_t[]> dir, _In_ const bool writeToScreen, const std::wstring filePart);
 
 void FormatError( _Out_ _Out_writes_z_( msgSize ) PWSTR msg, size_t msgSize ) {
 	// Retrieve the system error message for the last-error code

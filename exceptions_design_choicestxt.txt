@@ -1,0 +1,1 @@
+Note to self: maybe exceptions are a GOOD model for error handling in parts of the rendering code?
