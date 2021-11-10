@@ -49,7 +49,9 @@ namespace {
 	inline const constexpr double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const RECT remaining ) noexcept {
 		ASSERT( ( remaining.right - remaining.left ) != 0 );
 		ASSERT( ( remaining.bottom - remaining.top ) != 0 );
-		return ( ( double ) remainingSize / ( remaining.right - remaining.left ) / ( remaining.bottom - remaining.top ) );
+		const std::int64_t width = (remaining.right - remaining.left);
+		const std::int64_t height = (remaining.bottom - remaining.top);
+		return ( ( double ) remainingSize / ( width ) / ( height ) );
 		}
 
 	inline const constexpr bool is_horizontal( _In_ const RECT remaining ) noexcept {
@@ -768,6 +770,7 @@ namespace {
 		const DOUBLE h4 = 4 * h;
 
 		const DOUBLE wf = h4 / width;
+		//wait, what? why are we dividing and multiplying here? is it part of the ridge to do this "one sided"?
 		surface[ 2 ] += wf * ( rc.right + rc.left );
 		surface[ 0 ] -= wf;
 

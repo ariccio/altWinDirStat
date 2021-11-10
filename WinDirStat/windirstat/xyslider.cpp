@@ -828,6 +828,7 @@ void WTLXySlider::DoPage(_In_ const POINT point) noexcept {
 	//pythagorean theory yo
 	const double len = ::sqrt(x_sq + y_sq);
 
+	//Hmm, implicit conversion. Should I convert to double earlier?
 	const INT dx = static_cast<INT>(10 * static_cast<std::int64_t>(sz.cx) / len);
 	const INT dy = static_cast<INT>(10 * static_cast<std::int64_t>(sz.cy) / len);
 

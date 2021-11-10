@@ -18,6 +18,9 @@ WDS_FILE_INCLUDE_MESSAGE
 
 namespace {
 
+	constexpr const std::int64_t WDS_INT_BASE = 1024;
+	constexpr const std::int64_t WDS_HALF_BASE = WDS_INT_BASE / 2;
+
 	std::wstring Format_uint64_t_Normal( _In_ std::uint64_t n ) {
 		// Returns formatted number like "123.456.789".
 		// 18446744073709551615 is max

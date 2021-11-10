@@ -69,9 +69,6 @@ WDS_FILE_INCLUDE_MESSAGE
 #error already defined!
 #endif
 
-#define WDS_INT_BASE 1024
-#define WDS_HALF_BASE WDS_INT_BASE/2
-
 
 #ifndef DISALLOW_COPY_AND_ASSIGN
 //Inspired by chromium's DISALLOW_COPY_AND_ASSIGN:

@@ -312,6 +312,12 @@ extern WTL::CAppModule _Module;
 #pragma warning(disable:6211) //Leaking memory 'pParam' due to an exception.   Is a local catch block needed to clean up memory? c:\users\lucius riccio\documents\github\altwindirstat\windirstat\packages\wtl.9.1.1\lib\native\include\atlctrlx.h	3202
 							// It's worried about an exception, which ATL seems to usually ignore with ATLTRY (which expands to a try() catch(...). ATL doesn't seem to care about std:bad_alloc at all.
 
+
+#pragma warning(disable:26454) //Arithmetic overflow : '-' operation produces a negative unsigned result at compile time (io.5).windirstat	C : \Users\Lucius Riccio\Documents\GitHub\altWinDirStat\WinDirStat\packages\wtl.9.1.1\lib\native\include\atlctrlx.h	2631
+
+#pragma warning(disable:5204) //Warning	C5204	'ATL::CCRTHeap': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly	windirstat	C : \Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\atlmfc\include\atlmem.h	75
+
+
 #include <atlctrlx.h> 
 #include <atlmisc.h>        // ATL utility classes (i.e. CString)
 #include <atlcrack.h>       // WTL message map macros
