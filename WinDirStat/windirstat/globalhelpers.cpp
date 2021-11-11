@@ -518,7 +518,11 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( con
 	_Null_terminated_ wchar_t number_str_buffer[ bufSize ] = { 0 };
 	
 	convert_number_to_string( bufSize, number_str_buffer, number );
-	NUMBERFMT format_struct = { 0, 0, 3, L".", L",", 1 };
+
+	//hmm, compiler const correctness must've gotten better!
+	wchar_t period[] = L".";
+	wchar_t comma[] = L",";
+	NUMBERFMT format_struct = { 0, 0, 3, period, comma, 1 };
 
 	//0 indicates failure! http://msdn.microsoft.com/en-us/library/windows/desktop/dd318113.aspx
 	const auto get_number_fmt_ex_res = GetNumberFormatEx( NULL, 0, number_str_buffer, &format_struct, psz_formatted_number, static_cast<int>( strSize ) );

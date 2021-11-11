@@ -228,6 +228,8 @@ namespace {
 		                //fsutil queries "\\.\C:\$Extend\$RmMetadata\$TxfLog\$TxfLog.blf"
 		L"$Extend\\$RmMetadata\\$TxfLog\\$TxfLog.blf",
 		//System Volume Information?
+
+		//$Directory?
 	};
 
 	//returning false means that we were denied CreateFileW access to the volume
@@ -465,6 +467,114 @@ namespace {
 			}
 		return raw_dir_path;
 		}
+
+
+	HRESULT attempt_prefetch_MFT(_In_ const std::wstring& path, _Always_(_Out_) DWORD* const result_code) {
+		const std::wstring path_to_mft = (path + L"\\$MFT");
+		// CreateFileW function (fileapi.h): https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
+		// Creates or opens a file or I/O device.
+		// If the function succeeds, the return value is an open handle to the specified file, device, named pipe, or mail slot.
+		// If the function fails, the return value is INVALID_HANDLE_VALUE.To get extended error information, call GetLastError.
+		const HANDLE mftHandle = ::CreateFileW(path_to_mft.c_str(), GENERIC_READ, (FILE_SHARE_READ bitor FILE_SHARE_WRITE), nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		if (mftHandle == INVALID_HANDLE_VALUE) {
+			const DWORD last_err = ::GetLastError();
+			TRACE(L"Failed to open \"file\" `%s`, Error: %lu\r\n", path_to_mft.c_str(), last_err);
+			(*result_code) = last_err;
+			return E_FAIL;
+			}
+
+		auto handle_guard = WDS_SCOPEGUARD_INSTANCE([&] {
+			close_handle(mftHandle);
+			});
+
+		LARGE_INTEGER mftFileSize = {};
+		// GetFileSizeEx function (fileapi.h): https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
+		// If the function succeeds, the return value is nonzero.
+		// If the function fails, the return value is zero.To get extended error information, call GetLastError.
+		const BOOL mftSizeResult = ::GetFileSizeEx(mftHandle, &mftFileSize);
+		if (mftSizeResult == 0) {
+			const DWORD last_err = ::GetLastError();
+			TRACE(L"Failed to get MFT size for prefetch! Error: %lu\r\n", last_err);
+			(*result_code) = last_err;
+			return E_FAIL;
+			}
+		
+		// CreateFileMappingW function (memoryapi.h): https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
+		// Creates or opens a named or unnamed file mapping object for a specified file.
+		// If the [CreateFileMappingW] succeeds, the return value is a handle to the newly created file mapping object.
+		// If the object exists before the function call, the [CreateFileMappingW] returns a handle to the existing object (with its current size, not the specified size), and GetLastError returns ERROR_ALREADY_EXISTS.
+		// If the function fails, the return value is NULL. To get extended error information, call GetLastError.
+
+		const DWORD mappingHigh = static_cast<DWORD>(mftFileSize.HighPart);
+
+		const auto mappingLowDWORD = mftFileSize.LowPart;
+		static_assert(std::is_same<decltype(mappingLowDWORD), const DWORD>::value, "invalid implicit cast");
+
+		const HANDLE mftMapping = ::CreateFileMappingW(mftHandle, nullptr, (PAGE_READONLY), mappingHigh, mappingLowDWORD, nullptr);
+		if (mftMapping == nullptr) {
+			const DWORD last_err = ::GetLastError();
+			TRACE(L"Failed to create mapping of MFT! Error: %lu\r\n", last_err);
+			(*result_code) = last_err;
+			return E_FAIL;
+		}
+
+		const auto mapping_handle_guard = WDS_SCOPEGUARD_INSTANCE([&] {
+			close_handle(mftMapping);
+			});
+
+
+		// MapViewOfFile function (memoryapi.h): https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile
+		// Maps a view of a file mapping into the address space of a calling process.
+		// If [MapViewOfFile] succeeds, the return value is the starting address of the mapped view.
+		// If [MapViewOfFile] fails, the return value is NULL. To get extended error information, call GetLastError.
+		const void* const mappedMFTView = ::MapViewOfFile(mftMapping, FILE_MAP_READ, 0, 0, 0);
+		if (mappedMFTView == nullptr) {
+			const DWORD last_err = ::GetLastError();
+			TRACE(L"Failed to map MFT view! Error: %lu\r\n", last_err);
+			(*result_code) = last_err;
+			return E_FAIL;
+		}
+		
+		const auto view_guard = WDS_SCOPEGUARD_INSTANCE([&] {
+			// UnmapViewOfFile function (memoryapi.h): https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-unmapviewoffile
+			// Unmaps a mapped view of a file from the calling process's address space.
+			// If [UnmapViewOfFile] succeeds, the return value is nonzero.
+			// If [UnmapViewOfFile]  fails, the return value is zero. To get extended error information, call GetLastError.
+
+			const BOOL result = ::UnmapViewOfFile(mappedMFTView);
+			if (result == 0) {
+				const DWORD last_err = ::GetLastError();
+				TRACE(L"Failed to unmap MFT view! Error: %lu\r\n", last_err);
+				std::terminate();
+				}
+			});
+
+		// VirtualQuery function (memoryapi.h): https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualquery
+		// Retrieves information about a range of pages in the virtual address space of the calling process.
+		// The return value is the actual number of bytes returned in the information buffer.
+		// If [VirtualQuery] fails, the return value is zero. To get extended error information, call GetLastError.
+		// Possible error values include ERROR_INVALID_PARAMETER.
+		MEMORY_BASIC_INFORMATION viewMemoryInfo = {};
+
+		const SIZE_T viewSize = ::VirtualQuery(mappedMFTView, &viewMemoryInfo, sizeof(viewMemoryInfo));
+		if (viewSize == 0) {
+			const DWORD last_err = ::GetLastError();
+			TRACE(L"Failed to query MFT view memory info! Error: %lu\r\n", last_err);
+			(*result_code) = last_err;
+			return E_FAIL;
+		}
+		//viewMemoryInfo.
+		TRACE(L"view: %p\r\n", mappedMFTView);
+		TRACE(L"\tbase address: %p, \r\n", viewMemoryInfo.BaseAddress);
+		TRACE(L"\tallocation base: %p\r\n", viewMemoryInfo.AllocationBase);
+		TRACE(L"\tregion size: %i64u\r\n", viewMemoryInfo.RegionSize);
+		__debugbreak();
+
+
+
+
+	
+	}
 
 	
 	//return indicates whether we should ask user to elevate
