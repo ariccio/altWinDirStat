@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{3a6fac2d-2b7b-4003-9bfb-a791dea3737b}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Wizard Source Files">
+      <UniqueIdentifier>{8ba545ec-9841-4fc5-b25f-6ae4e91918e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{8c89fef8-c24f-4d51-b726-99a116b80e37}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Wizard Header Files">
+      <UniqueIdentifier>{cbad6ccd-bbe3-4f1c-8059-724c902095fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{bb51ec69-eae2-41fa-a456-b91caff3828b}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Image Resource Files">
+      <UniqueIdentifier>{860030d4-c6d4-4145-b099-704770d3fef7}</UniqueIdentifier>
+      <Extensions>bmp;ico</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Help Resource Files">
+      <UniqueIdentifier>{d650ef3d-97f4-4d0f-b909-4bfc76fe768a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard97Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizard.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardCompletionPage.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardFilePreviewPage.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardInfo.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardOutputPage.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardPathFilterPage.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardSheet.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wizard\TestWizardWelcomePage.cpp">
+      <Filter>Source Files\Wizard Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\FolderDialogStatusText.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizard.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardCompletionPage.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardFilePreviewPage.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardInfo.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardOutputPage.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardPathFilterPage.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardSheet.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wizard\TestWizardWelcomePage.h">
+      <Filter>Header Files\Wizard Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Wizard97Test.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\header.bmp">
+      <Filter>Resource Files\Image Resource Files</Filter>
+    </None>
+    <None Include="res\watermark.bmp">
+      <Filter>Resource Files\Image Resource Files</Filter>
+    </None>
+    <None Include="res\Wizard97Test.ico">
+      <Filter>Resource Files\Image Resource Files</Filter>
+    </None>
+    <None Include="resource.hm">
+      <Filter>Resource Files\Help Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="res\Wizard97Test.exe.manifest">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+</Project>

@@ -294,7 +294,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 
 #define _WTL_NEW_PAGE_NOTIFY_HANDLERS
-
+// break here
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
 
