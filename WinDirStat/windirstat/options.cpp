@@ -311,7 +311,7 @@ void CPersistence::GetConfigPosition( _Inout_ POINT* const pt ) {
 	pt->x = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionX, pt->x ) );
 	pt->y = static_cast<LONG>( CRegistryUser::GetProfileInt_( registry_strings::sectionPersistence, registry_strings::entryConfigPositionY, pt->y ) );
 
-	CRect rc { WTL::CPoint( *pt ), WTL::CSize( 100, 100 ) };
+	CRect rc { CPoint( *pt ), CSize( 100, 100 ) };
 	SanifyRect( rc );
 	(*pt) = rc.TopLeft( );
 	}

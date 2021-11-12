@@ -446,6 +446,11 @@ protected:
 
 
 namespace {
+
+
+	template<size_t count>
+	void draw_proper_text_for_each_column( _In_ const COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) noexcept;
+
 	static INT CALLBACK _CompareFunc( _In_ const LPARAM lParam1, _In_ const LPARAM lParam2, _In_ const LPARAM lParamSort ) noexcept {
 		const SSorting* const sorting = reinterpret_cast<const SSorting*>( lParamSort );
 		return reinterpret_cast<const COwnerDrawnListItem*>( lParam1 )->CompareS( reinterpret_cast<const COwnerDrawnListItem*>( lParam2 ), *sorting );
@@ -554,21 +559,6 @@ namespace {
 			}
 		}
 
-	template<size_t count>
-	void draw_proper_text_for_each_column( _In_ const COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) noexcept {
-		for ( size_t i = 0; i < thisLoopSize; i++ ) {
-			//draw the proper text in each column?
-			
-			//focusLefts_temp[ i ] = rects_draw[ i ].left;
-			//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
-			//CTreeListItem draws self FOR NAME column ONLY!
-			//CDriveItem NEVER draws self.
-			//CListItem (typeview) draws self ONLY for: NAME, and COLOR. 
-			if ( !item->DrawSubitem_( subitems[ i ], hInMemoryDeviceContext, rects_draw[ i ], pDestinationDrawItemStruct->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {
-				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], hInMemoryDeviceContext, rects_draw[ i ], pDestinationDrawItemStruct, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
-				}
-			}
-		}
 
 	//thisLoopSize has essentially the range of RANGE_ENUM_COL, but it's never zero.
 	template<size_t count>
@@ -2192,6 +2182,26 @@ private:
 		std::terminate( );
 		}
 	};
+
+
+namespace {
+	template<size_t count>
+	void draw_proper_text_for_each_column( _In_ const COwnerDrawnListItem* const item, _In_ const rsize_t thisLoopSize, _In_ _In_reads_( thisLoopSize ) const column::ENUM_COL( &subitems )[ count ], _In_ HDC hInMemoryDeviceContext, _In_ _In_reads_( thisLoopSize ) const RECT( &rects_draw )[ count ], _In_ const PDRAWITEMSTRUCT pDestinationDrawItemStruct, _In_ _In_reads_( thisLoopSize ) int( &focusLefts_temp )[ count ], _In_ const bool showSelectionAlways, _In_ const bool bIsFullRowSelection, _In_ const std::vector<bool>& is_right_aligned_cache, _In_ const COwnerDrawnListCtrl* const owner_drawn_list_ctrl ) noexcept {
+		for ( size_t i = 0; i < thisLoopSize; i++ ) {
+			//draw the proper text in each column?
+			
+			//focusLefts_temp[ i ] = rects_draw[ i ].left;
+			//if DrawSubItem returns true, item draws self. Therefore `!item->DrawSubitem` is true when item DOES NOT draw self
+			//CTreeListItem draws self FOR NAME column ONLY!
+			//CDriveItem NEVER draws self.
+			//CListItem (typeview) draws self ONLY for: NAME, and COLOR. 
+			if ( !item->DrawSubitem_( subitems[ i ], hInMemoryDeviceContext, rects_draw[ i ], pDestinationDrawItemStruct->itemState, NULL, &focusLefts_temp[ i ], owner_drawn_list_ctrl ) ) {
+				owner_drawn_list_ctrl->DoDrawSubItemBecauseItCannotDrawItself( item, subitems[ i ], hInMemoryDeviceContext, rects_draw[ i ], pDestinationDrawItemStruct, showSelectionAlways, bIsFullRowSelection, is_right_aligned_cache );
+				}
+			}
+		}
+
+	}
 
 ////need to explicitly ask for inlining else compiler bitches about ODR
 //inline void COwnerDrawnListItem::DrawHighlightSelectBackground( _In_ const RECT& rcLabel, _In_ const RECT& rc, _In_ CDC& pdc, _Inout_ COLORREF& textColor, _In_ const COLORREF list_highlight_text_color, _In_ const COLORREF list_highlight_color, _In_ const bool list_is_full_row_selection ) const {

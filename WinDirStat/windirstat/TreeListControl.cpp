@@ -400,7 +400,7 @@ PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const noexcept {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
 
 	PCWSTR const resultPtrStr = ::PathFindExtensionW( m_name );
-	ASSERT( resultPtrStr != '\0' );
+	ASSERT( (*resultPtrStr) != '\0' );
 	return resultPtrStr;
 	}
 
@@ -1684,7 +1684,7 @@ void CTreeListControl::OnLButtonDown( UINT nFlags, CPoint point ) {
 	//given point == { 200, 89 };
 	//pt == { 200, 5 };
 
-	WTL::CPoint const pt = ( point - temp );
+	CPoint const pt = ( point - temp );
 
 	const CTreeListItem* const item = CTreeListControl::GetItem( i );
 

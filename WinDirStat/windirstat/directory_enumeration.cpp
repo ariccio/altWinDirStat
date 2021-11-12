@@ -573,7 +573,7 @@ namespace {
 
 
 
-	
+		return S_OK;
 	}
 
 	
@@ -626,6 +626,11 @@ namespace {
 			}
 
 		query_special_files( raw_dir_path, files, directories );
+		DWORD system_error_code = ERROR_SUCCESS;
+		const HRESULT res = attempt_prefetch_MFT(raw_dir_path, &system_error_code);
+		if (FAILED(res)) {
+			TRACE(L"Couldn't prefetch MFT. System error code: %ul\r\n", system_error_code);
+		}
 
 		return false;
 		}

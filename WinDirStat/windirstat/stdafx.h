@@ -228,8 +228,11 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 #include <afxwin.h>         // MFC Core //MUST BE INCLUDED FIRST!!!!!!!!!!!!!
 
+
+#undef _RICHEDIT_VER //new version of richedit will be defined automatically!
+
 // Add support for ATL/WTL
-//#define _WTL_FORWARD_DECLARE_CSTRING
+#define _WTL_FORWARD_DECLARE_CSTRING
 
 #ifndef _WTL_NO_AUTOMATIC_NAMESPACE
 
@@ -251,9 +254,9 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 #endif // _WTL_NO_CSTRING
 
-#pragma message( "defining `_CSTRING_NS`..." )
+//#pragma message( "defining `_CSTRING_NS`..." )
 
-#define _CSTRING_NS
+//#define _CSTRING_NS
 
 #endif // _AFX
 
@@ -294,7 +297,9 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 
 #define _WTL_NEW_PAGE_NOTIFY_HANDLERS
-// break here
+namespace ATL { using ::CString; };
+
+
 #include <atlapp.h>         // base WTL classes
 extern WTL::CAppModule _Module;
 

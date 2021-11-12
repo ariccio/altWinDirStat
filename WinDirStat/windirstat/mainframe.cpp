@@ -178,7 +178,7 @@ BOOL WDSOptionsPropertySheet::OnInitDialog( ) {
 	//To get extended error information, call GetLastError.
 	VERIFY( ::GetWindowRect( m_hWnd, &rc ) );
 
-	WTL::CPoint pt = CRect( rc ).TopLeft( );
+	CPoint pt = CRect( rc ).TopLeft( );
 	
 	CPersistence::GetConfigPosition( &pt );
 	const CRect rc2( pt, CRect( rc ).Size( ) );
