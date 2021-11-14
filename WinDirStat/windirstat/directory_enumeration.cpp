@@ -470,7 +470,7 @@ namespace {
 
 
 	HRESULT attempt_prefetch_MFT(_In_ const std::wstring& path, _Always_(_Out_) DWORD* const result_code) {
-		const std::wstring path_to_mft = (path + L"\\$MFT");
+		const std::wstring path_to_mft = (L"\\\\?\\" + path + L"\\$MFT");
 		// CreateFileW function (fileapi.h): https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		// Creates or opens a file or I/O device.
 		// If the function succeeds, the return value is an open handle to the specified file, device, named pipe, or mail slot.
@@ -614,6 +614,8 @@ namespace {
 		ASSERT( raw_dir_path.length( ) > 0 );
 		ASSERT( raw_dir_path.back( ) == L':' );
 
+		const std::wstring orig_raw_dir_path = raw_dir_path;
+
 		raw_dir_path = ( L"\\\\.\\" + raw_dir_path );
 
 
@@ -627,7 +629,7 @@ namespace {
 
 		query_special_files( raw_dir_path, files, directories );
 		DWORD system_error_code = ERROR_SUCCESS;
-		const HRESULT res = attempt_prefetch_MFT(raw_dir_path, &system_error_code);
+		const HRESULT res = attempt_prefetch_MFT(orig_raw_dir_path, &system_error_code);
 		if (FAILED(res)) {
 			TRACE(L"Couldn't prefetch MFT. System error code: %ul\r\n", system_error_code);
 		}

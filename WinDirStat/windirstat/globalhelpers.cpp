@@ -494,6 +494,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 
 
 
+// I do not like what I have to do with NUMBERFMT here, I do not trust what Microsoft is doing here. Let's try strict_gs_check!
+#pragma strict_gs_check(push, on)
 //
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) noexcept {
 	// Returns formatted number like "123.456.789".
@@ -552,6 +554,8 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( con
 		}
 	static_assert( !SUCCEEDED( E_FAIL ), "bad error return type!" );
 	}
+
+#pragma strict_gs_check(pop)
 
 _Success_( SUCCEEDED( return ) )
 const HRESULT allocate_and_copy_name_str( _Pre_invalid_ _Post_z_ _Post_readable_size_( new_name_length ) wchar_t*& new_name_ptr, _In_ _In_range_( 0, UINT16_MAX ) const rsize_t& new_name_length, const std::wstring& name ) {
