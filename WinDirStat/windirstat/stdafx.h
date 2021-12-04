@@ -167,35 +167,23 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #pragma warning(disable: 5045) //Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
 
 
-
-//#pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
-//#pragma warning(disable:4987) //nonstandard extension used: 'throw (...)'
-//#pragma warning(disable:4548) //expression before comma has no effect; expected expression with side-effect
-//#pragma warning(disable:4625) //A copy constructor was not accessible in a base class, therefore not generated for a derived class. Any attempt to copy an object of this type will cause a compiler error. warn!
-//#pragma warning(disable:4626) //An assignment operator was not accessible in a base class and was therefore not generated for a derived class. Any attempt to assign objects of this type will cause a compiler error.
-//#pragma warning(disable:4189) //A variable is declared and initialized but not used.
-//#pragma warning(disable:4755) //Conversion rules for arithmetic operations in the comparison mean that one branch cannot be executed in an inlined function. Cast '(nBaseTypeCharLen + ...)' to 'ULONG64' (or similar type of 8 bytes).
-//#pragma warning(disable:4280) //'operator –>' was self recursive through type 'type'. Your code incorrectly allows operator–> to call itself.
-//#pragma warning(disable:4127) //The controlling expression of an if statement or while loop evaluates to a constant.
-//#pragma warning(disable:4365) //'action' : conversion from 'type_1' to 'type_2', signed/unsigned mismatch
-//#pragma warning(disable:4710) //The given function was selected for inline expansion, but the compiler did not perform the inlining.
-
-
 //these are all in MFC message maps.
 #pragma warning(disable:4191) //'operator/operation' : unsafe conversion from 'type of expression' to 'type required'
+
+#pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
+#pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
+
+//Comment this out for insanely slow compilation!
+#pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
+#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #ifndef DUMP_MEMUSAGE
 #pragma warning(disable:4820) //'bytes' bytes padding added after construct 'member_name'. The type and order of elements caused the compiler to add padding to the end of a struct
 #endif
 
 #pragma warning(disable:4917) //'declarator' : a GUID can only be associated with a class, interface or namespace. A user-defined structure other than class, interface, or namespace cannot have a GUID.
-#pragma warning(disable:4264) //'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
-#pragma warning(disable:4263) //A class function definition has the same name as a virtual function in a base class but not the same number or type of arguments. This effectively hides the virtual function in the base class.
 
 
-//Comment this out for insanely slow compilation!
-#pragma warning(disable:4514) //'function' : unreferenced inline function has been removed
-#pragma warning(disable:4711) //function 'function' selected for inline expansion. The compiler performed inlining on the given function, although it was not marked for inlining.
 
 #ifndef _DEBUG
 #pragma warning(disable:4555) //expression has no effect; expected expression with side-effect //Happens alot with AfxCheckMemory in release builds.
@@ -261,32 +249,31 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 #endif // _AFX
 
 #pragma warning(disable:4265) //'class' : class has virtual functions, but destructor is not virtual
+#pragma warning(disable:4668) //'_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif' (compiling source file directory_enumeration.cpp)
+#pragma warning(disable:5204) //'CAnimationTimerEventHandler': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly	windirstat
+#pragma warning(disable:6011) //Warning	C6011	Dereferencing NULL pointer 'pBitmapInfoHeader'.
 #pragma warning(disable:6031) //Return value ignored: 'CoSuspendClassObjects'.
+#pragma warning(disable:6386)  //Buffer overrun while writing to 'm_pDACL':  the writable size is 'pDACL->AclSize' bytes, but '8' bytes might be written.
 #pragma warning(disable:6387) //error C6387: '_Param_(1)' could be '0':  this does not adhere to the specification for the function 'ATL::CWindow::SetFont'.
 #pragma warning(disable:6400) //Using 'lstrcmpiW' to perform a case-insensitive compare to constant string 'static'.  Yields unexpected results in non-English locales.
 #pragma warning(disable:6401) //Using 'CompareStringW' in a default locale to perform a case-insensitive compare to constant string '<A>'.  Yields unexpected results in non-English locales.
-#pragma warning(disable:26110) //error C26110: Caller failing to hold lock '(& this->m_cslock)->m_cs' before calling function 'ATL::CComCritSecLock<ATL::CComCriticalSection>::Unlock'.
-#pragma warning(disable:26165) //Possibly failing to release lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Lock'.
-#pragma warning(disable:26160) //Caller possibly failing to hold lock '(& this->m_cslock)->m_cs' before calling function 
-#pragma warning(disable:26167) //Possibly releasing unheld lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Unlock'.
-#pragma warning(disable:28204) //'OnFileOk' : Only one of this override and the one at c:\program files (x86)\windows kits\8.1\include\um\shobjidl.h
-#pragma warning(disable:6386)  //Buffer overrun while writing to 'm_pDACL':  the writable size is 'pDACL->AclSize' bytes, but '8' bytes might be written.
 								//Buffer overrun while writing to 'm_pSACL':  the writable size is 'pSACL->AclSize' bytes, but '8' bytes might be written.
 								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
 								//Buffer overrun while writing to 'newACL':  the writable size is 'aclSize' bytes, but '8' bytes might be written.
 								//Code analysis is confused about pACL (access control list) in CSecurityDescriptor::AddAccessAllowedACEToACL, CSecurityDescriptor::AddAccessDeniedACEToACL, CSecurityDescriptor::Attach, CSecurityDescriptor::Attach, in file "c:\program files (x86)\microsoft visual studio 14.0\vc\atlmfc\include\atlcom.h", where it *appears* to be correct. Code analysis seems to think the writable size is only 8 bytes for some reason!
-#pragma warning(disable:6011) //Warning	C6011	Dereferencing NULL pointer 'pBitmapInfoHeader'.
-#pragma warning(disable:28182) //Warning	C28182	Dereferencing NULL pointer. 'pParam1' contains the same NULL value as 'lParam1' did.
-#pragma warning(disable:26496) //The variable 'clr' is assigned only once, mark it as const (con.4)
-#pragma warning(disable:26481) //Don't use pointer arithmetic. Use span instead (bounds.1).
+#pragma warning(disable:26110) //error C26110: Caller failing to hold lock '(& this->m_cslock)->m_cs' before calling function 'ATL::CComCritSecLock<ATL::CComCriticalSection>::Unlock'.
+#pragma warning(disable:26160) //Caller possibly failing to hold lock '(& this->m_cslock)->m_cs' before calling function 
+#pragma warning(disable:26165) //Possibly failing to release lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Lock'.
+#pragma warning(disable:26167) //Possibly releasing unheld lock '(& this->m_cslock)->m_cs' in function 'WTL::CStaticDataInitCriticalSectionLock::Unlock'.
 #pragma warning(disable:26409) //Avoid calling newand delete explicitly, use std::make_unique<T> instead (r.11).
 #pragma warning(disable:26433) //Function 'WTL::CShellFileDialogImpl<WTL::CShellFileOpenDialog>::[IFileDialogEvents]::OnFolderChanging' should be marked with 'override' (c.128).
 #pragma warning(disable:26434) //Function 'CTreeListControl::OnLButtonDblClk' hides a non - virtual function 'CWnd::OnLButtonDblClk' (c.128).
 #pragma warning(disable:26440) //Function 'WTL::CCommonDialogImplBase::StartWindowProc' can be declared 'noexcept' (f.6).
-#pragma warning(disable:5204) //'CAnimationTimerEventHandler': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly	windirstat
-#pragma warning(disable:4668) //'_WIN32_WINNT_WIN10_RS4' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif' (compiling source file directory_enumeration.cpp)
+#pragma warning(disable:26481) //Don't use pointer arithmetic. Use span instead (bounds.1).
 #pragma warning(disable:26493) //Don't use C-style casts (type.4).
-
+#pragma warning(disable:26496) //The variable 'clr' is assigned only once, mark it as const (con.4)
+#pragma warning(disable:28182) //Warning	C28182	Dereferencing NULL pointer. 'pParam1' contains the same NULL value as 'lParam1' did.
+#pragma warning(disable:28204) //'OnFileOk' : Only one of this override and the one at c:\program files (x86)\windows kits\8.1\include\um\shobjidl.h
 
 
 
@@ -308,6 +295,9 @@ extern WTL::CAppModule _Module;
 //#include <atlframe.h>       // WTL frame window classes
 //#include <atlsplit.h>
 #include <atlctrls.h>
+
+//Arithmetic overflow : Using operator '+' on a 4 byte value and then casting the result to a 8 byte value.Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).
+#pragma warning(disable:26451)
 
 #pragma warning(disable:4640) //construction of local static object is not thread-safe	
 

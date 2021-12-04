@@ -199,6 +199,14 @@ namespace {
 		return signum( static_cast<std::int64_t>( size2 ) - static_cast<std::int64_t>( size1 ) ); // biggest first// TODO: Use 2nd sort column (as set in our TreeListView?)
 		}
 
+	int countOrMyCountForInsert(_In_ const std::uint32_t count, _In_ const size_t myCount) noexcept {
+		if (count >= myCount) {
+			return (count + 1);
+			}
+		ASSERT((myCount + 1) < INT_MAX);
+		return static_cast<int>(myCount + 1);
+		}
+
 	}
 
 
@@ -1458,7 +1466,7 @@ void CTreeListControl::handle_OnContextMenu( CPoint pt ) const {
 	// Show pop-up menu and act accordingly. The menu shall not overlap the label but appear horizontally at the cursor position,  vertically under (or above) the label.
 	// TrackPopupMenuEx() behaves in the desired way, if we exclude the label rectangle extended to full screen width.
 
-	TPMPARAMS tp;
+	TPMPARAMS tp = {};
 	tp.cbSize = sizeof( tp );
 	tp.rcExclude = rcTitle;
 	CWnd::ClientToScreen( &tp.rcExclude );
@@ -1653,7 +1661,7 @@ RECT CTreeListControl::DrawNode( _In_ const CTreeListItem* const item, _In_ HDC 
 	if ( item->GetIndent( ) > 0 ) {
 		return CTreeListControl::DrawNode_Indented( item, hDC, rc, rcRest );
 		}
-	RECT rcPlusMinus;
+	RECT rcPlusMinus = {};
 	rcPlusMinus.bottom = 0;
 	rcPlusMinus.left   = 0;
 	rcPlusMinus.right  = 0;
@@ -1819,8 +1827,11 @@ _Success_( return == true ) bool CTreeListControl::CollapseItem( _In_ _In_range_
 	TRACE( _T( "Collapsing item succeeded!\r\n" ) );
 	//GetDocument( )->UpdateAllViews( NULL, UpdateAllViews_ENUM::HINT_NULL );
 	GetDocument( )->UpdateAllViews( nullptr, UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION );
-	ASSERT( item_count == CListCtrl::GetItemCount( ) );
-
+#ifdef DEBUG
+	const auto currentCount = CListCtrl::GetItemCount();
+	//Why does this fail sometimes?
+	ASSERT( item_count ==  currentCount );
+#endif
 	hwnd::InvalidateErase(m_hWnd);
 	CListCtrl::RedrawWindow( );
 	return true;
@@ -1922,7 +1933,8 @@ void CTreeListControl::ExpandItemInsertChildren( _In_ const CTreeListItem* const
 		}
 	const auto myCount  = static_cast<size_t>( CListCtrl::GetItemCount( ) );
 	TRACE( _T( "Expanding %s! Must insert %i items!\r\n" ), item->m_name, count );
-	CListCtrl::SetItemCount( static_cast<INT>( ( count >= myCount) ? ( count + 1 ) : ( myCount + 1 ) ) );
+	const int countToSet = countOrMyCountForInsert(count, myCount);
+	CListCtrl::SetItemCount( countToSet );
 	
 	CTreeListControl::insertItemsAdjustWidths( item, count, maxwidth, scroll, i );
 	

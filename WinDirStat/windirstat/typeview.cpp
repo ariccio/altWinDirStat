@@ -624,6 +624,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 	switch ( lHint )
 	{
 		case UpdateAllViews_ENUM::HINT_NEWROOT:
+			[[fallthrough]];
 		case 0:
 			CTypeView::OnUpdate0( );
 			// fall thru

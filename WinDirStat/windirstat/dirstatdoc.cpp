@@ -154,7 +154,7 @@ namespace {
 				return -1;
 				}
 			if ( sys_dir_res < dir_buf_size ) {
-				ASSERT( ::wcslen( dir_buf ) == ( sys_dir_res + 1 ) );
+				ASSERT( ::wcslen( dir_buf ) == ( static_cast<std::uint64_t>(sys_dir_res) + 1 ) );
 				return reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, L"open", L"RUNDLL32.EXE", parameters_filename.c_str( ), dir_buf, SW_SHOWNORMAL ) );
 				}
 			ASSERT( sys_dir_res >= dir_buf_size );
@@ -164,7 +164,7 @@ namespace {
 				if ( ( sys_dir_res_2 != 0 ) && ( ( sys_dir_res_2 + 1 ) == sys_dir_res ) ) {
 					ASSERT( ( sys_dir_res_2 + 1 )  == sys_dir_res );
 					ASSERT( ::wcslen( str_ptr.get( ) ) == sys_dir_res );
-					ASSERT( ::wcslen( str_ptr.get( ) ) == ( sys_dir_res_2 + 1 ) );
+					ASSERT( ::wcslen( str_ptr.get( ) ) == ( static_cast<std::uint64_t>(sys_dir_res_2) + 1 ) );
 					return reinterpret_cast< INT_PTR >( ::ShellExecuteW( hwnd, L"open", L"RUNDLL32.EXE", parameters_filename.c_str( ), str_ptr.get( ), SW_SHOWNORMAL ) );
 					}
 				displayWindowsMsgBoxWithMessage( L"Something is extremely wrong (GetSystemDirectoryW)!!" );
@@ -663,7 +663,7 @@ void CDirstatDoc::SetSelection( _In_ const CTreeListItem& item ) noexcept {
 
 void CDirstatDoc::SetHighlightExtension( _In_ const std::wstring ext ) noexcept {
 	TRACE( _T( "Highlighting extension %s; previously highlighted: %s\r\n" ), ext.c_str( ), m_highlightExtension.c_str( ) );
-	m_highlightExtension = std::move( ext );
+	m_highlightExtension = ext;
 	m_frameptr->SetSelectionMessageText( );
 	}
 

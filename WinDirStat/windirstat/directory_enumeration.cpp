@@ -307,7 +307,7 @@ namespace {
 
 	_Success_( return != UINT64_MAX )//using string here means that we pay for 'free' on return
 	__forceinline WDS_DECLSPEC_NOTHROW std::uint64_t GetCompressedFileSize_filename( const std::wstring path ) {
-		ULARGE_INTEGER ret;
+		ULARGE_INTEGER ret = {};
 		ret.QuadPart = 0;//zero initializing this is critical!
 		ret.LowPart = ::GetCompressedFileSizeW( path.c_str( ), &ret.HighPart );
 		const DWORD last_err = ::GetLastError( );
@@ -733,7 +733,7 @@ namespace {
 		std::uint32_t total_so_far = static_cast<std::uint32_t>( vecFiles_size );
 
 		//TODO IsJunctionPoint calls IsMountPoint deep in IsJunctionPoint's bowels. This means triplicated calls.
-		for ( const auto& dir : vecDirs ) {
+		for ( auto& dir : vecDirs ) {
 			const bool dontFollow =
 				( app->m_mountPoints.IsJunctionPoint( dir.path, dir.attributes ) && !thisOptions->m_followJunctionPoints ) ||
 				( app->m_mountPoints.IsMountPoint( dir.path ) && !thisOptions->m_followMountPoints );
@@ -1027,7 +1027,7 @@ std::pair<DOUBLE, bool> DoSomeWorkShim( _Inout_ CTreeListItem* const ThisCItem, 
 
 	const auto qpc_1 = help_QueryPerformanceCounter( );
 	
-	const bool should_we_elevate = DoSomeWork( std::move( ThisCItem ), std::move( path ), app, &sizes_to_work_on, std::move( isRootRecurse ) );
+	const bool should_we_elevate = DoSomeWork( ThisCItem, std::move( path ), app, &sizes_to_work_on, isRootRecurse );
 	
 	const auto qpc_2 = help_QueryPerformanceCounter( );
 	const auto qpf = help_QueryPerformanceFrequency( );
@@ -1086,7 +1086,7 @@ bool DoSomeWork( _In_ CTreeListItem* const ThisCItem, std::wstring path, _In_ co
 
 	auto kookyPair = readJobNotDoneWork( ThisCItem, path, app );
 
-	auto itemsToWorkOn = kookyPair.first;
+	auto& itemsToWorkOn = kookyPair.first;
 
 	const bool should_we_elevate = kookyPair.second;
 	//if ( ThisCItem->m_child_info == nullptr ) {

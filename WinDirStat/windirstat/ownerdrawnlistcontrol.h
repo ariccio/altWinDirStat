@@ -471,7 +471,7 @@ namespace {
 
 		const std::wstring count_array_str( std::to_wstring( countArray ) );
 
-		const std::wstring err_str( L"Count array: " + count_array_str + L" itemCount: " + item_count_str + L"......aborting!" );
+		std::wstring err_str( L"Count array: " + count_array_str + L" itemCount: " + item_count_str + L"......aborting!" );
 
 		displayWindowsMsgBoxWithMessage( std::move( err_str ) );
 		std::terminate( );
