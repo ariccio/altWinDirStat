@@ -458,7 +458,7 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 		psz_formatted_datetime[ gdfres - 1 ] = L' ';
 		psz_formatted_datetime[ gdfres     ] = L' ';
 		psz_formatted_datetime[ gdfres + 1 ] = 0;
-		chars_written = static_cast<rsize_t>( gdfres + 1 );
+		chars_written = static_cast<rsize_t>( gdfres ) + 1;
 		}
 	else {
 		return STRSAFE_E_INSUFFICIENT_BUFFER;
@@ -496,6 +496,9 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_FormatFileTime( _In_ co
 
 // I do not like what I have to do with NUMBERFMT here, I do not trust what Microsoft is doing here. Let's try strict_gs_check!
 #pragma strict_gs_check(push, on)
+// And yet, I can't see it changing any code??!?
+
+
 //
 _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( const std::int64_t number, _Pre_writable_size_( strSize ) PWSTR psz_formatted_number, _In_range_( 21, 64 ) const rsize_t strSize, _Out_ rsize_t& chars_written ) noexcept {
 	// Returns formatted number like "123.456.789".
@@ -527,10 +530,10 @@ _Success_( SUCCEEDED( return ) ) HRESULT wds_fmt::CStyle_GetNumberFormatted( con
 	NUMBERFMT format_struct = { 0, 0, 3, period, comma, 1 };
 
 	//0 indicates failure! http://msdn.microsoft.com/en-us/library/windows/desktop/dd318113.aspx
-	const auto get_number_fmt_ex_res = GetNumberFormatEx( NULL, 0, number_str_buffer, &format_struct, psz_formatted_number, static_cast<int>( strSize ) );
+	const auto get_number_fmt_ex_res = ::GetNumberFormatEx( NULL, 0, number_str_buffer, &format_struct, psz_formatted_number, static_cast<int>( strSize ) );
 	if ( get_number_fmt_ex_res != 0 ) {
 		ASSERT( get_number_fmt_ex_res > 0 );
-		chars_written = static_cast<rsize_t>( get_number_fmt_ex_res - 1u );
+		chars_written = static_cast<rsize_t>( static_cast<std::int64_t>( get_number_fmt_ex_res ) - 1u );
 		ASSERT( chars_written == wcslen( psz_formatted_number ) );
 		return S_OK;
 		}

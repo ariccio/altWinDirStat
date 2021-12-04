@@ -171,7 +171,7 @@ public:
 
 protected:
 	//C4820: 'CTypeView' : '4' bytes padding added after data member 'CTypeView::g_fRedrawEnabled'
-	BOOL                  g_fRedrawEnabled;
+	//BOOL                  g_fRedrawEnabled;
 
 	virtual void OnInitialUpdate( ) override final {
 		/*
@@ -188,6 +188,10 @@ protected:
 	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
 		ASSERT_VALID( pDC );
+#if !DEBUG
+		UNREFERENCED_PARAMETER(pDC);
+#endif
+
 		//CView::OnDraw( pDC );
 		}
 

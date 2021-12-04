@@ -49,8 +49,8 @@ namespace {
 	inline const constexpr double pixel_scale_factor( _In_ const std::uint64_t remainingSize, _In_ const RECT remaining ) noexcept {
 		ASSERT( ( remaining.right - remaining.left ) != 0 );
 		ASSERT( ( remaining.bottom - remaining.top ) != 0 );
-		const std::int64_t width = (remaining.right - remaining.left);
-		const std::int64_t height = (remaining.bottom - remaining.top);
+		const std::int64_t width = (static_cast<std::int64_t>(remaining.right) - static_cast<std::int64_t>(remaining.left));
+		const std::int64_t height = (static_cast<std::int64_t>(remaining.bottom) - static_cast<std::int64_t>(remaining.top));
 		return ( ( double ) remainingSize / ( width ) / ( height ) );
 		}
 
@@ -771,11 +771,11 @@ namespace {
 
 		const DOUBLE wf = h4 / width;
 		//wait, what? why are we dividing and multiplying here? is it part of the ridge to do this "one sided"?
-		surface[ 2 ] += wf * ( rc.right + rc.left );
+		surface[ 2 ] += wf * ( static_cast<std::int64_t>(rc.right) + static_cast<std::int64_t>(rc.left) );
 		surface[ 0 ] -= wf;
 
 		const DOUBLE hf   = h4 / height;
-		surface[ 3 ] += hf * ( rc.bottom + rc.top );
+		surface[ 3 ] += hf * (static_cast<std::int64_t>(rc.bottom) + static_cast<std::int64_t>(rc.top) );
 		surface[ 1 ] -= hf;
 		}
 
@@ -1920,7 +1920,7 @@ void CTreemap::SetPixels( _In_ const HDC offscreen_buffer, _In_reads_( maxIndex 
 	CBitmap bmp;
 	
 
-	const auto index = ( yStart * rcWidth ) + xStart - offset;
+	const auto index = (static_cast<std::int64_t>(yStart) * static_cast<std::int64_t>(rcWidth) ) + xStart - offset;
 	ASSERT( rcHeight == ( yEnd - yStart ) );
 	ASSERT( rcWidth == ( xEnd - xStart ) );
 	ASSERT( index <= maxIndex );

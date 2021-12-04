@@ -51,7 +51,7 @@ struct WTLTreemapPage final : public WTL::CPropertyPageImpl<WTLTreemapPage>, pub
 	//WTLTreemapPage() : m_resetButton(this, 1), m_brightness(this, 2), m_cushionShading(this, 3), m_height(this, 4), m_scaleFactor(this, 5) {
 	//	}
 
-	WTLTreemapPage() : m_resetButton(L"reset", this, 1), m_brightness(this), m_cushionShading(this), m_height(this), m_scaleFactor(this) {
+	WTLTreemapPage() : WTL::CPropertyPageImpl<WTLTreemapPage>::CPropertyPageImpl(L"Treemap Options"), m_resetButton(L"reset", this, 1), m_brightness(this), m_cushionShading(this), m_height(this), m_scaleFactor(this) {
 		}
 
 	//WTLTreemapPage() = default;

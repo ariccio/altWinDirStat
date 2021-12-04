@@ -175,11 +175,11 @@ struct COptions final {
 	COptions( ) = default;
 
 	void SetHumanFormat              ( _In_ const bool human, _In_ CDirstatApp* const app_ptr );
-	void SetListFullRowSelection     ( _In_ const bool show                                         );
-	void SetListGrid                 ( _In_ const bool show                                         );
-	void SetListStripes              ( _In_ const bool show                                         );
-	void SetTreemapHighlightColor    ( _In_ const COLORREF color                                    );
-	void SetTreemapOptions           ( _In_ const Treemap_Options& options                        );
+	void SetListFullRowSelection     ( _In_ const bool show                                   );
+	void SetListGrid                 ( _In_ const bool show                                   );
+	void SetListStripes              ( _In_ const bool show                                   );
+	void SetTreemapHighlightColor    ( _In_ const COLORREF color                              );
+	void SetTreemapOptions           ( _In_ const Treemap_Options& options                    );
 	void ReadTreemapOptions          ( );
 	void SaveTreemapOptions          ( );
 	void LoadFromRegistry            ( );
@@ -192,11 +192,11 @@ struct COptions final {
 	                                       bool              m_followMountPoints    = false;
 	                                       bool              m_followJunctionPoints = false;
 
-	_Field_size_( TREELISTCOLORCOUNT )     COLORREF          m_treelistColor[ TREELISTCOLORCOUNT ];
-	_Field_range_( 1, TREELISTCOLORCOUNT ) rsize_t           m_treelistColorCount;
+	_Field_size_( TREELISTCOLORCOUNT )     COLORREF          m_treelistColor[ TREELISTCOLORCOUNT ] = {};
+	_Field_range_( 1, TREELISTCOLORCOUNT ) rsize_t           m_treelistColorCount = {};
 	                                       //C4820: 'COptions' : '4' bytes padding added after data member 'COptions::m_treemapHighlightColor'
-	                                       COLORREF          m_treemapHighlightColor;
-	                                       Treemap_Options   m_treemapOptions;
+	                                       COLORREF          m_treemapHighlightColor = {};
+										   Treemap_Options   m_treemapOptions = {};
 	};
 #else
 #error ass

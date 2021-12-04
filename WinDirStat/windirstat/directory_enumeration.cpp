@@ -40,6 +40,10 @@ namespace {
 	//		}
 
 	struct FILEINFO final {
+
+//Warning	C26495	Variable '`anonymous-namespace'::FILEINFO::attributes' is uninitialized. Always initialize a member variable (type.6).
+// I'm deliberatley NOT initializing here. We fill them in in a minute.
+#pragma warning(suppress:26495)
 		FILEINFO( ) { }
 		//FILEINFO( const FILEINFO& in ) = delete;
 		//FILEINFO& operator=( const FILEINFO& in ) = delete;
@@ -100,6 +104,9 @@ namespace {
 		};
 
 	struct DIRINFO final {
+// Warning	C26495	Variable '`anonymous-namespace'::DIRINFO::attributes' is uninitialized. Always initialize a member variable (type.6).
+// I'm deliberatley NOT initializing here. We fill them in in a minute.
+#pragma warning(suppress:26495)
 		DIRINFO( ) { }
 		DIRINFO( DIRINFO&& in ) noexcept {
 			length = std::move( in.length );

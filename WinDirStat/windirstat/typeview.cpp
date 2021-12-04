@@ -255,6 +255,10 @@ inline INT CListItem::Compare( _In_ const COwnerDrawnListItem* const baseOther, 
 	}
 
 /////////////////////////////////////////////////////////////////////////////
+#pragma warning(push)
+// warning for LVN_ITEMCHANGED
+//	C26454	Arithmetic overflow : '-' operation produces a negative unsigned result at compile time (io.5).windirstat
+#pragma warning(disable: 26454)
 
 BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_WM_MEASUREITEM_REFLECT()
@@ -264,6 +268,8 @@ BEGIN_MESSAGE_MAP(CExtensionListControl, COwnerDrawnListCtrl)
 	ON_NOTIFY_REFLECT(LVN_ITEMCHANGED, &( CExtensionListControl::OnLvnItemchanged ) )
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
+#pragma warning(pop)
+
 
 CExtensionListControl::CExtensionListControl ( CTypeView* const typeView ) : COwnerDrawnListCtrl( global_strings::type_str, 19 ), m_averageExtensionNameLength( ), m_rootSize (0), m_adjustedTiming(0), m_exts_count( 0 ), m_exts(nullptr), m_typeView(typeView) { }
 
@@ -624,6 +630,7 @@ void CTypeView::OnUpdate( CView * /*pSender*/, LPARAM lHint, CObject * ) {
 			//[[fallthrough]] doesn't work here?
 
 		case UpdateAllViews_ENUM::HINT_SELECTIONCHANGED:
+			[[fallthrough]];
 		case UpdateAllViews_ENUM::HINT_SHOWNEWSELECTION:
 			if ( m_showTypes ) {
 				CTypeView::SetSelection( );

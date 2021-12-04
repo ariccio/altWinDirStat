@@ -167,7 +167,10 @@ namespace {
 		ASSERT((m_rcAll.bottom - m_rcAll.top) % 2 == 1);
 		ASSERT((m_rcAll.right - m_rcAll.left) >= GRIPPER_RADIUS * 2);	// Control must be large enough
 		ASSERT((m_rcAll.bottom - m_rcAll.top) >= GRIPPER_RADIUS * 2);
-		DEBUG_ONLY(m_rcAll);
+#if !DEBUG
+		UNREFERENCED_PARAMETER(m_rcAll);
+#endif
+
 		}
 
 
@@ -331,7 +334,7 @@ namespace {
 	}
 AFX_COMDAT const CRuntimeClass CXySlider::classCXySlider = {
 	"CXySlider" /*m_lpszClassName*/,
-	sizeof(class CXySlider) /*m_nObjectSize*/,
+	sizeof(struct CXySlider) /*m_nObjectSize*/,
 	0xFFFF /*wSchema*/,
 	nullptr  /*pfnNew*/,
 	(const_cast<CRuntimeClass*>(&CStatic::classCStatic)) /*RUNTIME_CLASS(CStatic)*/ /*m_pBaseClass*/,
@@ -853,6 +856,7 @@ void WTLXySlider::RemoveTimer() noexcept {
 
 
 void WTLXySlider::OnPaint(const HDC hDC) {
+	UNREFERENCED_PARAMETER(hDC);
 	WTLXySlider::Initialize();
 	on_paint(m_rcAll, m_hWnd, m_rcInner, m_zero, m_gripperRadius, m_gripperHighlight, WTLXySlider::GetGripperRect());
 }

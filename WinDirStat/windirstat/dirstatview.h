@@ -134,6 +134,9 @@ protected:
 	//Called by CView::OnPaint
 	virtual void OnDraw( CDC* pDC ) override final {
 		ASSERT_VALID( pDC );
+#if !DEBUG
+		UNREFERENCED_PARAMETER(pDC);
+#endif
 
 		/*
 		from C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.20.27508\atlmfc\src\mfc\viewcore.cpp:211:

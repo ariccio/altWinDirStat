@@ -199,6 +199,10 @@ public:
 	COwnerDrawnListItem( _In_z_ _Readable_elements_( length ) PCWSTR const name, const std::uint16_t length ) : m_name( name ), m_name_length( length ) { }
 	COwnerDrawnListItem( const COwnerDrawnListItem& in ) = delete;
 	COwnerDrawnListItem& operator=( const COwnerDrawnListItem& in ) = delete;
+
+//Warning	C26495	Variable 'COwnerDrawnListItem::m_name_length' is uninitialized.Always initialize a member variable (type.6)
+// I'm deliberatley NOT initializing here. We fill them in in a minute.
+#pragma warning(suppress:26495)
 	__forceinline COwnerDrawnListItem( ) = default;
 
 	virtual ~COwnerDrawnListItem( ) {
@@ -1148,6 +1152,10 @@ _AFXCMN_INLINE BOOL CListCtrl::DeleteItem(_In_ int nItem)
 				}
 			}
 		ASSERT( width >= 0 );
+		if (width < 0) {
+			//Shut /analyze up.
+			std::terminate();
+			}
 		VERIFY( SetColumnWidth_LVM_SETCOLUMNWIDTH( m_hWnd, col, width + 5 ) );
 		//VERIFY( CListCtrl::SetColumnWidth( col, width + 5 ) );
 		}
@@ -1666,6 +1674,12 @@ private:
 
 
 protected:
+
+	//Warnings for HDN messages:
+#pragma warning(push)
+	//	Warning	C26454	Arithmetic overflow : '-' operation produces a negative unsigned result at compile time (io.5).windirstat
+#pragma warning(disable: 26454)
+
 	//manually expanded DECLARE_MESSAGE_MAP
 	static const AFX_MSGMAP* PASCAL GetThisMessageMap( ) {
 		static const AFX_MSGMAP_ENTRY _messageEntries[ ] = {
@@ -1680,6 +1694,7 @@ protected:
 				{ WM_DESTROY,                0u,                                                            0u, 0u, AfxSig_vv,       static_cast<AFX_PMSG>( reinterpret_cast<AFX_PMSGW>( static_cast<void(AFX_MSG_CALL CWnd::*)(void)>(&COwnerDrawnListCtrl::OnDestroy)))                      },
 				{ 0u, 0u, 0u, 0u, AfxSig_end, nullptr                             }
 				};
+#pragma warning(pop)
 		static const AFX_MSGMAP messageMap = { &CListCtrl::GetThisMessageMap, &_messageEntries[0] };
 		return &messageMap;
 		}

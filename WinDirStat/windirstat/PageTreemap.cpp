@@ -161,7 +161,7 @@ and this:
 //The dialog box procedure should return TRUE to direct the system to set the keyboard focus to the control specified by wParam.
 //Otherwise, it should return FALSE to prevent the system from setting the default keyboard focus.
 BOOL WTLTreemapPage::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) {
-	
+	UNREFERENCED_PARAMETER(hWnd);
 	TRACE(L"Initialize WTL dialog\r\n-------\r\n");
 	debugDataExchangeMembers();
 #pragma push_macro("SubclassWindow")
@@ -458,6 +458,7 @@ void WTLTreemapPage::OnVScroll(int nSBCode, short nPos, HWND pScrollBar) {
 //WM_COMMAND message: https://docs.microsoft.com/en-us/windows/win32/menurc/wm-command
 //CommandHandler: https://docs.microsoft.com/en-us/cpp/atl/commandhandler
 LRESULT WTLTreemapPage::on_WM_COMMAND_Treemap_colorbutton(const WORD wNotifyCode, const WORD wID, HWND hWndCtl, BOOL& bHandled) {
+	UNREFERENCED_PARAMETER(bHandled);
 	//TRACE(L"%s\r\n", /*__FUNCSIG__*/);
 	//TRACE(L"wNotifyCode: %u, HIWORD(BN_CLICKED): %u, wID: %u, LOWORD(IDC_TREEMAPGRIDCOLOR): %u, hWndCtl: %p, m_gridColor.m_hWnd: %p\r\n", unsigned(wNotifyCode), unsigned(HIWORD(BN_CLICKED)), unsigned(wID), unsigned(LOWORD(IDC_TREEMAPGRIDCOLOR)), hWndCtl, m_gridColor.m_hWnd);
 	//BN_CLICKED notification code: https://docs.microsoft.com/en-us/windows/win32/controls/bn-clicked
@@ -490,6 +491,9 @@ void WTLTreemapPage::debugSliderPosition() const noexcept {
 	}
 
 LRESULT WTLTreemapPage::setXY(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+	UNREFERENCED_PARAMETER(uMsg);
+	UNREFERENCED_PARAMETER(wParam);
+
 	const POINT* point = reinterpret_cast<POINT*>(lParam);
 
 	TRACE(L"point: %p\r\n", point);

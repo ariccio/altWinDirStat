@@ -223,6 +223,8 @@ END_MESSAGE_MAP()
 	void OnLButtonDown(UINT nFlags, CPoint point);
 	void OnLButtonDblClk(UINT nFlags, CPoint point);
 	void OnLButtonUp(UINT nFlags, CPoint point) {
+		UNREFERENCED_PARAMETER(nFlags);
+		UNREFERENCED_PARAMETER(point);
 		RemoveTimer();
 		/*
 		_AFXWIN_INLINE void CWnd::OnLButtonUp(UINT, CPoint)
@@ -233,12 +235,14 @@ END_MESSAGE_MAP()
 	}
 	void OnTimer(UINT_PTR nIDEvent);
 	LRESULT OnSetPos(UINT uMsg, WPARAM, LPARAM lparam) {
+		UNREFERENCED_PARAMETER(uMsg);
 		const auto point = reinterpret_cast<const POINT*>(lparam);
 		ASSERT(point);
 		WTLXySlider::SetPos(*point);
 		return 0;
 	}
 	LRESULT OnGetPos(UINT uMsg, WPARAM, LPARAM lparam) {
+		UNREFERENCED_PARAMETER(uMsg);
 		auto point = reinterpret_cast<POINT*>(lparam);
 		ASSERT(point);
 		*point = m_externalPos;

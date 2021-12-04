@@ -400,7 +400,9 @@ PCWSTR const CTreeListItem::CStyle_GetExtensionStrPtr( ) const noexcept {
 	ASSERT( m_name_length < ( MAX_PATH + 1 ) );
 
 	PCWSTR const resultPtrStr = ::PathFindExtensionW( m_name );
-	ASSERT( (*resultPtrStr) != '\0' );
+	//may be an empty string, if file has no extension, e.g. 'download'.
+	//ASSERT( (*resultPtrStr) != '\0' );
+	//The assert seems to go way back to 2015. Not sure how it survived that long lmao... need to test on systems with extension-less files!
 	return resultPtrStr;
 	}
 
@@ -1612,7 +1614,7 @@ RECT CTreeListControl::DrawNode_Indented( _In_ const CTreeListItem* const item, 
 	HDC hMemoryDeviceContext = ::CreateCompatibleDC( hDC );
 	if ( hMemoryDeviceContext == nullptr ) {
 		std::terminate( );
-		abort( );
+		//abort( );
 		}
 	auto guard = WDS_SCOPEGUARD_INSTANCE( [&] { 
 		//DeleteDC function: https://msdn.microsoft.com/en-us/library/dd183533.aspx
@@ -2082,18 +2084,32 @@ _Pre_satisfies_( !isDone ) void CTreeListControl::OnChildAdded( _In_opt_ const C
 		return;
 		}
 	//const auto p = FindTreeItem( parent );
-	const auto p = COwnerDrawnListCtrl::FindListItem( parent );
+	//Explicit cast because for some reason InsertItem wants an INT_PTR instead of an int and I have warnings waaay up :)
+	const INT_PTR p = static_cast<INT_PTR>(COwnerDrawnListCtrl::FindListItem( parent ));
 	ASSERT( p != -1 );
+
+	//And double check the madness.
+	ASSERT(p == static_cast<int>(p));
+	ASSERT(p < INT_MAX);
+
+	if (p > INT_MAX) {
+		//shut /analyze up
+		std::terminate();
+		}
 
 	if ( parent->IsExpanded( ) ) {
 		CTreeListControl::InsertItem( child, p + 1 );
 		if ( isDone ) {
-			VERIFY( CListCtrl::RedrawItems( p, p ) );
+			if (p > INT_MAX) {
+				//Shut /analyze up
+				std::terminate();
+				}
+			VERIFY( CListCtrl::RedrawItems( static_cast<int>(p), static_cast<int>(p) ) );
 			CTreeListControl::Sort( );
 			}
 		}
 	else {
-		VERIFY( CListCtrl::RedrawItems( p, p ) );
+		VERIFY( CListCtrl::RedrawItems( static_cast<int>(p), static_cast<int>(p) ) );
 		}
 	}
 

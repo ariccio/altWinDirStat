@@ -59,6 +59,10 @@ CRuntimeClass* CDirstatView::GetRuntimeClass() const {
 	}
 
 
+#pragma warning(push)
+// warning for LVN_ITEMCHANGED
+//	C26454	Arithmetic overflow : '-' operation produces a negative unsigned result at compile time (io.5).windirstat
+#pragma warning(disable: 26454)
 
 BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_WM_SIZE()
@@ -70,6 +74,7 @@ BEGIN_MESSAGE_MAP(CDirstatView, CView)
 	ON_UPDATE_COMMAND_UI(ID_POPUP_TOGGLE, &( CDirstatView::OnUpdatePopupToggle ) )
 	ON_COMMAND(ID_POPUP_TOGGLE, &( CDirstatView::OnPopupToggle ) )
 END_MESSAGE_MAP()
+#pragma warning(pop)
 
 _Must_inspect_result_ CDirstatDoc* CDirstatView::GetDocument( ) noexcept {
 	return static_cast<CDirstatDoc*>( m_pDocument );

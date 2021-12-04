@@ -20,7 +20,8 @@ class CDirstatApp;
 
 struct WTLPageGeneral final : public WTL::CPropertyPageImpl<WTLPageGeneral>, public WTL::CWinDataExchange< WTLPageGeneral> {
 	DISALLOW_COPY_AND_ASSIGN(WTLPageGeneral);
-	WTLPageGeneral(CDirstatApp* app) : /*m_followMountPoints(FALSE), m_followJunctionPoints(FALSE),*/ m_humanFormat(FALSE), m_listGrid(FALSE), m_listStripes(FALSE), m_listFullRowSelection(FALSE), m_appptr(app) { }
+	WTLPageGeneral(CDirstatApp* app) : WTL::CPropertyPageImpl<WTLPageGeneral>::CPropertyPageImpl(L"General Options"),/*m_followMountPoints(FALSE), m_followJunctionPoints(FALSE),*/
+		m_humanFormat(FALSE), m_listGrid(FALSE), m_listStripes(FALSE), m_listFullRowSelection(FALSE), m_appptr(app), m_bMsgHandled(FALSE) { }
 	enum {
 		IDD = IDD_PAGE_GENERAL
 	};

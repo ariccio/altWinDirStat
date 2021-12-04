@@ -296,6 +296,7 @@ static_assert( _WIN32_WINNT >= 0x0600, "" );
 
 
 
+
 #define _WTL_NEW_PAGE_NOTIFY_HANDLERS
 namespace ATL { using ::CString; };
 

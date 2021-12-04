@@ -312,7 +312,7 @@ WTL::CAppModule _Module;	// add this line
 CDirstatApp _theApp;
 
 
-CDirstatApp::CDirstatApp( ) noexcept : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( ::GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), _T( "AltEncryptionColor" ) ) ) { }
+CDirstatApp::CDirstatApp( ) noexcept : m_workingSet( 0 ), m_lastPeriodicalRamUsageUpdate( ::GetTickCount64( ) ), m_altEncryptionColor( GetAlternativeColor( RGB( 0x00, 0x80, 0x00 ), L"AltEncryptionColor" ) ), m_pDocTemplate(nullptr), m_frameptr(nullptr) { }
 
 CDirstatApp::~CDirstatApp( ) {
 	m_pDocTemplate = { NULL };

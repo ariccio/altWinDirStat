@@ -23,6 +23,7 @@ WDS_FILE_INCLUDE_MESSAGE
 //The dialog box procedure should return TRUE to direct the system to set the keyboard focus to the control specified by wParam.
 //Otherwise, it should return FALSE to prevent the system from setting the default keyboard focus.
 BOOL WTLPageGeneral::OnInitDialog(const HWND hWnd, const LPARAM /*lparam*/) noexcept {
+	UNREFERENCED_PARAMETER(hWnd);
 	const COptions* const Options = GetOptions();
 	m_humanFormat = Options->m_humanFormat;
 	m_listGrid = Options->m_listGrid;
