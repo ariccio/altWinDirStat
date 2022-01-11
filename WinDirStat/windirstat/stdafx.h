@@ -296,8 +296,8 @@ extern WTL::CAppModule _Module;
 //#include <atlsplit.h>
 #include <atlctrls.h>
 
-//Arithmetic overflow : Using operator '+' on a 4 byte value and then casting the result to a 8 byte value.Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).
-#pragma warning(disable:26451)
+#pragma warning(disable:26451)//Arithmetic overflow : Using operator '+' on a 4 byte value and then casting the result to a 8 byte value.Cast the value to the wider type before calling operator '+' to avoid overflow (io.2).
+
 
 #pragma warning(disable:4640) //construction of local static object is not thread-safe	
 
@@ -311,7 +311,7 @@ extern WTL::CAppModule _Module;
 
 #pragma warning(disable:26454) //Arithmetic overflow : '-' operation produces a negative unsigned result at compile time (io.5).windirstat	C : \Users\Lucius Riccio\Documents\GitHub\altWinDirStat\WinDirStat\packages\wtl.9.1.1\lib\native\include\atlctrlx.h	2631
 
-#pragma warning(disable:5204) //Warning	C5204	'ATL::CCRTHeap': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly	windirstat	C : \Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\atlmfc\include\atlmem.h	75
+//#pragma warning(disable:5204) //Warning	C5204	'ATL::CCRTHeap': class has virtual functions, but its trivial destructor is not virtual; instances of objects derived from this class may not be destructed correctly	windirstat	C : \Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\atlmfc\include\atlmem.h	75
 
 
 #include <atlctrlx.h> 

@@ -1944,35 +1944,6 @@ private:
 		rcBetween.top    = rcHeader.bottom;
 		rcBetween.bottom = m_yFirstItem;
 
-		///*
-		//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-		//{
-		//	ENSURE_VALID(this);
-		//	ENSURE(m_hDC != NULL);
-		//	ENSURE(lpRect);
-
-		//	::SetBkColor(m_hDC, clr);
-		//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-		//}
-		//*/
-		//ASSERT( hDC != NULL );
-
-		////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-		////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-		////If [SetBkColor] fails, the return value is CLR_INVALID.
-		//const auto clr_res = ::SetBkColor( hDC, gridColor );
-		//ASSERT( clr_res != CLR_INVALID );
-		//if ( clr_res == CLR_INVALID ) {
-		//	std::terminate( );
-		//	}
-
-		////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-		////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-		////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-		////If the function fails, the return value is zero.
-		//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &rcBetween, NULL, 0, NULL ) );
-		////pDC->FillSolidRect( &rcBetween, gridColor );
-
 		fill_solid_RECT( hDC, &rcBetween, gridColor );
 
 		constexpr const rsize_t column_buf_size = 10;
@@ -2016,40 +1987,13 @@ private:
 
 		const int( &vertical_buf )[ column_buf_size ] = vertical_buf_temp;
 
-		RECT fill;
+		RECT fill = {};
 		fill.left   = vertical_buf[ vertical_readable - 1 ];
 		fill.right  = rcClient.right;
 		fill.top    = m_yFirstItem;
 		fill.bottom = fill.top + static_cast<LONG>( m_rowHeight ) - static_cast<LONG>( gridWidth );
 		
 		for ( INT i = 0; i < itemCount; i++ ) {
-			///*
-			//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-			//{
-			//	ENSURE_VALID(this);
-			//	ENSURE(m_hDC != NULL);
-			//	ENSURE(lpRect);
-
-			//	::SetBkColor(m_hDC, clr);
-			//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-			//}
-			//*/
-			////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-			////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-			////If [SetBkColor] fails, the return value is CLR_INVALID.
-			//const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
-			//ASSERT( clr_res_bg != CLR_INVALID );
-			//if ( clr_res_bg == CLR_INVALID ) {
-			//	std::terminate( );
-			//	}
-
-			////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-			////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-			////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-			////If the function fails, the return value is zero.
-			//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
-			////pDC->FillSolidRect( &fill, bgcolor );
-
 
 			fill_solid_RECT( hDC, &fill, bgcolor );
 
@@ -2068,32 +2012,6 @@ private:
 				fill.left = left;
 				fill.right = vertical_buf[ i ] - gridWidth;
 
-				///*
-				//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-				//{
-				//	ENSURE_VALID(this);
-				//	ENSURE(m_hDC != NULL);
-				//	ENSURE(lpRect);
-
-				//	::SetBkColor(m_hDC, clr);
-				//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-				//}
-				//*/
-				////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-				////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-				////If [SetBkColor] fails, the return value is CLR_INVALID.
-				//const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
-				//ASSERT( clr_res_bg != CLR_INVALID );
-				//if ( clr_res_bg == CLR_INVALID ) {
-				//	std::terminate( );
-				//	}
-
-				////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-				////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-				////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-				////If the function fails, the return value is zero.
-				//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
-				////pDC->FillSolidRect( &fill, bgcolor );
 
 				fill_solid_RECT( hDC, &fill, bgcolor );
 
@@ -2102,34 +2020,6 @@ private:
 			fill.left  = left;
 			fill.right = rcClient.right;
 
-
-
-			///*
-			//void CDC::FillSolidRect(LPCRECT lpRect, COLORREF clr)
-			//{
-			//	ENSURE_VALID(this);
-			//	ENSURE(m_hDC != NULL);
-			//	ENSURE(lpRect);
-
-			//	::SetBkColor(m_hDC, clr);
-			//	::ExtTextOut(m_hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
-			//}
-			//*/
-			////SetBkColor function: https://msdn.microsoft.com/en-us/library/dd162964.aspx
-			////If the function succeeds, the return value specifies the previous background color as a COLORREF value.
-			////If [SetBkColor] fails, the return value is CLR_INVALID.
-			//const auto clr_res_bg = ::SetBkColor( hDC, bgcolor );
-			//ASSERT( clr_res_bg != CLR_INVALID );
-			//if ( clr_res_bg == CLR_INVALID ) {
-			//	std::terminate( );
-			//	}
-
-			////ExtTextOut function: https://msdn.microsoft.com/en-us/library/dd162713.aspx
-			////If the string is drawn, the return value [of ExtTextOutW] is nonzero.
-			////However, if the ANSI version of ExtTextOut is called with ETO_GLYPH_INDEX, the function returns TRUE even though the function does nothing.
-			////If the function fails, the return value is zero.
-			//VERIFY( ::ExtTextOutW( hDC, 0, 0, ETO_OPAQUE, &fill, NULL, 0, NULL ) );
-			////pDC->FillSolidRect( &fill, bgcolor );
 
 
 			fill_solid_RECT( hDC, &fill, bgcolor );
