@@ -24,7 +24,7 @@ Keep this diff small, because every upstream sync has to merge through it.
 | `windirstat/WinDirStat.cpp` | "Reset preferences" deletes `Software\altWinDirStat` | Matches the key above |
 | `windirstat/Localization.cpp/.h` | `ApplyForkBranding()` rewrites "WinDirStat" → "altWinDirStat" in loaded strings. It keeps "WinDirStat Team" and adds a fork notice to the About text | Rebrands the UI without editing 25 `lang_*.txt` files |
 | `windirstat/windirstat.vcxproj` | `TargetName` = `altWinDirStat_<arch>` | Output exe name; the portable INI follows it (`altWinDirStat.ini`) |
-| Removed: `.github/workflows/publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/` | | These publish under the official identity. **If a sync re-adds them, delete them again** |
+| Removed: `.github/workflows/publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/` | | These publish under the official identity. **If a sync re-adds them, delete them again.** CI's `fork-guard` job fails when any of them is present, and it also blocks releases |
 | Added: `.github/workflows/build.yml`, `.github/workflows/sync-upstream.yml`, `installer/altWinDirStat.iss`, `README.md`, `HANDOFF.md`, `CLAUDE.md`, `docs/releases/` | | Our CI, sync, installer, docs and release notes |
 | Added: `project.early.props` | | The vcxproj already imports it if present. When MSBuild gets `/p:AltVerMajor/AltVerMinor/AltVerPatch`, it defines `ALT_VER_*` for both `cl` and `rc` (`ExternalCompilerOptions` reaches only `cl`, so it can't stamp FileVersion) |
 
@@ -74,6 +74,14 @@ Keep this diff small, because every upstream sync has to merge through it.
   git remote add wds https://github.com/windirstat/windirstat.git
   git fetch wds && git merge wds/master
   ```
+
+## Settings carried over from legacy 1.x
+
+Legacy 1.x and 2.x both use `HKCU\Software\altWinDirStat\altWinDirStat\<section>`. Registry key names are case-insensitive, so legacy `options` is 2.x's `Options`.
+
+* **Values 2.x picks up:** only `Options\ListStripes` and `Options\ListFullRowSelection`. Both are bool DWORDs with the same meaning, so they carry over correctly.
+* **Everything else from legacy is never read.** That includes the `persistence` section and the treemap values, which 2.x keeps in other sections. These values are harmless leftovers, and **Reset preferences** removes them.
+* **No crash risk from mismatched values:** `Property.cpp` reads with strict types (`QueryDWORDValue`, and `REG_SZ` only for strings) and falls back to the default on a mismatch.
 
 ## Known gaps / next steps
 

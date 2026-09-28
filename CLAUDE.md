@@ -21,7 +21,7 @@ msbuild windirstat.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformTo
 
 ## Rules
 - **Keep the fork diff small** so upstream merges stay easy. Prefer fork-owned files and appended blocks over editing upstream lines, and add every change to the table in `HANDOFF.md`.
-- **Keep upstream publishing files deleted:** `publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/`. They publish under the official identity. A sync merge can bring them back.
+- **Keep upstream publishing files deleted:** `publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/`. They publish under the official identity. A sync merge can bring them back; CI's `fork-guard` job fails if it does.
 - **Settings stay under `HKCU\Software\altWinDirStat`.** CI fails if anything is written to the official `WinDirStat` key.
 
 ## Versioning and releases
