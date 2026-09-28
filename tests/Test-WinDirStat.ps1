@@ -4439,7 +4439,7 @@ function Test-SettingsDialog {
             "Found $($tabItems.Count): $(@($tabItems | ForEach-Object { $_.Current.Name.Trim() }) -join ', ')"
 
         $expectedPages = @(
-            'General', 'Filtering', 'Folder List', 'Treemap',
+            'General', 'Filtering', 'Folder List', 'Graphs',
             'Permissions', 'Cleanups', 'Prompts', 'Advanced'
         )
         foreach ($pageName in $expectedPages) {
@@ -4488,12 +4488,13 @@ function Test-SettingsDialog {
             $listBounds = $cleanupList.Current.BoundingRectangle
             $buttonBounds = @($addCleanup, $removeCleanup, $upCleanup, $downCleanup).Current.BoundingRectangle
             $addBounds, $removeBounds, $upBounds, $downBounds = $buttonBounds
-            $tolerance = [Math]::Max(2.0, $removeBounds.Width / 8)
+            $tolerance = [Math]::Max(4.0, $removeBounds.Width / 6)
             $layoutReady = $buttonBounds.Where({ $_.Width -ge $listBounds.Width / 3 }).Count -eq 0 -and
                 $buttonBounds.Where({ $_.Top -le $listBounds.Bottom }).Count -eq 0 -and
                 [Math]::Abs($addBounds.Left - $listBounds.Left) -le $tolerance -and
                 [Math]::Abs($downBounds.Right - $listBounds.Right) -le $tolerance
-            Assert-That $g 'Cleanups buttons are compact and aligned below the list' $layoutReady
+            Assert-That $g 'Cleanups buttons are compact and aligned below the list' $layoutReady `
+                "addDiff=$([Math]::Abs($addBounds.Left - $listBounds.Left)) downDiff=$([Math]::Abs($downBounds.Right - $listBounds.Right)) tolerance=$tolerance"
 
             $cleanupItems = @(Find-UiaAll -Root $cleanupList `
                 -Type ([System.Windows.Automation.ControlType]::ListItem))

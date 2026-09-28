@@ -190,20 +190,24 @@ jobs:
           if (-not (Test-Path 'HKCU:\Software\altWinDirStat')) { Write-Host "::notice::No settings saved yet under HKCU\Software\altWinDirStat (process was killed before exit)." }
           if (Test-Path 'HKCU:\Software\WinDirStat') { throw "Settings were written under the official WinDirStat key" }
 
-      - name: Upstream test suites (Filtering, Cli, EdgeCases)
+      - name: Upstream test suites
+        timeout-minutes: 40
         if: matrix.test
         shell: pwsh
         run: |
-          # Test-WinDirStat.ps1 requires PowerShell 7.6+; fetch the latest stable pwsh if the runner's is older.
+          # Test-WinDirStat.ps1 requires PowerShell 7.6+, and its UI suite reads the app's list views, which needs
+          # PowerShell and the app to have the same bitness. Fetch the latest stable pwsh when the runner's is older
+          # or when testing the 32-bit build.
           $pwsh = (Get-Command pwsh).Source
-          if ($PSVersionTable.PSVersion -lt [version]'7.6') {
-            $dir = "$env:RUNNER_TEMP\pwsh"
-            gh release download --repo PowerShell/PowerShell --pattern 'PowerShell-*-win-x64.zip' --dir $env:RUNNER_TEMP --clobber
-            Expand-Archive (Get-ChildItem $env:RUNNER_TEMP -Filter 'PowerShell-*-win-x64.zip' | Select-Object -First 1).FullName $dir -Force
+          $arch = if ('${{ matrix.platform }}' -eq 'Win32') { 'x86' } else { 'x64' }
+          if ($PSVersionTable.PSVersion -lt [version]'7.6' -or $arch -ne 'x64') {
+            $dir = "$env:RUNNER_TEMP\pwsh-$arch"
+            gh release download --repo PowerShell/PowerShell --pattern "PowerShell-*-win-$arch.zip" --dir $env:RUNNER_TEMP --clobber
+            Expand-Archive (Get-ChildItem $env:RUNNER_TEMP -Filter "PowerShell-*-win-$arch.zip" | Select-Object -First 1).FullName $dir -Force
             $pwsh = "$dir\pwsh.exe"
           }
-          & $pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
-          & $pwsh -NoProfile -ExecutionPolicy Bypass -File tests\Test-WinDirStat.ps1 -ExePath "$env:DIST\altWinDirStat.exe" -Only Filtering,Cli,EdgeCases
+          & $pwsh -NoProfile -Command '"PowerShell $($PSVersionTable.PSVersion) ($([IntPtr]::Size * 8)-bit)"'
+          & $pwsh -NoProfile -ExecutionPolicy Bypass -File tests\Test-WinDirStat.ps1 -ExePath "$env:DIST\altWinDirStat.exe" -Only Filtering,Cli,EdgeCases,Permissions,Enumeration,Unc,Ui
           if ($LASTEXITCODE -ne 0) { throw "Upstream test suites failed (exit $LASTEXITCODE)" }
         env:
           GH_TOKEN: ${{ github.token }}
@@ -258,8 +262,28 @@ jobs:
             dist/*.zip
             dist/*Setup.exe
 
+  # Large-scan stress test: ~700k-file synthetic tree plus all of C:\ (NTFS MFT scan), probing the UI
+  # for hangs throughout. See .github/scripts/Stress-LargeScan.ps1.
+  stress:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: altWinDirStat-*-x64
+          path: artifact
+          merge-multiple: true
+      - name: Large-scan stress test
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem artifact -Filter '*-x64-portable.zip' | Select-Object -First 1
+          Expand-Archive $zip.FullName "$env:RUNNER_TEMP\awds" -Force
+          & .github\scripts\Stress-LargeScan.ps1 -ExePath "$env:RUNNER_TEMP\awds\altWinDirStat.exe"
+
   release:
-    needs: [fork-guard, build]
+    needs: [fork-guard, build, stress]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
     runs-on: ubuntu-latest
     steps:
