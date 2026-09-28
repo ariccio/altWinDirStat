@@ -16,6 +16,19 @@ permissions:
   contents: write
 
 jobs:
+  # Upstream's publishing files ship under the official WinDirStat identity; an upstream sync can bring them back.
+  fork-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upstream publishing files stay deleted
+        run: |
+          found=$(ls -d .github/workflows/publish-*-to-winget-pkgs.yml .github/FUNDING.yml setup/chocolatey setup/store 2>/dev/null || true)
+          if [ -n "$found" ]; then
+            echo "::error::Upstream publishing files are back (delete them; see HANDOFF.md):"; echo "$found"; exit 1
+          fi
+          echo "None present."
+
   build:
     runs-on: windows-2022
     strategy:
@@ -246,7 +259,7 @@ jobs:
             dist/*Setup.exe
 
   release:
-    needs: build
+    needs: [fork-guard, build]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
     runs-on: ubuntu-latest
     steps:
