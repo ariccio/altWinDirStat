@@ -18,6 +18,7 @@
 #include "pch.h"
 #include "CsvLoader.h"
 #include "FinderMtp.h"
+#include "Ledger.h"
 
 static bool IsJsonPath(const std::wstring& path)
 {
@@ -564,6 +565,9 @@ static bool SaveResultsJson(std::ofstream& outf,
 
 bool SaveResults(const std::wstring& path, CItem* rootItem)
 {
+    // altWinDirStat: "*.ledger.csv" targets get a folder-only ledger (see Ledger.h).
+    if (Ledger::IsLedgerPath(path)) return Ledger::Save(path, Ledger::FromScan(rootItem));
+
     const std::vector<const CItem*> items       = CollectItems(rootItem);
     const auto                      adjustedSizes = ComputeAdjustedSizes(items);
     const bool includeOwner = COptions::IsColumnVisible(COptions::FileTreeColumnVisibility.Obj(), COL_OWNER);
