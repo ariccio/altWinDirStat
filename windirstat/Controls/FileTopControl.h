@@ -1,0 +1,55 @@
+﻿// WinDirStat - Directory Statistics
+// Copyright © WinDirStat Team
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// at your option any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+#pragma once
+
+#include "pch.h"
+#include "ItemTop.h"
+#include "TreeListControl.h"
+
+class CFileTopControl final : public CTreeListControl
+{
+public:
+    CFileTopControl();
+    ~CFileTopControl() override { m_singleton = nullptr; }
+    bool GetAscendingDefault(int column) override;
+    static CFileTopControl* Get() { return m_singleton; }
+    CItemTop* GetRootItem() const { return m_rootItem; }
+    void ProcessTop(CItem* item);
+    void ClearPendingItems() { m_queuedSet.clear(); }
+    void RemoveItem(CItem* item);
+    void SortItems() override;
+    void AfterDeleteAllItems() override;
+
+protected:
+
+    // Custom comparator to keep the list organized by size (largest first)
+    static constexpr auto CompareBySize = [](const CItem* lhs, const CItem* rhs)
+    {
+        return lhs->GetSizeLogical() > rhs->GetSizeLogical();
+    };
+
+    inline static CFileTopControl* m_singleton = nullptr;
+    CItemTop* m_rootItem = nullptr;
+    SingleConsumerQueue<CItem*> m_queuedSet;
+    std::vector<CItem*> m_sizeMap;
+    std::vector<CItem*> m_topItems;
+    bool m_needsResort = true;
+    std::unordered_map<CItem*, CItemTop*> m_itemTracker;
+    size_t m_previousTopN = 0;
+
+};

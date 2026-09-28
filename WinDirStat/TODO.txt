@@ -1,3 +1,0 @@
-TODO.txt - What still has to been done to WinDirStat
-
-->Fuzz the persistence code; what if data in registry is scrambled?

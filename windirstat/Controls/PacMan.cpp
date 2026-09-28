@@ -1,0 +1,145 @@
+﻿// WinDirStat - Directory Statistics
+// Copyright © WinDirStat Team
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// at your option any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+#include "pch.h"
+#include "PacMan.h"
+
+namespace
+{
+    constexpr ULONGLONG HIDE_THRESHOLD = 750; // ms
+    constexpr float MOUTHSPEED = 0.003f;      // aperture alteration / ms
+    constexpr float PACMANSPEED = 0.09f;      // pixels / ms
+}
+
+void CPacman::Reset()
+{
+    m_lastUpdate   = 0;
+    m_lastDraw     = 0;
+    m_toTheRight   = true;
+    m_position     = 0.0f;
+    m_mouthOpening = true;
+    m_aperture     = 0.0f;
+    m_done         = false;
+    m_moving       = false;
+}
+
+void CPacman::UpdatePosition()
+{
+    m_lastUpdate = GetTickCount64();
+    if (m_lastDraw == 0) m_lastDraw = m_lastUpdate;
+    m_moving = true;
+    m_done = false;
+}
+
+void CPacman::Draw(CDC* pdc, const CRect& rect, const COLORREF backColor,
+    const bool dots, const std::optional<bool> suspended)
+{
+    const ULONGLONG now = GetTickCount64();
+    if (suspended.value_or(m_suspended))
+    {
+        // Rebase time if suspended
+        m_lastUpdate = now;
+        m_lastDraw = now;
+    }
+
+    // See if we should still consider ourselves moving
+    if (now - m_lastUpdate > HIDE_THRESHOLD) m_moving = false;
+
+    // Update position
+    if (m_moving)
+    {
+        const float delta = static_cast<float>(now - m_lastDraw);
+        UpdatePosition(m_position, m_toTheRight, PACMANSPEED * delta / static_cast<float>(rect.Width()));
+        UpdatePosition(m_aperture, m_mouthOpening, MOUTHSPEED * delta);
+    }
+
+    // Record time for next draw comparison
+    m_lastDraw = now;
+
+    // Calculate rectangle to display graphic
+    CRect rc(rect);
+    rc.Deflate(5, 1);
+    rc.bottom -= rc.Height() % 2;
+    rc.left += static_cast<int>(m_position * (rc.Width() - rc.Height() / (dots ? 1.0f : 2.0f)));
+    rc.right = rc.left + rc.Height();
+    const Gdiplus::Rect grect(rc.left, rc.top, rc.Width(), rc.Height());
+
+    // Determine the share of the figure
+    const float slice = m_aperture * 90.0f;
+    const Gdiplus::REAL sweepAngle = 360.0f - slice;
+    Gdiplus::REAL startAngle = m_aperture * slice / 2.0f;
+    if (!m_toTheRight) startAngle += 180.0f;
+
+    // Fill background if requested
+    if (backColor != ~COLORREF())
+    {
+        pdc->FillSolidRect(rect, backColor);
+    }
+    if (m_done) return;
+
+    // Create pens and brushes
+    static const Gdiplus::Pen blackPen(Gdiplus::Color(0xFF, 0x00, 0x00, 0x00), 1);
+    static const Gdiplus::SolidBrush yellowBrush(Gdiplus::Color(0xFF, 0xFC, 0xC9, 0x2F));
+
+    // Draw filled shape if we started and recently updated
+    Gdiplus::Graphics graphics(pdc->Handle());
+    graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+    if (dots)
+    {
+        const int spacing = std::max(8, rc.Height()), diameter = std::max(2, rc.Height() / 5);
+        for (int x = rect.left + spacing; x < rect.right - spacing / 2; x += spacing)
+        {
+            if (m_toTheRight ? x <= rc.right : x >= rc.left) continue;
+            graphics.FillEllipse(&yellowBrush, x - diameter / 2,
+                rc.top + (rc.Height() - diameter) / 2, diameter, diameter);
+        }
+    }
+    graphics.FillPie(&yellowBrush, grect, startAngle, sweepAngle);
+    graphics.DrawPie(&blackPen, grect, startAngle, sweepAngle);
+    if (m_moving) return;
+
+    // Draw sleepy graphic
+    const COLORREF zColor = DarkMode::IsDarkModeActive() ? 0x888888 : 0x000000;
+    static int cachedFontSizePercent = 0;
+    static std::optional<Gdiplus::Font> font;
+    const int fontSizePercent = GetFontSizePercent();
+    if (!font || cachedFontSizePercent != fontSizePercent)
+    {
+        font.emplace(wds::strFontArial, 6.0f * fontSizePercent / 100.0f, Gdiplus::FontStyleBold);
+        cachedFontSizePercent = fontSizePercent;
+    }
+    const Gdiplus::SolidBrush zBrush(Gdiplus::Color(0xFF, GetRValue(zColor), GetGValue(zColor), GetBValue(zColor)));
+    for (const auto x : { 1.0f, 2.0f, 3.0f })
+    {
+        const auto deltaX = x * static_cast<float>(rc.Width()) / 3.0f;
+        const auto deltaY = (x + 1) * static_cast<float>(rc.Height()) / 18.0f;
+        graphics.DrawString(L"z", 1, &*font, { rc.left + deltaX, rc.top - deltaY }, &zBrush);
+    }
+}
+
+void CPacman::UpdatePosition(float& position, bool& up, const float diff)
+{
+    assert(diff >= 0.0f);
+    assert(position >= 0.0f);
+    assert(position <= 1.0f);
+
+    if (!up) position = 2.0f - position;
+    position += diff;
+    position = std::fmod(position, 2.0f);
+    up = (position <= 1.0f);
+    if (!up) position = 2.0f - position;
+}

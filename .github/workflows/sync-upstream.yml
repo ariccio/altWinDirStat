@@ -1,0 +1,69 @@
+name: Sync with official WinDirStat
+
+# Weekly (and on demand): merge the latest official WinDirStat master into a branch and open a PR.
+# The Build workflow then builds and tests that PR; merge it when it's green.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write   # to start the Build workflow on the sync branch (pushes made with GITHUB_TOKEN don't trigger it)
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Merge upstream into a sync branch
+        id: merge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/windirstat/windirstat.git
+          git fetch --quiet upstream master
+          if git merge-base --is-ancestor upstream/master HEAD; then
+            echo "Already up to date with upstream."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="sync/upstream-$(date -u +%Y-%m-%d)"
+          upstream_sha=$(git rev-parse --short upstream/master)
+          git checkout -b "$branch"
+          if git merge --no-edit -m "Merge official WinDirStat ${upstream_sha} into altWinDirStat" upstream/master; then
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          else
+            # Commit the conflict markers so a human can resolve them on the PR branch.
+            git add -A
+            git commit --no-edit -m "Merge official WinDirStat ${upstream_sha} (CONFLICTS - resolve before merging)"
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+          fi
+          git push --force origin "$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          note="Merges the latest official WinDirStat (\`${{ steps.merge.outputs.sha }}\`) into altWinDirStat. Build runs on this PR; merge when green."
+          if [ "${{ steps.merge.outputs.conflict }}" = "true" ]; then
+            note="$note
+
+          **This merge has conflicts.** Resolve the conflict markers on this branch (usually in the altWinDirStat branding points listed in HANDOFF.md) before merging."
+          fi
+          gh pr create --base master --head "${{ steps.merge.outputs.branch }}" \
+            --title "Sync with official WinDirStat (${{ steps.merge.outputs.sha }})" \
+            --body "$note" || echo "A PR for this branch already exists."
+          # PRs opened with GITHUB_TOKEN don't trigger pull_request workflows; start Build explicitly.
+          # Its checks attach to the branch head commit, so they show up on the PR.
+          gh workflow run build.yml --ref "${{ steps.merge.outputs.branch }}"

@@ -1,5 +1,6 @@
 ; Inno Setup 6 script for altWinDirStat.
-; Built by CI:  ISCC /DAppVersion=1.2.3 /DArch=x64 /DSourceDir=<dir with altWinDirStat.exe> altWinDirStat.iss
+; Built by CI:  ISCC /DAppVersion=1.2.3 /DArch=<x64|Win32|ARM64> /DSourceDir=<dir with altWinDirStat.exe> altWinDirStat.iss
+; Same AppId as the legacy 0.1.x installer, so installing this upgrades an old altWinDirStat in place.
 
 #ifndef AppVersion
   #define AppVersion "0.0.0"
@@ -37,6 +38,9 @@ MinVersion=6.1
 #if Arch == "x64"
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+#elif Arch == "ARM64"
+ArchitecturesAllowed=arm64
+ArchitecturesInstallIn64BitMode=arm64
 #endif
 
 [Tasks]
@@ -46,7 +50,6 @@ Name: "contextmenu"; Description: "Add ""Analyze with altWinDirStat"" to the Exp
 [Files]
 Source: "{#SourceDir}\{#AppExe}";   DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\gpl-2.0.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\README.md";   DestDir: "{app}"; Flags: ignoreversion isreadme
 
 [Icons]

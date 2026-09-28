@@ -1,0 +1,1324 @@
+﻿// WinDirStat - Directory Statistics
+// Copyright © WinDirStat Team
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// at your option any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+#include "pch.h"
+#include "Filtering.h"
+#include "TreeMap.h"
+#include "VisualizationPane.h"
+#include "FileTabbedView.h"
+#include "FileTreeView.h"
+#include "DrawTextCache.h"
+#include "ExtensionView.h"
+#include "ProgressDlg.h"
+#include "RecoveryDlg.h"
+
+static const int UdcMenuTag = 0;
+
+void CMainFrame::OnToolsRecovery()
+{
+    if (IsElevationActive()) RecoveryDlg(this).ShowModal();
+}
+
+void CMainFrame::OnUpdateToolsRecovery(CCmdUI* pCmdUI) const
+{
+    pCmdUI->Enable(IsElevationActive());
+}
+
+void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, const UINT nIndex, const bool bSysMenu)
+{
+    CFrameWnd::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
+
+    if (const auto [explorerMenu, explorerMenuPos] = LocateNamedMenu(pPopupMenu,
+        Localization::Lookup(IDS_MENU_EXPLORER_MENU), false); explorerMenu != nullptr)
+    {
+        // Add placeholder only
+        if (explorerMenu->GetItemCount() == 0)
+        {
+            explorerMenu->Append(MF_STRING | MF_DISABLED | MF_GRAYED, 0,
+                Localization::Lookup(IDS_PROGRESS).c_str());
+        }
+
+        pPopupMenu->SetItemEnabled(explorerMenuPos, true);
+    }
+
+    // If the menu being opened is a placeholder, populate it
+    if (pPopupMenu->GetItemCount() == 1 && (pPopupMenu->GetItemState(0, MF_BYPOSITION) & MF_SEPARATOR) != 0)
+    {
+        while (pPopupMenu->GetItemCount() > 0)
+        {
+            pPopupMenu->Remove(0);
+        }
+
+        // Populate the placeholder submenu with verbs for the selected shell items.
+        if (const CComPtr contextMenu = GetContextMenu(CWinDirStatModel::Get()->GetAllSelected());
+            contextMenu != nullptr)
+        {
+            (void) contextMenu->QueryContextMenu(pPopupMenu->Handle(), 0,
+                CONTENT_MENU_MINCMD, CONTENT_MENU_MAXCMD, CMF_NORMAL);
+        }
+    }
+
+    // update cleanup menu if this is the cleanup submenu
+    if (pPopupMenu->GetItemState(ID_CLEANUP_EMPTY_BIN, MF_BYCOMMAND) != static_cast<UINT>(-1))
+    {
+        UpdateCleanupMenu(pPopupMenu);
+    }
+
+    // update tools menu - check if pPopupMenu is the Tools menu by looking for our operation submenus
+    if (const auto [shadowCopyMenu, _] = LocateNamedMenu(pPopupMenu, Localization::Lookup(IDS_MENU_SHADOW_COPY), false); shadowCopyMenu != nullptr)
+    {
+        UpdateToolsMenu(pPopupMenu);
+    }
+}
+
+void CMainFrame::UpdateCleanupMenu(CMenu* menu, const bool triggerAsync)
+{
+    // Define menu items structure with cached values
+    struct { ULONGLONG* count; ULONGLONG* bytes; UINT menuId; LPCWSTR prefix; } menuItems[] = {
+        { &m_recycleBinItems, &m_recycleBinBytes, ID_CLEANUP_EMPTY_BIN, IDS_EMPTY_RECYCLEBIN.data() },
+        { &m_shadowCopyCount, &m_shadowCopyBytes, ID_CLEANUP_REMOVE_SHADOW, IDS_MENU_REMOVE_SHADOW.data() }
+    };
+
+    // Update menu items using cached values (initially shows zeros or last cached values)
+    for (const auto& [count, bytes, menuId, prefix] : menuItems)
+    {
+        const std::wstring label = Localization::Lookup(prefix) + ((*count == 1) ?
+            Localization::Format(IDS_ONEITEMs, FormatBytes(*bytes)) :
+            Localization::Format(IDS_sITEMSs, FormatCount(*count), FormatBytes(*bytes)));
+
+        const UINT state = menu->GetItemState(menuId, MF_BYCOMMAND);
+        menu->Modify(menuId, MF_BYCOMMAND | MF_STRING, menuId, label);
+        menu->EnableItem(menuId, state);
+    }
+
+    UpdateDynamicMenuItems(menu);
+
+    // Keep one background query alive until its results are collected by the UI.
+    if (!triggerAsync || m_shuttingDown || m_cleanupQuery.valid()) return;
+    std::packaged_task<std::array<ULONGLONG, 4>()> query([]
+    {
+        std::array<ULONGLONG, 4> result{};
+        QueryRecycleBin(result[0], result[1]);
+        QueryShadowCopies(result[2], result[3]);
+        return result;
+    });
+    m_cleanupQuery = query.get_future();
+    m_cleanupThread = std::jthread(std::move(query));
+}
+
+void CMainFrame::QueryRecycleBin(ULONGLONG& items, ULONGLONG& bytes)
+{
+    items = 0;
+    bytes = 0;
+
+    for (const std::wstring & drive : GetDriveList({DRIVE_FIXED, DRIVE_REMOVABLE, DRIVE_RAMDISK}))
+    {
+        SHQUERYRBINFO qbi{ .cbSize = sizeof(qbi) };
+        if (FAILED(::SHQueryRecycleBin((drive + L"\\").c_str(), &qbi)))
+        {
+            continue;
+        }
+
+        items += qbi.i64NumItems;
+        bytes += qbi.i64Size;
+    }
+}
+
+std::pair<CMenu*,int> CMainFrame::LocateNamedMenu(const CMenu* menu, const std::wstring & subMenuText, const bool removeItems) const
+{
+    // locate submenu
+    CMenu* subMenu = nullptr;
+    int subMenuPos = -1;
+    const auto range = std::views::iota(0, menu->GetItemCount());
+    if (const auto it = std::ranges::find_if(range, [&](const int i) {
+        const std::wstring menuString = menu->GetItemText(i);
+        return !menuString.empty() && _wcsicmp(menuString.c_str(), subMenuText.c_str()) == 0;
+    }); it != range.end())
+    {
+        subMenuPos = *it;
+        subMenu = menu->GetSubMenu(subMenuPos);
+    }
+
+    // clean up old items
+    if (removeItems && subMenu != nullptr) while (subMenu->GetItemCount() > 0)
+        subMenu->Remove(0);
+    return { subMenu, subMenuPos };
+}
+
+void CMainFrame::UpdateDynamicMenuItems(CMenu* menu, CMenu* menuHeader) const
+{
+    CWinDirStatModel* model = CWinDirStatModel::Get();
+    const auto& items = model->GetAllSelected();
+    const bool scanReady = model->IsScanSettled();
+
+    // locate compress menu
+    auto [compressMenu, compressMenuPos] = LocateNamedMenu(menu, Localization::Lookup(IDS_MENU_COMPRESS_MENU), false);
+    if (compressMenu && compressMenuPos >= 0)
+    {
+        // Check if any submenu items are enabled
+        const int menuItemCount = compressMenu->GetItemCount();
+        const bool anyEnabled = std::ranges::any_of(std::views::iota(0, menuItemCount), [&](const int i)
+        {
+            CCmdUI state;
+            state.m_nIndex = i;
+            state.m_nID = compressMenu->GetItemId(i);
+            state.m_pMenu = compressMenu;
+            state.Update(const_cast<CMainFrame*>(this), false);
+            return compressMenu->IsItemEnabled(i);
+        });
+
+        menu->SetItemEnabled(compressMenuPos, anyEnabled);
+    }
+
+    auto[customMenu, customMenuPos] = LocateNamedMenu(menu, Localization::Lookup(IDS_USER_DEFINED_CLEANUP));
+    if (customMenu == nullptr) return;
+
+    if (menuHeader == nullptr) menuHeader = GetMenu();
+    MENUINFO headerInfo{ .cbSize = sizeof(headerInfo), .fMask = MIM_STYLE };
+    if (menuHeader != nullptr && ::GetMenuInfo(menuHeader->Handle(), &headerInfo))
+    {
+        headerInfo.fMask |= MIM_APPLYTOSUBMENUS;
+        headerInfo.dwStyle |= MNS_NOTIFYBYPOS;
+        ::SetMenuInfo(menuHeader->Handle(), &headerInfo);
+    }
+
+    MENUINFO customMenuInfo{ .cbSize = sizeof(customMenuInfo), .fMask = MIM_MENUDATA,
+        .dwMenuData = reinterpret_cast<ULONG_PTR>(&UdcMenuTag) };
+    ::SetMenuInfo(customMenu->Handle(), &customMenuInfo);
+
+    for (auto&& [iCurrent, udc] : std::views::enumerate(COptions::UserDefinedCleanups))
+    {
+        if (!udc.Enabled) continue;
+
+        const std::wstring string = iCurrent < USERDEFINEDCLEANUPACCELERATORCOUNT ?
+            Localization::Format(IDS_UDCsCTRLd, udc.Title.Obj(), iCurrent) : udc.Title.Obj();
+
+        const bool udcValid = scanReady && GetLogicalFocus() == LF_FILETREE && !items.empty() &&
+            std::ranges::all_of(items,
+                [&](const auto& item) { return model->UserDefinedCleanupWorksForItem(&udc, item); });
+
+        const int position = customMenu->GetItemCount();
+        customMenu->Append(MF_STRING, 0, string);
+        MENUITEMINFOW itemInfo{ .cbSize = sizeof(itemInfo), .fMask = MIIM_DATA, .dwItemData = static_cast<ULONG_PTR>(iCurrent) };
+        customMenu->SetItemInfo(position, &itemInfo);
+        customMenu->SetItemEnabled(position, udcValid);
+    }
+
+    // conditionally disable menu if empty
+    menu->SetItemEnabled(customMenuPos, customMenu->GetItemCount() > 0 && scanReady);
+}
+
+LRESULT CMainFrame::OnMenuCommand(const WPARAM position, const LPARAM menuHandle)
+{
+    CMenu* menu = CMenu::FromHandle(reinterpret_cast<HMENU>(menuHandle));
+    MENUINFO menuInfo{ .cbSize = sizeof(menuInfo), .fMask = MIM_MENUDATA };
+    if (menu == nullptr || !::GetMenuInfo(menu->Handle(), &menuInfo)) return CallDefaultHandler();
+
+    const bool userDefinedCleanupMenu = menuInfo.dwMenuData == reinterpret_cast<ULONG_PTR>(&UdcMenuTag);
+    MENUITEMINFOW itemInfo{ .cbSize = sizeof(itemInfo),
+        .fMask = static_cast<UINT>(userDefinedCleanupMenu ? MIIM_DATA : MIIM_ID) };
+    if (!menu->GetItemInfo(static_cast<UINT>(position), &itemInfo)) return CallDefaultHandler();
+
+    if (userDefinedCleanupMenu) CWinDirStatModel::Get()->RunUserDefinedCleanup(itemInfo.dwItemData);
+    else if (itemInfo.wID != 0 && itemInfo.wID != static_cast<UINT>(-1)) SendMessage(WM_COMMAND, itemInfo.wID);
+    return 0;
+}
+
+void CMainFrame::OnAdvancedShadowCopy(const UINT nID)
+{
+    const WCHAR driveLetter = wds::strAlpha[nID - ID_TOOLS_SHADOW_COPY_BASE];
+    const std::wstring drive = std::format(L"{:c}:", driveLetter);
+
+    bool success = false;
+    CProgressDlg dlg(0, CProgressDlg::Flags::NoCancel, this, [&](CProgressDlg*)
+    {
+        success = CreateShadowCopy(drive);
+    });
+    dlg.ShowModal();
+
+    if (!success)
+    {
+        const std::wstring msg = Localization::Format(IDS_SHADOW_COPY_FAILED, GetDrive(drive));
+        ShowMessageBox(*this, msg, wds::strWinDirStat, MB_ICONERROR | MB_OK);
+    }
+}
+
+void CMainFrame::OnAdvancedDefrag(const UINT nID)
+{
+    const WCHAR driveLetter = wds::strAlpha[nID - ID_TOOLS_DEFRAG_BASE];
+    ExecuteCommandInConsole(std::format(L"DEFRAG.EXE {:c}: /O", driveLetter), L"DEFRAG");
+}
+
+void CMainFrame::OnAdvancedChkdsk(const UINT nID)
+{
+    const WCHAR driveLetter = wds::strAlpha[nID - ID_TOOLS_CHKDSK_BASE];
+    ExecuteCommandInConsole(std::format(L"CHKDSK.EXE {:c}: /F", driveLetter), L"CHKDSK");
+}
+
+void CMainFrame::UpdateToolsMenu(CMenu* menu) const
+{
+    // menu is the Tools popup menu itself
+    // Find each operation submenu and populate with drives
+    auto [shadowCopyMenu, shadowCopyPos] = LocateNamedMenu(menu, Localization::Lookup(IDS_MENU_SHADOW_COPY), true);
+    auto [defragMenu, defragPos] = LocateNamedMenu(menu, Localization::Lookup(IDS_MENU_DEFRAGMENT), true);
+    auto [chkdskMenu, chkdskPos] = LocateNamedMenu(menu, Localization::Lookup(IDS_MENU_CHKDSK), true);
+
+    // Get available local drives and conditionally enable based on elevation
+    const auto drives = GetDriveList({DRIVE_FIXED, DRIVE_REMOVABLE, DRIVE_RAMDISK});
+    menu->SetItemEnabled(shadowCopyPos, IsElevationActive() && !drives.empty());
+    menu->SetItemEnabled(defragPos, IsElevationPossible() && !drives.empty());
+    menu->SetItemEnabled(chkdskPos, IsElevationPossible() && !drives.empty());
+
+    for (const auto& drive : drives)
+    {
+        // Get volume label for display
+        const std::wstring volumeName = GetVolumeName(drive);
+        const std::wstring displayName = volumeName.empty()
+            ? GetDrive(drive) : std::format(L"{:.2} ({})", drive, volumeName);
+
+        const int driveIndex = std::toupper(drive[0]) - L'A';
+        shadowCopyMenu->Append(MF_STRING, ID_TOOLS_SHADOW_COPY_BASE + driveIndex, displayName);
+        defragMenu->Append(MF_STRING, ID_TOOLS_DEFRAG_BASE + driveIndex, displayName);
+        chkdskMenu->Append(MF_STRING, ID_TOOLS_CHKDSK_BASE + driveIndex, displayName);
+    }
+}
+
+void CMainFrame::SetLogicalFocus(const LOGICAL_FOCUS lf)
+{
+    if (lf != m_logicalFocus)
+    {
+        m_logicalFocus = lf;
+        UpdatePaneText();
+
+        CWinDirStatModel::Get()->NotifyPanes(MODEL_CHANGE_SELECTION_STYLE);
+    }
+}
+
+void CMainFrame::MoveFocus(const LOGICAL_FOCUS logicalFocus)
+{
+    switch (logicalFocus)
+    {
+        case LF_EXTLIST: GetExtensionView()->SetFocus(); break;
+        case LF_DUPELIST: GetFileDupeView()->SetFocus(); break;
+        case LF_TOPLIST: GetFileTopView()->SetFocus(); break;
+        case LF_SEARCHLIST: GetFileSearchView()->SetFocus(); break;
+        case LF_WATCHERLIST: GetFileWatcherView()->SetFocus(); break;
+        case LF_PERMSLIST: GetFilePermsView()->SetFocus(); break;
+        case LF_STORAGEANALYTICS:
+        {
+            GetFileTabbedView()->SetActiveStorageAnalyticsView();
+            GetFileTabbedView()->SetFocus();
+            break;
+        }
+        case LF_FILETREE:
+        {
+            GetFileTabbedView()->SetActiveFileTreeView();
+            GetFileTreeView()->SetFocus();
+            break;
+        }
+        case LF_NONE:
+        {
+            SetLogicalFocus(LF_NONE);
+            SetFocus();
+        }
+    }
+}
+
+void CMainFrame::UpdatePaneText()
+{
+    const auto focus = GetLogicalFocus();
+    std::wstring fileSelectionText = !CWinDirStatModel::Get()->IsScanRunning() ?
+        Localization::Lookup(IDS_IDLEMESSAGE) : wds::strEmpty;
+    ULONGLONG size = MAXULONGLONG;
+
+    // Allow the active visualization to override the selection text while hovered
+    if (const auto hoverInfo = GetActiveVisualization()->GetHoverInfo(); !hoverInfo.path.empty())
+    {
+        fileSelectionText = hoverInfo.path;
+        size = hoverInfo.size;
+    }
+
+    // Only get the data if the scan model is not actively updating
+    else if (CWinDirStatModel::Get()->IsScanSettled())
+    {
+        if (focus != LF_EXTLIST)
+        {
+            const auto& items = CWinDirStatModel::Get()->GetAllSelected();
+            if (items.size() == 1)
+            {
+                // If single item selected, show full path
+                const auto path = items.front()->GetPath();
+                if (!path.empty()) fileSelectionText = path;
+            }
+            else if (items.size() > 1)
+            {
+                // If multiple items are selected, show the statistics of selected items, files, and folders
+                ULONGLONG totalFiles = 0;
+                ULONGLONG totalFolders = 0;
+                for (const auto& item : items)
+                {
+                    if (item->IsTypeOrFlag(IT_FILE)) totalFiles++;
+                    if (item->IsTypeOrFlag(IT_DIRECTORY)) totalFolders++;
+                    totalFiles += item->GetFilesCount();
+                    totalFolders += item->GetFoldersCount();
+                }
+                fileSelectionText = Localization::Format(IDS_ITEMSs_SELECTED_FILESs_FOLDERSs,
+                    FormatCount(items.size()), FormatCount(totalFiles), FormatCount(totalFolders));
+            }
+
+            for (size = 0; const auto& item : items)
+            {
+                size += COptions::TreeMapUseLogical ? item->GetSizeLogical() : item->GetSizePhysical();
+            }
+
+        }
+        else if (fileSelectionText.empty())
+        {
+            fileSelectionText = wds::chrStar + CWinDirStatModel::Get()->GetHighlightExtension();
+        }
+    }
+
+    // Update selected size
+    CClientDC dc(this);
+    const GdiObjectSelection selectFont(&dc, GetAppFont(m_hWnd));
+    SetStatusPaneText(dc, CStatusBar::PaneId::Idle, fileSelectionText);
+    SetStatusPaneText(dc, CStatusBar::PaneId::Size, (size == MAXULONGLONG) ? wds::strEmpty :
+        std::format(L"{}: \u2211 {}", Localization::Lookup(COptions::TreeMapUseLogical ? IDS_COL_SIZE_LOGICAL : IDS_COL_SIZE_PHYSICAL), FormatBytes(size)), 175);
+    SetStatusPaneText(dc, CStatusBar::PaneId::Ram, CDirStatApp::GetCurrentProcessMemoryInfo(), 175);
+    LayoutProgress();
+}
+
+void CMainFrame::OnSize(const UINT nType, const int cx, const int cy)
+{
+    CFrameWnd::OnSize(nType, cx, cy);
+    LayoutProgress();
+    LayoutWatcherFilter();
+}
+
+void CMainFrame::LayoutProgress()
+{
+    if (!IsWindow(m_wndStatusBar)) return;
+
+    const CRect rc = m_wndStatusBar.GetPaneRect(CStatusBar::PaneId::Idle);
+
+    if (m_progress != nullptr)
+    {
+        CRect progRc = rc;
+        progRc.Deflate(m_wndStatusBar.ScaleForDpi(3), m_wndStatusBar.ScaleForDpi(4),
+            m_wndStatusBar.ScaleForDpi(5), m_wndStatusBar.ScaleForDpi(4));
+        progRc.right = std::max(progRc.left, progRc.right);
+        progRc.bottom = std::max(progRc.top, progRc.bottom);
+        if (m_wndStatusBar.GetChildWindowRect(m_progress.m_hWnd) != progRc) m_progress.MoveWindow(progRc);
+    }
+    else if (m_pacman.m_hWnd != nullptr && m_wndStatusBar.GetChildWindowRect(m_pacman.m_hWnd) != rc)
+    {
+        m_pacman.MoveWindow(rc);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CMainFrame::OnUpdateViewShowVisualization(CCmdUI* pCmdUI) const
+{
+    pCmdUI->SetCheck(IsVisualizationShown());
+}
+
+void CMainFrame::OnUpdateTreeMapUseLogical(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(!CWinDirStatModel::Get()->IsScanRunning());
+    pCmdUI->SetRadio(COptions::TreeMapUseLogical);
+}
+
+void CMainFrame::OnUpdateTreeMapUsePhysical(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(!CWinDirStatModel::Get()->IsScanRunning());
+    pCmdUI->SetRadio(!COptions::TreeMapUseLogical);
+}
+
+void CMainFrame::OnUpdateViewAbsolutePercentages(CCmdUI* pCmdUI)
+{
+    pCmdUI->SetCheck(COptions::UseAbsolutePercentages);
+}
+
+void CMainFrame::OnUpdateViewShowFileTypes(CCmdUI* pCmdUI) const
+{
+    pCmdUI->SetCheck(GetExtensionView()->IsShowTypes());
+}
+
+void CMainFrame::OnUpdateViewGroupUnregisteredTypes(CCmdUI* pCmdUI) const
+{
+    const CWinDirStatModel* model = CWinDirStatModel::Get();
+    pCmdUI->Enable(GetExtensionView()->IsShowTypes() && model->IsScanSettled());
+    pCmdUI->SetCheck(COptions::GroupUnregisteredTypes);
+}
+
+void CMainFrame::OnUpdateViewShowWatcher(CCmdUI* pCmdUI) const
+{
+    pCmdUI->SetCheck(GetFileTabbedView()->IsWatcherTabVisible());
+}
+
+GraphPane CMainFrame::GetGraphPaneType() const
+{
+    return m_visualizationPane->GetActivePaneType();
+}
+
+void CMainFrame::SelectGraphPane(const GraphPane pane)
+{
+    // Accelerators still dispatch WM_COMMAND while the corresponding menu
+    // item is disabled. Do not switch away from the pane suspended for a scan.
+    if (CWinDirStatModel::Get()->IsScanRunning()) return;
+    if (GetGraphPaneType() == pane && IsVisualizationShown()) return;
+
+    COptions::GraphPaneStyle = EncodeGraphPane(pane);
+    m_visualizationPane->SelectPane(pane);
+    ShowVisualization(true);
+    ApplyPaneVisibility();
+}
+
+void CMainFrame::OnViewShowVisualization()
+{
+    ShowVisualization(!IsVisualizationShown());
+    ApplyPaneVisibility();
+}
+
+static_assert(ID_VIEW_TREEMAP_ROWS + static_cast<int>(TreeMapLayout::Style::Squarified)
+        == ID_VIEW_TREEMAP_SQUARIFIED
+    && ID_VIEW_TREEMAP_ROWS + static_cast<int>(TreeMapLayout::Style::Hilbert) == ID_VIEW_TREEMAP_HILBERT
+    && ID_VIEW_TREEMAP_ROWS + static_cast<int>(TreeMapLayout::Style::Moore) == ID_VIEW_TREEMAP_MOORE);
+
+void CMainFrame::OnViewTreeMapStyle(const UINT commandId)
+{
+    if (CWinDirStatModel::Get()->IsScanRunning()) return;
+
+    const int styleValue = commandId - ID_VIEW_TREEMAP_ROWS;
+    assert(styleValue >= static_cast<int>(TreeMapLayout::Style::Rows)
+        && styleValue <= static_cast<int>(TreeMapLayout::Style::Moore));
+    CTreeMap::Options options = COptions::TreeMapOptions;
+    options.style = static_cast<TreeMapLayout::Style>(styleValue);
+    COptions::SetTreeMapOptions(options);
+    SelectGraphPane(GraphPane::TreeMap);
+}
+
+void CMainFrame::OnUpdateViewTreeMapStyle(CCmdUI* pCmdUI) const
+{
+    pCmdUI->Enable(!CWinDirStatModel::Get()->IsScanRunning());
+    const auto style = static_cast<TreeMapLayout::Style>(pCmdUI->m_nID - ID_VIEW_TREEMAP_ROWS);
+    pCmdUI->SetRadio(GetGraphPaneType() == GraphPane::TreeMap
+        && COptions::TreeMapOptions.style == style);
+}
+
+static_assert(ID_VIEW_GRAPH_PRESET_CLASSIC + std::to_underlying(CTreeMap::Preset::Calm) == ID_VIEW_GRAPH_PRESET_CALM
+    && ID_VIEW_GRAPH_PRESET_CLASSIC + std::to_underlying(CTreeMap::Preset::Flat) == ID_VIEW_GRAPH_PRESET_FLAT
+    && ID_VIEW_GRAPH_PRESET_CLASSIC + std::to_underlying(CTreeMap::Preset::Pastel) == ID_VIEW_GRAPH_PRESET_PASTEL
+    && ID_VIEW_GRAPH_PRESET_CLASSIC + std::to_underlying(CTreeMap::Preset::HighContrast)
+        == ID_VIEW_GRAPH_PRESET_HIGH_CONTRAST);
+
+void CMainFrame::OnViewGraphPreset(const UINT commandId)
+{
+    if (CWinDirStatModel::Get()->IsScanRunning()) return;
+
+    const auto preset = static_cast<CTreeMap::Preset>(commandId - ID_VIEW_GRAPH_PRESET_CLASSIC);
+    CTreeMap::Options options = COptions::TreeMapOptions;
+    if (commandId == ID_VIEW_GRAPH_PRESET_CUSTOM)
+    {
+        const auto custom = COptions::GetCustomTreeMapPreset();
+        if (!custom) return;
+        options.SetAppearance(*custom);
+    }
+    else options.SetAppearance(CTreeMap::GetPreset(preset));
+    COptions::SetTreeMapOptions(options);
+}
+
+void CMainFrame::OnUpdateViewGraphPreset(CCmdUI* pCmdUI) const
+{
+    const bool custom = pCmdUI->m_nID == ID_VIEW_GRAPH_PRESET_CUSTOM;
+    pCmdUI->Enable(!CWinDirStatModel::Get()->IsScanRunning()
+        && (!custom || COptions::GetCustomTreeMapPreset().has_value()));
+    const auto preset = static_cast<CTreeMap::Preset>(pCmdUI->m_nID - ID_VIEW_GRAPH_PRESET_CLASSIC);
+    const auto current = CTreeMap::GetMatchingPreset(COptions::TreeMapOptions);
+    pCmdUI->SetRadio(custom ? !current : current == preset);
+}
+
+void CMainFrame::OnViewFlameGraph()
+{
+    SelectGraphPane(GraphPane::FlameGraph);
+}
+
+void CMainFrame::OnUpdateViewFlameGraph(CCmdUI* pCmdUI) const
+{
+    pCmdUI->Enable(!CWinDirStatModel::Get()->IsScanRunning());
+    pCmdUI->SetRadio(GetGraphPaneType() == GraphPane::FlameGraph);
+}
+
+void CMainFrame::OnViewSunburst()
+{
+    SelectGraphPane(GraphPane::Sunburst);
+}
+
+void CMainFrame::OnUpdateViewSunburst(CCmdUI* pCmdUI) const
+{
+    pCmdUI->Enable(!CWinDirStatModel::Get()->IsScanRunning());
+    pCmdUI->SetRadio(GetGraphPaneType() == GraphPane::Sunburst);
+}
+
+static void SortItemRecursive(CItem* item)
+{
+    if (item == nullptr || item->IsLeaf()) return;
+    COptions::TreeMapUseLogical ? item->SortItemsBySizeLogical() : item->SortItemsBySizePhysical();
+    for (CItem* child : item->GetChildren())
+    {
+        SortItemRecursive(child);
+    }
+}
+
+void CMainFrame::OnViewTreeMapUseLogical()
+{
+    if (!COptions::TreeMapUseLogical)
+    {
+        COptions::TreeMapUseLogical = true;
+        if (CItem* root = CWinDirStatModel::Get()->GetRootItem())
+        {
+            SortItemRecursive(root);
+            CWinDirStatModel::Get()->NotifyPanes(MODEL_CHANGE_SIZE_MODE);
+        }
+        UpdatePaneText();
+    }
+}
+
+void CMainFrame::OnViewTreeMapUsePhysical()
+{
+    if (COptions::TreeMapUseLogical)
+    {
+        COptions::TreeMapUseLogical = false;
+        if (CItem* root = CWinDirStatModel::Get()->GetRootItem())
+        {
+            SortItemRecursive(root);
+            CWinDirStatModel::Get()->NotifyPanes(MODEL_CHANGE_SIZE_MODE);
+        }
+        UpdatePaneText();
+    }
+}
+
+void CMainFrame::OnViewAbsolutePercentages() const
+{
+    COptions::UseAbsolutePercentages = !COptions::UseAbsolutePercentages.Obj();
+    GetFileTreeView()->RefreshPercentages();
+}
+
+void CMainFrame::OnViewShowFileTypes()
+{
+    GetExtensionView()->ShowTypes(!GetExtensionView()->IsShowTypes());
+    COptions::ShowFileTypes = GetExtensionView()->IsShowTypes();
+    ApplyPaneVisibility();
+}
+
+void CMainFrame::OnViewGroupUnregisteredTypes() const
+{
+    COptions::GroupUnregisteredTypes = !COptions::GroupUnregisteredTypes;
+
+    // Recolor extensions so the unregistered group shares one color, then refresh the list and graph
+    CWinDirStatModel::Get()->RebuildExtensionData();
+    GetExtensionView()->OnUpdate(nullptr, MODEL_CHANGE_NONE, nullptr);
+    CWinDirStatModel::Get()->NotifyPanes(MODEL_CHANGE_TREEMAP_STYLE);
+}
+
+void CMainFrame::OnViewShowExtensionsOnTreeMap() const
+{
+    if (GetGraphPaneType() != GraphPane::TreeMap) return;
+
+    COptions::TreeMapShowExtensions = !static_cast<bool>(COptions::TreeMapShowExtensions);
+    COptions::TreeMapOptions.showExtensions = COptions::TreeMapShowExtensions;
+    CWinDirStatModel::Get()->NotifyPanes(MODEL_CHANGE_TREEMAP_STYLE);
+}
+
+void CMainFrame::OnUpdateViewShowExtensionsOnTreeMap(CCmdUI* pCmdUI) const
+{
+    pCmdUI->Enable(GetGraphPaneType() == GraphPane::TreeMap
+        && !CWinDirStatModel::Get()->IsScanRunning());
+    pCmdUI->SetCheck(COptions::TreeMapOptions.showExtensions);
+}
+
+void CMainFrame::OnViewShowFolderFramesOnTreeMap() const
+{
+    if (GetGraphPaneType() != GraphPane::TreeMap) return;
+
+    COptions::TreeMapShowFolderFrames = !static_cast<bool>(COptions::TreeMapShowFolderFrames);
+    COptions::TreeMapOptions.showFolderFrames = COptions::TreeMapShowFolderFrames;
+    CWinDirStatModel::Get()->NotifyPanes(MODEL_CHANGE_TREEMAP_STYLE);
+}
+
+void CMainFrame::OnUpdateViewShowFolderFramesOnTreeMap(CCmdUI* pCmdUI) const
+{
+    pCmdUI->Enable(GetGraphPaneType() == GraphPane::TreeMap
+        && !CWinDirStatModel::Get()->IsScanRunning());
+    pCmdUI->SetCheck(COptions::TreeMapOptions.showFolderFrames);
+}
+
+static void PaintWatcherAutoScroll(Gdiplus::Graphics& g, const bool enabled)
+{
+    Icons::PaintCharacter(g, L'⤓', enabled ? RGB(0, 156, 221) : Icons::NeutralRef());
+    if (!enabled)
+    {
+        Gdiplus::Pen slash(Icons::C(204, 0, 0), 6);
+        slash.SetStartCap(Gdiplus::LineCapRound);
+        slash.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawLine(&slash, 12, 52, 52, 12);
+    }
+}
+
+void CMainFrame::RebuildToolBar(const bool rebuildButtons)
+{
+    constexpr int baseImageSize = 20;
+    const int imageSize = ScaleForToolBarDpi(baseImageSize, m_wndToolBar);
+    const SIZE buttonSize
+    {
+        ScaleForToolBarDpi(m_defaultButtonSize.cx, m_wndToolBar),
+        ScaleForToolBarDpi(m_defaultButtonSize.cy, m_wndToolBar)
+    };
+
+    if (CDirStatApp::Get()->m_pMainWnd == nullptr) return;
+    m_wndToolBar.SetFont(GetAppFont(m_wndToolBar));
+    m_watcherFilter.SetFont(GetAppFont(m_wndToolBar));
+    if (!rebuildButtons)
+    {
+        m_wndToolBar.SetButtonSize(buttonSize);
+        m_wndToolBar.UpdateLayout();
+        LayoutWatcherFilter();
+        return;
+    }
+
+    // Remove all existing buttons
+    m_wndToolBar.ClearButtons();
+
+    // Resize buttons and images to match the selected toolbar size
+    m_wndToolBar.SetMetrics(buttonSize, imageSize);
+
+    using Painter = std::function<void(Gdiplus::Graphics&)>;
+    static const auto toolbarButtons = std::to_array<std::tuple<UINT, std::wstring_view, Painter>>({
+        { ID_FILE_SELECT,             IDS_FILE_SELECT,             Icons::PaintFileSelect},
+        { ID_SEPARATOR,               {},{}},
+        { ID_SCAN_RESUME,             IDS_RESUME,                  Icons::Char(L'▶', RGB( 50, 205,  50))},
+        { ID_SCAN_SUSPEND,            IDS_SUSPEND,                 Icons::PaintPause},
+        { ID_SCAN_STOP,               IDS_STOP,                    Icons::Char(L'■', RGB(220,  20,  60))},
+        { ID_SEPARATOR,               {},{}},
+        { ID_REFRESH_ALL,             IDS_REFRESH_ALL,             Icons::Char(L'↻', RGB(  0, 156, 221))},
+        { ID_REFRESH_SELECTED,        IDS_REFRESH_SELECTED,        Icons::PaintRefreshSelected},
+        { ID_SEPARATOR,               {},{}},
+        { ID_SEARCH,                  IDS_SEARCH_TITLE,            Icons::Char(L'⌕', Icons::NeutralRef())},
+        { ID_FILTER,                  IDS_PAGE_FILTERING_TITLE,    [](auto& g){ Icons::PaintFilter(g, CFiltering::IsFilterActive()); } },
+        { ID_SEPARATOR,               {},{}},
+        { ID_CLEANUP_OPEN_SELECTED,   IDS_CLEANUP_OPEN_SELECTED,   Icons::PaintOpenSelected},
+        { ID_CLEANUP_EXPLORER_SELECT, IDS_CLEANUP_EXPLORER_SELECT, Icons::PaintExplorerSelect},
+        { ID_EDIT_COPY_CLIPBOARD,     IDS_EDIT_COPY_CLIPBOARD,     Icons::PaintEditCopyClipboard},
+        { ID_CLEANUP_OPEN_IN_CONSOLE, IDS_CLEANUP_OPEN_IN_CONSOLE, Icons::PaintOpenInConsole},
+        { ID_CLEANUP_PROPERTIES,      IDS_CLEANUP_PROPERTIES,      Icons::PaintProperties},
+        { ID_SEPARATOR,               {},{}},
+        { ID_CLEANUP_DELETE_BIN,      IDS_CLEANUP_DELETE_BIN,      Icons::PaintDeleteBin},
+        { ID_CLEANUP_DELETE,          IDS_CLEANUP_DELETE,          Icons::PaintDelete},
+        { ID_SEPARATOR,               {},{}},
+        { ID_TREEMAP_ZOOMIN,          IDS_TREEMAP_ZOOMIN,          [](auto& g) { Icons::PaintMagnifier(g, true);}},
+        { ID_TREEMAP_ZOOMOUT,         IDS_TREEMAP_ZOOMOUT,         [](auto& g){ Icons::PaintMagnifier(g, false);}},
+        { ID_SEPARATOR,               {},{}},
+        { ID_VIEW_WINDOW_LAYOUT,      IDS_WINDOW_LAYOUT,           Icons::PaintWindowLayout},
+        { ID_SEPARATOR,               {},{}},
+        { ID_CONFIGURE,               IDS_MENU_SETTINGS,           Icons::PaintGear},
+        { ID_HELP_MANUAL,             IDS_HELP_MANUAL,             Icons::PaintHelp},
+        { ID_SEPARATOR,               {},{}},
+        { ID_WATCHER_LABEL,           IDS_WATCHER,                 {}},
+        { ID_WATCHER_START,           {},                          Icons::Char(L'▶', RGB( 50, 205,  50))},
+        { ID_WATCHER_PAUSE,           {},                          Icons::PaintPause},
+        { ID_WATCHER_AUTOSCROLL,      {},                          {}},
+        { ID_WATCHER_CLEAR,           {},                          Icons::PaintDelete},
+    });
+
+    for (const auto& [id, text, painter] : toolbarButtons)
+    {
+        if (id == ID_SEPARATOR)
+        {
+            m_wndToolBar.AddSeparator();
+            continue;
+        }
+
+        if (id == ID_WATCHER_LABEL)
+        {
+            m_wndToolBar.AddButton(CToolBarButton(id, Localization::Lookup(text) + L":"));
+            continue;
+        }
+
+        int index = 0;
+        if (id == ID_WATCHER_AUTOSCROLL)
+        {
+            CBitmap onBitmap(Icons::MakeBitmap(imageSize,
+                [](auto& g) { PaintWatcherAutoScroll(g, true); }));
+            CBitmap offBitmap(Icons::MakeBitmap(imageSize,
+                [](auto& g) { PaintWatcherAutoScroll(g, false); }));
+            m_watcherAutoScrollOnImage = m_wndToolBar.AddImage(onBitmap);
+            m_watcherAutoScrollOffImage = m_wndToolBar.AddImage(offBitmap);
+            index = COptions::WatcherAutoScroll ? m_watcherAutoScrollOnImage : m_watcherAutoScrollOffImage;
+        }
+        else if (painter)
+        {
+            CBitmap bitmap(Icons::MakeBitmap(imageSize, painter));
+            index = m_wndToolBar.AddImage(bitmap);
+        }
+
+        m_wndToolBar.AddButton(CToolBarButton(id, index,
+            text.empty() ? std::wstring{} : Localization::Lookup(text)));
+    }
+
+    // The watcher buttons are contextual and only shown while its tab is active
+    SetWatcherToolBarButtons(m_fileTabbedView != nullptr &&
+        m_fileTabbedView->IsFileWatcherViewTabActive(), false);
+
+    m_wndToolBar.UpdateLayout();
+    LayoutWatcherFilter();
+}
+
+void CMainFrame::SetWatcherToolBarButtons(const bool visible, const bool updateLayout)
+{
+    if (m_wndToolBar.Handle() == nullptr) return;
+
+    // The group spans the separator before the caption label through the last button
+    const int labelIndex = m_wndToolBar.GetButtonIndex(ID_WATCHER_LABEL);
+    if (labelIndex < 1) return;
+
+    bool changed = false;
+    for (const int index : std::views::iota(labelIndex - 1, labelIndex + 5))
+        changed |= m_wndToolBar.SetButtonVisible(index, visible);
+
+    // Recompute button locations and repaint; a size-only adjustment does
+    // not refresh the layout when the docked toolbar extents are unchanged
+    if (changed && updateLayout) m_wndToolBar.UpdateLayout();
+    LayoutWatcherFilter();
+}
+
+void CMainFrame::LayoutWatcherFilter()
+{
+    if (m_watcherFilter.Handle() == nullptr) return;
+
+    CRect button;
+    const bool active = m_wndToolBar.SendNativeMessage(TB_ISBUTTONHIDDEN, ID_WATCHER_CLEAR) == 0;
+    const bool hasButton = m_wndToolBar.GetButtonRect(m_wndToolBar.GetButtonIndex(ID_WATCHER_CLEAR), button);
+    CRect rect = m_wndToolBar.GetClientRect();
+    rect.Deflate(ScaleForToolBarDpi(4, m_wndToolBar), ScaleForToolBarDpi(2, m_wndToolBar));
+    rect.left = button.right + ScaleForToolBarDpi(6, m_wndToolBar);
+    rect.right = std::min<LONG>(rect.right, rect.left + ScaleForToolBarDpi(220, m_wndToolBar));
+    const bool visible = active && hasButton && rect.Height() > 0 &&
+        rect.Width() >= ScaleForToolBarDpi(80, m_wndToolBar);
+    if (!visible && m_watcherFilter.HasFocus()) m_fileTabbedView->FocusActiveTabContent();
+    m_watcherFilter.ShowWindow(visible ? SW_SHOWNA : SW_HIDE);
+    if (!visible) return;
+
+    CClientDC dc(&m_watcherFilter);
+    const GdiObjectSelection font(&dc, GetAppFont(m_wndToolBar));
+    const int height = std::min<int>(rect.Height(), dc.GetTextExtent(L"Ag").cy + ScaleForToolBarDpi(6, m_wndToolBar));
+    rect.top += (rect.Height() - height) / 2;
+    rect.bottom = rect.top + height;
+    m_watcherFilter.MoveWindow(rect);
+}
+
+void CWatcherFilterEdit::OnChange()
+{
+    auto* watcher = CFileWatcherControl::Get();
+    if (watcher == nullptr) return;
+
+    m_valid = watcher->SetQuickFilter(GetText());
+    RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_FRAME);
+}
+
+void CWatcherFilterEdit::OnPaint()
+{
+    CallDefaultHandler();
+    const auto& message = CurrentMessage();
+    if (m_valid || (message.message == WM_PRINT && (message.lParam & PRF_NONCLIENT) == 0)) return;
+
+    CWindowDC windowDC(this);
+    auto dc = CDC::Borrow(message.message == WM_PRINT ? reinterpret_cast<HDC>(message.wParam) : windowDC.Handle());
+    CBrush border(RGB(220, 60, 60));
+    const auto size = GetWindowRect().Size();
+    dc.FrameRect(CRect(0, 0, size.cx, size.cy), &border);
+}
+
+bool CWatcherFilterEdit::PreprocessMessage(MSG* message)
+{
+    if (message == nullptr || message->message != WM_KEYDOWN) return false;
+    if (message->wParam == VK_ESCAPE) { SetText(L""); return true; }
+    if (message->wParam == VK_RETURN || message->wParam == VK_TAB)
+    {
+        CMainFrame::Get()->MoveFocus(LF_WATCHERLIST);
+        return true;
+    }
+    if (message->wParam == 'A' && IsKeyDown(VK_CONTROL)) { SetSel(0, -1); return true; }
+    if (IsKeyDown(VK_MENU)) return false;
+
+    TranslateMessage(message);
+    DispatchMessage(message);
+    return true;
+}
+
+void CMainFrame::OnWatcherStart()
+{
+    CFileWatcherControl::Get()->StartMonitoring();
+}
+
+void CMainFrame::OnUpdateWatcherStart(CCmdUI* pCmdUI)
+{
+    const auto* watcher = CFileWatcherControl::Get();
+    pCmdUI->Enable(watcher != nullptr && !watcher->IsMonitoring() &&
+        CWinDirStatModel::Get()->HasRootItem());
+}
+
+void CMainFrame::OnWatcherPause()
+{
+    CFileWatcherControl::Get()->StopMonitoring();
+}
+
+void CMainFrame::OnUpdateWatcherPause(CCmdUI* pCmdUI)
+{
+    const auto* watcher = CFileWatcherControl::Get();
+    pCmdUI->Enable(watcher != nullptr && watcher->IsMonitoring());
+}
+
+void CMainFrame::OnWatcherAutoScroll()
+{
+    COptions::WatcherAutoScroll = !COptions::WatcherAutoScroll;
+    const int image = COptions::WatcherAutoScroll ? m_watcherAutoScrollOnImage : m_watcherAutoScrollOffImage;
+    if (image < 0 || !m_wndToolBar.SendNativeMessage(TB_CHANGEBITMAP, ID_WATCHER_AUTOSCROLL, image))
+    {
+        RebuildToolBar();
+        return;
+    }
+    m_wndToolBar.Invalidate(false);
+}
+
+void CMainFrame::OnUpdateWatcherAutoScroll(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(true);
+    pCmdUI->SetCheck(false);
+}
+
+void CMainFrame::OnWatcherClear()
+{
+    CFileWatcherControl::Get()->ClearResults();
+}
+
+void CMainFrame::OnUpdateWatcherClear(CCmdUI* pCmdUI)
+{
+    const auto* watcher = CFileWatcherControl::Get();
+    pCmdUI->Enable(watcher != nullptr && watcher->HasResults());
+}
+
+static constexpr auto sizePercents = std::to_array<int>({ 100, 125, 150, 175, 200, 0 });
+static_assert(ID_VIEW_FONT_SIZE_200 - ID_VIEW_FONT_SIZE_100 == 4 &&
+    ID_VIEW_FONT_SIZE_USE_WINDOWS - ID_VIEW_FONT_SIZE_100 == 5 &&
+    ID_VIEW_TOOLBAR_SIZE_200 - ID_VIEW_TOOLBAR_SIZE_100 == 4 &&
+    ID_VIEW_TOOLBAR_SIZE_USE_WINDOWS - ID_VIEW_TOOLBAR_SIZE_100 == 5);
+
+static constexpr int SizePercentFromCommand(const UINT commandId, const UINT firstCommand) noexcept
+{
+    const UINT index = commandId - firstCommand;
+    assert(commandId >= firstCommand && std::cmp_less(index, sizePercents.size()));
+    return sizePercents[index];
+}
+
+void CMainFrame::OnViewToolBarSize(const UINT commandId)
+{
+    const int percent = SizePercentFromCommand(commandId, ID_VIEW_TOOLBAR_SIZE_100);
+    if (COptions::ToolBarSizePercent == percent) return;
+
+    COptions::ToolBarSizePercent = percent;
+    SetToolBarSizePercent(ResolveTextScalePercent(percent));
+    RebuildToolBar();
+}
+
+void CMainFrame::OnUpdateViewToolBarSize(CCmdUI* pCmdUI) const
+{
+    const int percent = SizePercentFromCommand(pCmdUI->m_nID, ID_VIEW_TOOLBAR_SIZE_100);
+    pCmdUI->SetRadio(COptions::ToolBarSizePercent == percent);
+    pCmdUI->Enable((m_wndToolBar.GetStyle() & WS_VISIBLE) != 0);
+}
+
+void CMainFrame::OnViewFontSize(const UINT commandId)
+{
+    const int percent = SizePercentFromCommand(commandId, ID_VIEW_FONT_SIZE_100);
+    if (COptions::FontSizePercent == percent) return;
+
+    COptions::FontSizePercent = percent;
+    OnFontSizeChanged(0, 0);
+}
+
+void CMainFrame::OnUpdateViewFontSize(CCmdUI* pCmdUI) const
+{
+    const int percent = SizePercentFromCommand(pCmdUI->m_nID, ID_VIEW_FONT_SIZE_100);
+    pCmdUI->SetRadio(COptions::FontSizePercent == percent);
+}
+
+void CMainFrame::OnConfigure()
+{
+    const bool restart = CSettingsSheet::ShowSettings();
+
+    // Rebuild the toolbar so icons (e.g. the filter indicator) reflect the new settings
+    RebuildToolBar();
+
+    // Save settings in case the application exits abnormally
+    PersistedSetting::WritePersistedProperties();
+
+    if (restart)
+    {
+        CDirStatApp::Get()->RestartApplication();
+    }
+}
+
+void CMainFrame::OnFontSizeChanged(const int oldPercent, const int newPercent)
+{
+    if (oldPercent != 0 || newPercent != 0) return;
+
+    const int previousPercent = GetFontSizePercent();
+    const int fontPercent = ResolveTextScalePercent(COptions::FontSizePercent);
+    const int toolBarPercent = ResolveTextScalePercent(COptions::ToolBarSizePercent);
+    const bool toolBarChanged = toolBarPercent != GetToolBarSizePercent();
+    COptions::RescaleFontDependentState(previousPercent, fontPercent);
+    SetFontSizePercent(fontPercent);
+    SetToolBarSizePercent(toolBarPercent);
+    ApplyAppFont(m_hWnd, previousPercent);
+    RebuildToolBar(toolBarChanged);
+    UpdatePaneText();
+    RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+}
+
+void CMainFrame::OnSysColorChange()
+{
+    GetFileTreeView()->SysColorChanged();
+    GetExtensionView()->SysColorChanged();
+    DrawTextCache::Get().ClearCache();
+
+    // Redraw menus for dark mode
+    DarkMode::SetAppDarkMode();
+    RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+}
+
+void CMainFrame::OnSettingChange(const UINT flags, const LPCTSTR section)
+{
+    CFrameWnd::OnSettingChange(flags, section);
+    OnFontSizeChanged(0, 0);
+    OnSysColorChange();
+}
+
+UINT CMainFrame::OnPowerBroadcast(UINT, LPARAM)
+{
+    OnSysColorChange();
+    return true;
+}
+
+LRESULT CMainFrame::OnUahDrawMenu(const WPARAM wParam, const LPARAM lParam) const
+{
+    return DarkMode::HandleMenuMessage(CurrentMessage().message, wParam, lParam, *this);
+}
+
+void CMainFrame::OnNcPaint()
+{
+    // Update the bottom of the menu bar that is not properly painted
+    CFrameWnd::OnNcPaint();
+    DarkMode::DrawMenuClientArea(*this);
+}
+
+bool CMainFrame::OnNcActivate(const bool bActive)
+{
+    // Update the bottom of the menu bar that is not properly painted
+    const auto ret = CFrameWnd::OnNcActivate(bActive);
+    DarkMode::DrawMenuClientArea(*this);
+    return ret;
+}
+
+bool CMainFrame::CreateFromResource(const UINT nIDResource)
+{
+    if (!CFrameWnd::CreateFromResource(nIDResource))
+    {
+        return false;
+    }
+
+    Localization::UpdateMenu(*GetMenu());
+    Localization::UpdateDialogs(*this);
+    UpdateFrameTitleForScan();
+
+    return true;
+}
+
+void CMainFrame::OnToolsWatcher() const
+{
+    const bool visible = !GetFileTabbedView()->IsWatcherTabVisible();
+    GetFileTabbedView()->SetWatcherTabVisibility(visible);
+    if (visible)
+    {
+        GetFileTabbedView()->SetActiveWatcherView();
+    }
+}
+
+void CMainFrame::OnToolsPermissions() const
+{
+    GetFileTabbedView()->SetPermsTabVisibility(!GetFileTabbedView()->IsPermsTabVisible());
+
+    // Re-check visibility: a cancelled scan leaves the tab hidden, so don't activate it
+    if (GetFileTabbedView()->IsPermsTabVisible())
+    {
+        GetFileTabbedView()->SetActivePermsView();
+    }
+}
+
+void CMainFrame::OnUpdateToolsPermissions(CCmdUI* pCmdUI) const
+{
+    // Only allow launching a scan once the file tree has been fully populated
+    const auto* model = CWinDirStatModel::Get();
+    pCmdUI->SetCheck(GetFileTabbedView()->IsPermsTabVisible());
+    pCmdUI->Enable(GetFileTabbedView()->IsPermsTabVisible() || model->IsScanSettled());
+}
+
+void CMainFrame::OnToolsStorageAnalytics() const
+{
+    GetFileTabbedView()->SetStorageAnalyticsTabVisibility(!GetFileTabbedView()->IsStorageAnalyticsTabVisible());
+
+    if (GetFileTabbedView()->IsStorageAnalyticsTabVisible())
+    {
+        GetFileTabbedView()->SetActiveStorageAnalyticsView();
+    }
+}
+
+void CMainFrame::OnUpdateToolsStorageAnalytics(CCmdUI* pCmdUI) const
+{
+    const auto* model = CWinDirStatModel::Get();
+    pCmdUI->SetCheck(GetFileTabbedView()->IsStorageAnalyticsTabVisible());
+    pCmdUI->Enable(GetFileTabbedView()->IsStorageAnalyticsTabVisible() || model->IsScanSettled());
+}
+
+void CMainFrame::OnViewWindowLayout()
+{
+    const int idx = m_wndToolBar.GetButtonIndex(ID_VIEW_WINDOW_LAYOUT);
+    CRect btnRect;
+    m_wndToolBar.GetButtonRect(idx, btnRect);
+    btnRect = m_wndToolBar.ToScreen(btnRect);
+    m_layoutPopup.ShowAtButton(btnRect);
+}
+
+void CMainFrame::ConfigureSplitterCallbacks(const int topo, const int perm)
+{
+    m_splitter.ClearPaneTracking();
+    m_subSplitter.ClearPaneTracking();
+
+    auto showVisualization = [this](const bool visible)
+    {
+        ShowVisualization(visible);
+    };
+    auto showFileTypes = [this](const bool visible)
+    {
+        GetExtensionView()->ShowTypes(visible);
+        COptions::ShowFileTypes = visible;
+    };
+    auto applyVisibility = [this]
+    {
+        ApplyPaneVisibility();
+    };
+
+    switch (topo)
+    {
+    case LT_ROWS_SUB_COLS:
+        m_splitter.TrackPane(perm == 0 ? 1 : 0, showVisualization, applyVisibility);
+        m_subSplitter.TrackPane(1, showFileTypes, applyVisibility);
+        break;
+
+    case LT_COLS_THREE:
+        switch (perm)
+        {
+        case 0: // [FTV|visualization] | ExtV
+            m_splitter.TrackPane(1, showFileTypes, applyVisibility);
+            m_subSplitter.TrackPane(1, showVisualization, applyVisibility);
+            break;
+        case 1: // [visualization|FTV] | ExtV
+            m_splitter.TrackPane(1, showFileTypes, applyVisibility);
+            m_subSplitter.TrackPane(0, showVisualization, applyVisibility);
+            break;
+        case 2: // FTV | [ExtV|visualization]
+            m_subSplitter.TrackPane(0, showFileTypes, applyVisibility);
+            m_subSplitter.TrackPane(1, showVisualization, applyVisibility);
+            break;
+        case 3: // visualization | [ExtV|FTV]
+            m_splitter.TrackPane(0, showVisualization, applyVisibility);
+            m_subSplitter.TrackPane(0, showFileTypes, applyVisibility);
+            break;
+        }
+        break;
+
+    case LT_COLS_SUB_ROWS:
+        m_splitter.TrackPane(1, showFileTypes, applyVisibility);
+        m_subSplitter.TrackPane(perm == 0 ? 0 : 1, showVisualization, applyVisibility);
+        break;
+
+    case LT_COLS_VISUALIZATION_FULL:
+    {
+        const int visualizationPane = (perm == 0 || perm == 1) ? 0 : 1;
+        const int extPane = (perm == 0 || perm == 2) ? 0 : 1;
+        m_splitter.TrackPane(visualizationPane, showVisualization, applyVisibility);
+        m_subSplitter.TrackPane(extPane, showFileTypes, applyVisibility);
+        break;
+    }
+    }
+}
+
+void CMainFrame::BuildSplitterLayout(const int topo, const int perm, const HWND hFTV, const HWND hExtV, const HWND hVisualization)
+{
+    auto AttachView = [](CWdsSplitterWnd& splitter, const int row, const int col, const HWND hView)
+    {
+        SetParent(hView, splitter.Handle());
+        ::SetWindowLongPtr(hView, GWLP_ID, splitter.PaneId(row, col));
+    };
+
+    switch (topo)
+    {
+    case LT_ROWS_SUB_COLS:
+        m_splitter.CreateStatic(this, 2, 1);
+        if (perm == 0) // top: [FTV|ExtV], bottom: visualization
+        {
+            m_subSplitter.CreateStatic(&m_splitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                       m_splitter.PaneId(0, 0));
+            AttachView(m_subSplitter, 0, 0, hFTV);
+            AttachView(m_subSplitter, 0, 1, hExtV);
+            AttachView(m_splitter, 1, 0, hVisualization);
+        }
+        else // perm == 1: visualization top, [FTV|ExtV] bottom
+        {
+            AttachView(m_splitter, 0, 0, hVisualization);
+            m_subSplitter.CreateStatic(&m_splitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                       m_splitter.PaneId(1, 0));
+            AttachView(m_subSplitter, 0, 0, hFTV);
+            AttachView(m_subSplitter, 0, 1, hExtV);
+        }
+        break;
+
+    case LT_COLS_THREE:
+        m_splitter.CreateStatic(this, 1, 2);
+        if (perm == 0) // [FTV|visualization] in col 0, ExtV in col 1
+        {
+            m_subSplitter.CreateStatic(&m_splitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                       m_splitter.PaneId(0, 0));
+            AttachView(m_subSplitter, 0, 0, hFTV);
+            AttachView(m_subSplitter, 0, 1, hVisualization);
+            AttachView(m_splitter, 0, 1, hExtV);
+        }
+        else if (perm == 1) // [visualization|FTV] in col 0, ExtV in col 1
+        {
+            m_subSplitter.CreateStatic(&m_splitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                       m_splitter.PaneId(0, 0));
+            AttachView(m_subSplitter, 0, 0, hVisualization);
+            AttachView(m_subSplitter, 0, 1, hFTV);
+            AttachView(m_splitter, 0, 1, hExtV);
+        }
+        else if (perm == 2) // FTV in col 0, [ExtV|visualization] in col 1
+        {
+            AttachView(m_splitter, 0, 0, hFTV);
+            m_subSplitter.CreateStatic(&m_splitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                       m_splitter.PaneId(0, 1));
+            AttachView(m_subSplitter, 0, 0, hExtV);
+            AttachView(m_subSplitter, 0, 1, hVisualization);
+        }
+        else // perm 3: visualization in col 0, [ExtV|FTV] in col 1
+        {
+            AttachView(m_splitter, 0, 0, hVisualization);
+            m_subSplitter.CreateStatic(&m_splitter, 1, 2, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                       m_splitter.PaneId(0, 1));
+            AttachView(m_subSplitter, 0, 0, hExtV);
+            AttachView(m_subSplitter, 0, 1, hFTV);
+        }
+        break;
+
+    case LT_COLS_SUB_ROWS:
+        m_splitter.CreateStatic(this, 1, 2);
+        m_subSplitter.CreateStatic(&m_splitter, 2, 1, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                   m_splitter.PaneId(0, 0));
+        if (perm == 0) // left: visualization/FTV; right: ExtV
+        {
+            AttachView(m_subSplitter, 0, 0, hVisualization);
+            AttachView(m_subSplitter, 1, 0, hFTV);
+        }
+        else // perm 1: left: FTV/visualization; right: ExtV
+        {
+            AttachView(m_subSplitter, 0, 0, hFTV);
+            AttachView(m_subSplitter, 1, 0, hVisualization);
+        }
+        AttachView(m_splitter, 0, 1, hExtV);
+        break;
+
+    case LT_COLS_VISUALIZATION_FULL:
+    {
+        m_splitter.CreateStatic(this, 1, 2);
+        const int visualizationCol = (perm == 0 || perm == 1) ? 0 : 1;
+        const int extRow = (perm == 0 || perm == 2) ? 0 : 1; // ExtV on top (perm 0/2) or bottom (perm 1/3)
+        AttachView(m_splitter, 0, visualizationCol, hVisualization);
+        m_subSplitter.CreateStatic(&m_splitter, 2, 1, WS_CHILD | WS_VISIBLE | WS_BORDER,
+                                   m_splitter.PaneId(0, 1 - visualizationCol));
+        AttachView(m_subSplitter, extRow, 0, hExtV);
+        AttachView(m_subSplitter, 1 - extRow, 0, hFTV);
+        break;
+    }
+    }
+}
+
+void CMainFrame::RebuildLayout(const bool resetPositions)
+{
+    int topo = COptions::LayoutTopology;
+    int perm = COptions::LayoutPermutation;
+    const bool isDefault = (topo == LT_ROWS_SUB_COLS && perm == 0);
+    if (topo == 1 || (!isDefault && CLayoutPopup::LayoutIndex(topo, perm) == 0))
+    {
+        topo = LT_ROWS_SUB_COLS;
+        perm = 0;
+        COptions::LayoutTopology = topo;
+        COptions::LayoutPermutation = perm;
+    }
+
+    // Reparent the stable pane windows to the frame so destroying the splitters does not destroy them.
+    const HWND hFTV = GetFileTabbedView()->Handle();
+    const HWND hExtV = GetExtensionView()->Handle();
+    const HWND hVisualization = GetVisualizationPane()->Handle();
+    const HWND hFrame = Handle();
+    SetParent(hFTV, hFrame);
+    SetParent(hExtV, hFrame);
+    SetParent(hVisualization, hFrame);
+
+    if (m_splitter.Handle())
+        m_splitter.DestroyWindow();
+
+    if (resetPositions)
+    {
+        COptions::MainSplitterPos = -1.0;
+        COptions::SubSplitterPos  = -1.0;
+    }
+
+    BuildSplitterLayout(topo, perm, hFTV, hExtV, hVisualization);
+    ::ShowWindow(hVisualization, SW_SHOW);
+    ::ShowWindow(hExtV, SW_SHOW);
+
+    ConfigureSplitterCallbacks(topo, perm);
+    m_splitter.SetStorage(COptions::MainSplitterPos.Ptr());
+    m_subSplitter.SetStorage(COptions::SubSplitterPos.Ptr());
+    UpdateLayout();
+
+    ApplyPaneVisibility();
+
+    DarkMode::AdjustControls(Handle());
+    GetFileTabbedView()->RedrawWindow();
+    GetActiveVisualization()->RedrawWindow();
+    GetExtensionView()->RedrawWindow();
+}

@@ -1,0 +1,164 @@
+﻿// WinDirStat - Directory Statistics
+// Copyright © WinDirStat Team
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// at your option any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+#include "pch.h"
+#include "Filtering.h"
+#include "PageFiltering.h"
+
+CPageFiltering::CPageFiltering(const bool refreshOnFilteringChange) :
+    MessageTarget(IDD),
+    m_refreshOnFilteringChange(refreshOnFilteringChange)
+{
+}
+
+void CPageFiltering::InitializePage()
+{
+    m_ctlFilteringSizeUnits.SubclassDlgItem(IDC_FILTERING_MIN_UNITS, this);
+    m_ctlFilteringSizeComparison.SubclassDlgItem(IDC_FILTERING_SIZE_COMPARISON, this);
+    m_ctlFilteringMaxAgeComparison.SubclassDlgItem(IDC_FILTERING_MAX_AGE_COMPARISON, this);
+    m_ctrlFilteringExcludeFiles.SubclassDlgItem(IDC_FILTERING_EXCLUDE_FILES, this);
+    m_ctrlFilteringExcludeDirs.SubclassDlgItem(IDC_FILTERING_EXCLUDE_DIRS, this);
+    m_ctrlFilteringIncludeFiles.SubclassDlgItem(IDC_FILTERING_INCLUDE_FILES, this);
+    m_ctrlFilteringIncludeDirs.SubclassDlgItem(IDC_FILTERING_INCLUDE_DIRS, this);
+
+    m_ctlFilteringSizeUnits.AddString(GetSpec_Bytes());
+    m_ctlFilteringSizeUnits.AddString(GetSpec_KiB());
+    m_ctlFilteringSizeUnits.AddString(GetSpec_MiB());
+    m_ctlFilteringSizeUnits.AddString(GetSpec_GiB());
+    m_ctlFilteringSizeUnits.AddString(GetSpec_TiB());
+    m_ctlFilteringSizeComparison.AddString(L"<");
+    m_ctlFilteringSizeComparison.AddString(L">");
+    m_ctlFilteringMaxAgeComparison.AddString(L"<");
+    m_ctlFilteringMaxAgeComparison.AddString(L">");
+
+    SetText(IDC_FILTERING_SIZE_MIN, std::to_wstring(COptions::FilteringSizeMinimum));
+    SetComboSelection(IDC_FILTERING_MIN_UNITS, COptions::FilteringSizeUnits);
+    SetComboSelection(IDC_FILTERING_SIZE_COMPARISON, COptions::FilteringSizeComparison);
+    SetChecked(IDC_FILTERING_USE_REGEX, COptions::FilteringUseRegex);
+    SetText(IDC_FILTERING_MAX_AGE_DAYS, std::to_wstring(COptions::FilteringMaxAgeDays));
+    SetComboSelection(IDC_FILTERING_MAX_AGE_COMPARISON, COptions::FilteringMaxAgeComparison);
+    SetText(IDC_FILTERING_EXCLUDE_DIRS, COptions::FilteringExcludeDirs.Obj());
+    SetText(IDC_FILTERING_EXCLUDE_FILES, COptions::FilteringExcludeFiles.Obj());
+    SetText(IDC_FILTERING_INCLUDE_DIRS, COptions::FilteringIncludeDirs.Obj());
+    SetText(IDC_FILTERING_INCLUDE_FILES, COptions::FilteringIncludeFiles.Obj());
+
+    // Initialize the tooltip control
+    m_toolTip.Create(this);
+    SetToolTips();
+    m_toolTip.SetMaxTipWidth(200);
+    m_toolTip.Activate();
+}
+
+void CPageFiltering::AdjustControls()
+{
+    // Apply dark mode to this property page AFTER controls are initialized
+    if (DarkMode::IsDarkModeActive())
+    {
+        CSettingsPage::AdjustControls();
+        DarkMode::AdjustControls(m_ctlFilteringSizeComparison.Handle());
+        DarkMode::AdjustControls(m_ctlFilteringMaxAgeComparison.Handle());
+        DarkMode::AdjustControls(m_ctrlFilteringExcludeDirs.Handle());
+        DarkMode::AdjustControls(m_ctrlFilteringExcludeFiles.Handle());
+        DarkMode::AdjustControls(m_ctrlFilteringIncludeDirs.Handle());
+        DarkMode::AdjustControls(m_ctrlFilteringIncludeFiles.Handle());
+        m_ctrlFilteringExcludeDirs.Invalidate();
+        m_ctrlFilteringExcludeFiles.Invalidate();
+        m_ctrlFilteringIncludeDirs.Invalidate();
+        m_ctrlFilteringIncludeFiles.Invalidate();
+    }
+}
+
+void CPageFiltering::SetToolTips()
+{
+    const std::wstring tip = Localization::Lookup(IDS_PAGE_FILTERING_TOOLTIP_PREFIX) + L"\n\n";
+    if (IsChecked(IDC_FILTERING_USE_REGEX))
+    {
+        m_toolTip.AddTool(&m_ctrlFilteringExcludeDirs, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_DIRS_REGEX));
+        m_toolTip.AddTool(&m_ctrlFilteringExcludeFiles, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_FILES_REGEX));
+        m_toolTip.AddTool(&m_ctrlFilteringIncludeDirs, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_DIRS_REGEX));
+        m_toolTip.AddTool(&m_ctrlFilteringIncludeFiles, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_FILES_REGEX));
+    }
+    else
+    {
+        m_toolTip.AddTool(&m_ctrlFilteringExcludeDirs, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_DIRS));
+        m_toolTip.AddTool(&m_ctrlFilteringExcludeFiles, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_FILES));
+        m_toolTip.AddTool(&m_ctrlFilteringIncludeDirs, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_DIRS));
+        m_toolTip.AddTool(&m_ctrlFilteringIncludeFiles, tip + Localization::LookupNeutral(IDS_FILTER_EXAMPLE_FILES));
+    }
+}
+
+void CPageFiltering::OnOK()
+{
+    const int filteringSizeMinimum = std::stoi(GetText(IDC_FILTERING_SIZE_MIN));
+    const int filteringSizeUnits = GetComboSelection(IDC_FILTERING_MIN_UNITS);
+    const int filteringSizeComparison = std::clamp<int>(GetComboSelection(IDC_FILTERING_SIZE_COMPARISON), 0, 1);
+    const bool filteringUseRegex = IsChecked(IDC_FILTERING_USE_REGEX);
+    const int filteringMaxAgeDays = std::stoi(GetText(IDC_FILTERING_MAX_AGE_DAYS));
+    const int filteringMaxAgeComparison = std::clamp<int>(GetComboSelection(IDC_FILTERING_MAX_AGE_COMPARISON), 0, 1);
+    const std::wstring filteringExcludeFiles = GetText(IDC_FILTERING_EXCLUDE_FILES);
+    const std::wstring filteringExcludeDirs = GetText(IDC_FILTERING_EXCLUDE_DIRS);
+    const std::wstring filteringIncludeFiles = GetText(IDC_FILTERING_INCLUDE_FILES);
+    const std::wstring filteringIncludeDirs = GetText(IDC_FILTERING_INCLUDE_DIRS);
+
+    const bool refreshAll = COptions::FilteringSizeMinimum != filteringSizeMinimum ||
+        COptions::FilteringSizeUnits != filteringSizeUnits ||
+        COptions::FilteringUseRegex != filteringUseRegex ||
+        COptions::FilteringMaxAgeDays != filteringMaxAgeDays ||
+        COptions::FilteringSizeComparison != filteringSizeComparison ||
+        COptions::FilteringMaxAgeComparison != filteringMaxAgeComparison ||
+        COptions::FilteringExcludeFiles.Obj() != filteringExcludeFiles ||
+        COptions::FilteringExcludeDirs.Obj() != filteringExcludeDirs ||
+        COptions::FilteringIncludeFiles.Obj() != filteringIncludeFiles ||
+        COptions::FilteringIncludeDirs.Obj() != filteringIncludeDirs;
+
+    if (!refreshAll) return;
+    CWinDirStatModel::Get()->StopScanningEngine();
+
+    COptions::FilteringSizeMinimum = filteringSizeMinimum;
+    COptions::FilteringSizeUnits = filteringSizeUnits;
+    COptions::FilteringSizeComparison = filteringSizeComparison;
+    COptions::FilteringUseRegex = filteringUseRegex;
+    COptions::FilteringMaxAgeDays = filteringMaxAgeDays;
+    COptions::FilteringMaxAgeComparison = filteringMaxAgeComparison;
+    COptions::FilteringExcludeFiles.Obj() = filteringExcludeFiles;
+    COptions::FilteringExcludeDirs.Obj() = filteringExcludeDirs;
+    COptions::FilteringIncludeFiles.Obj() = filteringIncludeFiles;
+    COptions::FilteringIncludeDirs.Obj() = filteringIncludeDirs;
+    CFiltering::CompileFilters();
+
+    if (m_refreshOnFilteringChange)
+    {
+        CWinDirStatModel::Get()->StartScan(
+            CWinDirStatModel::Get()->GetScanPathSpec());
+    }
+}
+
+void CPageFiltering::OnSettingChanged()
+{
+    if (!IsInitialized())
+        return;
+
+    SetModified();
+    SetToolTips();
+}
+
+bool CPageFiltering::PreprocessMessage(MSG* pMsg)
+{
+    m_toolTip.RelayEvent(pMsg);
+
+    return CSettingsPage::PreprocessMessage(pMsg);
+}

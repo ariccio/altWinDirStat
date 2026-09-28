@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BD11B94C-6594-4477-9FDF-2E24447D1F14}</ProjectGuid>
+    <RootNamespace>windirstat</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)project.early.props" Condition="exists('$(SolutionDir)project.early.props')" Label="ProjectSpecific (solution/early)" />
+    <Import Project="$(ProjectDir)project.early.props" Condition="exists('$(ProjectDir)project.early.props') AND '$(SolutionDir)' != '$(ProjectDir)'" Label="Project-specific (local/early)" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)build\</OutDir>
+    <IntDir>$(SolutionDir)intermediate\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
+    <TargetName>altWinDirStat_$(PlatformShortName.ToLower())</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir);$(ProjectDir)Controls\;$(ProjectDir)Dialogs\;$(ProjectDir)Pages\;$(ProjectDir)Views\;$(ProjectDir)Res\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MinimalRebuild>false</MinimalRebuild>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4324;6387;4483</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..;.;Controls;Dialogs;..;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
+      <AdditionalDependencies>delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>bcrypt.dll;comdlg32.dll;mpr.dll;msimg32.dll;oleaut32.dll;powrprof.dll;shlwapi.dll;virtdisk.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
+      <TargetMachine Condition="'$(Platform)'=='Win32'">MachineX86</TargetMachine>
+      <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
+      <Profile>false</Profile>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>res\windirstat.manifest</AdditionalManifestFiles>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>POWERSHELL.EXE -NoLogo -ExecutionPolicy Unrestricted -NoProfile -File "$(ProjectDir)Build\Format Sources.ps1" -Path "$(ProjectDir)."
+POWERSHELL.EXE -NoLogo -ExecutionPolicy Unrestricted -NoProfile -File "$(ProjectDir)Build\Compress Strings.ps1" -Path "$(ProjectDir)res"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;WINVER=_WIN32_WINNT_WIN7;_WIN32_WINNT=_WIN32_WINNT_WIN7;_ALLOW_RTCc_IN_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalOptions>/utf-8 $(ExternalCompilerOptions)</AdditionalOptions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;WINVER=0x0601;_WIN32_WINNT=0x0601;_ALLOW_RTCc_IN_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <GenerateDebugInformation Condition="'$(Platform)'=='Win32'">DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Platform)'=='x64' Or '$(Platform)'=='ARM64'">true</GenerateDebugInformation>
+      <AdditionalOptions>/pdbaltpath:%_PDB% /nodefaultlib:libcmt %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <AdditionalOptions>/utf-8 /Gw /GA /Ob3 /Zc:throwingNew $(ExternalCompilerOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>NDEBUG;WINVER=_WIN32_WINNT_WIN7;_WIN32_WINNT=_WIN32_WINNT_WIN7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'=='x64' Or '$(Platform)'=='ARM64'">NotSet</EnableEnhancedInstructionSet>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <StructMemberAlignment Condition="'$(Platform)'=='x64' Or '$(Platform)'=='ARM64'">Default</StructMemberAlignment>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;WINVER=0x0601;_WIN32_WINNT=0x0601;_ALLOW_RTCc_IN_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalOptions>/pdbaltpath:%_PDB% /release /OPT:ICF=8 %(AdditionalOptions)</AdditionalOptions>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <Profile Condition="'$(BuildingInsideVisualStudio)' == 'true'">true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(ProjectDir)/Build/Project.props" Condition="exists('$(ProjectDir)/Build/Project.props') AND '$(SolutionDir)' != '$(ProjectDir)'" Label="Project-specific (local/late)" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClInclude Include="Controls\ColorButton.h" />
+    <ClInclude Include="Controls\ExtensionListControl.h" />
+    <ClInclude Include="Controls\FileDupeControl.h" />
+    <ClInclude Include="Controls\FileTopControl.h" />
+    <ClInclude Include="Controls\FileTreeControl.h" />
+    <ClInclude Include="Controls\FilePermsControl.h" />
+    <ClInclude Include="Controls\FileWatcherControl.h" />
+    <ClInclude Include="Controls\IconHandler.h" />
+    <ClInclude Include="Controls\WdsListControl.h" />
+    <ClInclude Include="Controls\PacMan.h" />
+    <ClInclude Include="Controls\DrawTextCache.h" />
+    <ClInclude Include="Controls\TreeListControl.h" />
+    <ClInclude Include="Controls\TreeMap.h" />
+    <ClInclude Include="Controls\TreeMapLayout.h" />
+    <ClInclude Include="Controls\HilbertMooreTreeMap.h" />
+    <ClInclude Include="Controls\FlameGraph.h" />
+    <ClInclude Include="Controls\Sunburst.h" />
+    <ClInclude Include="Controls\XYSlider.h" />
+    <ClInclude Include="Controls\FileSearchControl.h" />
+    <ClInclude Include="DarkMode.h" />
+    <ClInclude Include="Dialogs\MessageBoxDlg.h" />
+    <ClInclude Include="Dialogs\ProgressDlg.h" />
+    <ClInclude Include="Filtering.h" />
+    <ClInclude Include="HelpersInterface.h" />
+    <ClInclude Include="HelpersTasks.h" />
+    <ClInclude Include="..\contrib\xxhash\xxhash.h" />
+    <ClInclude Include="Pages\PagePrompts.h" />
+    <ClInclude Include="Views\ControlView.h" />
+    <ClInclude Include="Finder.h" />
+    <ClInclude Include="FinderMtp.h" />
+    <ClInclude Include="FinderNtfs.h" />
+    <ClInclude Include="RecoveryNtfs.h" />
+    <ClInclude Include="RecoveryExFat.h" />
+    <ClInclude Include="ItemSearch.h" />
+    <ClInclude Include="ItemTop.h" />
+    <ClInclude Include="Pages\PageFiltering.h" />
+    <ClInclude Include="Pages\PagePermissions.h" />
+    <ClInclude Include="res\LangStrings.h" />
+    <ClInclude Include="Dialogs\SearchDlg.h" />
+    <ClInclude Include="Dialogs\RecoveryDlg.h" />
+    <ClInclude Include="SmartPointer.h" />
+    <ClInclude Include="Tracer.h" />
+    <ClInclude Include="version.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="BlockingQueue.h" />
+    <ClInclude Include="CsvLoader.h" />
+    <ClInclude Include="WinDirStatModel.h" />
+    <ClInclude Include="FinderBasic.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="ItemDupe.h" />
+    <ClInclude Include="ItemPerm.h" />
+    <ClInclude Include="Layout.h" />
+    <ClInclude Include="LayoutPopup.h" />
+    <ClInclude Include="Localization.h" />
+    <ClInclude Include="MainFrame.h" />
+    <ClInclude Include="Options.h" />
+    <ClInclude Include="Pages\PageAdvanced.h" />
+    <ClInclude Include="Pages\PageCleanups.h" />
+    <ClInclude Include="Pages\PageGeneral.h" />
+    <ClInclude Include="Pages\PageFileTree.h" />
+    <ClInclude Include="Pages\PageShared.h" />
+    <ClInclude Include="Pages\PageTreeMap.h" />
+    <ClInclude Include="Property.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Views\ExtensionView.h" />
+    <ClInclude Include="Views\WinDirStatPane.h" />
+    <ClInclude Include="Views\GraphView.h" />
+    <ClInclude Include="Views\VisualizationPane.h" />
+    <ClInclude Include="Views\StorageAnalyticsView.h" />
+    <ClInclude Include="Views\FileTabbedView.h" />
+    <ClInclude Include="Views\FileTreeView.h" />
+    <ClInclude Include="Views\TreeMapView.h" />
+    <ClInclude Include="Views\FlameGraphView.h" />
+    <ClInclude Include="Views\SunburstView.h" />
+    <ClInclude Include="WinDirStat.h" />
+    <ClInclude Include="Dialogs\AboutDlg.h" />
+    <ClInclude Include="Dialogs\SelectDrivesDlg.h" />
+    <ClInclude Include="UiFramework.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Controls\ExtensionListControl.cpp" />
+    <ClCompile Include="Controls\FileDupeControl.cpp" />
+    <ClCompile Include="Controls\FileTopControl.cpp" />
+    <ClCompile Include="Controls\FileTreeControl.cpp" />
+    <ClCompile Include="Controls\FilePermsControl.cpp" />
+    <ClCompile Include="Controls\FileWatcherControl.cpp" />
+    <ClCompile Include="Controls\WdsListControl.cpp" />
+    <ClCompile Include="Controls\PacMan.cpp" />
+    <ClCompile Include="Controls\DrawTextCache.cpp" />
+    <ClCompile Include="Controls\TreeListControl.cpp" />
+    <ClCompile Include="Controls\TreeMap.cpp" />
+    <ClCompile Include="Controls\TreeMapLayout.cpp" />
+    <ClCompile Include="Controls\HilbertMooreTreeMap.cpp" />
+    <ClCompile Include="Controls\FlameGraph.cpp" />
+    <ClCompile Include="Controls\Sunburst.cpp" />
+    <ClCompile Include="Controls\XYSlider.cpp" />
+    <ClCompile Include="CsvLoader.cpp" />
+    <ClCompile Include="DarkMode.cpp" />
+    <ClCompile Include="UiFramework.cpp" />
+    <ClCompile Include="Dialogs\MessageBoxDlg.cpp" />
+    <ClCompile Include="Dialogs\ProgressDlg.cpp" />
+    <ClCompile Include="WinDirStatModel.cpp">
+    </ClCompile>
+    <ClCompile Include="WinDirStatModel.Actions.cpp" />
+    <ClCompile Include="Filtering.cpp" />
+    <ClCompile Include="Item.Extended.cpp" />
+    <ClCompile Include="Pages\PagePrompts.cpp" />
+    <ClCompile Include="Views\ControlView.cpp" />
+    <ClCompile Include="Controls\FileSearchControl.cpp" />
+    <ClCompile Include="FinderBasic.cpp" />
+    <ClCompile Include="FinderMtp.cpp" />
+    <ClCompile Include="FinderNtfs.cpp" />
+    <ClCompile Include="RecoveryExFat.cpp" />
+    <ClCompile Include="RecoveryNtfs.cpp" />
+    <ClCompile Include="HelpersTasks.cpp">
+    </ClCompile>
+    <ClCompile Include="..\contrib\xxhash\xxhash.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="LegacyOsCompat.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="HelpersInterface.cpp" />
+    <ClCompile Include="Item.cpp">
+    </ClCompile>
+    <ClCompile Include="ItemDupe.cpp" />
+    <ClCompile Include="ItemPerm.cpp" />
+    <ClCompile Include="ItemSearch.cpp" />
+    <ClCompile Include="ItemTop.cpp" />
+    <ClCompile Include="Layout.cpp">
+    </ClCompile>
+    <ClCompile Include="LayoutPopup.cpp" />
+    <ClCompile Include="Localization.cpp" />
+    <ClCompile Include="MainFrame.cpp">
+    </ClCompile>
+    <ClCompile Include="MainFrame.Commands.cpp" />
+    <ClCompile Include="Options.cpp">
+    </ClCompile>
+    <ClCompile Include="Pages\PageAdvanced.cpp" />
+    <ClCompile Include="Pages\PageCleanups.cpp">
+    </ClCompile>
+    <ClCompile Include="Pages\PageFiltering.cpp" />
+    <ClCompile Include="Pages\PagePermissions.cpp" />
+    <ClCompile Include="Pages\PageGeneral.cpp">
+    </ClCompile>
+    <ClCompile Include="Pages\PageFileTree.cpp">
+    </ClCompile>
+    <ClCompile Include="Pages\PageShared.cpp" />
+    <ClCompile Include="Pages\PageTreeMap.cpp">
+    </ClCompile>
+    <ClCompile Include="Property.cpp" />
+    <ClCompile Include="Dialogs\SearchDlg.cpp" />
+    <ClCompile Include="Dialogs\RecoveryDlg.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Views\ExtensionView.cpp" />
+    <ClCompile Include="Views\WinDirStatPane.cpp" />
+    <ClCompile Include="Views\GraphView.cpp" />
+    <ClCompile Include="Views\VisualizationPane.cpp" />
+    <ClCompile Include="Views\StorageAnalyticsView.cpp" />
+    <ClCompile Include="Views\FileTabbedView.cpp" />
+    <ClCompile Include="Views\FileTreeView.cpp" />
+    <ClCompile Include="Views\TreeMapView.cpp" />
+    <ClCompile Include="Views\FlameGraphView.cpp" />
+    <ClCompile Include="Views\SunburstView.cpp" />
+    <ClCompile Include="WinDirStat.cpp">
+    </ClCompile>
+    <ClCompile Include="Controls\ColorButton.cpp">
+    </ClCompile>
+    <ClCompile Include="Controls\IconHandler.cpp">
+    </ClCompile>
+    <ClCompile Include="Dialogs\AboutDlg.cpp">
+    </ClCompile>
+    <ClCompile Include="Dialogs\SelectDrivesDlg.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\lang_combined.bin" />
+    <None Include="res\license.bin" />
+    <None Include="res\license.txt" />
+    <None Include="res\windirstat.manifest" />
+    <None Include="res\windirstat.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="windirstat.rc" />
+    <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\WinDirStat.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\langs\lang_ar.txt" />
+    <Text Include="res\langs\lang_cs.txt" />
+    <Text Include="res\langs\lang_da.txt" />
+    <Text Include="res\langs\lang_de.txt" />
+    <Text Include="res\langs\lang_en.txt" />
+    <Text Include="res\langs\lang_es.txt" />
+    <Text Include="res\langs\lang_et.txt" />
+    <Text Include="res\langs\lang_fi.txt" />
+    <Text Include="res\langs\lang_fr.txt" />
+    <Text Include="res\langs\lang_hi.txt" />
+    <Text Include="res\langs\lang_hu.txt" />
+    <Text Include="res\langs\lang_it.txt" />
+    <Text Include="res\langs\lang_ja.txt" />
+    <Text Include="res\langs\lang_ko.txt" />
+    <Text Include="res\langs\lang_nb.txt" />
+    <Text Include="res\langs\lang_nl.txt" />
+    <Text Include="res\langs\lang_pl.txt" />
+    <Text Include="res\langs\lang_pt.txt" />
+    <Text Include="res\langs\lang_ru.txt" />
+    <Text Include="res\langs\lang_sl.txt" />
+    <Text Include="res\langs\lang_sv.txt" />
+    <Text Include="res\langs\lang_tr.txt" />
+    <Text Include="res\langs\lang_uk.txt" />
+    <Text Include="res\langs\lang_zh-HK.txt" />
+    <Text Include="res\langs\lang_zh.txt" />
+  </ItemGroup>
+  <PropertyGroup Label="XXHash">
+    <XXHashHeaderPath>$(MSBuildThisFileDirectory)..\contrib\xxhash\xxhash.h</XXHashHeaderPath>
+    <XXHashSourcePath>$(MSBuildThisFileDirectory)..\contrib\xxhash\xxhash.c</XXHashSourcePath>
+  </PropertyGroup>
+  <Target Name="DownloadXXHash" BeforeTargets="PrepareForBuild">
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(XXHashHeaderPath)'))" />
+    <Exec Condition="!Exists('$(XXHashHeaderPath)') Or !Exists('$(XXHashSourcePath)')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$tag = 'v0.8.3'; try { $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/Cyan4973/xxHash/releases/latest' -UseBasicParsing -TimeoutSec 5; if ($release.tag_name) { $tag = $release.tag_name } } catch {}; if (!(Test-Path '$(XXHashHeaderPath)')) { Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/Cyan4973/xxHash/' + $tag + '/xxhash.h') -OutFile '$(XXHashHeaderPath)' -UseBasicParsing }; if (!(Test-Path '$(XXHashSourcePath)')) { Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/Cyan4973/xxHash/' + $tag + '/xxhash.c') -OutFile '$(XXHashSourcePath)' -UseBasicParsing }&quot;" />
+  </Target>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)project.targets" Condition="exists('$(SolutionDir)project.targets')" Label="ProjectSpecific (solution/targets)" />
+    <Import Project="$(ProjectDir)project.targets" Condition="exists('$(ProjectDir)project.targets') AND '$(SolutionDir)' != '$(ProjectDir)'" Label="Project-specific (local/targets)" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

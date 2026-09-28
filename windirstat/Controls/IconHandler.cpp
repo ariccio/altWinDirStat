@@ -1,0 +1,505 @@
+﻿// WinDirStat - Directory Statistics
+// Copyright © WinDirStat Team
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// at your option any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+#include "pch.h"
+#include "IconHandler.h"
+#include "HelpersInterface.h"
+#include "FinderMtp.h"
+
+CIconHandler::~CIconHandler()
+{
+    for (auto* queue : { &m_fastQueue, &m_slowQueue })
+    {
+        // Interrupt any blocking SHGetFileInfo/ReadFile in workers so they return
+        // quickly to their Pop() loop where they will see CancelExecution's flag.
+        // Without this, the destructor can hang until the current icon fetch completes.
+        queue->CancelThreadIo();
+        queue->CancelExecution();
+    }
+}
+
+void CIconHandler::Initialize()
+{
+    static std::once_flag s_once;
+    std::call_once(s_once, [this]
+    {
+        m_junctionImage = Icons::IconFromFontChar(L'⤷', RGB(0x3A, 0x3A, 0xFF), true);
+        m_symlinkImage = Icons::IconFromFontChar(L'⤷', RGB(0x3A, 0xFF, 0x3A), true);
+        m_junctionProtected = Icons::IconFromFontChar(L'⤷', RGB(0xFF, 0x3A, 0x3A), true);
+        m_freeSpaceImage = Icons::IconFromFontChar(L'▢', RGB(0x3A, 0xCC, 0x3A), true);
+        m_emptyImage = Icons::IconFromFontChar(L'▢', DarkMode::SystemColor(COLOR_WINDOWTEXT));
+        m_hardlinksImage = Icons::IconFromFontChar(L'⧉', DarkMode::SystemColor(COLOR_WINDOWTEXT));
+        m_dupesImage = Icons::IconFromFontChar(L'⧈', DarkMode::SystemColor(COLOR_WINDOWTEXT));
+        m_searchImage = Icons::IconFromFontChar(L'⊙', DarkMode::SystemColor(COLOR_WINDOWTEXT));
+        m_largestImage = Icons::IconFromFontChar(L'⋙', DarkMode::SystemColor(COLOR_WINDOWTEXT));
+        m_unknownImage = Icons::IconFromFontChar(L'?', RGB(0xCC,0xB8,0x66), true);
+        m_defaultFileImage = FetchShellIcon(GetSysDirectory() + L"\\~", 0, FILE_ATTRIBUTE_NORMAL);
+        m_defaultFolderImage = FetchShellIcon(GetSysDirectory() + L"\\~", 0, FILE_ATTRIBUTE_DIRECTORY);
+
+        // Cache icon for boot drive
+        std::wstring drive(MAX_PATH, wds::chrNull);
+        drive.resize(std::min<size_t>(wcslen(L"C:\\"), GetWindowsDirectory(drive.data(), MAX_PATH)));
+        m_mountPointImage = FetchShellIcon(drive, 0, FILE_ATTRIBUTE_REPARSE_POINT);
+
+        // Cache icon for my computer
+        m_myComputerImage = FetchShellIcon(std::to_wstring(CSIDL_DRIVES), SHGFI_PIDL);
+
+        for (auto* queue : { &m_fastQueue, &m_slowQueue }) queue->StartThreads(MAX_ICON_THREADS, [this, queue]
+        {
+            if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE))) return;
+            for (auto itemOpt = queue->Pop(); itemOpt.has_value(); itemOpt = queue->Pop())
+            {
+                auto& [lookup, requestId] = itemOpt.value();
+                auto& [item, control, path, attr, icon, desc] = lookup;
+                std::wstring descTmp;
+                const HICON iconTmp = FetchShellIcon(path, 0, attr, desc != nullptr ? &descTmp : nullptr);
+
+                // Join the UI thread and see if the item still exists
+                // since it could have been deleted since originally
+                // requested
+                CMainFrame::Get()->InvokeInMessageThread([&]
+                {
+                    const auto pending = m_pendingLookups.find(item);
+                    if (pending == m_pendingLookups.end() || pending->second != requestId) return;
+                    m_pendingLookups.erase(pending);
+                    const auto i = control->FindListItem(item);
+                    if (i == -1 || !item->IsVisible()) return;
+                    *icon = iconTmp;
+                    if (desc != nullptr) *desc = descTmp;
+                    control->RedrawItems(i, i);
+                });
+            }
+            CoUninitialize();
+        });
+    });
+}
+
+void CIconHandler::DoAsyncShellInfoLookup(IconLookup&& lookupInfo)
+{
+    auto& [item, control, path, attr, icon, desc] = lookupInfo;
+
+    if (m_pendingLookups.contains(item)) return;
+    const std::uint64_t requestId = ++m_nextLookupId;
+    m_pendingLookups.emplace(item, requestId);
+
+    // set default icon while loading
+    if (*icon == nullptr)
+    {
+        *icon = (attr & FILE_ATTRIBUTE_DIRECTORY) ? m_defaultFolderImage : m_defaultFileImage;
+    }
+
+    static constexpr std::array<std::wstring_view, 4> slowExts = { L".exe", L".ico", L".lnk", L".url" };
+    const auto dot = path.rfind(L'.');
+    const bool isSlow = dot != std::wstring::npos &&
+        std::ranges::any_of(slowExts, [ext = path.c_str() + dot](const std::wstring_view e) { return _wcsicmp(ext, e.data()) == 0; });
+
+    // FILE_ATTRIBUTE_OFFLINE indicates the file is not immediately available locally
+    // (cloud placeholder, Remote Storage, etc.). SHGetFileInfo opens these file types
+    // directly despite SHGFI_USEFILEATTRIBUTES, triggering a download.
+    // Redirect to a synthetic extension-only path so the type icon is used instead.
+    if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_OFFLINE) != 0)
+    {
+        path = GetSysDirectory() + L"\\~" + (dot == std::wstring::npos ? path : path.substr(dot));
+        m_fastQueue.PushIfNotQueued({ std::move(lookupInfo), requestId });
+        return;
+    }
+
+    (isSlow ? m_slowQueue : m_fastQueue).PushIfNotQueued({ std::move(lookupInfo), requestId });
+}
+
+void CIconHandler::ForgetAsyncShellInfoLookup(const CWdsListItem* item)
+{
+    m_pendingLookups.erase(item);
+}
+
+void CIconHandler::ClearAsyncShellInfoQueue()
+{
+    m_pendingLookups.clear();
+    CWinApp::RunTaskWithUiUpdates([this]
+    {
+        for (auto* queue : { &m_fastQueue, &m_slowQueue })
+        {
+            queue->CancelThreadIo();
+            queue->SuspendExecution(true);
+            queue->ResumeExecution();
+        }
+    });
+}
+
+void CIconHandler::StopAsyncShellInfoQueue()
+{
+    m_pendingLookups.clear();
+    CWinApp::RunTaskWithUiUpdates([this]
+    {
+        for (auto* queue : { &m_fastQueue, &m_slowQueue })
+        {
+            queue->CancelThreadIo();
+            queue->SuspendExecution();
+            queue->CancelExecution();
+        }
+    });
+}
+
+void CIconHandler::DrawIcon(CDC* hdc, const HICON image, const CPoint & pt, const CSize& sz)
+{
+    DrawIconEx(*hdc, pt.x, pt.y, image, sz.cx, sz.cy, 0, nullptr, DI_NORMAL);
+}
+
+HICON CIconHandler::FetchShellIcon(const std::wstring & path, UINT flags, const DWORD attr, std::wstring* psTypeName)
+{
+    flags |= WDS_SHGFI_DEFAULTS;
+
+    // Also retrieve the file type description
+    if (psTypeName != nullptr && !path.empty()) flags |= SHGFI_TYPENAME;
+
+    SHFILEINFO sfi{};
+    bool success = false;
+
+    // Resolve MTP virtual paths to PIDLs so the shell can return their native icons
+    if (FinderMtp::IsPath(path))
+    {
+        const SmartPointer pidl(CoTaskMemFree, CreateShellPidl(path));
+        flags = flags & ~SHGFI_USEFILEATTRIBUTES | SHGFI_PIDL;
+        success = pidl != nullptr && std::bit_cast<HIMAGELIST>(::SHGetFileInfo(
+            static_cast<LPCWSTR>(static_cast<LPVOID>(pidl)), 0, &sfi, sizeof(sfi), flags)) != nullptr;
+    }
+    else if (flags & SHGFI_PIDL)
+    {
+        // Assume folder id is numeric and encoded as a string
+        CComHeapPtr<ITEMIDLIST_ABSOLUTE> pidl;
+        if (SUCCEEDED(SHGetSpecialFolderLocation(nullptr, std::stoi(path), &pidl)))
+        {
+            success = std::bit_cast<HIMAGELIST>(::SHGetFileInfo(
+                static_cast<LPCWSTR>(static_cast<LPVOID>(pidl)), attr, &sfi,
+                sizeof(sfi), flags)) != nullptr;
+        }
+    }
+    else
+    {
+        success = std::bit_cast<HIMAGELIST>(::SHGetFileInfo(path.c_str(),
+            attr, &sfi, sizeof(sfi), flags)) != nullptr;
+    }
+
+    if (!success)
+    {
+        VTRACE(L"SHGetFileInfo() failed: {}", path);
+        return GetEmptyImage();
+    }
+
+    if (psTypeName != nullptr)
+    {
+        *psTypeName = path.empty() ?
+            Localization::Lookup(IDS_EXTENSION_MISSING) : sfi.szTypeName;
+    }
+
+    std::scoped_lock lock(m_cachedIconMutex);
+    if (const auto it = m_cachedIcons.find(sfi.iIcon); it != m_cachedIcons.end())
+    {
+        if (sfi.hIcon != nullptr) DestroyIcon(sfi.hIcon);
+        return it->second;
+    }
+
+    m_cachedIcons[sfi.iIcon] = sfi.hIcon;
+    return sfi.hIcon;
+}
+
+namespace Icons
+{
+    using namespace Gdiplus;
+
+    static void PaintDocument(Graphics& g)
+    {
+        const Pen outlinePen(Neutral(), 4);
+        SolidBrush lineBrush(Neutral());
+        const Point body[] = { {8, 6}, {44, 6}, {56, 18}, {56, 58}, {8, 58} };
+        g.DrawPolygon(&outlinePen, body, std::size(body));
+        const Point docFoldPts[] = { {44, 6}, {44, 18}, {56, 18} };
+        g.DrawLines(&outlinePen, docFoldPts, std::size(docFoldPts));
+    }
+
+    static void PaintBin(Graphics& g, const Color body, const Color bar, const bool recycle = false)
+    {
+        const SolidBrush bodyBrush(body);
+        const SolidBrush barBrush(bar);
+        g.FillRectangle(&bodyBrush, 24, 6,  16, 6);
+        g.FillRectangle(&bodyBrush,  6, 12, 52, 6);
+        g.FillRectangle(&bodyBrush, 12, 18,  4, 40);
+        g.FillRectangle(&bodyBrush, 48, 18,  4, 40);
+        g.FillRectangle(&bodyBrush, 12, 54, 40, 4);
+        if (recycle)
+        {
+            const GraphicsState state = g.Save();
+            g.TranslateTransform(32.0f, 36.0f);
+            g.ScaleTransform(0.5f, 0.5f);
+            g.TranslateTransform(-32.0f, -32.0f);
+            PaintCharacter(g, L'♻', RGB(bar.GetR(), bar.GetG(), bar.GetB()));
+            g.Restore(state);
+        }
+        else
+        {
+            for (const int i : std::views::iota(0, 3))
+                g.FillRectangle(&barBrush, 23 + i * 8, 26, 3, 24);
+        }
+    }
+
+    void PaintDelete(Graphics& g)    { PaintBin(g, C(204, 0, 0), C(204, 40, 40)); }
+    void PaintDeleteBin(Graphics& g) { PaintBin(g, Neutral(), Neutral(), true); }
+
+    void PaintExplorerSelect(Graphics& g)
+    {
+        PaintDocument(g);
+        const SolidBrush cursorBrush(C(0, 102, 204));
+        const Point cursor[] = {
+            {21, 14}, {21, 44}, {29, 36},
+            {37, 48}, {43, 44}, {35, 32}, {45, 32}
+        };
+        g.FillPolygon(&cursorBrush, cursor, static_cast<INT>(std::size(cursor)));
+    }
+
+    void PaintOpenInConsole(Graphics& g)
+    {
+        const SolidBrush grayBrush(Neutral());
+        const Pen framePen(Neutral(), 4);
+        Pen chevronPen(Neutral(), 4);
+        chevronPen.SetStartCap(LineCapRound);
+        chevronPen.SetEndCap(LineCapRound);
+        chevronPen.SetLineJoin(LineJoinRound);
+        g.DrawRectangle(&framePen, 6, 8, 52, 48);
+        g.FillRectangle(&grayBrush, 6, 17, 52, 2);
+        const Point chevronPts[] = { {14, 26}, {22, 34}, {14, 42} };
+        g.DrawLines(&chevronPen, chevronPts, static_cast<INT>(std::size(chevronPts)));
+        g.DrawLine(&chevronPen, 26, 42, 38, 42);
+    }
+
+    void PaintOpenSelected(Graphics& g)
+    {
+        PaintDocument(g);
+        const SolidBrush greenBrush(C(40, 140, 50));
+        const Point triangle[] = { {20, 18}, {44, 32}, {20, 46} };
+        g.FillPolygon(&greenBrush, triangle, static_cast<INT>(std::size(triangle)));
+    }
+
+    void PaintRefreshSelected(Graphics& g)
+    {
+        PaintDocument(g);
+        const GraphicsState state = g.Save();
+        g.TranslateTransform(31.0f, 35.0f);
+        g.ScaleTransform(0.65f, 0.65f);
+        g.TranslateTransform(-32.0f, -32.0f);
+        PaintCharacter(g, L'↻', RGB(0, 156, 221));
+        g.Restore(state);
+    }
+
+    void PaintProperties(Graphics& g)
+    {
+        PaintDocument(g);
+        const SolidBrush blueBrush(C(0, 102, 204));
+        g.FillEllipse(&blueBrush, 26, 15, 8, 8);
+        g.FillRectangle(&blueBrush, 27, 27, 6, 23);
+    }
+
+    void PaintEditCopyClipboard(Graphics& g)
+    {
+        const SolidBrush goldBrush(C(200, 140, 30)), goldLightBrush(C(230, 180, 80)),
+            clipBrush(C(120, 90, 20)), grayBrush(C(180, 180, 180));
+        const Pen outlinePen(Neutral(), 3);
+        g.FillRectangle(&goldBrush, 4, 10, 36, 50);
+        g.FillRectangle(&clipBrush, 12, 2, 20, 10);
+        g.FillRectangle(&goldLightBrush, 16, 5, 12, 4);
+        const SolidBrush whiteBrush(C(255, 255, 255));
+        g.FillRectangle(&whiteBrush, 28, 24, 32, 36);
+        g.DrawRectangle(&outlinePen, 28, 24, 32, 36);
+        for (const int i : std::views::iota(0, 3))
+            g.FillRectangle(&grayBrush, 33, 32 + i * 7, 22, 3);
+    }
+
+    void PaintFileSelect(Graphics& g)
+    {
+        const Pen outlinePen(C(238, 203, 74), 4);
+        const Point folderShapePts[] = { {2, 4}, {28, 4}, {32, 12}, {62, 12}, {62, 58}, {2, 58} };
+        const SolidBrush fillBrush(C(255, 231, 146));
+        const SolidBrush ringRed(C(200, 30, 30)), ringWhite(C(240, 240, 240)), ringRed2(C(200, 30, 30));
+        g.FillPolygon(&fillBrush, folderShapePts, static_cast<INT>(std::size(folderShapePts)));
+        g.DrawPolygon(&outlinePen, folderShapePts, static_cast<INT>(std::size(folderShapePts)));
+        g.FillEllipse(&ringRed,   14, 17, 36, 36);
+        g.FillEllipse(&ringWhite, 21, 24, 22, 22);
+        g.FillEllipse(&ringRed2,  27, 30, 10, 10);
+    }
+
+    void PaintFolderAppend(Graphics& g)
+    {
+        PaintFileSelect(g);
+        const SolidBrush badgeBrush(C(40, 140, 50)), plusBrush(C(255, 255, 255));
+        g.FillEllipse(&badgeBrush, 36, 36, 28, 28);
+        g.FillRectangle(&plusBrush, 41, 47, 18, 6);
+        g.FillRectangle(&plusBrush, 47, 41, 6, 18);
+    }
+
+    void PaintFilter(Graphics& g, const bool active)
+    {
+        const Point funnelShape[] = { {8, 6}, {56, 6}, {56, 14}, {38, 34}, {38, 56}, {26, 52}, {26, 34}, {8, 14} };
+        const SolidBrush fillBrush(active ? C(255, 140, 0) : Neutral());
+        g.FillPolygon(&fillBrush, funnelShape, static_cast<INT>(std::size(funnelShape)));
+        Pen outlinePen(Neutral(), 4);
+        outlinePen.SetLineJoin(LineJoinMiter);
+        g.DrawPolygon(&outlinePen, funnelShape, static_cast<INT>(std::size(funnelShape)));
+    }
+
+    void PaintHelp(Graphics& g)
+    {
+        const Color blue = C(100, 149, 237);
+        const Pen pen(blue, 10);
+        const SolidBrush brush(blue);
+        GraphicsPath path;
+        path.AddBezier(20, 22, 20, 5, 44, 5, 44, 22);
+        path.AddBezier(44, 22, 44, 32, 30, 28, 32, 42);
+        g.DrawPath(&pen, &path);
+        g.FillEllipse(&brush, 26, 48, 12, 12);
+    }
+
+    void PaintPause(Graphics& g)
+    {
+        const SolidBrush amberBrush(C(200, 160, 0));
+        g.FillRectangle(&amberBrush, 5, 5, 19, 54);
+        g.FillRectangle(&amberBrush, 39, 5, 19, 54);
+    }
+
+    void PaintMagnifier(Graphics& g, const bool plus)
+    {
+        const SolidBrush blueBrush(C(0, 102, 204));
+        const Pen rimPen(Neutral(), 6);
+        Pen handlePen(Neutral(), 10);
+        handlePen.SetEndCap(LineCapRound);
+        g.DrawEllipse(&rimPen, 6, 6, 40, 40);
+        g.DrawLine(&handlePen, 39, 39, 58, 58);
+        g.FillRectangle(&blueBrush, 14, 23, 24, 6);
+        if (plus) g.FillRectangle(&blueBrush, 23, 14, 6, 24);
+    }
+
+    void PaintGear(Graphics& g)
+    {
+        const SolidBrush gearBrush(Neutral());
+        const Point primaryTooth[] = { {-3, -27}, {3, -27}, {6, -17}, {-6, -17} };
+
+        const GraphicsState state = g.Save();
+        g.TranslateTransform(32, 32);
+
+        for ([[maybe_unused]] const int i : std::views::iota(0, 8))
+        {
+            g.FillPolygon(&gearBrush, primaryTooth, static_cast<INT>(std::size(primaryTooth)));
+            g.RotateTransform(45);
+        }
+        g.Restore(state);
+
+        const Pen ringPen(Neutral(), 8);
+        g.DrawEllipse(&ringPen, 15, 15, 34, 34);
+
+        const Pen bearingPen(Neutral(), 1);
+        g.DrawEllipse(&bearingPen, 23, 23, 18, 18);
+    }
+
+    void PaintWindowLayout(Graphics& g)
+    {
+        const Pen framePen(Neutral(), 4);
+        g.DrawRectangle(&framePen, 4, 4, 56, 56);
+        g.DrawLine(&framePen, 4, 34, 60, 34);
+        g.DrawLine(&framePen, 36, 4, 36, 34);
+
+        const SolidBrush afBrush(C(70, 120, 200)), ftBrush(C(60, 160, 90)), tmBrush(C(200, 140, 40));
+        g.FillRectangle(&afBrush,  8,  8, 24, 22);
+        g.FillRectangle(&ftBrush, 40,  8, 16, 22);
+        g.FillRectangle(&tmBrush,  8, 38, 48, 18);
+    }
+
+    void PaintCharacter(Graphics& g, const WCHAR ch, const COLORREF clr, const bool bold)
+    {
+        const WCHAR text[]{ ch, L'\0' };
+        const FontFamily fontFamily(wds::strFontSegoeUISymbol);
+        StringFormat format;
+        format.SetAlignment(StringAlignmentCenter);
+        format.SetLineAlignment(StringAlignmentCenter);
+        format.SetFormatFlags(StringFormatFlagsNoClip);
+
+        GraphicsPath path;
+        path.AddString(text, 1, &fontFamily,
+            bold ? FontStyleBold : FontStyleRegular, 56,
+            Rect(0, 0, 64, 64), &format);
+
+        Rect bounds;
+        path.GetBounds(&bounds);
+        if (bounds.Width <= 0 || bounds.Height <= 0) return;
+
+        const REAL scale = std::min(56.0f / bounds.Width, 56.0f / bounds.Height);
+        Matrix m;
+        m.Scale(scale, scale);
+        path.Transform(&m);
+        path.GetBounds(&bounds);
+        m.Reset();
+        m.Translate((64.0f - bounds.Width) / 2.0f - bounds.X,
+                    (64.0f - bounds.Height) / 2.0f - bounds.Y);
+        path.Transform(&m);
+
+        const SolidBrush brush(Color(255, GetRValue(clr), GetGValue(clr), GetBValue(clr)));
+        g.FillPath(&brush, &path);
+    }
+
+    std::function<void(Graphics&)> Char(const WCHAR ch, const COLORREF clr)
+    {
+        return [=](Graphics& g) { PaintCharacter(g, ch, clr); };
+    }
+
+    HICON IconFromFontChar(const WCHAR ch, const COLORREF clr, const bool bold, const int iconSize)
+    {
+        const int size = iconSize > 0 ? iconSize : GetSystemMetrics(SM_CXICON);
+        return MakeIcon(size, [=](Graphics& g) { PaintCharacter(g, ch, clr, bold); });
+    }
+}
+
+HBITMAP Icons::MakeBitmap(const int size, const std::function<void(Graphics&)>& painter)
+{
+    // Render directly at the target size in the canonical 64-unit space.
+    // GDI+'s native antialiasing at the destination resolution produces
+    // crisper edges than super-sampling and bicubic downsampling, which
+    // compounds two AA passes and introduces ringing on thin strokes.
+    Bitmap renderBitmap(size, size, PixelFormat32bppPARGB);
+    Graphics g(&renderBitmap);
+    g.SetSmoothingMode(SmoothingModeAntiAlias);
+    g.SetPixelOffsetMode(PixelOffsetModeHalf);
+    g.SetCompositingQuality(CompositingQualityHighQuality);
+    const REAL scale = static_cast<REAL>(size) / 64.0f;
+    g.ScaleTransform(scale, scale);
+    painter(g);
+
+    HBITMAP hbm = nullptr;
+    renderBitmap.GetHBITMAP(Color(0, 0, 0, 0), &hbm);
+    return hbm;
+}
+
+HICON Icons::MakeIcon(const int size, const std::function<void(Graphics&)>& painter)
+{
+    const SmartPointer color(DeleteObject, MakeBitmap(size, painter));
+    if (color == nullptr) return nullptr;
+
+    const CBitmap mask(size, size, 1, 1, nullptr);
+
+    ICONINFO ii{
+        .fIcon = true,
+        .hbmMask = static_cast<HBITMAP>(mask.m_hObject),
+        .hbmColor = color
+    };
+    return CreateIconIndirect(&ii);
+}
