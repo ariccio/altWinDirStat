@@ -55,7 +55,7 @@
 #ifndef ALT_VER_MAJOR
 #define ALT_VER_MAJOR               2
 #define ALT_VER_MINOR               1
-#define ALT_VER_PATCH               0
+#define ALT_VER_PATCH               1
 #endif
 #undef PRD_MAJVER
 #undef PRD_MINVER
