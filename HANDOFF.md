@@ -27,6 +27,11 @@ Keep this diff small, because every upstream sync has to merge through it.
 | `windirstat/windirstat.vcxproj` | `TargetName` = `altWinDirStat_<arch>` | Output exe name; the portable INI follows it (`altWinDirStat.ini`) |
 | Removed: `.github/workflows/publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/` | | These publish under the official identity. **If a sync re-adds them, delete them again.** CI's `fork-guard` job fails when any of them is present, and it also blocks releases |
 | Added: `.github/workflows/build.yml`, `.github/workflows/sync-upstream.yml`, `installer/altWinDirStat.iss`, `README.md`, `HANDOFF.md`, `CLAUDE.md`, `docs/releases/` | | Our CI, sync, installer, docs and release notes |
+| `windirstat/windirstat.rc` | `#include "ForkResource.h"` plus two File-menu items (`ID_FOLDER_LEDGER_EXPORT`, `ID_FOLDER_LEDGER_COMPARE`) | Folder ledger menu entries |
+| `windirstat/WinDirStatModel.h` | `#include "ForkResource.h"`, three method declarations and three routes | Folder ledger commands; the bodies live in `ForkCommands.cpp` |
+| `windirstat/CsvLoader.cpp` | One-line hook at the top of `SaveResults`: `*.ledger.csv` targets write a folder ledger | Save Results and `/saveto` can produce ledgers |
+| `windirstat/windirstat.vcxproj` | One separate `ItemGroup` listing the fork sources below | Keeps upstream's item lists untouched |
+| Added: `ForkResource.h`, `Fork.rc`, `Ledger.cpp/.h`, `ForkCommands.cpp`, `Dialogs/LedgerCompareDlg.cpp/.h`, `res/fork/lang_en.txt` | | Folder ledger export and side-by-side comparison. IDs use ranges upstream doesn't (900, 1900-1906, 33900-33901). Strings live in the fork's own `lang_en.txt`, which `Compress Strings.ps1` picks up recursively. That keeps the 25 upstream language files and their key-parity test untouched, and other languages fall back to English |
 | Added: `project.early.props` | | The vcxproj already imports it if present. When MSBuild gets `/p:AltVerMajor/AltVerMinor/AltVerPatch`, it defines `ALT_VER_*` for both `cl` and `rc` (`ExternalCompilerOptions` reaches only `cl`, so it can't stamp FileVersion) |
 
 `setup/msi` (upstream's WiX MSI) is left untouched and unused.

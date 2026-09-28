@@ -22,6 +22,33 @@ It installs **side by side** with official WinDirStat. It uses its own program n
   * user-defined cleanups
 * Dark mode, portable mode, localization, high-DPI support
 
+## altWinDirStat additions
+
+### Folder ledger and baseline comparison
+
+A small snapshot of a scan with one row per folder and no per-file rows. You can save one as a baseline and later compare the same folders to see what changed.
+
+* **File → Export Folder Ledger...** saves the finished scan as a `.ledger.csv` file.
+  * It lists every folder with its total size, file count and subfolder count.
+  * The file opens in Excel.
+* **File → Compare with Folder Ledger...** loads a baseline ledger and compares it with the scan that's open. If no scan is open, it asks for a second ledger instead. The side-by-side view shows:
+  * the baseline and current size and file count for each folder, and the change in each
+  * each folder color-coded as **Added**, **Removed**, **Grown**, **Shrunk** or **Files changed**
+  * a summary line with the counts and the net size and file change
+  * a text filter
+  * a **Show unchanged folders** option
+  * sorting by any column
+  * **Export Comparison...**, which saves the rows shown to CSV
+  * double-click, which opens a folder in Explorer
+* **Matching:** folders are matched by their path relative to the scan root, ignoring case.
+  * A baseline of `C:\Data` compared against a scan of all of `C:` is narrowed to `C:\Data` automatically.
+  * A copy on another drive, e.g. `D:\Data` against `E:\Backup\Data`, is matched folder by folder.
+* **Automation:** any Save Results or `/saveto` target ending in `.ledger.csv` writes a ledger. A scheduled task can therefore record baselines:
+
+  ```
+  altWinDirStat.exe /saveto "D:\Baselines\data-2026-09-28.ledger.csv" "D:\Data"
+  ```
+
 ## Download
 
 Get the latest build from [Releases](https://github.com/Demonad112/altWinDirStat/releases):

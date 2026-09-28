@@ -54,8 +54,8 @@
 // PRD_* above. CI overrides ALT_VER_* from the release tag (see project.early.props).
 #ifndef ALT_VER_MAJOR
 #define ALT_VER_MAJOR               2
-#define ALT_VER_MINOR               0
-#define ALT_VER_PATCH               1
+#define ALT_VER_MINOR               1
+#define ALT_VER_PATCH               0
 #endif
 #undef PRD_MAJVER
 #undef PRD_MINVER

@@ -19,6 +19,7 @@
 
 #include "pch.h"
 #include "TreeListControl.h"
+#include "ForkResource.h"
 
 class CItem;
 class CItemDupe;
@@ -255,6 +256,10 @@ protected:
     void OnUpdateCreateHardlink(CCmdUI* pCmdUI);
     void OnCreateHardlink();
     void OnFilterExcludeItem();
+    // altWinDirStat: folder ledger export and comparison (ForkCommands.cpp)
+    void OnUpdateFolderLedgerExport(CCmdUI* pCmdUI);
+    void OnFolderLedgerExport();
+    void OnFolderLedgerCompare();
 };
 
 inline std::span<const RouteEntry> CWinDirStatModel::Routes()
@@ -272,6 +277,9 @@ inline std::span<const RouteEntry> CWinDirStatModel::Routes()
         Route::Update<&OnUpdateCentralHandler>(ID_SAVE_DUPLICATES),
         Route::Command<&OnSavePermissions>(ID_SAVE_PERMISSIONS),
         Route::Update<&OnUpdateCentralHandler>(ID_SAVE_PERMISSIONS),
+        Route::Command<&OnFolderLedgerExport>(ID_FOLDER_LEDGER_EXPORT),
+        Route::Update<&OnUpdateFolderLedgerExport>(ID_FOLDER_LEDGER_EXPORT),
+        Route::Command<&OnFolderLedgerCompare>(ID_FOLDER_LEDGER_COMPARE),
         Route::Command<&OnEditCopy>(ID_EDIT_COPY_CLIPBOARD),
         Route::Update<&OnUpdateCentralHandler>(ID_EDIT_COPY_CLIPBOARD),
         Route::Command<&OnCleanupEmptyRecycleBin>(ID_CLEANUP_EMPTY_BIN),

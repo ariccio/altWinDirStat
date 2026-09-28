@@ -385,6 +385,17 @@ POWERSHELL.EXE -NoLogo -ExecutionPolicy Unrestricted -NoProfile -File "$(Project
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(XXHashHeaderPath)'))" />
     <Exec Condition="!Exists('$(XXHashHeaderPath)') Or !Exists('$(XXHashSourcePath)')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$tag = 'v0.8.3'; try { $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/Cyan4973/xxHash/releases/latest' -UseBasicParsing -TimeoutSec 5; if ($release.tag_name) { $tag = $release.tag_name } } catch {}; if (!(Test-Path '$(XXHashHeaderPath)')) { Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/Cyan4973/xxHash/' + $tag + '/xxhash.h') -OutFile '$(XXHashHeaderPath)' -UseBasicParsing }; if (!(Test-Path '$(XXHashSourcePath)')) { Invoke-WebRequest -Uri ('https://raw.githubusercontent.com/Cyan4973/xxHash/' + $tag + '/xxhash.c') -OutFile '$(XXHashSourcePath)' -UseBasicParsing }&quot;" />
   </Target>
+  <!-- altWinDirStat: fork-only sources, kept in one group so upstream project changes merge cleanly. -->
+  <ItemGroup>
+    <ClInclude Include="ForkResource.h" />
+    <ClInclude Include="Ledger.h" />
+    <ClInclude Include="Dialogs\LedgerCompareDlg.h" />
+    <ClCompile Include="ForkCommands.cpp" />
+    <ClCompile Include="Ledger.cpp" />
+    <ClCompile Include="Dialogs\LedgerCompareDlg.cpp" />
+    <ResourceCompile Include="Fork.rc" />
+    <Text Include="res\fork\lang_en.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)project.targets" Condition="exists('$(SolutionDir)project.targets')" Label="ProjectSpecific (solution/targets)" />

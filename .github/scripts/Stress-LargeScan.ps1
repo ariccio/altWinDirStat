@@ -151,6 +151,26 @@ else {
     else { Note ("Export lists all {0:N0} files and the root totals match exactly ({1:N0} bytes)" -f $fileCount, $byteCount) }
 }
 
+# --- 2b. Folder ledger export (altWinDirStat): "/saveto x.ledger.csv" writes folders only --------------
+$ledger = Join-Path $WorkRoot 'tree.ledger.csv'
+$sw.Restart()
+$p = Start-Process -FilePath $ExePath -ArgumentList "/saveto `"$ledger`" `"$tree`"" -PassThru
+if (-not $p.WaitForExit($ScanTimeoutSec * 1000)) { Stop-Process -Id $p.Id -Force; $failures.Add("Ledger export did not finish in $ScanTimeoutSec s") }
+elseif ($p.ExitCode -ne 0) { $failures.Add("Ledger export exited with code $($p.ExitCode)") }
+else {
+    $secs = $sw.Elapsed.TotalSeconds
+    $lines = [IO.File]::ReadAllLines($ledger)
+    # root + grid + flat + deep + top-level folders + their subfolders + the deep chain
+    $expectedFolders = 4 + $GridTop + $GridTop * $GridSub + $DeepLevels
+    $rootRow = $lines | Where-Object { $_ -match '^"[^"]*","\.",' } | Select-Object -First 1
+    $rootCols = if ($rootRow) { $rootRow.Substring($rootRow.IndexOf('".",') + 4).Split(',') } else { @() }
+    if ($lines[0].TrimStart([char]0xFEFF) -ne 'Path,Relative Path,Size (bytes),Files,Subfolders') { $failures.Add("Ledger header wrong: '$($lines[0])'") }
+    elseif ($lines.Count - 1 -ne $expectedFolders) { $failures.Add("Ledger has $($lines.Count - 1) folder rows; expected $expectedFolders") }
+    elseif ($rootCols.Count -lt 3 -or [long]$rootCols[0] -ne $byteCount -or [long]$rootCols[1] -ne $fileCount -or [long]$rootCols[2] -ne $expectedFolders - 1) {
+        $failures.Add("Ledger root row wrong: '$rootRow'; expected $byteCount bytes, $fileCount files, $($expectedFolders - 1) subfolders") }
+    else { Note ("Folder ledger: {0:N0} folder rows in {1:N1}s ({2:N0} KB); root totals match" -f $expectedFolders, $secs, ((Get-Item $ledger).Length / 1KB)) }
+}
+
 # --- 3. GUI scans with hang probes -----------------------------------------------------------------
 function Measure-GuiScan([string] $target, [string] $label) {
     $proc = Start-Process -FilePath $ExePath -ArgumentList "`"$target`"" -PassThru
