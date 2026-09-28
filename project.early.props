@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- altWinDirStat: imported by windirstat.vcxproj (project.early.props hook).
+     CI passes /p:AltVerMajor=2 /p:AltVerMinor=0 /p:AltVerPatch=0 for release builds so the
+     release tag's version reaches both cl and rc (FileVersion). Without them, Version.h's default applies. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup Condition="'$(AltVerMajor)' != ''">
+    <ClCompile>
+      <PreprocessorDefinitions>ALT_VER_MAJOR=$(AltVerMajor);ALT_VER_MINOR=$(AltVerMinor);ALT_VER_PATCH=$(AltVerPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ALT_VER_MAJOR=$(AltVerMajor);ALT_VER_MINOR=$(AltVerMinor);ALT_VER_PATCH=$(AltVerPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+</Project>

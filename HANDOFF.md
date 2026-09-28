@@ -19,12 +19,14 @@ Keep this diff small, because every upstream sync has to merge through it.
 |---|---|---|
 | `windirstat/Constants.h` | `strWinDirStat` = `altWinDirStat`; `strUninstall` → `...\Uninstall\altWinDirStat` | Drives titles, the Explorer context-menu key, the exe-name match and the uninstall key |
 | `windirstat/Version.h` | Product name, description, exe name, repository, company/copyright | Version resource shows altWinDirStat; the copyright still credits the WinDirStat Team |
+| `windirstat/Version.h` (block at the end) | `ALT_VER_*` (default 2.0.0) replace upstream's `PRD_MAJVER/MINVER/PATCH` via `#undef` | The fork has its own version number. Kept at the end of the file so upstream version bumps merge without conflicts. **Bump the defaults after each release** |
 | `windirstat/Property.cpp` | Registry root `Software\altWinDirStat\altWinDirStat\` | Settings don't collide with official WinDirStat |
 | `windirstat/WinDirStat.cpp` | "Reset preferences" deletes `Software\altWinDirStat` | Matches the key above |
 | `windirstat/Localization.cpp/.h` | `ApplyForkBranding()` rewrites "WinDirStat" → "altWinDirStat" in loaded strings. It keeps "WinDirStat Team" and adds a fork notice to the About text | Rebrands the UI without editing 25 `lang_*.txt` files |
 | `windirstat/windirstat.vcxproj` | `TargetName` = `altWinDirStat_<arch>` | Output exe name; the portable INI follows it (`altWinDirStat.ini`) |
 | Removed: `.github/workflows/publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/` | | These publish under the official identity. **If a sync re-adds them, delete them again** |
-| Added: `.github/workflows/build.yml`, `.github/workflows/sync-upstream.yml`, `installer/altWinDirStat.iss`, `README.md`, `HANDOFF.md` | | Our CI, sync and installer; fork README |
+| Added: `.github/workflows/build.yml`, `.github/workflows/sync-upstream.yml`, `installer/altWinDirStat.iss`, `README.md`, `HANDOFF.md`, `CLAUDE.md`, `docs/releases/` | | Our CI, sync, installer, docs and release notes |
+| Added: `project.early.props` | | The vcxproj already imports it if present. When MSBuild gets `/p:AltVerMajor/AltVerMinor/AltVerPatch`, it defines `ALT_VER_*` for both `cl` and `rc` (`ExternalCompilerOptions` reaches only `cl`, so it can't stamp FileVersion) |
 
 `setup/msi` (upstream's WiX MSI) is left untouched and unused.
 
@@ -49,7 +51,15 @@ Keep this diff small, because every upstream sync has to merge through it.
   * **Azure Trusted Signing:** `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `SIGNING_ENDPOINT` (e.g. `https://eus.codesigning.azure.net/`), `SIGNING_ACCOUNT`, `SIGNING_PROFILE`.
   * **Or a .pfx:** `SIGNING_PFX_BASE64` + `SIGNING_PFX_PASSWORD`.
   * **Without either:** builds are unsigned and a notice appears on the run. **Smart App Control blocks unsigned builds**, which is why the official signed WinDirStat ran on the owner's laptop but our builds didn't.
-* **Release:** `git tag vX.Y.Z && git push origin vX.Y.Z` publishes the installers and portable zips.
+* **Versioning:**
+  * Plain builds report the `ALT_VER_*` default from `Version.h` and are named `<ver>-dev.<run>`.
+  * Release builds stamp the tag's version into the exe.
+  * The "Collect binary" step fails if the exe's FileVersion doesn't match.
+  * A tag with a `-suffix` (e.g. `v2.1.0-rc.1`) is a prerelease: "Beta" stays in the title, and it isn't marked as the latest release.
+* **Release**, either way:
+  * **Actions → Build → Run workflow** with `release_tag` = `vX.Y.Z`. The release job creates the tag on the commit that was built, and refuses if the tag already exists.
+  * Or `git tag vX.Y.Z && git push origin vX.Y.Z`.
+  * The release gets the installers, the portable zips and `SHA256SUMS.txt`. Its body is `docs/releases/<tag>.md` if that file exists; otherwise GitHub generates the notes.
 
 ## Syncing with upstream (`.github/workflows/sync-upstream.yml`)
 

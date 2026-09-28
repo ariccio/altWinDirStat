@@ -6,6 +6,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Publish a release with this tag (e.g. v2.0.0; a -suffix makes it a prerelease). Leave empty for a plain build.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -38,18 +43,38 @@ jobs:
       - name: Compute version
         id: ver
         shell: pwsh
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          if ("${{ github.ref }}" -like "refs/tags/v*") { $v = "${{ github.ref_name }}".TrimStart('v') }
-          else { $v = "0.2.${{ github.run_number }}" }
-          "version=$v" >> $env:GITHUB_OUTPUT
+          # Release builds take their version from the pushed tag or the release_tag dispatch input.
+          $tag = if ("${{ github.ref }}" -like "refs/tags/v*") { "${{ github.ref_name }}" } else { "$env:RELEASE_TAG" }
+          if ($tag) {
+            if ($tag -notmatch '^v(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.]+)?$') { throw "Release tag '$tag' must look like v2.0.0 or v2.0.0-rc.1" }
+            $maj, $min, $pat = $Matches[1], $Matches[2], $Matches[3]
+            $pre = [bool]$Matches[4]
+            $v = $tag.Substring(1)
+            $release = 'true'
+          } else {
+            # Plain builds keep the default fork version from windirstat/Version.h (ALT_VER_*).
+            $h = Get-Content windirstat\Version.h -Raw
+            $maj, $min, $pat = 'MAJOR', 'MINOR', 'PATCH' | ForEach-Object { if ($h -match "#define ALT_VER_$_\s+(\d+)") { $Matches[1] } else { throw "ALT_VER_$_ not found in Version.h" } }
+            $pre = $true
+            $v = "$maj.$min.$pat-dev.${{ github.run_number }}"
+            $release = 'false'
+          }
+          "version=$v", "major=$maj", "minor=$min", "patch=$pat", "prerelease=$($pre.ToString().ToLower())", "release=$release" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Version $v (release=$release, prerelease=$pre)"
 
       # Upstream targets the VS2026 toolset (v145); the VS2022 toolset (v143) on this runner builds it too.
       - name: Build (Release|${{ matrix.platform }})
         shell: pwsh
         run: |
-          # Tagged releases are production builds (no "Beta" in the title), like upstream's build.cmd does.
-          $production = if ("${{ github.ref }}" -like "refs/tags/v*") { 1 } else { 0 }
-          msbuild windirstat.sln /m /nologo /v:minimal /p:Configuration=Release /p:Platform=${{ matrix.platform }} /p:PlatformToolset=v143 "/p:ExternalCompilerOptions=/DPRODUCTION=$production"
+          # Final releases are production builds (no "Beta" in the title), like upstream's build.cmd does.
+          $production = if ('${{ steps.ver.outputs.release }}' -eq 'true' -and '${{ steps.ver.outputs.prerelease }}' -eq 'false') { 1 } else { 0 }
+          $msbArgs = @('/p:Configuration=Release', '/p:Platform=${{ matrix.platform }}', '/p:PlatformToolset=v143', "/p:ExternalCompilerOptions=/DPRODUCTION=$production")
+          # Release builds stamp the tag's version into cl and rc via project.early.props.
+          if ('${{ steps.ver.outputs.release }}' -eq 'true') { $msbArgs += '/p:AltVerMajor=${{ steps.ver.outputs.major }}', '/p:AltVerMinor=${{ steps.ver.outputs.minor }}', '/p:AltVerPatch=${{ steps.ver.outputs.patch }}' }
+          msbuild windirstat.sln /m /nologo /v:minimal @msbArgs
           if ($LASTEXITCODE -ne 0) { throw "msbuild failed" }
 
       - name: Collect binary
@@ -64,6 +89,9 @@ jobs:
           $info = (Get-Item "$env:DIST\altWinDirStat.exe").VersionInfo
           Write-Host "Built $($info.ProductName) $($info.ProductVersion) ($([math]::Round((Get-Item "$env:DIST\altWinDirStat.exe").Length/1MB,2)) MB)"
           if ($info.ProductName -ne 'altWinDirStat') { throw "Unexpected product name '$($info.ProductName)'" }
+          $want = '${{ steps.ver.outputs.major }}.${{ steps.ver.outputs.minor }}.${{ steps.ver.outputs.patch }}'
+          $got = "$($info.FileMajorPart).$($info.FileMinorPart).$($info.FileBuildPart)"
+          if ($got -ne $want) { throw "Exe FileVersion $($info.FileVersion) does not match expected $want" }
 
       # Signing: runs only when a certificate is configured as repository secrets; otherwise builds stay unsigned.
       # Azure Trusted Signing: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, SIGNING_ENDPOINT, SIGNING_ACCOUNT, SIGNING_PROFILE.
@@ -219,17 +247,42 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Resolve tag
+        id: tag
+        env:
+          TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.release_tag }}
+        run: |
+          # A dispatch creates the tag; refuse to attach assets to a release that already exists.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Tag $TAG already exists"; exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          case "$TAG" in *-*) echo "prerelease=true" >> "$GITHUB_OUTPUT";; *) echo "prerelease=false" >> "$GITHUB_OUTPUT";; esac
+          if [ -f "docs/releases/$TAG.md" ]; then echo "body=docs/releases/$TAG.md" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/download-artifact@v4
         with:
           path: out
+          pattern: altWinDirStat-*
           merge-multiple: true
+      - name: Checksums
+        working-directory: out
+        run: |
+          sha256sum *.zip *Setup.exe > SHA256SUMS.txt
+          cat SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          # Only the installers and portable zips; CI screenshots are uploaded as artifacts, not release assets.
+          tag_name: ${{ steps.tag.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ steps.tag.outputs.prerelease == 'true' }}
+          make_latest: ${{ steps.tag.outputs.prerelease == 'true' && 'false' || 'true' }}
+          body_path: ${{ steps.tag.outputs.body }}
+          generate_release_notes: ${{ steps.tag.outputs.body == '' }}
+          # Only the installers, portable zips and checksums; CI screenshots stay run artifacts.
           files: |
             out/*.zip
             out/*Setup.exe
-          generate_release_notes: true
+            out/SHA256SUMS.txt

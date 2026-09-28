@@ -31,6 +31,7 @@ Get the latest build from [Releases](https://github.com/Demonad112/altWinDirStat
 | `altWinDirStat-<ver>-x64-Setup.exe` | Installer for most PCs and servers. No admin needed for a per-user install. It can add **"Analyze with altWinDirStat"** to the Explorer right-click menu. |
 | `altWinDirStat-<ver>-x64-portable.zip` | A single `altWinDirStat.exe`. Unzip it anywhere (a USB stick works) and run it. |
 | `…-ARM64-…` / `…-Win32-…` | The same builds for ARM64 and 32-bit Windows. |
+| `SHA256SUMS.txt` | SHA-256 checksums of every file in the release. |
 
 **Code signing:** release builds are signed only when the repository has a signing certificate configured.
 
@@ -59,7 +60,7 @@ CI (`.github/workflows/build.yml`) builds all three architectures, then:
 
 * runs the smoke tests and upstream's headless test suites
 * builds the installers
-* publishes a GitHub Release on `v*` tags
+* publishes a GitHub Release (with `SHA256SUMS.txt`) on `v*` tags, or when run by hand with a `release_tag` input
 
 ## Staying in sync with WinDirStat
 
