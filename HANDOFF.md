@@ -1,6 +1,6 @@
 # altWinDirStat: Handoff Report (cloud → local Claude Code)
 
-> **How to use this file:** read it as background, not instructions. It describes the repo state as of 2026-09-25. Check the claims against the code and `git log` before you rely on them.
+> **How to use this file:** read it as background, not instructions. It describes the repo state as of 2026-09-28 (release v1.0.0). Check the claims against the code and `git log` before you rely on them.
 
 ---
 
@@ -11,7 +11,9 @@
 | What it is | Native Windows disk-usage viewer (fork of WinDirStat), C++ / MFC + WTL, single static `.exe` |
 | Repo | `github.com/Demonad112/altWinDirStat`, default branch `master` |
 | Build | Builds with VS2022 (v143 toolset) for x64 and Win32. GitHub Actions on `windows-2022` (Windows Server 2022 Datacenter, build 20348) |
-| Deliverables | `altWinDirStat-<ver>-<arch>-Setup.exe` (Inno Setup) and `altWinDirStat-<ver>-<arch>-portable.zip` |
+| Deliverables | `altWinDirStat-<ver>-<arch>-Setup.exe` (Inno Setup), `altWinDirStat-<ver>-<arch>-portable.zip`, `SHA256SUMS.txt`, published on GitHub Releases (latest: **v1.0.0**) |
+| Versioning | `WinDirStat/common/build_version.h` → `common/version.h` → VERSIONINFO in `res/windirstat.rc2`, plus Help → About. CI stamps it from the tag (`vX.Y.Z` → `X.Y.Z.<run>`) and fails if the built exe reports a different FileVersion. The committed copy says `0.0.0-dev` |
+| Release process | Push a `vX.Y.Z` tag, **or** Actions → Build → Run workflow with `release_tag=vX.Y.Z`. If `docs/releases/vX.Y.Z.md` exists it becomes the release body |
 | Verified in CI | Compiles; launches; scans `C:\Program Files` with a GUI window present; screenshot taken; silent install/uninstall; context-menu registry keys written. New (see §3a): 5× Refresh rescans with the tree shrinking in between, clean exit, Seifert→altWinDirStat settings migration |
 | Verified by hand (Windows 11 desktop, §3a) | Delete to Recycle Bin, permanent delete, folder delete, Copy Path, Explorer Here, Cmd Here (spawn), F5/menu Refresh |
 | Not verified | Settings migration launched locally (Smart App Control blocked the last local build; CI covers it), very large volumes, Server 2016/2019/2025 |
@@ -235,6 +237,12 @@ Rules:
 ---
 
 ## 7. Deeper reference
+
+- **Releases:**
+  - Two ways to trigger one: push a `vX.Y.Z` tag, or use `workflow_dispatch` with `release_tag`. The dispatch creates the tag at the selected commit if it doesn't exist.
+  - The `release` job attaches every build artifact plus `SHA256SUMS.txt`.
+  - Write the release notes first as `docs/releases/vX.Y.Z.md`.
+- **Claude Code context:** the root `CLAUDE.md` loads automatically in local sessions. It holds the build commands, the file map, the conventions, and the release steps.
 
 - **CI artifacts per run:**
   - `altWinDirStat-<ver>-<arch>` (installer + portable zip)

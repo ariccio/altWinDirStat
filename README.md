@@ -2,7 +2,7 @@ altWinDirStat
 
 ## Download & install
 
-Every push to `master` and every pull request is built on Windows by GitHub Actions (**Actions → Build → latest run → Artifacts**). Tagged versions (`v*`) are published under **Releases**.
+**Latest release: [v1.0.0](https://github.com/Demonad112/altWinDirStat/releases/latest).** Every push to `master` and every pull request is also built on Windows by GitHub Actions (**Actions → Build → latest run → Artifacts**).
 
 | File | Use |
 |---|---|
@@ -31,7 +31,11 @@ Every push to `master` and every pull request is built on Windows by GitHub Acti
 3. `msbuild WinDirStat\windirstat\windirstat.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143`
 4. Optional: `ISCC installer\altWinDirStat.iss /DSourceDir=<folder containing altWinDirStat.exe, LICENSE.txt, gpl-2.0.txt, README.md>`
 
-To cut a release: `git tag v1.0.0 && git push origin v1.0.0`.
+To cut a release, either:
+* run `git tag vX.Y.Z && git push origin vX.Y.Z`, or
+* go to **Actions → Build → Run workflow** and set `release_tag` to `vX.Y.Z`.
+
+Put release notes in `docs/releases/vX.Y.Z.md`. Help → About and the exe's file properties show the stamped version.
 
 =============
 
