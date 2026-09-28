@@ -23,6 +23,7 @@ Keep this diff small, because every upstream sync has to merge through it.
 | `windirstat/Property.cpp` | Registry root `Software\altWinDirStat\altWinDirStat\` | Settings don't collide with official WinDirStat |
 | `windirstat/WinDirStat.cpp` | "Reset preferences" deletes `Software\altWinDirStat` | Matches the key above |
 | `windirstat/Localization.cpp/.h` | `ApplyForkBranding()` rewrites "WinDirStat" → "altWinDirStat" in loaded strings. It keeps "WinDirStat Team" and adds a fork notice to the About text | Rebrands the UI without editing 25 `lang_*.txt` files |
+| `windirstat/windirstat.rc` | `IDS_URL_REPORT_BUG` → `github.com/Demonad112/altWinDirStat/issues/new` | Fork bug reports shouldn't land in upstream's tracker. Help → manual still opens upstream's wiki (same features) |
 | `windirstat/windirstat.vcxproj` | `TargetName` = `altWinDirStat_<arch>` | Output exe name; the portable INI follows it (`altWinDirStat.ini`) |
 | Removed: `.github/workflows/publish-*-to-winget-pkgs.yml`, `.github/FUNDING.yml`, `setup/chocolatey/`, `setup/store/` | | These publish under the official identity. **If a sync re-adds them, delete them again.** CI's `fork-guard` job fails when any of them is present, and it also blocks releases |
 | Added: `.github/workflows/build.yml`, `.github/workflows/sync-upstream.yml`, `installer/altWinDirStat.iss`, `README.md`, `HANDOFF.md`, `CLAUDE.md`, `docs/releases/` | | Our CI, sync, installer, docs and release notes |
@@ -45,8 +46,13 @@ Keep this diff small, because every upstream sync has to merge through it.
 * **Build matrix:** x64, Win32 and ARM64 on `windows-2022`. ARM64 is build-only.
 * **Tests (x64 and Win32):**
   * Smoke/GUI scan of the repo and `C:\Program Files`. It fails if the window stops responding for more than 3 seconds, or if the title isn't "altWinDirStat".
-  * Upstream's `tests/Test-WinDirStat.ps1 -Only Filtering,Cli,EdgeCases`. It needs PowerShell 7.6+, which CI downloads if the runner is older.
+  * Upstream's `tests/Test-WinDirStat.ps1 -Only Filtering,Cli,EdgeCases,Permissions,Enumeration,Unc,Ui`. Settings is left out because it rebuilds the solution without `PlatformToolset=v143`, which the VS2022 runner needs. Mtp and Reparse are left out because they need a phone or scratch drives. It needs PowerShell 7.6+, which CI downloads if the runner is older.
   * Inno installer silent install + uninstall.
+* **Large-scan stress test** (`stress` job, `.github/scripts/Stress-LargeScan.ps1`, x64):
+  * **Headless export:** generates a ~700k-file tree (a folder grid, a flat folder with 100k files, and a path deeper than MAX_PATH). A headless `/saveto` export must list every file, and the root's file count and byte total must match exactly.
+  * **GUI scans:** it then scans that tree (generic multithreaded finder) and all of `C:\` (MFT finder, since runners are elevated). Throughout each scan and for 15 s after it, it probes the window every 250 ms with `SendMessageTimeout(WM_NULL)`, and it resizes the window after each scan to force a treemap re-layout.
+  * **Fails on:** any probe of 5 s or more, which is Windows' "Not Responding" threshold. Scan times, worst and p99 UI latency, and peak memory are written to the job summary.
+  * **Releases depend on it.**
 * **Signing:** optional, via repository secrets.
   * **Azure Trusted Signing:** `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `SIGNING_ENDPOINT` (e.g. `https://eus.codesigning.azure.net/`), `SIGNING_ACCOUNT`, `SIGNING_PROFILE`.
   * **Or a .pfx:** `SIGNING_PFX_BASE64` + `SIGNING_PFX_PASSWORD`.

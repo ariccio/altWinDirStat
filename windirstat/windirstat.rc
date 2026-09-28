@@ -31,7 +31,7 @@ BEGIN
     IDS_AUTHOR_EMAIL        "team@windirstat.net"
     IDS_URL_WEBSITE         "https://windirstat.net"
     IDS_URL_HELP            "https://github.com/windirstat/windirstat/wiki"
-    IDS_URL_REPORT_BUG      "https://github.com/windirstat/windirstat/issues/new/choose"
+    IDS_URL_REPORT_BUG      "https://github.com/Demonad112/altWinDirStat/issues/new"
     IDS_FILTER_EXAMPLE_FILES "*.sys\n*.exe"
     IDS_FILTER_EXAMPLE_DIRS "C:\\Windows\\Sys*\nC:\\ProgramData"
     IDS_FILTER_EXAMPLE_FILES_REGEX ".*\\.sys\n.*\\.exe"
