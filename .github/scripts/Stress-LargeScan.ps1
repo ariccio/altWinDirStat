@@ -173,13 +173,15 @@ function Measure-GuiScan([string] $target, [string] $label) {
         if ($ms -ge $StallWarnMs) { $stalls++ }
         if ($ms -ge $HangThresholdMs) { $hangs++ }
 
-        # The title carries "NN% ..." or the localized "Scanning" text while a scan runs and drops the
-        # prefix when it finishes. GetWindowText on another process's window never blocks on it.
+        # While a scan runs the title reads "altWinDirStat <ver> [(Administrator)] - NN% <target>" (or the
+        # localized "Scanning" text before a percentage is known); the prefix is dropped when it finishes.
+        # GetWindowText on another process's window reads the cached caption and never blocks on it.
         $proc.Refresh()
         $title = $proc.MainWindowTitle
-        $scanning = $title -match '^\s*\d+%' -or $title -match '^\s*Scanning'
+        $scanning = $title -match ' - \d+% ' -or $title -match ' - Scanning'
         if ($scanning) { $sawProgress = $true; $doneAt = $null }
-        elseif ($null -eq $doneAt -and ($sawProgress -or $sw.Elapsed.TotalSeconds -gt 10)) {
+        elseif ($null -eq $doneAt -and ($sawProgress -or $sw.Elapsed.TotalSeconds -gt 30)) {
+            if (-not $sawProgress) { $failures.Add("[$label] never saw a scan-progress title (last: '$title')") }
             $doneAt = $sw.Elapsed.TotalSeconds
             Write-Host ("[{0}] scan finished after {1:N1}s; title '{2}'" -f $label, $doneAt, $title)
         }
