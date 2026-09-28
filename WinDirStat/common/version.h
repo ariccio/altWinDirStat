@@ -25,9 +25,16 @@
 // Build categories. Uncomment _one_ line.
 //
 
+// altWinDirStat: the version numbers come from build_version.h (stamped by CI from the release tag).
+// Release builds report x.y.z.build; debug builds keep the upstream "devel" marker.
+#include "build_version.h"
+#if defined(_DEBUG)
 #define BC_DEVEL			// Development version. The usual setting. File version is 0.0.0.buildno.
+#else
+#define BC_RELEASE
+#endif
 //#define BC_RELEASECANDIDATE		// Release candidate. Version number is relevant but not yet official. About-box shows x.y.zrcn. File version is x.y.z.buildno.
-//#define BC_RELEASE			// Set this only during official builds. About-box shows x.y.z. File version is x.y.z.buildno
+//BC_RELEASE			// Set this only during official builds. About-box shows x.y.z. File version is x.y.z.buildno
 
 // A release version must not contain debug information. Raise an error!
 #if defined(_DEBUG) && defined(BC_RELEASE)
@@ -35,19 +42,19 @@
 #endif
 
 // This will not change to often, but the years need to be modified regularly, so it can be in one central place
-#define VN_COPYRIGHTSTRING "Original Copyright (C) 2003-2005 Bernhard Seifert,\r\nModified by Alexander Riccio in 2014"
+#define VN_COPYRIGHTSTRING "Original Copyright (C) 2003-2005 Bernhard Seifert, modified by Alexander Riccio 2014-2015 and altWinDirStat contributors. GPL v2."
 
 //-------------------------------------------------------------------
 // Version number. Relevant for BC_RELEASECANDIDATE and BC_RELEASE.
 //
-#define VERNUM_MAJOR		1
-#define VERNUM_MINOR		1
-#define VERNUM_REVISION		3
+#define VERNUM_MAJOR		AWDS_VER_MAJOR
+#define VERNUM_MINOR		AWDS_VER_MINOR
+#define VERNUM_REVISION		AWDS_VER_PATCH
 // The following line is automatically incremented by linkcounter.exe.
 // Format: #define blank LINKCOUNT blanks decimal
 // Reset this to zero only when you increment VERNUM_MAJOR/MINOR/REVISION.
 
-#define LINKCOUNT  80
+#define LINKCOUNT  AWDS_VER_BUILD
 
 //-------------------------------------------------------------------
 // Release candidate number. Relevant for BC_RELEASECANDIDATE.
