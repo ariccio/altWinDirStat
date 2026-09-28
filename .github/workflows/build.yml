@@ -195,15 +195,18 @@ jobs:
         if: matrix.test
         shell: pwsh
         run: |
-          # Test-WinDirStat.ps1 requires PowerShell 7.6+; fetch the latest stable pwsh if the runner's is older.
+          # Test-WinDirStat.ps1 requires PowerShell 7.6+, and its UI suite reads the app's list views, which needs
+          # PowerShell and the app to have the same bitness. Fetch the latest stable pwsh when the runner's is older
+          # or when testing the 32-bit build.
           $pwsh = (Get-Command pwsh).Source
-          if ($PSVersionTable.PSVersion -lt [version]'7.6') {
-            $dir = "$env:RUNNER_TEMP\pwsh"
-            gh release download --repo PowerShell/PowerShell --pattern 'PowerShell-*-win-x64.zip' --dir $env:RUNNER_TEMP --clobber
-            Expand-Archive (Get-ChildItem $env:RUNNER_TEMP -Filter 'PowerShell-*-win-x64.zip' | Select-Object -First 1).FullName $dir -Force
+          $arch = if ('${{ matrix.platform }}' -eq 'Win32') { 'x86' } else { 'x64' }
+          if ($PSVersionTable.PSVersion -lt [version]'7.6' -or $arch -ne 'x64') {
+            $dir = "$env:RUNNER_TEMP\pwsh-$arch"
+            gh release download --repo PowerShell/PowerShell --pattern "PowerShell-*-win-$arch.zip" --dir $env:RUNNER_TEMP --clobber
+            Expand-Archive (Get-ChildItem $env:RUNNER_TEMP -Filter "PowerShell-*-win-$arch.zip" | Select-Object -First 1).FullName $dir -Force
             $pwsh = "$dir\pwsh.exe"
           }
-          & $pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+          & $pwsh -NoProfile -Command '"PowerShell $($PSVersionTable.PSVersion) ($([IntPtr]::Size * 8)-bit)"'
           & $pwsh -NoProfile -ExecutionPolicy Bypass -File tests\Test-WinDirStat.ps1 -ExePath "$env:DIST\altWinDirStat.exe" -Only Filtering,Cli,EdgeCases,Permissions,Enumeration,Unc,Ui
           if ($LASTEXITCODE -ne 0) { throw "Upstream test suites failed (exit $LASTEXITCODE)" }
         env:
