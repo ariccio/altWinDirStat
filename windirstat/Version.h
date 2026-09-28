@@ -49,3 +49,17 @@
 #define STRING_COPYRIGHT            "© WinDirStat Team, altWinDirStat contributors"
 #define STRING_EXENAME              altWinDirStat.exe
 #define SOURCE_REPOSITORY           https://github.com/Demonad112/altWinDirStat
+
+// altWinDirStat: the fork carries its own version number instead of upstream's
+// PRD_* above. CI overrides ALT_VER_* from the release tag (see project.early.props).
+#ifndef ALT_VER_MAJOR
+#define ALT_VER_MAJOR               2
+#define ALT_VER_MINOR               0
+#define ALT_VER_PATCH               0
+#endif
+#undef PRD_MAJVER
+#undef PRD_MINVER
+#undef PRD_PATCH
+#define PRD_MAJVER                  ALT_VER_MAJOR
+#define PRD_MINVER                  ALT_VER_MINOR
+#define PRD_PATCH                   ALT_VER_PATCH
