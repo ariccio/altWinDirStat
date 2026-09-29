@@ -94,8 +94,20 @@ Legacy 1.x and 2.x both use `HKCU\Software\altWinDirStat\altWinDirStat\<section>
 * **Everything else from legacy is never read.** That includes the `persistence` section and the treemap values, which 2.x keeps in other sections. These values are harmless leftovers, and **Reset preferences** removes them.
 * **No crash risk from mismatched values:** `Property.cpp` reads with strict types (`QueryDWORDValue`, and `REG_SZ` only for strings) and falls back to the default on a mismatch.
 
+## Maintenance
+
+* **Deleting a prerelease:** go to **Actions → Maintenance → Run workflow** with `delete_prerelease=<tag>`.
+  * It deletes a prerelease and its git tag.
+  * It refuses final releases.
+  * It exists because cloud Claude sessions can't delete tags through their git proxy.
+* **Old branches:** `Problem-commit`, `attempt-removal-of-ConcRT-deps` and `fix-blank-header-ctrl` are 2014–2016 legacy branches, and `claude/no-command-line` is a legacy-codebase feature branch. None is merged into master. They're kept for history; delete them only on purpose.
+
 ## Known gaps / next steps
 
 1. **Code signing.** Without a certificate, SAC-enabled PCs can't run our builds.
-2. The **Help → manual** and website links still point to windirstat.net (upstream docs). That's accurate for the features, but it's upstream's site.
-3. Possible fork-specific addition: a simpler "beginner" mode, if there's demand. Everything else comes from upstream.
+2. **Help → manual** still opens upstream's wiki. That's accurate for the features. Help → Report Bug already opens this repo's issues.
+3. **Folder ledger follow-ups:**
+   * translations of the `IDS_LEDGER_*` strings
+   * a CLI compare mode (e.g. `/compareledger base.ledger.csv`) for scheduled change reports
+   * a UI-automation test for the compare dialog
+4. Possible fork-specific addition: a simpler "beginner" mode, if there's demand. Everything else comes from upstream.
