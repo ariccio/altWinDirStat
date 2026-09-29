@@ -1,0 +1,32 @@
+name: Maintenance
+
+# Manual repo housekeeping that the Claude Code cloud session's git proxy can't do (it blocks tag deletion).
+on:
+  workflow_dispatch:
+    inputs:
+      delete_prerelease:
+        description: 'Tag of a PRERELEASE to delete together with its git tag (e.g. v2.0.0-rc.1). Final releases are refused.'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  delete-prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete prerelease and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ inputs.delete_prerelease }}
+        run: |
+          set -euo pipefail
+          if ! is_pre=$(gh release view "$TAG" --json isPrerelease --jq .isPrerelease 2>/dev/null); then
+            echo "::error::No release named $TAG"; exit 1
+          fi
+          if [ "$is_pre" != "true" ]; then
+            echo "::error::$TAG is a final release; this workflow only deletes prereleases"; exit 1
+          fi
+          gh release delete "$TAG" --cleanup-tag --yes
+          echo "Deleted prerelease $TAG and its tag."
