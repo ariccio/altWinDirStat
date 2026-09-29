@@ -1,4 +1,4 @@
-// altWinDirStat - side-by-side folder ledger comparison (fork-owned; not part of upstream WinDirStat)
+﻿// altWinDirStat - side-by-side folder ledger comparison (fork-owned; not part of upstream WinDirStat)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,34 +18,6 @@ namespace
 {
     enum Column : int { ColFolder, ColChange, ColBaseSize, ColCurSize, ColSizeDelta, ColBaseFiles, ColCurFiles, ColFilesDelta, ColCount };
 
-    std::wstring SignedBytes(const LONGLONG delta)
-    {
-        if (delta == 0) return L"0";
-        const auto magnitude = static_cast<ULONGLONG>(delta < 0 ? -delta : delta);
-        return (delta < 0 ? L"−" : L"+") + FormatBytes(magnitude);
-    }
-
-    std::wstring SignedCount(const LONGLONG delta)
-    {
-        if (delta == 0) return L"0";
-        const auto magnitude = static_cast<ULONGLONG>(delta < 0 ? -delta : delta);
-        return (delta < 0 ? L"−" : L"+") + FormatCount(magnitude);
-    }
-
-    COLORREF ChangeColor(const Ledger::Change change)
-    {
-        const bool dark = DarkMode::IsDarkModeActive();
-        switch (change)
-        {
-        case Ledger::Change::Added:        return dark ? RGB(110, 220, 120) : RGB(0, 128, 0);
-        case Ledger::Change::Removed:      return dark ? RGB(255, 120, 120) : RGB(192, 0, 0);
-        case Ledger::Change::Grown:        return dark ? RGB(255, 190, 90) : RGB(176, 96, 0);
-        case Ledger::Change::Shrunk:       return dark ? RGB(120, 180, 255) : RGB(0, 90, 190);
-        case Ledger::Change::FilesChanged: return dark ? RGB(200, 160, 255) : RGB(110, 50, 160);
-        default:                           return DarkMode::SystemColor(COLOR_WINDOWTEXT);
-        }
-    }
-
     // Numeric sort key; a missing side sorts below every real value.
     LONGLONG SortValue(const Ledger::DiffRow& row, const int column)
     {
@@ -61,18 +33,6 @@ namespace
         default:            return 0;
         }
     }
-}
-
-bool LedgerCompareDlg::ResultsList::OnNotify(const WPARAM wParam, const LPARAM lParam, LRESULT* result)
-{
-    // Keep native header text readable with the dark palette.
-    const auto header = reinterpret_cast<NMHDR*>(lParam);
-    if (!header || header->code != NM_CUSTOMDRAW || header->hwndFrom != GetHeader().Handle() ||
-        !DarkMode::IsDarkModeActive()) return CListCtrl::OnNotify(wParam, lParam, result);
-    const auto draw = reinterpret_cast<NMCUSTOMDRAW*>(header);
-    *result = draw->dwDrawStage == CDDS_PREPAINT ? CDRF_NOTIFYITEMDRAW : CDRF_DODEFAULT;
-    if (draw->dwDrawStage == CDDS_ITEMPREPAINT) ::SetTextColor(draw->hdc, DarkMode::SystemColor(COLOR_BTNTEXT));
-    return true;
 }
 
 LedgerCompareDlg::LedgerCompareDlg(CWnd* parent, Ledger::Snapshot baseline, Ledger::Snapshot current)
@@ -130,7 +90,7 @@ void LedgerCompareDlg::UpdateSummary()
         Localization::Lookup(IDS_LEDGER_CURRENT), describe(m_current),
         Localization::Format(IDS_LEDGER_SUMMARY_COUNTS, count(Ledger::Change::Added), count(Ledger::Change::Removed),
             count(Ledger::Change::Grown), count(Ledger::Change::Shrunk), count(Ledger::Change::FilesChanged),
-            SignedBytes(m_summary.sizeDelta), SignedCount(m_summary.filesDelta))));
+            Ledger::SignedBytes(m_summary.sizeDelta), Ledger::SignedCount(m_summary.filesDelta))));
 
     SetText(IDC_LEDGER_LEGEND, std::format(L"{} ● {} ● {} ● {} ● {}",
         Ledger::ChangeName(Ledger::Change::Added), Ledger::ChangeName(Ledger::Change::Removed),
@@ -177,10 +137,10 @@ std::wstring LedgerCompareDlg::CellText(const Ledger::DiffRow& row, const int co
     case ColChange:     return Ledger::ChangeName(row.change);
     case ColBaseSize:   return row.before ? FormatBytes(row.before->size) : std::wstring();
     case ColCurSize:    return row.after ? FormatBytes(row.after->size) : std::wstring();
-    case ColSizeDelta:  return SignedBytes(row.sizeDelta);
+    case ColSizeDelta:  return Ledger::SignedBytes(row.sizeDelta);
     case ColBaseFiles:  return row.before ? FormatCount(row.before->files) : std::wstring();
     case ColCurFiles:   return row.after ? FormatCount(row.after->files) : std::wstring();
-    case ColFilesDelta: return SignedCount(row.filesDelta);
+    case ColFilesDelta: return Ledger::SignedCount(row.filesDelta);
     default:            return {};
     }
 }
@@ -234,7 +194,7 @@ void LedgerCompareDlg::OnCustomDraw(NMHDR* header, LRESULT* result)
     }
     else if (draw->nmcd.dwDrawStage == CDDS_ITEMPREPAINT && draw->nmcd.dwItemSpec < m_visible.size())
     {
-        draw->clrText = ChangeColor(m_rows[m_visible[draw->nmcd.dwItemSpec]].change);
+        draw->clrText = Ledger::ChangeColor(m_rows[m_visible[draw->nmcd.dwItemSpec]].change);
         if (DarkMode::IsDarkModeActive()) draw->clrTextBk = DarkMode::SystemColor(COLOR_WINDOW);
     }
 }

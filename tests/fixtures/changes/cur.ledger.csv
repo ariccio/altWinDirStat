@@ -1,0 +1,9 @@
+Path,Relative Path,Size (bytes),Files,Subfolders
+"D:\T",".",90485759,11,7
+"D:\T\a","a",65242880,6,2
+"D:\T\a\b","a\b",55242880,5,1
+"D:\T\a\b\c","a\b\c",15242880,1,0
+"D:\T\edge","edge",2048576,1,0
+"D:\T\new","new",3145728,2,1
+"D:\T\new\inner","new\inner",1048576,1,0
+"D:\T\small","small",2048575,1,0

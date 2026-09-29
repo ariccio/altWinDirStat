@@ -20,6 +20,7 @@
 #include "AboutDlg.h"
 #include "CsvLoader.h"
 #include "FinderMtp.h"
+#include "ForkCli.h" // altWinDirStat
 
 CIconHandler* GetIconHandler()
 {
@@ -359,6 +360,7 @@ bool CDirStatApp::InitInstance()
 
     // Load default language just to get bootstrapped
     Localization::LoadResource(MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+    ForkCli::RunIfRequested(); // altWinDirStat: headless /compare (ForkCli.cpp)
 
     // If a local config file is available, use that for settings
     SetPortableMode(true, true);

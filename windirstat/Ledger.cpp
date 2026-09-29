@@ -1,4 +1,4 @@
-// altWinDirStat - folder ledger export and baseline comparison (fork-owned; not part of upstream WinDirStat)
+﻿// altWinDirStat - folder ledger export and baseline comparison (fork-owned; not part of upstream WinDirStat)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -50,6 +50,14 @@ namespace
     bool IsSameOrBelow(const std::wstring& ancestor, const std::wstring& path)
     {
         return !ancestor.empty() && !path.empty() && RelativeTo(ancestor, path).has_value();
+    }
+
+    // Lower-cased key of the parent row: "." for top-level folders, empty for the root itself.
+    std::wstring ParentKey(const std::wstring& relative)
+    {
+        if (relative == rootRelative) return {};
+        const size_t slash = relative.find_last_of(L'\\');
+        return slash == std::wstring::npos ? std::wstring(rootRelative) : Key(std::wstring_view(relative).substr(0, slash));
     }
 
     void SortRows(std::vector<Ledger::Row>& rows)
@@ -338,4 +346,74 @@ bool Ledger::SaveComparison(const std::wstring& path, const std::vector<DiffRow>
             value(row.before, &Row::files), value(row.after, &Row::files), row.filesDelta);
     }
     return WriteFile(path, text);
+}
+
+std::vector<size_t> Ledger::Significant(const std::vector<DiffRow>& rows, const ULONGLONG minOwnDelta, const bool all)
+{
+    std::unordered_map<std::wstring, size_t> byKey;
+    byKey.reserve(rows.size());
+    for (size_t i = 0; i < rows.size(); ++i) byKey.emplace(Key(rows[i].relative), i);
+
+    // A folder's own delta is its change minus the change of its direct child rows.
+    std::vector<LONGLONG> own(rows.size());
+    std::vector<size_t> parent(rows.size(), SIZE_MAX);
+    for (size_t i = 0; i < rows.size(); ++i)
+    {
+        own[i] += rows[i].sizeDelta;
+        if (const auto it = byKey.find(ParentKey(rows[i].relative)); it != byKey.end() && it->second != i)
+        {
+            parent[i] = it->second;
+            own[it->second] -= rows[i].sizeDelta;
+        }
+    }
+
+    const auto isAddedOrRemoved = [&](const size_t i)
+    {
+        return i != SIZE_MAX && (rows[i].change == Change::Added || rows[i].change == Change::Removed);
+    };
+
+    std::vector<size_t> result;
+    for (size_t i = 0; i < rows.size(); ++i)
+    {
+        const Change change = rows[i].change;
+        if (all)
+        {
+            if (change != Change::Unchanged) result.push_back(i);
+            continue;
+        }
+        if ((change == Change::Added || change == Change::Removed) && !isAddedOrRemoved(parent[i]))
+            result.push_back(i);
+        else if ((change == Change::Grown || change == Change::Shrunk) &&
+            static_cast<ULONGLONG>(own[i] < 0 ? -own[i] : own[i]) >= minOwnDelta)
+            result.push_back(i);
+    }
+    return result;
+}
+
+std::wstring Ledger::SignedBytes(const LONGLONG delta)
+{
+    if (delta == 0) return L"0";
+    const auto magnitude = static_cast<ULONGLONG>(delta < 0 ? -delta : delta);
+    return (delta < 0 ? L"−" : L"+") + FormatBytes(magnitude);
+}
+
+std::wstring Ledger::SignedCount(const LONGLONG delta)
+{
+    if (delta == 0) return L"0";
+    const auto magnitude = static_cast<ULONGLONG>(delta < 0 ? -delta : delta);
+    return (delta < 0 ? L"−" : L"+") + FormatCount(magnitude);
+}
+
+COLORREF Ledger::ChangeColor(const Change change)
+{
+    const bool dark = DarkMode::IsDarkModeActive();
+    switch (change)
+    {
+    case Change::Added:        return dark ? RGB(110, 220, 120) : RGB(0, 128, 0);
+    case Change::Removed:      return dark ? RGB(255, 120, 120) : RGB(192, 0, 0);
+    case Change::Grown:        return dark ? RGB(255, 190, 90) : RGB(176, 96, 0);
+    case Change::Shrunk:       return dark ? RGB(120, 180, 255) : RGB(0, 90, 190);
+    case Change::FilesChanged: return dark ? RGB(200, 160, 255) : RGB(110, 50, 160);
+    default:                   return DarkMode::SystemColor(COLOR_WINDOWTEXT);
+    }
 }

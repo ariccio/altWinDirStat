@@ -1,4 +1,4 @@
-// altWinDirStat - side-by-side folder ledger comparison (fork-owned; not part of upstream WinDirStat)
+﻿// altWinDirStat - side-by-side folder ledger comparison (fork-owned; not part of upstream WinDirStat)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 #include "Layout.h"
 #include "Ledger.h"
 #include "ForkResource.h"
+#include "LedgerListCtrl.h"
 
 class LedgerCompareDlg final : public MessageTarget<LedgerCompareDlg, CLayoutDialog>
 {
@@ -29,11 +30,6 @@ protected:
     void OnOK() override {}
 
 private:
-    class ResultsList final : public CListCtrl
-    {
-        bool OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* result) override;
-    };
-
     void OnFilter();
     void OnExport();
     void OnDisplayInfo(NMHDR* header, LRESULT* result);
@@ -44,7 +40,7 @@ private:
     void UpdateSummary();
     std::wstring CellText(const Ledger::DiffRow& row, int column) const;
 
-    ResultsList m_list;
+    CLedgerListCtrl m_list;
     Ledger::Snapshot m_baseline;
     Ledger::Snapshot m_current;
     Ledger::Summary m_summary;

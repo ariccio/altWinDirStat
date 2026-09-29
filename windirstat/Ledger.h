@@ -1,4 +1,4 @@
-// altWinDirStat - folder ledger export and baseline comparison (fork-owned; not part of upstream WinDirStat)
+﻿// altWinDirStat - folder ledger export and baseline comparison (fork-owned; not part of upstream WinDirStat)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -69,4 +69,16 @@ namespace Ledger
     std::vector<DiffRow> Compare(Snapshot& baseline, Snapshot& current, Summary& summary);
     bool SaveComparison(const std::wstring& path, const std::vector<DiffRow>& rows);
     std::wstring ChangeName(Change change);
+
+    // Change lists hide folders whose own change is below this many bytes (see Significant).
+    constexpr ULONGLONG DefaultMinOwnDelta = 1024 * 1024;
+
+    // Indices of rows worth showing in a change list. A folder is listed when it is the topmost
+    // Added/Removed folder of a branch, or when it Grew/Shrank by at least minOwnDelta beyond what its
+    // direct subfolders explain. With 'all', every row that changed at all is listed. O(n).
+    std::vector<size_t> Significant(const std::vector<DiffRow>& rows, ULONGLONG minOwnDelta, bool all);
+
+    std::wstring SignedBytes(LONGLONG delta);
+    std::wstring SignedCount(LONGLONG delta);
+    COLORREF ChangeColor(Change change);
 }
