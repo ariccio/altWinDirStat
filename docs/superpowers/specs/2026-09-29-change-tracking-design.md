@@ -39,7 +39,7 @@ Out of scope:
 
 - **Location:** `%LOCALAPPDATA%\altWinDirStat\History\`. The `ALTWDS_HISTORY_DIR` environment variable overrides it for tests.
 - **Per-location folder:** the folder name is a hex hash (FNV-1a 64) of the *location key*. The location key is the lower-cased scan root path. For a multi-drive scan (`IT_MYCOMPUTER`), it is the sorted, `|`-joined list of drive roots. Each folder holds a `location.txt` with the readable key, for debugging.
-- **Snapshot files:** named `YYYYMMDD-HHMMSS.ledger.csv` in UTC, in the existing ledger format, written through `Ledger::Save`.
+- **Snapshot files:** named `YYYYMMDD-HHMMSS-mmm.ledger.csv` in UTC (milliseconds, so two runs in one second never collide), in the existing ledger format, written through `Ledger::Save`.
 - **Retention:** keep the newest **5** snapshots per location and delete older ones after each write. A full C: is roughly 10–15 MB per snapshot.
 - **Atomic writes:** write to `*.tmp`, then `MoveFileEx(..., MOVEFILE_REPLACE_EXISTING)`. Load ignores `*.tmp` files.
 
@@ -82,11 +82,11 @@ Out of scope:
   - Columns: Folder (relative path), Change, Before, Now, Difference, Files ±.
   - Default sort is by |Difference| descending. Clicking a column header sorts by that column.
 - **Double-click:** on a folder that still exists, select and reveal it in the All Files tree (find the `CItem` by path from the root). On a Removed folder, do nothing.
-- **Visibility and toggle:** a View menu toggle, "Track changes between scans", backed by `COptions`-style fork setting `TrackChanges` (default on). Turning it off hides the tab and stops snapshot writes. Existing history is not deleted.
+- **Visibility and toggle:** an **Options** menu toggle, "Track Changes Between Scans", backed by `COptions`-style fork setting `TrackChanges` (default on). Turning it off hides the tab and stops snapshot writes. Existing history is not deleted.
 
 ## 2. Readable age
 
-- **New fork setting:** `ShowRelativeAge`, default on. Its toggle lives in File Tree options, as a fork-owned checkbox appended to the page.
+- **New fork setting:** `ShowRelativeAge`, default on. Its toggle is an **Options** menu item, "Show Relative Ages". A menu toggle avoids editing upstream's dialog resources.
 - **Display:** when the setting is on, the Last Change cell renders as `{relative} ({date})`, for example `3 yrs ago (2023-04-01)`.
   - Relative units: minutes, hours, days, months and years.
   - The formatting lives in fork-owned `ForkFormat.h/.cpp`.
@@ -100,9 +100,9 @@ Out of scope:
   - Physical size: "Space actually used on disk (after compression, sparse files, cloud placeholders)."
   - Size (logical): "The file's real length in bytes."
   - Items, Files, Folders, Last Change, Attributes and Owner get similar lines.
-- **Tabs:** tab tooltips on All Files, Largest Files, Duplicate Files, Search Results, Watcher, Permissions, Storage Analytics and Changes.
+- **Tabs:** dropped. Upstream's `CTabControl` keeps tab rectangles private, so tab tooltips would need upstream edits. This applies the fallback rule below.
 - **Strings:** all in `windirstat/res/fork/lang_en.txt` (`IDS_TIP_*`).
-- **Mechanism:** a fork-owned helper `ForkTooltips::Attach(CHeaderCtrl&, columnIdLookup)` and `ForkTooltips::AttachTabs(CTabControl&)`, called from one-line hooks. The implementation plan must confirm that upstream's header and tab controls allow a standard `TOOLTIPS_CLASS` subclass without conflict. If the tab control doesn't, tab tooltips are dropped; header tooltips are the priority.
+- **Mechanism:** a fork-owned helper `ForkTooltips::AttachHeader(CListCtrl&, lookup)`, called from one-line hooks. It subclasses the list's header with `SetWindowSubclass` and hit-tests columns on mouse move. Tab tooltips were dropped because the tab control doesn't expose tab rectangles.
 
 ## 4. Default layout
 
